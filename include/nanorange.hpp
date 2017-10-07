@@ -204,6 +204,26 @@ constexpr bool is_comparator_v = is_binary_predicate_v<Func, T, U>;
 
 #define REQUIRES(...) std::enable_if_t<__VA_ARGS__, int> = 0
 
+template <typename T>
+struct dangling {
+
+    template <typename U = T,
+              REQUIRES(std::is_default_constructible<U>::value)>
+    dangling() : value_{} {}
+
+    dangling(T t) : value_(t) {}
+
+    T get_unsafe() { return value_; }
+
+private:
+    T value_;
+};
+
+template <typename Range>
+using safe_iterator_t = std::conditional_t<
+        std::is_lvalue_reference<Range>::value,
+        iterator_t<Range>, dangling<iterator_t<Range>>>;
+
 // Non-modifying sequence operations
 template <typename Iter, typename UnaryPredicate,
           REQUIRES(detail::is_input_iterator_v<Iter> &&
@@ -331,12 +351,9 @@ template <typename Range1, typename Range2, typename BinaryPredicate = std::equa
         REQUIRES(detail::is_input_range_v<Range1> &&
                  detail::is_input_range_v<Range2> &&
                  detail::is_binary_predicate_v<BinaryPredicate, range_value_type_t<Range1>, range_value_type_t<Range2>>)>
-std::pair<iterator_t<Range1>, iterator_t<Range2>>
+std::pair<safe_iterator_t<Range1>, safe_iterator_t<Range2>>
 mismatch(Range1&& range1, Range2&& range2, BinaryPredicate pred = {})
 {
-    static_assert(!std::is_rvalue_reference<Range1&&>::value &&
-                          !std::is_rvalue_reference<Range2&&>::value,
-                  "lvalue ranges required for mismatch()");
     return std::mismatch(detail::adl_begin(range1), detail::adl_end(range1),
                          detail::adl_begin(range2), detail::adl_end(range2),
                          std::move(pred));
@@ -385,11 +402,9 @@ Iter find(Iter first, Iter last, const T& value)
 
 template <typename Range, typename T,
           REQUIRES(detail::is_input_range_v<Range>)>
-iterator_t<Range>
+safe_iterator_t<Range>
 find(Range&& range, const T& value)
 {
-    static_assert(!std::is_rvalue_reference<Range&&>::value,
-                  "lvalue range required for find()");
     return std::find(detail::adl_begin(range), detail::adl_end(range), value);
 }
 
@@ -404,11 +419,9 @@ Iter find_if(Iter first, Iter last, UnaryPredicate pred)
 template <typename Range, typename UnaryPredicate,
           REQUIRES(detail::is_input_range_v<Range> &&
                    detail::is_unary_predicate_v<UnaryPredicate, range_value_type_t<Range>>)>
-iterator_t<Range>
+safe_iterator_t<Range>
 find_if(Range&& range, UnaryPredicate pred)
 {
-    static_assert(!std::is_rvalue_reference<Range&&>::value,
-                  "lvalue range required as argument to find_if()");
     return std::find_if(detail::adl_begin(range), detail::adl_end(range),
                         std::move(pred));
 }
@@ -424,11 +437,9 @@ Iter find_if_not(Iter first, Iter last, UnaryPredicate&& pred)
 template <typename Range, typename UnaryPredicate,
           REQUIRES(detail::is_input_range_v<Range> &&
                    detail::is_unary_predicate_v<UnaryPredicate, range_value_type_t<Range>>)>
-iterator_t<Range>
+safe_iterator_t<Range>
 find_if_not(Range&& range, UnaryPredicate pred)
 {
-    static_assert(!std::is_rvalue_reference<Range&&>::value,
-                  "lvalue range required as argument to find_if_not()");
     return std::find_if_not(detail::adl_begin(range), detail::adl_end(range),
                             std::move(pred));
 }
@@ -448,10 +459,9 @@ template <typename Range1, typename Range2, typename BinaryPredicate = std::equa
         REQUIRES(detail::is_forward_range_v<Range1> &&
                  detail::is_forward_range_v<Range2> &&
                  detail::is_binary_predicate_v<BinaryPredicate, range_value_type_t<Range1>, range_value_type_t<Range2>>)>
-iterator_t<Range1> find_end(Range1&& range1, Range2&& range2, BinaryPredicate pred = {})
+safe_iterator_t<Range1>
+find_end(Range1&& range1, Range2&& range2, BinaryPredicate pred = {})
 {
-    static_assert(!std::is_rvalue_reference<Range1&&>::value,
-                  "lvalue range required as first argument to find_end()");
     return std::find_end(detail::adl_begin(range1), detail::adl_end(range1),
                          detail::adl_begin(range2), detail::adl_end(range2),
                          std::move(pred));
@@ -472,10 +482,9 @@ template <typename Range1, typename Range2, typename Pred = std::equal_to<>,
         REQUIRES(detail::is_input_range_v<Range1> &&
                          detail::is_input_range_v<Range2> &&
                  detail::is_binary_predicate_v<Pred, range_value_type_t<Range1>, range_value_type_t<Range2>>)>
-iterator_t<Range1> find_first_of(Range1&& range1, Range2&& range2, Pred pred = {})
+safe_iterator_t<Range1>
+find_first_of(Range1&& range1, Range2&& range2, Pred pred = {})
 {
-    static_assert(!std::is_rvalue_reference<Range1&&>::value,
-                  "lvalue range required as first argument to find_first_of()");
     return std::find_first_of(detail::adl_begin(range1), detail::adl_end(range1),
                               detail::adl_begin(range2), detail::adl_end(range2),
                               std::move(pred));
@@ -492,10 +501,9 @@ Iter adjacent_find(Iter first, Iter last, Pred pred = {})
 template <typename Range, typename Pred = std::equal_to<>,
         REQUIRES(detail::is_forward_range_v<Range> &&
                  detail::is_binary_predicate_v<Pred, range_value_type_t<Range>, range_value_type_t<Range>>)>
-iterator_t<Range> adjacent_find(Range&& range, Pred pred = {})
+safe_iterator_t<Range>
+adjacent_find(Range&& range, Pred pred = {})
 {
-    static_assert(!std::is_rvalue_reference<Range&&>::value,
-                  "lvalue range required as argument to adjacent_find()");
     return std::adjacent_find(detail::adl_begin(range), detail::adl_end(range),
                               std::move(pred));
 };
@@ -514,10 +522,9 @@ template <typename Range1, typename Range2, typename Pred = std::equal_to<>,
         REQUIRES(detail::is_forward_range_v<Range1> &&
                          detail::is_forward_range_v<Range2> &&
                  detail::is_binary_predicate_v<Pred, range_value_type_t<Range1>, range_value_type_t<Range2>>)>
-iterator_t<Range1> search(Range1&& range1, Range2&& range2, Pred pred = {})
+safe_iterator_t<Range1>
+search(Range1&& range1, Range2&& range2, Pred pred = {})
 {
-    static_assert(!std::is_rvalue_reference<Range1&&>::value,
-                  "lvalue range required as first argument to search()");
     return std::search(detail::adl_begin(range1), detail::adl_end(range1),
                        detail::adl_begin(range2), detail::adl_end(range2),
                        std::move(pred));
@@ -534,11 +541,9 @@ Iter search_n(Iter first, Iter last, difference_type_t<Iter> count, const T& val
 template <typename Range, typename T, typename Pred = std::equal_to<>,
         REQUIRES(detail::is_forward_range_v<Range> &&
                  detail::is_binary_predicate_v<Pred, range_value_type_t<Range>, range_value_type_t<Range>>)>
-iterator_t<Range>
+safe_iterator_t<Range>
 search_n(Range&& range, difference_type_t<iterator_t<Range>> count, const T& value, Pred pred = {})
 {
-    static_assert(!std::is_rvalue_reference<Range&&>::value,
-                  "lvalue range required as argument to search_n()");
     return std::search_n(detail::adl_begin(range), detail::adl_end(range), count, value, std::move(pred));
 }
 
@@ -751,10 +756,8 @@ Iter remove(Iter first, Iter last, const T& value)
 
 template <typename Range, typename T,
           REQUIRES(detail::is_forward_range_v<Range>)>
-iterator_t<Range> remove(Range&& range, const T& value)
+safe_iterator_t<Range> remove(Range&& range, const T& value)
 {
-    static_assert(!std::is_rvalue_reference<Range&&>::value,
-                  "lvalue range required as argument to remove()");
     return std::remove(detail::adl_begin(range), detail::adl_end(range), value);
 }
 
@@ -769,10 +772,8 @@ Iter remove_if(Iter first, Iter last, Pred pred)
 template <typename Range, typename Pred,
           REQUIRES(detail::is_forward_range_v<Range> &&
                    detail::is_unary_predicate_v<Pred, range_value_type_t<Range>>)>
-iterator_t<Range> remove_if(Range&& range, Pred pred)
+safe_iterator_t<Range> remove_if(Range&& range, Pred pred)
 {
-    static_assert(!std::is_rvalue_reference<Range&&>::value,
-                  "lvalue range required as argument to remove_if()");
     return std::remove_if(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
 }
 
@@ -913,12 +914,9 @@ swap_ranges(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2)
 template <typename Range1, typename Range2,
           REQUIRES(detail::is_forward_range_v<Range1> &&
                    detail::is_forward_range_v<Range2>)>
-std::pair<iterator_t<Range1>, iterator_t<Range2>>
+std::pair<safe_iterator_t<Range1>, safe_iterator_t<Range2>>
 swap_ranges(Range1&& range1, Range2&& range2)
 {
-    static_assert(!std::is_rvalue_reference<Range1&&>::value &&
-                  !std::is_rvalue_reference<Range2&&>::value,
-                 "lvalue arguments required for swap_ranges()");
     return ranges::swap_ranges(detail::adl_begin(range1), detail::adl_end(range1),
                                detail::adl_begin(range2), detail::adl_end(range2));
 }
@@ -1011,10 +1009,8 @@ Iter unique(Iter first, Iter last, Pred pred = {})
 template <typename Range, typename Pred = std::equal_to<>,
           REQUIRES(detail::is_forward_range_v<Range> &&
                    detail::is_binary_predicate_v<Pred, range_value_type_t<Range>, range_value_type_t<Range>>)>
-iterator_t<Range> unique(Range&& range, Pred pred = {})
+safe_iterator_t<Range> unique(Range&& range, Pred pred = {})
 {
-    static_assert(!std::is_rvalue_reference<Range&&>::value,
-                  "lvalue range required as argument to unique()");
     return std::unique(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
 }
 
@@ -1067,10 +1063,8 @@ Iter partition(Iter first, Iter last, Pred pred)
 template <typename Range, typename Pred,
           REQUIRES(detail::is_forward_range_v<Range> &&
                    detail::is_unary_predicate_v<Pred, range_value_type_t<Range>>)>
-iterator_t<Range> partition(Range&& range, Pred pred)
+safe_iterator_t<Range> partition(Range&& range, Pred pred)
 {
-    static_assert(!std::is_rvalue_reference<Range&&>::value,
-                  "lvalue range required as argument to partition()");
     return std::partition(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
 }
 
@@ -1111,10 +1105,8 @@ Iter stable_partition(Iter first, Iter last, Pred pred)
 template <typename Range, typename Pred,
         REQUIRES(detail::is_bidirectional_range_v<Range> &&
                  detail::is_unary_predicate_v<Pred, range_value_type_t<Range>>)>
-iterator_t<Range> stable_partition(Range&& range, Pred pred)
+safe_iterator_t<Range> stable_partition(Range&& range, Pred pred)
 {
-    static_assert(!std::is_rvalue_reference<Range&&>::value,
-                   "lvalue range required as argument to stable_partition()");
     return std::stable_partition(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
 }
 
@@ -1129,10 +1121,8 @@ Iter partition_point(Iter first, Iter last, Pred pred)
 template <typename Range, typename Pred,
         REQUIRES(detail::is_forward_range_v<Range> &&
                          detail::is_unary_predicate_v<Pred, range_value_type_t<Range>>)>
-iterator_t<Range> partition_point(Range&& range, Pred pred)
+safe_iterator_t<Range> partition_point(Range&& range, Pred pred)
 {
-    static_assert(!std::is_rvalue_reference<Range&&>::value,
-                  "lvalue argument required for partition_point()");
     return std::partition_point(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
 }
 
@@ -1167,10 +1157,8 @@ Iter is_sorted_until(Iter first, Iter last, Comp comp = {})
 template <typename Range, typename Comp = std::less<>,
         REQUIRES(detail::is_forward_range_v<Range> &&
                  detail::is_comparator_v<Comp, range_value_type_t<Range>>)>
-iterator_t<Range> is_sorted_until(Range&& range, Comp comp = {})
+safe_iterator_t<Range> is_sorted_until(Range&& range, Comp comp = {})
 {
-    static_assert(!std::is_rvalue_reference<Range&&>::value,
-                  "lvalue range required for is_sorted_until()");
     return std::is_sorted_until(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
 }
 
@@ -1221,10 +1209,8 @@ template <typename Range1, typename Range2, typename Comp = std::less<>,
                  detail::is_random_access_range_v<Range2> &&
                  detail::is_writable_v<iterator_t<Range2>, range_value_type_t<Range1>> &&
                  detail::is_comparator_v<Comp, range_value_type_t<Range2>>)>
-iterator_t<Range2> partial_sort_copy(Range1&& input, Range2&& result, Comp comp = {})
+safe_iterator_t<Range2> partial_sort_copy(Range1&& input, Range2&& result, Comp comp = {})
 {
-    static_assert(!std::is_rvalue_reference<Range2&&>::value,
-                  "lvalue range required as second argument to partial_sort_copy()");
     return std::partial_sort_copy(detail::adl_begin(input), detail::adl_end(input),
                                   detail::adl_begin(result), detail::adl_end(result),
                                   std::move(comp));
@@ -1277,10 +1263,8 @@ Iter lower_bound(Iter first, Iter last, const T& value, Comp comp = {})
 template <typename Range, typename T, typename Comp = std::less<>,
         REQUIRES(detail::is_forward_range_v<Range> &&
                  detail::is_binary_predicate_v<Comp, range_value_type_t<Range>, const T&>)>
-iterator_t<Range> lower_bound(Range&& range, const T& value, Comp comp = {})
+safe_iterator_t<Range> lower_bound(Range&& range, const T& value, Comp comp = {})
 {
-    static_assert(!std::is_rvalue_reference<Range&&>::value,
-                  "lvalue range required as argument to lower_bound()");
     return std::lower_bound(detail::adl_begin(range), detail::adl_end(range), value, std::move(comp));
 }
 
@@ -1295,10 +1279,8 @@ Iter upper_bound(Iter first, Iter last, const T& value, Comp comp = {})
 template <typename Range, typename T, typename Comp = std::less<>,
         REQUIRES(detail::is_forward_range_v<Range> &&
                          detail::is_binary_predicate_v<Comp, const T&, range_value_type_t<Range>>)>
-iterator_t<Range> upper_bound(Range&& range, const T& value, Comp comp = {})
+safe_iterator_t<Range> upper_bound(Range&& range, const T& value, Comp comp = {})
 {
-    static_assert(!std::is_rvalue_reference<Range&&>::value,
-                  "lvalue range required as argument to lower_bound()");
     return std::upper_bound(detail::adl_begin(range), detail::adl_end(range), value, std::move(comp));
 }
 
@@ -1334,11 +1316,9 @@ template <typename Range, typename T, typename Comp = std::less<>,
           REQUIRES(detail::is_forward_range_v<Range> &&
                    detail::is_comparator_v<Comp, range_value_type_t<Range>, const T&> &&
                    detail::is_comparator_v<Comp, const T&, range_value_type_t<Range>>)>
-std::pair<iterator_t<Range>, iterator_t<Range>>
+std::pair<safe_iterator_t<Range>, safe_iterator_t<Range>>
 equal_range(Range&& range, const T& value, Comp comp = {})
 {
-    static_assert(!std::is_rvalue_reference<Range&&>::value,
-                  "lvalue range required as argument to equal_range()");
     return std::equal_range(detail::adl_begin(range), detail::adl_end(range), value, std::move(comp));
 }
 
@@ -1561,10 +1541,8 @@ RandomIt is_heap_until(RandomIt first, RandomIt last, Comp comp = {})
 template <typename RandomRng, typename Comp = std::less<>,
         REQUIRES(detail::is_random_access_range_v<RandomRng> &&
                          detail::is_comparator_v<Comp, range_value_type_t<RandomRng>>)>
-iterator_t<RandomRng> is_heap_until(RandomRng&& range, Comp comp = {})
+safe_iterator_t<RandomRng> is_heap_until(RandomRng&& range, Comp comp = {})
 {
-    static_assert(!std::is_rvalue_reference<RandomRng&&>::value,
-                  "lvalue range required as argument to is_heap_until()");
     return std::is_heap_until(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
 }
 
@@ -1670,11 +1648,9 @@ ForwardIt max_element(ForwardIt first, ForwardIt last, Comp comp = {})
 template <typename ForwardRng, typename Comp = std::less<>,
           REQUIRES(detail::is_forward_range_v<ForwardRng> &&
                    detail::is_comparator_v<Comp, range_value_type_t<ForwardRng>>)>
-iterator_t<ForwardRng>
+safe_iterator_t<ForwardRng>
 max_element(ForwardRng&& range, Comp comp = {})
 {
-    static_assert(!std::is_rvalue_reference<ForwardRng&&>::value,
-                  "lvalue range required as argument to max_element()");
     return std::max_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
 }
 
@@ -1704,11 +1680,9 @@ min(ForwardRng&& range, Comp comp = {})
 template <typename ForwardRng, typename Comp = std::less<>,
         REQUIRES(detail::is_forward_range_v<ForwardRng> &&
                          detail::is_comparator_v<Comp, range_value_type_t<ForwardRng>>)>
-iterator_t<ForwardRng>
+safe_iterator_t<ForwardRng>
 min_element(ForwardRng&& range, Comp comp = {})
 {
-    static_assert(!std::is_rvalue_reference<ForwardRng&&>::value,
-                  "lvalue range required as argument to min_element()");
     return std::min_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
 }
 
@@ -1747,11 +1721,9 @@ minmax_element(ForwardIt first, ForwardIt last, Comp comp = {})
 template <typename ForwardRng, typename Comp = std::less<>,
           REQUIRES(detail::is_forward_range_v<ForwardRng> &&
                    detail::is_comparator_v<Comp, range_value_type_t<ForwardRng>>)>
-constexpr std::pair<iterator_t<ForwardRng>, iterator_t<ForwardRng>>
+constexpr std::pair<safe_iterator_t<ForwardRng>, safe_iterator_t<ForwardRng>>
 minmax_element(ForwardRng&& range, Comp comp = {})
 {
-    static_assert(!std::is_rvalue_reference<ForwardRng&&>::value,
-                  "lvalue range required as argument to minmax_element()");
     return std::minmax_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
 }
 
