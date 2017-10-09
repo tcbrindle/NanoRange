@@ -11,7 +11,7 @@
 #include <random>
 #include <vector>
 
-namespace rng = tcb::ranges;
+namespace rng = nanorange;
 
 TEST_CASE("copy()")
 {
@@ -40,12 +40,12 @@ TEST_CASE("copy_if()")
     const auto pred = [] (int i) { return i == 2; };
 
     SECTION("with iterators") {
-        rng::copy_if(src.begin(), src.end(), std::back_inserter(dest), pred);
+        rng::copy_if(src.begin(), src.end(), rng::back_inserter(dest), pred);
         REQUIRE(dest == (std::vector<int>{2, 2, 2, 2, 2}));
     }
 
     SECTION("with range") {
-        rng::copy_if(src, std::back_inserter(dest), pred);
+        rng::copy_if(src, rng::back_inserter(dest), pred);
         REQUIRE(dest == (std::vector<int>{2, 2, 2, 2, 2,}));
     }
 }
@@ -55,7 +55,7 @@ TEST_CASE("copy_n")
     const std::vector<int> src{1, 2, 3, 4, 5, 6, 7, 8, 9};
     std::vector<int> dest;
 
-    rng::copy_n(src.begin(), 5, std::back_inserter(dest));
+    rng::copy_n(src.begin(), 5, rng::back_inserter(dest));
     REQUIRE(dest == (std::vector<int>{1, 2, 3, 4, 5}));
 }
 
@@ -108,7 +108,7 @@ TEST_CASE("move()")
     std::vector<mark_move> dest;
 
     SECTION("with iterators") {
-        rng::move(src.begin(), src.end(), std::back_inserter(dest));
+        rng::move(src.begin(), src.end(), rng::back_inserter(dest));
         REQUIRE(dest.size() == src.size());
         REQUIRE(rng::all_of(src, [](const auto& m) { return m.moved_from == true; }));
         REQUIRE(rng::all_of(dest, [] (const auto& m) { return m.moved_into == true; }));
@@ -290,13 +290,13 @@ TEST_CASE("remove_copy()")
     SECTION("with iterators")
     {
         rng::remove_copy(std::begin(src), std::end(src),
-                         std::ostream_iterator<char>(ss), 'l');
+                         rng::ostream_iterator<char>(ss), 'l');
         REQUIRE(ss.str() == "Heo Word");
     }
 
     SECTION("with ranges")
     {
-        rng::remove_copy(src, std::ostream_iterator<char>(ss), 'l');
+        rng::remove_copy(src, rng::ostream_iterator<char>(ss), 'l');
         REQUIRE(ss.str() == "Heo Word");
     }
 }
@@ -309,13 +309,13 @@ TEST_CASE("remove_copy_if()")
     SECTION("with iterators")
     {
         rng::remove_copy_if(std::begin(src), std::end(src),
-                         std::ostream_iterator<char>(ss), ::isspace);
+                            rng::ostream_iterator<char>(ss), ::isspace);
         REQUIRE(ss.str() == "HelloWorld");
     }
 
     SECTION("with ranges")
     {
-        rng::remove_copy_if(src, std::ostream_iterator<char>(ss), ::isspace);
+        rng::remove_copy_if(src, rng::ostream_iterator<char>(ss), ::isspace);
         REQUIRE(ss.str() == "HelloWorld");
     }
 }
@@ -388,14 +388,14 @@ TEST_CASE("replace_copy()")
     SECTION("with iterators")
     {
         rng::replace_copy(std::istream_iterator<int>{iss}, std::istream_iterator<int>{},
-                          std::ostream_iterator<int>{oss}, 2, 99);
+                          rng::ostream_iterator<int>{oss}, 2, 99);
         REQUIRE(oss.str() == "199345");
     }
 
     SECTION("with range")
     {
         rng::replace_copy(make_range(std::istream_iterator<int>{iss}, std::istream_iterator<int>{}),
-                          std::ostream_iterator<int>{oss}, 2, 99);
+                          rng::ostream_iterator<int>{oss}, 2, 99);
         REQUIRE(oss.str() == "199345");
     }
 }
@@ -409,14 +409,14 @@ TEST_CASE("replace_copy_if()")
     SECTION("with iterators")
     {
         rng::replace_copy_if(std::istream_iterator<int>{iss}, std::istream_iterator<int>{},
-                             std::ostream_iterator<int>{oss}, is_negative, 0);
+                             rng::ostream_iterator<int>{oss}, is_negative, 0);
         REQUIRE(oss.str() == "00012");
     }
 
     SECTION("with range")
     {
         rng::replace_copy_if(make_range(std::istream_iterator<int>{iss}, std::istream_iterator<int>{}),
-                          std::ostream_iterator<int>{oss}, is_negative, 0);
+                          rng::ostream_iterator<int>{oss}, is_negative, 0);
         REQUIRE(oss.str() == "00012");
     }
 }
@@ -475,12 +475,12 @@ TEST_CASE("reverse_copy()")
 
     SECTION("with iterators") {
         rng::reverse_copy(list.begin(), list.end(),
-                          std::ostream_iterator<int>{oss});
+                          rng::ostream_iterator<int>{oss});
         REQUIRE(oss.str() == "54321");
     }
 
     SECTION("with range") {
-        rng::reverse_copy(list, std::ostream_iterator<int>{oss});
+        rng::reverse_copy(list, rng::ostream_iterator<int>{oss});
         REQUIRE(oss.str() == "54321");
     }
 }
@@ -509,12 +509,12 @@ TEST_CASE("rotate_copy()")
 
     SECTION("with iterators") {
         rng::rotate_copy(src.begin(), src.begin() + 1, src.end(),
-                         std::ostream_iterator<int>(dest));
+                         rng::ostream_iterator<int>(dest));
         REQUIRE(dest.str() == "23451");
     }
 
     SECTION("with range") {
-        rng::rotate_copy(src, src.begin() + 1, std::ostream_iterator<int>(dest));
+        rng::rotate_copy(src, src.begin() + 1, rng::ostream_iterator<int>(dest));
         REQUIRE(dest.str() == "23451");
     }
 }
@@ -589,13 +589,13 @@ TEST_CASE("unique_copy()")
 
     SECTION("with iterators") {
         rng::unique_copy(std::istream_iterator<int>{src}, std::istream_iterator<int>{},
-                         std::ostream_iterator<int>{dest, " "});
+                         rng::ostream_iterator<int>{dest, " "});
         REQUIRE(dest.str() == "1 2 3 4 5 ");
     }
 
     SECTION("with range") {
         rng::unique_copy(make_range(std::istream_iterator<int>{src}, std::istream_iterator<int>{}),
-                         std::ostream_iterator<int>{dest, " "});
+                         rng::ostream_iterator<int>{dest, " "});
         REQUIRE(dest.str() == "1 2 3 4 5 ");
     }
 }
@@ -607,13 +607,13 @@ TEST_CASE("unique_copy() (with predicate)")
 
     SECTION("with iterators") {
         rng::unique_copy(std::istream_iterator<int>{src}, std::istream_iterator<int>{},
-                         std::ostream_iterator<int>{dest, " "}, std::equal_to<>{});
+                         rng::ostream_iterator<int>{dest, " "}, std::equal_to<>{});
         REQUIRE(dest.str() == "1 2 3 4 5 ");
     }
 
     SECTION("with range") {
         rng::unique_copy(make_range(std::istream_iterator<int>{src}, std::istream_iterator<int>{}),
-                         std::ostream_iterator<int>{dest, " "}, std::equal_to<>{});
+                         rng::ostream_iterator<int>{dest, " "}, std::equal_to<>{});
         REQUIRE(dest.str() == "1 2 3 4 5 ");
     }
 }

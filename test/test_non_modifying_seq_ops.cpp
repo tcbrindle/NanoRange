@@ -6,7 +6,7 @@
 #include <array>
 #include <vector>
 
-namespace rng = tcb::ranges;
+namespace rng = nanorange;
 
 TEST_CASE("all_of")
 {
@@ -45,20 +45,6 @@ TEST_CASE("for_each")
 
     REQUIRE(sum == 6);
 }
-
-#ifdef TCB_RANGES_HAVE_CPP17
-TEST_CASE("for_each_n")
-{
-#if 0 // No for_each_n in libstdc++ yet
-    constexpr std::array<int, 3> arr{{1, 2, 3}};
-    int sum = 0;
-
-    auto last = rng::for_each_n(arr.begin(), 3, [&sum](int i) { sum += i; });
-    REQUIRE(sum == 6);
-    REQUIRE(last == arr.end());
-#endif
-}
-#endif
 
 TEST_CASE("count")
 {
@@ -398,23 +384,3 @@ TEST_CASE("search_n() (with predicate)")
     }
 }
 
-#ifdef TCB_RANGES_HAVE_CPP17
-TEST_CASE("search() (with Searcher)")
-{
-#if 0 // No default_searcher in libstdc++ yet
-    const std::vector<int> vec = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-    constexpr std::array<int, 3> arr = {{3, 4, 5}};
-    std::default_searcher s{arr.begin(), arr.end()};
-
-    SECTION("with iterators") {
-        const auto it = rng::search(vec.begin(), vec.end(), s);
-        REQUIRE(it == vec.begin() + 2);
-    }
-
-    SECTION("with range") {
-        const auto it = rng::search(vec, s);
-        REQUIRE(it == vec.begin() + 2);
-    }
-#endif
-}
-#endif

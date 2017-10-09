@@ -7,5 +7,5 @@ add_executable(test_nanorange
     test_sorting_ops.cpp
     test_type_traits.cpp
 )
-target_compile_definitions(test_nanorange PRIVATE "-DTCB_RANGES_NO_DEPRECATION_WARNINGS")
+target_compile_definitions(test_nanorange PRIVATE "-DNANORANGE_NO_DEPRECATION_WARNINGS")
 

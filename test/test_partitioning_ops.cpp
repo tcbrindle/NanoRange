@@ -3,7 +3,7 @@
 
 #include <nanorange.hpp>
 
-namespace rng = tcb::ranges;
+namespace rng = nanorange;
 
 TEST_CASE("is_partitioned()")
 {
@@ -48,13 +48,13 @@ TEST_CASE("partition_copy()")
 
     SECTION("with iterators") {
         rng::partition_copy(src.begin(), src.end(),
-                            std::ostream_iterator<int>(evens), std::ostream_iterator<int>(odds),
+                            rng::ostream_iterator<int>(evens), rng::ostream_iterator<int>(odds),
                             is_even);
     }
 
     SECTION("with range") {
         rng::partition_copy(src,
-                            std::ostream_iterator<int>(evens), std::ostream_iterator<int>(odds),
+                            rng::ostream_iterator<int>(evens), rng::ostream_iterator<int>(odds),
                             is_even);
     }
 

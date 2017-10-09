@@ -5,7 +5,7 @@
 
 #include <list>
 
-namespace rng = tcb::ranges;
+namespace rng = nanorange;
 
 TEST_CASE("is_sorted()")
 {
