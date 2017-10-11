@@ -969,7 +969,10 @@ using safe_iterator_t = std::conditional_t<
         std::is_lvalue_reference<Range>::value,
         iterator_t<Range>, dangling<iterator_t<Range>>>;
 
-// Non-modifying sequence operations
+// 11.3 Non-modifying sequence operations
+
+// 11.3.1 All of
+
 template <typename Iter, typename UnaryPredicate,
           REQUIRES(InputIterator<Iter> &&
                    IndirectUnaryPredicate<UnaryPredicate, Iter>)>
@@ -985,6 +988,8 @@ bool all_of(Range&& range, UnaryPredicate pred)
 {
     return std::all_of(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
 }
+
+// 11.3.2 Any of
 
 template <typename Iter, typename UnaryPredicate,
           REQUIRES(InputIterator<Iter> &&
@@ -1002,6 +1007,8 @@ bool any_of(Range&& range, UnaryPredicate pred)
     return std::any_of(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
 }
 
+// 11.3.3 None of
+
 template <typename Iter, typename UnaryPredicate,
           REQUIRES(InputIterator<Iter> &&
                    IndirectUnaryPredicate<UnaryPredicate, Iter>)>
@@ -1017,6 +1024,8 @@ bool none_of(Range&& range, UnaryPredicate pred)
 {
     return std::none_of(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
 }
+
+// 11.3.4 For each
 
 template <typename Iter, typename UnaryFunction,
           REQUIRES(InputIterator<Iter> &&
@@ -1034,6 +1043,133 @@ UnaryFunction for_each(Range&& range, UnaryFunction func)
     return std::for_each(detail::adl_begin(range), detail::adl_end(range),
                          std::move(func));
 }
+
+// 11.3.5 Find
+
+template <typename Iter, typename T,
+        REQUIRES(InputIterator<Iter> &&
+                 IndirectRelation<std::equal_to<>, Iter, const T*>)>
+Iter find(Iter first, Iter last, const T& value)
+{
+    return std::find(std::move(first), std::move(last), value);
+}
+
+template <typename Range, typename T,
+        REQUIRES(InputRange<Range> &&
+                 IndirectRelation<std::equal_to<>, iterator_t<Range>, const T*>)>
+safe_iterator_t<Range>
+find(Range&& range, const T& value)
+{
+    return std::find(detail::adl_begin(range), detail::adl_end(range), value);
+}
+
+template <typename Iter, typename UnaryPredicate,
+        REQUIRES(InputIterator<Iter> &&
+                 IndirectUnaryPredicate<UnaryPredicate, Iter>)>
+Iter find_if(Iter first, Iter last, UnaryPredicate pred)
+{
+    return std::find_if(std::move(first), std::move(last), std::move(pred));
+}
+
+template <typename Range, typename UnaryPredicate,
+        REQUIRES(InputRange<Range> &&
+                 IndirectUnaryPredicate<UnaryPredicate, iterator_t<Range>>)>
+safe_iterator_t<Range>
+find_if(Range&& range, UnaryPredicate pred)
+{
+    return std::find_if(detail::adl_begin(range), detail::adl_end(range),
+                        std::move(pred));
+}
+
+template <typename Iter, typename UnaryPredicate,
+        REQUIRES(InputIterator<Iter> &&
+                 IndirectUnaryPredicate<UnaryPredicate, Iter>)>
+Iter find_if_not(Iter first, Iter last, UnaryPredicate&& pred)
+{
+    return std::find_if_not(std::move(first), std::move(last), std::move(pred));
+}
+
+template <typename Range, typename UnaryPredicate,
+        REQUIRES(InputRange<Range> &&
+                 IndirectUnaryPredicate<UnaryPredicate, iterator_t<Range>>)>
+safe_iterator_t<Range>
+find_if_not(Range&& range, UnaryPredicate pred)
+{
+    return std::find_if_not(detail::adl_begin(range), detail::adl_end(range),
+                            std::move(pred));
+}
+
+// 11.3.6 Find end
+
+template <typename Iter1, typename Iter2, typename BinaryPredicate = std::equal_to<>,
+        REQUIRES(ForwardIterator<Iter1> &&
+                 ForwardIterator<Iter2> &&
+                 IndirectRelation<BinaryPredicate, Iter1, Iter2>)>
+Iter1 find_end(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, BinaryPredicate pred = {})
+{
+    return std::find_end(std::move(first1), std::move(last1),
+                         std::move(first2), std::move(last2),
+                         std::move(pred));
+}
+
+template <typename Range1, typename Range2, typename BinaryPredicate = std::equal_to<>,
+        REQUIRES(ForwardRange<Range1> &&
+                 ForwardRange<Range2> &&
+                 IndirectRelation<BinaryPredicate, iterator_t<Range1>, iterator_t<Range2>>)>
+safe_iterator_t<Range1>
+find_end(Range1&& range1, Range2&& range2, BinaryPredicate pred = {})
+{
+    return std::find_end(detail::adl_begin(range1), detail::adl_end(range1),
+                         detail::adl_begin(range2), detail::adl_end(range2),
+                         std::move(pred));
+}
+
+// 11.3.7 Find first of
+
+template <typename Iter1, typename Iter2, typename Pred = std::equal_to<>,
+        REQUIRES(InputIterator<Iter1> &&
+                 ForwardIterator<Iter2> &&
+                 IndirectRelation<Pred, Iter1, Iter2>)>
+Iter1 find_first_of(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, Pred pred = {})
+{
+    return std::find_first_of(std::move(first1), std::move(last1),
+                              std::move(first2), std::move(last2),
+                              std::move(pred));
+}
+
+template <typename Range1, typename Range2, typename Pred = std::equal_to<>,
+        REQUIRES(InputRange<Range1> &&
+                 InputRange<Range2> &&
+                 IndirectRelation<Pred, iterator_t<Range1>, iterator_t<Range2>>)>
+safe_iterator_t<Range1>
+find_first_of(Range1&& range1, Range2&& range2, Pred pred = {})
+{
+    return std::find_first_of(detail::adl_begin(range1), detail::adl_end(range1),
+                              detail::adl_begin(range2), detail::adl_end(range2),
+                              std::move(pred));
+}
+
+// 11.3.8 Adjacent find
+
+template <typename Iter, typename Pred = std::equal_to<>,
+        REQUIRES(ForwardIterator<Iter> &&
+                 IndirectRelation<Pred, Iter, Iter>)>
+Iter adjacent_find(Iter first, Iter last, Pred pred = {})
+{
+    return std::adjacent_find(std::move(first), std::move(last), std::forward<Pred>(pred));
+}
+
+template <typename Range, typename Pred = std::equal_to<>,
+        REQUIRES(ForwardRange<Range> &&
+                 IndirectRelation<Pred, iterator_t<Range>, iterator_t<Range>>)>
+safe_iterator_t<Range>
+adjacent_find(Range&& range, Pred pred = {})
+{
+    return std::adjacent_find(detail::adl_begin(range), detail::adl_end(range),
+                              std::move(pred));
+};
+
+// 11.3.9 Count
 
 template <typename Iter, typename T,
           REQUIRES(InputIterator<Iter> &&
@@ -1071,8 +1207,11 @@ count_if(Range&& range, UnaryPredicate pred)
     return std::count_if(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
 }
 
-// N.B. The "three-legged" forms of mismatch() are dangerous and should be
-// avoided, so we mark them as deprecated
+// 11.3.10 Mismatch
+
+// N.B. The "three-legged" form of mismatch() is not included in the TS. We
+// provide it as an extension for backwards-compatibility, but mark it as
+// deprecated
 template <typename Iter1, typename Iter2, typename BinaryPredicate = std::equal_to<>,
           REQUIRES(InputIterator<Iter1> &&
                    InputIterator<Iter2> &&
@@ -1108,7 +1247,10 @@ mismatch(Range1&& range1, Range2&& range2, BinaryPredicate pred = {})
                          std::move(pred));
 }
 
-// Again, the three-legged form of equal() is discouraged
+// 11.3.11 Equal
+
+// Again, the three-legged form of equal() is provided as an extension, but
+// deprecated
 template <typename Iter1, typename Iter2, typename BinaryPredicate = std::equal_to<>,
         REQUIRES(InputIterator<Iter1> &&
                  InputIterator<Iter2> &&
@@ -1142,122 +1284,40 @@ bool equal(Range1&& range1, Range2&& range2, BinaryPredicate pred = {})
                       std::move(pred));
 }
 
-template <typename Iter, typename T,
-          REQUIRES(InputIterator<Iter> &&
-                   IndirectRelation<std::equal_to<>, Iter, const T*>)>
-Iter find(Iter first, Iter last, const T& value)
+// 11.3.12 Is permutation
+
+// Once again, deprecated extension
+template <typename ForwardIt1, typename ForwardIt2, typename Pred = std::equal_to<>,
+        REQUIRES(ForwardIterator<ForwardIt1> &&
+                 ForwardIterator<ForwardIt2> &&
+                 IndirectlyComparable<ForwardIt1, ForwardIt2, Pred>)>
+NANORANGE_DEPRECATED
+bool is_permutation(ForwardIt1 first1, ForwardIt1 last1, ForwardIt2 first2, Pred pred = {})
 {
-    return std::find(std::move(first), std::move(last), value);
+    return std::is_permutation(std::move(first1), std::move(last1), std::move(first2), std::move(pred));
 }
 
-template <typename Range, typename T,
-          REQUIRES(InputRange<Range> &&
-                   IndirectRelation<std::equal_to<>, iterator_t<Range>, const T*>)>
-safe_iterator_t<Range>
-find(Range&& range, const T& value)
+template <typename ForwardIt1, typename ForwardIt2, typename Pred = std::equal_to<>,
+        REQUIRES(ForwardIterator<ForwardIt1> &&
+                 ForwardIterator<ForwardIt2> &&
+                 IndirectlyComparable<ForwardIt1, ForwardIt2, Pred>)>
+bool is_permutation(ForwardIt1 first1, ForwardIt1 last1, ForwardIt2 first2, ForwardIt2 last2, Pred pred = {})
 {
-    return std::find(detail::adl_begin(range), detail::adl_end(range), value);
+    return std::is_permutation(std::move(first1), std::move(last1), std::move(first2), std::move(last2), std::move(pred));
 }
 
-template <typename Iter, typename UnaryPredicate,
-          REQUIRES(InputIterator<Iter> &&
-                   IndirectUnaryPredicate<UnaryPredicate, Iter>)>
-Iter find_if(Iter first, Iter last, UnaryPredicate pred)
+template <typename ForwardRng1, typename ForwardRng2, typename Pred = std::equal_to<>,
+        REQUIRES(ForwardRange<ForwardRng1> &&
+                         ForwardRange<ForwardRng2> &&
+                         IndirectlyComparable<iterator_t<ForwardRng1>, iterator_t<ForwardRng2>, Pred>)>
+bool is_permutation(ForwardRng1&& range1, ForwardRng2&& range2, Pred pred = {})
 {
-    return std::find_if(std::move(first), std::move(last), std::move(pred));
+    return std::is_permutation(detail::adl_begin(range1), detail::adl_end(range2),
+                               detail::adl_begin(range2), detail::adl_end(range2),
+                               std::move(pred));
 }
 
-template <typename Range, typename UnaryPredicate,
-          REQUIRES(InputRange<Range> &&
-                   IndirectUnaryPredicate<UnaryPredicate, iterator_t<Range>>)>
-safe_iterator_t<Range>
-find_if(Range&& range, UnaryPredicate pred)
-{
-    return std::find_if(detail::adl_begin(range), detail::adl_end(range),
-                        std::move(pred));
-}
-
-template <typename Iter, typename UnaryPredicate,
-          REQUIRES(InputIterator<Iter> &&
-                   IndirectUnaryPredicate<UnaryPredicate, Iter>)>
-Iter find_if_not(Iter first, Iter last, UnaryPredicate&& pred)
-{
-    return std::find_if_not(std::move(first), std::move(last), std::move(pred));
-}
-
-template <typename Range, typename UnaryPredicate,
-          REQUIRES(InputRange<Range> &&
-                   IndirectUnaryPredicate<UnaryPredicate, iterator_t<Range>>)>
-safe_iterator_t<Range>
-find_if_not(Range&& range, UnaryPredicate pred)
-{
-    return std::find_if_not(detail::adl_begin(range), detail::adl_end(range),
-                            std::move(pred));
-}
-
-template <typename Iter1, typename Iter2, typename BinaryPredicate = std::equal_to<>,
-        REQUIRES(ForwardIterator<Iter1> &&
-                 ForwardIterator<Iter2> &&
-                 IndirectRelation<BinaryPredicate, Iter1, Iter2>)>
-Iter1 find_end(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, BinaryPredicate pred = {})
-{
-    return std::find_end(std::move(first1), std::move(last1),
-                         std::move(first2), std::move(last2),
-                         std::move(pred));
-}
-
-template <typename Range1, typename Range2, typename BinaryPredicate = std::equal_to<>,
-        REQUIRES(ForwardRange<Range1> &&
-                 ForwardRange<Range2> &&
-                 IndirectRelation<BinaryPredicate, iterator_t<Range1>, iterator_t<Range2>>)>
-safe_iterator_t<Range1>
-find_end(Range1&& range1, Range2&& range2, BinaryPredicate pred = {})
-{
-    return std::find_end(detail::adl_begin(range1), detail::adl_end(range1),
-                         detail::adl_begin(range2), detail::adl_end(range2),
-                         std::move(pred));
-}
-
-template <typename Iter1, typename Iter2, typename Pred = std::equal_to<>,
-        REQUIRES(InputIterator<Iter1> &&
-                 ForwardIterator<Iter2> &&
-                 IndirectRelation<Pred, Iter1, Iter2>)>
-Iter1 find_first_of(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, Pred pred = {})
-{
-    return std::find_first_of(std::move(first1), std::move(last1),
-                              std::move(first2), std::move(last2),
-                              std::move(pred));
-}
-
-template <typename Range1, typename Range2, typename Pred = std::equal_to<>,
-        REQUIRES(InputRange<Range1> &&
-                         InputRange<Range2> &&
-                 IndirectRelation<Pred, iterator_t<Range1>, iterator_t<Range2>>)>
-safe_iterator_t<Range1>
-find_first_of(Range1&& range1, Range2&& range2, Pred pred = {})
-{
-    return std::find_first_of(detail::adl_begin(range1), detail::adl_end(range1),
-                              detail::adl_begin(range2), detail::adl_end(range2),
-                              std::move(pred));
-}
-
-template <typename Iter, typename Pred = std::equal_to<>,
-        REQUIRES(ForwardIterator<Iter> &&
-                 IndirectRelation<Pred, Iter, Iter>)>
-Iter adjacent_find(Iter first, Iter last, Pred pred = {})
-{
-    return std::adjacent_find(std::move(first), std::move(last), std::forward<Pred>(pred));
-}
-
-template <typename Range, typename Pred = std::equal_to<>,
-        REQUIRES(ForwardRange<Range> &&
-                 IndirectRelation<Pred, iterator_t<Range>, iterator_t<Range>>)>
-safe_iterator_t<Range>
-adjacent_find(Range&& range, Pred pred = {})
-{
-    return std::adjacent_find(detail::adl_begin(range), detail::adl_end(range),
-                              std::move(pred));
-};
+// 11.3.13 Search
 
 template <typename Iter1, typename Iter2, typename Pred = std::equal_to<>,
         REQUIRES(ForwardIterator<Iter1> &&
@@ -1282,16 +1342,16 @@ search(Range1&& range1, Range2&& range2, Pred pred = {})
 }
 
 template <typename Iter, typename T, typename Pred = std::equal_to<>,
-        REQUIRES(ForwardIterator<Iter> &&
-                 IndirectlyComparable<Iter, const T*, Pred>)>
+          REQUIRES(ForwardIterator<Iter> &&
+                   IndirectlyComparable<Iter, const T*, Pred>)>
 Iter search_n(Iter first, Iter last, difference_type_t<Iter> count, const T& value, Pred pred = {})
 {
     return std::search_n(std::move(first), std::move(last), count, value, std::move(pred));
 }
 
 template <typename Range, typename T, typename Pred = std::equal_to<>,
-        REQUIRES(ForwardRange<Range> &&
-                 IndirectlyComparable<iterator_t<Range>, const T*, Pred>)>
+          REQUIRES(ForwardRange<Range> &&
+                   IndirectlyComparable<iterator_t<Range>, const T*, Pred>)>
 safe_iterator_t<Range>
 search_n(Range&& range, difference_type_t<iterator_t<Range>> count, const T& value, Pred pred = {})
 {
@@ -1299,13 +1359,14 @@ search_n(Range&& range, difference_type_t<iterator_t<Range>> count, const T& val
 }
 
 
-/*
- * Modifying sequence algorithms
- */
+// 11.4 Modifying sequence operations
+
+// 11.4.1 Copy
 
 template <typename Iter1, typename Iter2,
           REQUIRES(InputIterator<Iter1> &&
-                   OutputIterator<Iter2, value_type_t<Iter1>>)>
+                   WeaklyIncrementable<Iter2> &&
+                   IndirectlyCopyable<Iter1, Iter2>)>
 Iter2 copy(Iter1 first, Iter1 last, Iter2 ofirst)
 {
     return std::copy(std::move(first), std::move(last), std::move(ofirst));
@@ -1313,16 +1374,27 @@ Iter2 copy(Iter1 first, Iter1 last, Iter2 ofirst)
 
 template <typename Range1, typename Iter2,
           REQUIRES(InputRange<Range1> &&
-                   OutputIterator<Iter2, range_value_type_t<Range1>>)>
+                   WeaklyIncrementable<Iter2> &&
+                   IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
 Iter2 copy(Range1&& range, Iter2 ofirst)
 {
     return std::copy(detail::adl_begin(range), detail::adl_end(range), std::move(ofirst));
 }
 
+template <typename Iter1, typename Iter2,
+        REQUIRES(InputIterator<Iter1> &&
+                 WeaklyIncrementable<Iter2> &&
+                 IndirectlyCopyable<Iter1, Iter2>)>
+Iter2 copy_n(Iter1 first, difference_type_t<Iter1> count, Iter2 ofirst)
+{
+    return std::copy_n(std::move(first), count, std::move(ofirst));
+}
+
 template <typename Iter1, typename Iter2, typename Pred,
           REQUIRES(InputIterator<Iter1> &&
-                   OutputIterator<Iter2, value_type_t<Iter1>> &&
-                   IndirectUnaryPredicate<Pred, Iter1>)>
+                   WeaklyIncrementable<Iter2> &&
+                   IndirectUnaryPredicate<Pred, Iter1> &&
+                   IndirectlyCopyable<Iter1, Iter2>)>
 Iter2 copy_if(Iter1 first, Iter1 last, Iter2 ofirst, Pred pred)
 {
     return std::copy_if(std::move(first), std::move(last), std::move(ofirst), std::move(pred));
@@ -1330,21 +1402,13 @@ Iter2 copy_if(Iter1 first, Iter1 last, Iter2 ofirst, Pred pred)
 
 template <typename Range1, typename Iter2, typename Pred,
           REQUIRES(InputRange<Range1> &&
-                   OutputIterator<Iter2, range_value_type_t<Range1>> &&
-                   IndirectUnaryPredicate<Pred, iterator_t<Range1>>)>
+                   WeaklyIncrementable<Iter2> &&
+                   IndirectUnaryPredicate<Pred, iterator_t<Range1>> &&
+                   IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
 Iter2 copy_if(Range1&& range, Iter2 ofirst, Pred&& pred)
 {
     return std::copy_if(detail::adl_begin(range), detail::adl_end(range), std::move(ofirst),
                         std::move(pred));
-}
-
-template <typename Iter1, typename Iter2,
-          REQUIRES(InputIterator<Iter1> &&
-                   WeaklyIncrementable<Iter2> &&
-                   IndirectlyCopyable<Iter1, Iter2>)>
-Iter2 copy_n(Iter1 first, difference_type_t<Iter1> count, Iter2 ofirst)
-{
-    return std::copy_n(std::move(first), count, std::move(ofirst));
 }
 
 template <typename Iter1, typename Iter2,
@@ -1364,6 +1428,8 @@ Iter2 copy_backward(Range1&& range, Iter2 olast)
 {
     return std::copy_backward(detail::adl_begin(range), detail::adl_end(range), std::move(olast));
 }
+
+// 11.4.2 Move
 
 template <typename Iter1, typename Iter2,
           REQUIRES(InputIterator<Iter1> &&
@@ -1401,46 +1467,60 @@ Iter2 move_backward(Range1&& range, Iter2 olast)
     return std::move_backward(detail::adl_begin(range), detail::adl_end(range), std::move(olast));
 }
 
-// N.B. TS says Iter only needs to be OutputIterator, but
-// cppreference says std::fill() requires ForwardIterator
-template <typename Iter, typename T,
-          REQUIRES(ForwardIterator<Iter> &&
-                   Writable<Iter, const T&>)>
-void fill(Iter first, Iter last, const T& value)
+// 11.4.3 Swap
+
+template <typename Iter1, typename Iter2,
+        REQUIRES(ForwardIterator<Iter1> &&
+                 ForwardIterator<Iter2> &&
+                 IndirectlySwappable<Iter1, Iter2>)>
+NANORANGE_DEPRECATED
+Iter2 swap_ranges(Iter1 first1, Iter1 last1, Iter2 first2)
 {
-    std::fill(std::move(first), std::move(last), value);
+    return std::swap_ranges(std::move(first1), std::move(last1), std::move(first2));
 }
 
-template <typename Range, typename T,
-          REQUIRES(ForwardRange<Range> &&
-                   Writable<iterator_t<Range>, const T&>)>
-void fill(Range&& range, const T& value)
+template <typename Iter1, typename Iter2,
+        REQUIRES(ForwardIterator<Iter1> &&
+                 ForwardIterator<Iter2> &&
+                 IndirectlySwappable<Iter1, Iter2>)>
+std::pair<Iter1, Iter2>
+swap_ranges(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2)
 {
-    std::fill(detail::adl_begin(range), detail::adl_end(range), value);
+    while (first1 != last1 && first2 != last2) {
+        std::iter_swap(first1, first2);
+        ++first1; ++first2;
+    }
+    return std::make_pair(std::move(first1), std::move(first2));
 }
 
-template <typename Iter, typename T,
-          REQUIRES(OutputIterator<Iter, const T&>)>
-Iter fill_n(Iter first, difference_type_t<Iter> count, const T& value)
+template <typename Range1, typename Range2,
+        REQUIRES(ForwardRange<Range1> &&
+                 ForwardRange<Range2> &&
+                 IndirectlySwappable<iterator_t<Range1>, iterator_t<Range2>>)>
+std::pair<safe_iterator_t<Range1>, safe_iterator_t<Range2>>
+swap_ranges(Range1&& range1, Range2&& range2)
 {
-    return std::fill_n(std::move(first), count, value);
+    return nanorange::swap_ranges(detail::adl_begin(range1), detail::adl_end(range1),
+                                  detail::adl_begin(range2), detail::adl_end(range2));
 }
+
+// 11.4.4 Transform
 
 template <typename Iter1, typename Iter2, typename UnaryOp,
-          REQUIRES(InputIterator<Iter1> &&
-                   WeaklyIncrementable<Iter2> &&
-                   CopyConstructible<UnaryOp> &&
-                   Writable<Iter2, indirect_result_of_t<UnaryOp&(Iter1)>>)>
+        REQUIRES(InputIterator<Iter1> &&
+                 WeaklyIncrementable<Iter2> &&
+                 CopyConstructible<UnaryOp> &&
+                 Writable<Iter2, indirect_result_of_t<UnaryOp&(Iter1)>>)>
 Iter2 transform(Iter1 first, Iter1 last, Iter2 ofirst, UnaryOp op)
 {
     return std::transform(std::move(first), std::move(last), std::move(ofirst), std::move(op));
 }
 
 template <typename Range1, typename Iter2, typename UnaryOp,
-          REQUIRES(InputRange<Range1> &&
-                   WeaklyIncrementable<Iter2> &&
-                   CopyConstructible<UnaryOp> &&
-                   Writable<Iter2, indirect_result_of_t<UnaryOp&(iterator_t<Range1>)>>)>
+        REQUIRES(InputRange<Range1> &&
+                 WeaklyIncrementable<Iter2> &&
+                 CopyConstructible<UnaryOp> &&
+                 Writable<Iter2, indirect_result_of_t<UnaryOp&(iterator_t<Range1>)>>)>
 Iter2 transform(Range1&& range, Iter2 ofirst, UnaryOp op)
 {
     return std::transform(detail::adl_begin(range), detail::adl_end(range),
@@ -1448,11 +1528,11 @@ Iter2 transform(Range1&& range, Iter2 ofirst, UnaryOp op)
 }
 
 template <typename Iter1, typename Iter2, typename Iter3, typename BinOp,
-          REQUIRES(InputIterator<Iter1> &&
-                   InputIterator<Iter2> &&
-                   WeaklyIncrementable<Iter3> &&
-                   CopyConstructible<BinOp> &&
-                   Writable<Iter3, indirect_result_of_t<BinOp&(Iter1, Iter2)>>)>
+        REQUIRES(InputIterator<Iter1> &&
+                 InputIterator<Iter2> &&
+                 WeaklyIncrementable<Iter3> &&
+                 CopyConstructible<BinOp> &&
+                 Writable<Iter3, indirect_result_of_t<BinOp&(Iter1, Iter2)>>)>
 NANORANGE_DEPRECATED
 Iter3 transform(Iter1 first1, Iter1 last1, Iter2 first2, Iter3 ofirst, BinOp op)
 {
@@ -1460,7 +1540,7 @@ Iter3 transform(Iter1 first1, Iter1 last1, Iter2 first2, Iter3 ofirst, BinOp op)
                           std::move(first2), std::move(ofirst), std::move(op));
 }
 
-// Just for the hell of it, let's do a 6-parameter overload too
+// Hmmm, why doesn't the standard library provide a 6-parameter overload?
 template <typename Iter1, typename Iter2, typename Iter3, typename BinOp,
         REQUIRES(InputIterator<Iter1> &&
                  InputIterator<Iter2> &&
@@ -1485,13 +1565,121 @@ template <typename Range1, typename Range2, typename Iter3, typename BinOp,
 Iter3 transform(Range1&& range1, Range2&& range2, Iter3 ofirst, BinOp op)
 {
     return nanorange::transform(detail::adl_begin(range1), detail::adl_end(range1),
-                                  detail::adl_begin(range2), detail::adl_end(range2),
-                                  std::move(ofirst), std::move(op));
+                                detail::adl_begin(range2), detail::adl_end(range2),
+                                std::move(ofirst), std::move(op));
 }
 
-// N.B Ranges TS only requires Iterator, std::generate() needs ForwardIterator
+// 11.4.5 Replace
+
+template <typename Iter, typename T,
+        REQUIRES(InputIterator<Iter> &&
+                 Writable<Iter, const T&> &&
+                 IndirectRelation<std::equal_to<>, Iter, const T*>)>
+void replace(Iter first, Iter last, const T& old_value, const T& new_value)
+{
+    std::replace(std::move(first), std::move(last), old_value, new_value);
+}
+
+template <typename Range, typename T,
+        REQUIRES(InputRange<Range> &&
+                 Writable<iterator_t<Range>, const T&> &&
+                 IndirectRelation<std::equal_to<>, iterator_t<Range>, const T*>)>
+void replace(Range&& range, const T& old_value, const T& new_value)
+{
+    std::replace(detail::adl_begin(range), detail::adl_end(range),
+                 old_value, new_value);
+}
+
+template <typename Iter, typename Pred, typename T,
+        REQUIRES(InputIterator<Iter> &&
+                 Writable<Iter, const T&> &&
+                 IndirectUnaryPredicate<Pred, Iter>)>
+void replace_if(Iter first, Iter last, Pred pred, const T& new_value)
+{
+    std::replace_if(std::move(first), std::move(last), std::move(pred), new_value);
+}
+
+template <typename Range, typename Pred, typename T,
+        REQUIRES(ForwardRange<Range> &&
+                 Writable<iterator_t<Range>, const T&> &&
+                 IndirectUnaryPredicate<Pred, iterator_t<Range>>)>
+void replace_if(Range&& range, Pred pred, const T& new_value)
+{
+    std::replace_if(detail::adl_begin(range), detail::adl_end(range),
+                    std::move(pred), new_value);
+}
+
+template <typename Iter1, typename Iter2, typename T,
+        REQUIRES(InputIterator<Iter1> &&
+                 OutputIterator<Iter2, const T&> &&
+                 IndirectlyCopyable<Iter1, Iter2> &&
+                 IndirectRelation<std::equal_to<>, Iter1, const T*>)>
+Iter2 replace_copy(Iter1 first, Iter1 last, Iter2 ofirst, const T& old_value, const T& new_value)
+{
+    return std::replace_copy(std::move(first), std::move(last), std::move(ofirst),
+                             old_value, new_value);
+}
+
+template <typename Range1, typename Iter2, typename T,
+        REQUIRES(InputRange<Range1> &&
+                 OutputIterator<Iter2, const T&> &&
+                 IndirectlyCopyable<iterator_t<Range1>, Iter2> &&
+                 IndirectRelation<std::equal_to<>, iterator_t<Range1>, const T*>)>
+Iter2 replace_copy(Range1&& range, Iter2 ofirst, const T& old_value, const T& new_value)
+{
+    return std::replace_copy(detail::adl_begin(range), detail::adl_end(range),
+                             std::move(ofirst), old_value, new_value);
+}
+
+template <typename Iter1, typename Iter2, typename Pred, typename T,
+        REQUIRES(InputIterator<Iter1> &&
+                 OutputIterator<Iter2, const T&> &&
+                 IndirectUnaryPredicate<Pred, Iter1> &&
+                 IndirectlyCopyable<Iter1, Iter2>)>
+Iter2 replace_copy_if(Iter1 first, Iter1 last, Iter2 ofirst, Pred pred, const T& new_value)
+{
+    return std::replace_copy_if(std::move(first), std::move(last), std::move(ofirst),
+                                std::move(pred), new_value);
+}
+
+template <typename Range1, typename Iter2, typename Pred, typename T,
+        REQUIRES(InputRange<Range1> &&
+                 OutputIterator<Iter2, const T&> &&
+                 IndirectUnaryPredicate<Pred, iterator_t<Range1>> &&
+                 IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
+Iter2 replace_copy_if(Range1&& range, Iter2 ofirst, Pred pred, const T& new_value)
+{
+    return std::replace_copy_if(detail::adl_begin(range), detail::adl_end(range),
+                                std::move(ofirst), std::move(pred), new_value);
+}
+
+// 11.4.6 Fill
+
+template <typename Iter, typename T,
+          REQUIRES(OutputIterator<Iter, const T&>)>
+void fill(Iter first, Iter last, const T& value)
+{
+    std::fill(std::move(first), std::move(last), value);
+}
+
+template <typename Range, typename T,
+          REQUIRES(OutputRange<Range, const T&>)>
+void fill(Range&& range, const T& value)
+{
+    std::fill(detail::adl_begin(range), detail::adl_end(range), value);
+}
+
+template <typename Iter, typename T,
+          REQUIRES(OutputIterator<Iter, const T&>)>
+Iter fill_n(Iter first, difference_type_t<Iter> count, const T& value)
+{
+    return std::fill_n(std::move(first), count, value);
+}
+
+// 11.4.7 Generate
+
 template <typename Iter, typename Generator,
-          REQUIRES(ForwardIterator<Iter> &&
+          REQUIRES(Iterator<Iter> &&
                    CopyConstructible<Generator> &&
                    Callable<Generator&> &&
                    Writable<Iter, std::result_of_t<Generator&()>>)>
@@ -1501,17 +1689,16 @@ void generate(Iter first, Iter last, Generator gen)
 }
 
 template <typename Range, typename Generator,
-          REQUIRES(ForwardRange<Range> &&
+          REQUIRES(OutputRange<Range, std::result_of_t<Generator&()>> &&
                    CopyConstructible<Generator> &&
-                   Callable<Generator&> &&
-                   Writable<iterator_t<Range>, std::result_of_t<Generator&()>>)>
+                   Callable<Generator&>)>
 void generate(Range&& range, Generator gen)
 {
     std::generate(detail::adl_begin(range), detail::adl_end(range), std::move(gen));
 }
 
 template <typename Iter, typename Generator,
-          REQUIRES(ForwardIterator<Iter> &&
+          REQUIRES(Iterator<Iter> &&
                    CopyConstructible<Generator> &&
                    Callable<Generator&> &&
                    Writable<Iter, std::result_of_t<Generator&()>>)>
@@ -1519,6 +1706,8 @@ Iter generate_n(Iter first, difference_type_t<Iter> count, Generator generator)
 {
     return std::generate_n(std::move(first), count, std::move(generator));
 }
+
+// 11.4.8 Remove
 
 template <typename Iter, typename T,
           REQUIRES(ForwardIterator<Iter> &&
@@ -1579,7 +1768,7 @@ Iter2 remove_copy(Range1&& range, Iter2 ofirst, const T& value)
 }
 
 template <typename Iter1, typename Iter2, typename Pred,
-          REQUIRES(ForwardIterator<Iter1> &&
+          REQUIRES(InputIterator<Iter1> &&
                    WeaklyIncrementable<Iter2> &&
                    IndirectUnaryPredicate<Pred, Iter1> &&
                    IndirectlyCopyable<Iter1, Iter2>)>
@@ -1600,123 +1789,65 @@ Iter2 remove_copy_if(Range1&& range, Iter2 ofirst, Pred pred)
                                std::move(ofirst), std::move(pred));
 }
 
-template <typename Iter, typename T,
-          REQUIRES(ForwardIterator<Iter> &&
-                   Writable<Iter, const T&> &&
-                   IndirectRelation<std::equal_to<>, Iter, const T*>)>
-void replace(Iter first, Iter last, const T& old_value, const T& new_value)
+// 11.4.9 Unique
+
+template <typename Iter, typename Pred = std::equal_to<>,
+        REQUIRES(ForwardIterator<Iter> &&
+                 IndirectRelation<Pred, Iter> &&
+                 Permutable<Iter>)>
+Iter unique(Iter first, Iter last, Pred pred = {})
 {
-    std::replace(std::move(first), std::move(last), old_value, new_value);
+    return std::unique(std::move(first), std::move(last), std::move(pred));
 }
 
-template <typename Range, typename T,
-          REQUIRES(ForwardRange<Range> &&
-                   Writable<iterator_t<Range>, const T&> &&
-                           IndirectRelation<std::equal_to<>, iterator_t<Range>, const T*>)>
-void replace(Range&& range, const T& old_value, const T& new_value)
+template <typename Range, typename Pred = std::equal_to<>,
+        REQUIRES(ForwardRange<Range> &&
+                 IndirectRelation<Pred, iterator_t<Range>> &&
+                 Permutable<iterator_t<Range>>)>
+safe_iterator_t<Range> unique(Range&& range, Pred pred = {})
 {
-    std::replace(detail::adl_begin(range), detail::adl_end(range),
-                 old_value, new_value);
+    return std::unique(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
 }
 
-template <typename Iter, typename Pred, typename T,
-          REQUIRES(ForwardIterator<Iter> &&
-                   Writable<Iter, const T&> &&
-                   IndirectUnaryPredicate<Pred, Iter>)>
-void replace_if(Iter first, Iter last, Pred pred, const T& new_value)
+template <typename Iter1, typename Iter2, typename Pred = std::equal_to<>,
+        REQUIRES(InputIterator<Iter1> &&
+                 WeaklyIncrementable<Iter2> &&
+                 IndirectRelation<Pred, Iter1> &&
+                 IndirectlyCopyable<Iter1, Iter2> &&
+                 (ForwardIterator<Iter1> ||
+                     (InputIterator<Iter2> && Same<value_type_t<Iter1>, detail::detected_t<value_type_t, Iter2>>) ||
+                      IndirectlyCopyableStorable<Iter1, Iter2>))>
+Iter2 unique_copy(Iter1 first, Iter1 last, Iter2 ofirst, Pred pred = {})
 {
-    std::replace_if(std::move(first), std::move(last), std::move(pred), new_value);
+    return std::unique_copy(std::move(first), std::move(last), std::move(ofirst), std::move(pred));
 }
 
-template <typename Range, typename Pred, typename T,
-          REQUIRES(ForwardRange<Range> &&
-                   Writable<iterator_t<Range>, const T&> &&
-                   IndirectUnaryPredicate<Pred, iterator_t<Range>>)>
-void replace_if(Range&& range, Pred pred, const T& new_value)
+template <typename Range1, typename Iter2, typename Pred = std::equal_to<>,
+        REQUIRES(InputRange<Range1> &&
+                 WeaklyIncrementable<Iter2> &&
+                 IndirectRelation<Pred, iterator_t<Range1>> &&
+                 IndirectlyCopyable<iterator_t<Range1>, Iter2> &&
+                 (ForwardRange<Range1> ||
+                      (InputIterator<Iter2> && Same<range_value_type_t<Range1>, detail::detected_t<value_type_t, Iter2>>) ||
+                       IndirectlyCopyableStorable<iterator_t<Range1>, Iter2>))>
+Iter2 unique_copy(Range1&& range, Iter2 ofirst, Pred pred = {})
 {
-    std::replace_if(detail::adl_begin(range), detail::adl_end(range),
-                    std::move(pred), new_value);
+    return std::unique_copy(detail::adl_begin(range), detail::adl_end(range), std::move(ofirst), std::move(pred));
 }
 
-template <typename Iter1, typename Iter2, typename T,
-          REQUIRES(InputIterator<Iter1> &&
-                   OutputIterator<Iter2, const T&>)>
-Iter2 replace_copy(Iter1 first, Iter1 last, Iter2 ofirst, const T& old_value, const T& new_value)
-{
-    return std::replace_copy(std::move(first), std::move(last), std::move(ofirst),
-                             old_value, new_value);
-}
-
-template <typename Range1, typename Iter2, typename T,
-          REQUIRES(InputRange<Range1> &&
-                   OutputIterator<Iter2, const T&>)>
-Iter2 replace_copy(Range1&& range, Iter2 ofirst, const T& old_value, const T& new_value)
-{
-    return std::replace_copy(detail::adl_begin(range), detail::adl_end(range),
-                             std::move(ofirst), old_value, new_value);
-}
-
-template <typename Iter1, typename Iter2, typename Pred, typename T,
-          REQUIRES(InputIterator<Iter1> &&
-                   OutputIterator<Iter2, const T&> &&
-                   IndirectUnaryPredicate<Pred, Iter1>)>
-Iter2 replace_copy_if(Iter1 first, Iter1 last, Iter2 ofirst, Pred pred, const T& new_value)
-{
-    return std::replace_copy_if(std::move(first), std::move(last), std::move(ofirst),
-                                std::move(pred), new_value);
-}
-
-template <typename Range1, typename Iter2, typename Pred, typename T,
-          REQUIRES(InputRange<Range1> &&
-                   OutputIterator<Iter2, const T&> &&
-                   IndirectUnaryPredicate<Pred, iterator_t<Range1>>)>
-Iter2 replace_copy_if(Range1&& range, Iter2 ofirst, Pred pred, const T& new_value)
-{
-    return std::replace_copy_if(detail::adl_begin(range), detail::adl_end(range),
-                                std::move(ofirst), std::move(pred), new_value);
-}
-
-template <typename Iter1, typename Iter2,
-          REQUIRES(ForwardIterator<Iter1> &&
-                   ForwardIterator<Iter2>)>
-NANORANGE_DEPRECATED
-Iter2 swap_ranges(Iter1 first1, Iter1 last1, Iter2 first2)
-{
-    return std::swap_ranges(std::move(first1), std::move(last1), std::move(first2));
-}
-
-template <typename Iter1, typename Iter2,
-        REQUIRES(ForwardIterator<Iter1> &&
-                 ForwardIterator<Iter2>)>
-std::pair<Iter1, Iter2>
-swap_ranges(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2)
-{
-    while (first1 != last1 && first2 != last2) {
-        std::iter_swap(first1, first2);
-        ++first1; ++first2;
-    }
-    return std::make_pair(std::move(first1), std::move(first2));
-}
-
-template <typename Range1, typename Range2,
-          REQUIRES(ForwardRange<Range1> &&
-                   ForwardRange<Range2>)>
-std::pair<safe_iterator_t<Range1>, safe_iterator_t<Range2>>
-swap_ranges(Range1&& range1, Range2&& range2)
-{
-    return nanorange::swap_ranges(detail::adl_begin(range1), detail::adl_end(range1),
-                                  detail::adl_begin(range2), detail::adl_end(range2));
-}
+// 11.4.10 Reverse
 
 template <typename Iter,
-          REQUIRES(BidirectionalIterator<Iter>)>
+          REQUIRES(BidirectionalIterator<Iter> &&
+                   Permutable<Iter>)>
 void reverse(Iter first, Iter last)
 {
     std::reverse(std::move(first), std::move(last));
 }
 
 template <typename Range,
-          REQUIRES(BidirectionalRange<Range>)>
+          REQUIRES(BidirectionalRange<Range> &&
+                   Permutable<iterator_t<Range>>)>
 void reverse(Range&& range)
 {
     std::reverse(detail::adl_begin(range), detail::adl_end(range));
@@ -1724,7 +1855,8 @@ void reverse(Range&& range)
 
 template <typename Iter1, typename Iter2,
           REQUIRES(BidirectionalIterator<Iter1> &&
-                   OutputIterator<Iter2, value_type_t<Iter1>>)>
+                   WeaklyIncrementable<Iter2> &&
+                   IndirectlyCopyable<Iter1, Iter2>)>
 Iter2 reverse_copy(Iter1 first, Iter1 last, Iter2 ofirst)
 {
     return std::reverse_copy(std::move(first), std::move(last), std::move(ofirst));
@@ -1732,30 +1864,37 @@ Iter2 reverse_copy(Iter1 first, Iter1 last, Iter2 ofirst)
 
 template <typename Range1, typename Iter2,
           REQUIRES(BidirectionalRange<Range1> &&
-                   OutputIterator<Iter2, range_value_type_t<Range1>>)>
+                   WeaklyIncrementable<Iter2> &&
+                   IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
 Iter2 reverse_copy(Range1&& range, Iter2 ofirst)
 {
     return std::reverse_copy(detail::adl_begin(range), detail::adl_end(range),
                              std::move(ofirst));
 }
 
+// 11.4.11 Rotate
+
 template <typename Iter,
-          REQUIRES(ForwardIterator<Iter>)>
-void rotate(Iter first, Iter middle, Iter last)
+          REQUIRES(ForwardIterator<Iter> &&
+                   Permutable<Iter>)>
+Iter rotate(Iter first, Iter middle, Iter last)
 {
-    std::rotate(std::move(first), std::move(middle), std::move(last));
+    return std::rotate(std::move(first), std::move(middle), std::move(last));
 }
 
 template <typename Range,
-          REQUIRES(ForwardRange<Range>)>
-void rotate(Range&& range, iterator_t<Range> middle)
+          REQUIRES(ForwardRange<Range> &&
+                   Permutable<iterator_t<Range>>)>
+safe_iterator_t<Range>
+rotate(Range&& range, iterator_t<Range> middle)
 {
-    std::rotate(detail::adl_begin(range), std::move(middle), detail::adl_end(range));
+    return std::rotate(detail::adl_begin(range), std::move(middle), detail::adl_end(range));
 }
 
 template <typename Iter1, typename Iter2,
           REQUIRES(ForwardIterator<Iter1> &&
-                   OutputIterator<Iter2, value_type_t<Iter1>>)>
+                   WeaklyIncrementable<Iter2> &&
+                   IndirectlyCopyable<Iter1, Iter2>)>
 Iter2 rotate_copy(Iter1 first, Iter1 middle, Iter1 last, Iter2 ofirst)
 {
     return std::rotate_copy(std::move(first), std::move(middle),
@@ -1764,64 +1903,37 @@ Iter2 rotate_copy(Iter1 first, Iter1 middle, Iter1 last, Iter2 ofirst)
 
 template <typename Range1, typename Iter2,
         REQUIRES(ForwardRange<Range1> &&
-                 OutputIterator<Iter2, range_value_type_t<Range1>>)>
+                 WeaklyIncrementable<Iter2> &&
+                 IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
 Iter2 rotate_copy(Range1&& range, iterator_t<Range1> middle, Iter2 ofirst)
 {
     return std::rotate_copy(detail::adl_begin(range), std::move(middle),
                             detail::adl_end(range), std::move(ofirst));
 }
 
-template <typename Iter, typename URBG,
-          REQUIRES(RandomAccessIterator<Iter>)>
-void shuffle(Iter first, Iter last, URBG&& generator)
+// 11.4.12 Shuffle
+
+template <typename Iter, typename URNG,
+          REQUIRES(RandomAccessIterator<Iter> &&
+                   Permutable<Iter> &&
+                   // UniformRandomNumberGenerator<std::remove_reference_t<URNG>> &&
+                   ConvertibleTo<std::result_of_t<URNG&()>, difference_type_t<Iter>>)>
+void shuffle(Iter first, Iter last, URNG&& generator)
 {
-    std::shuffle(std::move(first), std::move(last), std::forward<URBG>(generator));
+    std::shuffle(std::move(first), std::move(last), std::forward<URNG>(generator));
 }
 
-template <typename Range, typename URBG,
-          REQUIRES(RandomAccessRange<Range>)>
-void shuffle(Range&& range, URBG&& generator)
+template <typename Range, typename URNG,
+        REQUIRES(RandomAccessRange<Range> &&
+                 Permutable<iterator_t<Range>> &&
+                 // UniformRandomNumberGenerator<std::remove_reference_t<URNG>> &&
+                 ConvertibleTo<std::result_of_t<URNG&()>, range_difference_type_t<Range>>)>
+void shuffle(Range&& range, URNG&& generator)
 {
-    std::shuffle(detail::adl_begin(range), detail::adl_end(range), std::forward<URBG>(generator));
+    std::shuffle(detail::adl_begin(range), detail::adl_end(range), std::forward<URNG>(generator));
 }
 
-template <typename Iter, typename Pred = std::equal_to<>,
-          REQUIRES(ForwardIterator<Iter> &&
-                   IndirectRelation<Pred, Iter, Iter>)>
-Iter unique(Iter first, Iter last, Pred pred = {})
-{
-    return std::unique(std::move(first), std::move(last), std::move(pred));
-}
-
-template <typename Range, typename Pred = std::equal_to<>,
-          REQUIRES(ForwardRange<Range> &&
-                   IndirectRelation<Pred, iterator_t<Range>, iterator_t<Range>>)>
-safe_iterator_t<Range> unique(Range&& range, Pred pred = {})
-{
-    return std::unique(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
-}
-
-template <typename Iter1, typename Iter2, typename Pred = std::equal_to<>,
-        REQUIRES(InputIterator<Iter1> &&
-                 OutputIterator<Iter2, value_type_t<Iter1>> &&
-                 IndirectRelation<Pred, Iter1, Iter1>)>
-Iter2 unique_copy(Iter1 first, Iter1 last, Iter2 ofirst, Pred pred = {})
-{
-    return std::unique_copy(std::move(first), std::move(last), std::move(ofirst), std::move(pred));
-}
-
-template <typename Range1, typename Iter2, typename Pred = std::equal_to<>,
-        REQUIRES(InputRange<Range1> &&
-                 OutputIterator<Iter2, range_value_type_t<Range1>> &&
-                 IndirectRelation<Pred, iterator_t<Range1>, iterator_t<Range1>>)>
-Iter2 unique_copy(Range1&& range, Iter2 ofirst, Pred pred = {})
-{
-    return std::unique_copy(detail::adl_begin(range), detail::adl_end(range), std::move(ofirst), std::move(pred));
-}
-
-/*
- * Partitioning Operations
- */
+// 11.4.13 Partitions
 
 template <typename Iter, typename Pred,
           REQUIRES(InputIterator<Iter> &&
@@ -1841,7 +1953,8 @@ bool is_partitioned(Range&& range, Pred pred)
 
 template <typename Iter, typename Pred,
           REQUIRES(ForwardIterator<Iter> &&
-                   IndirectUnaryPredicate<Pred, Iter>)>
+                   IndirectUnaryPredicate<Pred, Iter> &&
+                   Permutable<Iter>)>
 Iter partition(Iter first, Iter last, Pred pred)
 {
     return std::partition(std::move(first), std::move(last), std::move(pred));
@@ -1849,18 +1962,38 @@ Iter partition(Iter first, Iter last, Pred pred)
 
 template <typename Range, typename Pred,
           REQUIRES(ForwardRange<Range> &&
-                   IndirectUnaryPredicate<Pred, iterator_t<Range>>)>
+                   IndirectUnaryPredicate<Pred, iterator_t<Range>> &&
+                   Permutable<iterator_t<Range>>)>
 safe_iterator_t<Range> partition(Range&& range, Pred pred)
 {
     return std::partition(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
 }
 
+template <typename Iter, typename Pred,
+        REQUIRES(BidirectionalIterator<Iter> &&
+                 IndirectUnaryPredicate<Pred, Iter> &&
+                 Permutable<Iter>)>
+Iter stable_partition(Iter first, Iter last, Pred pred)
+{
+    return std::stable_partition(std::move(first), std::move(last), std::move(pred));
+}
+
+template <typename Range, typename Pred,
+        REQUIRES(BidirectionalRange<Range> &&
+                 IndirectUnaryPredicate<Pred, iterator_t<Range>> &&
+                 Permutable<iterator_t<Range>>)>
+safe_iterator_t<Range> stable_partition(Range&& range, Pred pred)
+{
+    return std::stable_partition(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
+}
 
 template <typename Iter1, typename Iter2, typename Iter3, typename Pred,
           REQUIRES(InputIterator<Iter1> &&
-                   OutputIterator<Iter2, value_type_t<Iter1>> &&
-                   OutputIterator<Iter3, value_type_t<Iter1>> &&
-                   IndirectUnaryPredicate<Pred, Iter1>)>
+                   WeaklyIncrementable<Iter2> &&
+                   WeaklyIncrementable<Iter3> &&
+                   IndirectUnaryPredicate<Pred, Iter1> &&
+                   IndirectlyCopyable<Iter1, Iter2> &&
+                   IndirectlyCopyable<Iter1, Iter3>)>
 std::pair<Iter2, Iter3>
 partition_copy(Iter1 first, Iter1 last, Iter2 otrue, Iter3 ofalse, Pred pred)
 {
@@ -1870,9 +2003,11 @@ partition_copy(Iter1 first, Iter1 last, Iter2 otrue, Iter3 ofalse, Pred pred)
 
 template <typename Range1, typename Iter2, typename Iter3, typename Pred,
         REQUIRES(InputRange<Range1> &&
-                         OutputIterator<Iter2, range_value_type_t<Range1>> &&
-                         OutputIterator<Iter3, range_value_type_t<Range1>> &&
-                         IndirectUnaryPredicate<Pred, iterator_t<Range1>>)>
+                 WeaklyIncrementable<Iter2> &&
+                 WeaklyIncrementable<Iter3> &&
+                 IndirectUnaryPredicate<Pred, iterator_t<Range1>> &&
+                 IndirectlyCopyable<iterator_t<Range1>, Iter2> &&
+                 IndirectlyCopyable<iterator_t<Range1>, Iter3>)>
 std::pair<Iter2, Iter3>
 partition_copy(Range1&& range, Iter2 otrue, Iter3 ofalse, Pred pred)
 {
@@ -1880,22 +2015,6 @@ partition_copy(Range1&& range, Iter2 otrue, Iter3 ofalse, Pred pred)
                                std::move(otrue), std::move(ofalse), std::move(pred));
 }
 
-
-template <typename Iter, typename Pred,
-          REQUIRES(BidirectionalIterator<Iter> &&
-                   IndirectUnaryPredicate<Pred, Iter>)>
-Iter stable_partition(Iter first, Iter last, Pred pred)
-{
-    return std::stable_partition(std::move(first), std::move(last), std::move(pred));
-}
-
-template <typename Range, typename Pred,
-        REQUIRES(BidirectionalRange<Range> &&
-                 IndirectUnaryPredicate<Pred, iterator_t<Range>>)>
-safe_iterator_t<Range> stable_partition(Range&& range, Pred pred)
-{
-    return std::stable_partition(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
-}
 
 template <typename Iter, typename Pred,
           REQUIRES(ForwardIterator<Iter> &&
@@ -1914,8 +2033,94 @@ safe_iterator_t<Range> partition_point(Range&& range, Pred pred)
 }
 
 /*
- * Sorting operations
+ * 11.5 Sorting and related operations
  */
+
+// 11.5.1 Sort
+
+// 11.5.1.1 sort
+
+template <typename Iter, typename Comp = std::less<>,
+        REQUIRES(RandomAccessIterator<Iter> &&
+                 Sortable<Iter, Comp>)>
+void sort(Iter first, Iter last, Comp comp = {})
+{
+    std::sort(std::move(first), std::move(last), std::move(comp));
+}
+
+template <typename Range, typename Comp = std::less<>,
+        REQUIRES(RandomAccessRange<Range> &&
+                 Sortable<iterator_t<Range>, Comp>)>
+void sort(Range&& range, Comp comp = {})
+{
+    std::sort(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+}
+
+// 11.5.1.2 stable_sort
+
+template <typename Iter, typename Comp = std::less<>,
+        REQUIRES(RandomAccessIterator<Iter> &&
+                 Sortable<Iter, Comp>)>
+void stable_sort(Iter first, Iter last, Comp comp = {})
+{
+    std::stable_sort(std::move(first), std::move(last), std::move(comp));
+}
+
+template <typename Range, typename Comp = std::less<>,
+        REQUIRES(RandomAccessRange<Range> &&
+                 Sortable<iterator_t<Range>, Comp>)>
+void stable_sort(Range&& range, Comp comp = {})
+{
+    std::stable_sort(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+}
+
+// 11.5.1.3 partial_sort
+
+template <typename Iter, typename Comp = std::less<>,
+        REQUIRES(RandomAccessIterator<Iter> &&
+                 Sortable<Iter, Comp>)>
+void partial_sort(Iter first, Iter middle, Iter last, Comp comp = {})
+{
+    std::partial_sort(std::move(first), std::move(middle), std::move(last), std::move(comp));
+}
+
+template <typename Range, typename Comp = std::less<>,
+        REQUIRES(RandomAccessRange<Range> &&
+                 Sortable<iterator_t<Range>, Comp>)>
+void partial_sort(Range&& range, iterator_t<Range> middle, Comp comp = {})
+{
+    std::partial_sort(detail::adl_begin(range), std::move(middle), detail::adl_end(range), std::move(comp));
+}
+
+// 11.5.1.4 partial_sort_copy
+
+template <typename Iter1, typename Iter2, typename Comp = std::less<>,
+        REQUIRES(InputIterator<Iter1> &&
+                 RandomAccessIterator<Iter2> &&
+                 IndirectlyCopyable<Iter1, Iter2> &&
+                 Sortable<Iter2, Comp> &&
+                 IndirectStrictWeakOrder<Comp, Iter1, Iter2>)>
+Iter2 partial_sort_copy(Iter1 first, Iter1 last, Iter2 rfirst, Iter2 rlast, Comp comp = {})
+{
+    return std::partial_sort_copy(std::move(first), std::move(last),
+                                  std::move(rfirst), std::move(rlast),
+                                  std::move(comp));
+}
+
+template <typename Range1, typename Range2, typename Comp = std::less<>,
+        REQUIRES(InputRange<Range1> &&
+                 RandomAccessRange<Range2> &&
+                 IndirectlyCopyable<iterator_t<Range1>, iterator_t<Range2>> &&
+                 Sortable<iterator_t<Range2>, Comp> &&
+                 IndirectStrictWeakOrder<Comp, iterator_t<Range1>, iterator_t<Range2>>)>
+safe_iterator_t<Range2> partial_sort_copy(Range1&& input, Range2&& result, Comp comp = {})
+{
+    return std::partial_sort_copy(detail::adl_begin(input), detail::adl_end(input),
+                                  detail::adl_begin(result), detail::adl_end(result),
+                                  std::move(comp));
+}
+
+// 11.5.1.5 is_sorted
 
 template <typename Iter, typename Comp = std::less<>,
         REQUIRES(ForwardIterator<Iter> &&
@@ -1949,77 +2154,7 @@ safe_iterator_t<Range> is_sorted_until(Range&& range, Comp comp = {})
     return std::is_sorted_until(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
 }
 
-template <typename Iter, typename Comp = std::less<>,
-        REQUIRES(RandomAccessIterator<Iter> &&
-                 Sortable<Iter, Comp>)>
-void sort(Iter first, Iter last, Comp comp = {})
-{
-    std::sort(std::move(first), std::move(last), std::move(comp));
-}
-
-template <typename Range, typename Comp = std::less<>,
-        REQUIRES(RandomAccessRange<Range> &&
-                 Sortable<iterator_t<Range>, Comp>)>
-void sort(Range&& range, Comp comp = {})
-{
-    std::sort(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
-}
-
-template <typename Iter, typename Comp = std::less<>,
-        REQUIRES(RandomAccessIterator<Iter> &&
-                 Sortable<Iter, Comp>)>
-void partial_sort(Iter first, Iter middle, Iter last, Comp comp = {})
-{
-    std::partial_sort(std::move(first), std::move(middle), std::move(last), std::move(comp));
-}
-
-template <typename Range, typename Comp = std::less<>,
-        REQUIRES(RandomAccessRange<Range> &&
-                 Sortable<iterator_t<Range>, Comp>)>
-void partial_sort(Range&& range, iterator_t<Range> middle, Comp comp = {})
-{
-    std::partial_sort(detail::adl_begin(range), std::move(middle), detail::adl_end(range), std::move(comp));
-}
-
-template <typename Iter1, typename Iter2, typename Comp = std::less<>,
-        REQUIRES(InputIterator<Iter1> &&
-                 RandomAccessIterator<Iter2> &&
-                 IndirectlyCopyable<Iter1, Iter2> &&
-                 Sortable<Iter2, Comp> &&
-                 IndirectStrictWeakOrder<Comp, Iter1, Iter2>)>
-Iter2 partial_sort_copy(Iter1 first, Iter1 last, Iter2 rfirst, Iter2 rlast, Comp comp = {})
-{
-    return std::partial_sort(std::move(first), std::move(last), std::move(rfirst), std::move(rlast), std::move(comp));
-}
-
-template <typename Range1, typename Range2, typename Comp = std::less<>,
-        REQUIRES(InputRange<Range1> &&
-                 RandomAccessRange<Range2> &&
-                 IndirectlyCopyable<iterator_t<Range1>, iterator_t<Range2>> &&
-                 Sortable<iterator_t<Range2>, Comp> &&
-                 IndirectStrictWeakOrder<Comp, iterator_t<Range1>, iterator_t<Range2>>)>
-safe_iterator_t<Range2> partial_sort_copy(Range1&& input, Range2&& result, Comp comp = {})
-{
-    return std::partial_sort_copy(detail::adl_begin(input), detail::adl_end(input),
-                                  detail::adl_begin(result), detail::adl_end(result),
-                                  std::move(comp));
-}
-
-template <typename Iter, typename Comp = std::less<>,
-        REQUIRES(RandomAccessIterator<Iter> &&
-                 Sortable<Iter, Comp>)>
-void stable_sort(Iter first, Iter last, Comp comp = {})
-{
-    std::stable_sort(std::move(first), std::move(last), std::move(comp));
-}
-
-template <typename Range, typename Comp = std::less<>,
-        REQUIRES(RandomAccessRange<Range> &&
-                 Sortable<iterator_t<Range>, Comp>)>
-void stable_sort(Range&& range, Comp comp = {})
-{
-    std::stable_sort(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
-}
+// 11.5.2 Nth element
 
 template <typename Iter, typename Comp = std::less<>,
         REQUIRES(RandomAccessIterator<Iter> &&
@@ -2037,9 +2172,9 @@ void nth_element(Range&& range, iterator_t<Range> nth, Comp comp = {})
     std::nth_element(detail::adl_begin(range), detail::adl_end(range), std::move(nth), std::move(comp));
 }
 
-/*
- * Binary search operations
- */
+// 11.5.3 Binary search operations
+
+// 11.5.3.1 lower_bound
 
 template <typename Iter, typename T, typename Comp = std::less<>,
         REQUIRES(ForwardIterator<Iter> &&
@@ -2050,17 +2185,19 @@ Iter lower_bound(Iter first, Iter last, const T& value, Comp comp = {})
 }
 
 template <typename Range, typename T, typename Comp = std::less<>,
-        REQUIRES(ForwardRange<Range> &&
-                 IndirectStrictWeakOrder<Comp, const T*, iterator_t<Range>>)>
+          REQUIRES(ForwardRange<Range> &&
+                   IndirectStrictWeakOrder<Comp, const T*, iterator_t<Range>>)>
 safe_iterator_t<Range>
 lower_bound(Range&& range, const T& value, Comp comp = {})
 {
     return std::lower_bound(detail::adl_begin(range), detail::adl_end(range), value, std::move(comp));
 }
 
+// 11.5.3.2 upper_bound
+
 template <typename Iter, typename T, typename Comp = std::less<>,
-        REQUIRES(ForwardIterator<Iter> &&
-                 IndirectStrictWeakOrder<Comp, const T*, Iter>)>
+          REQUIRES(ForwardIterator<Iter> &&
+                   IndirectStrictWeakOrder<Comp, const T*, Iter>)>
 Iter upper_bound(Iter first, Iter last, const T& value, Comp comp = {})
 {
     return std::upper_bound(std::move(first), std::move(last), value, std::move(comp));
@@ -2074,6 +2211,28 @@ upper_bound(Range&& range, const T& value, Comp comp = {})
 {
     return std::upper_bound(detail::adl_begin(range), detail::adl_end(range), value, std::move(comp));
 }
+
+// 11.5.3.3 equal_range
+
+template <typename Iter, typename T, typename Comp = std::less<>,
+        REQUIRES(ForwardIterator<Iter> &&
+                 IndirectStrictWeakOrder<Comp, const T*, Iter>)>
+std::pair<Iter, Iter>
+equal_range(Iter first, Iter last, const T& value, Comp comp = {})
+{
+    return std::equal_range(std::move(first), std::move(last), value, std::move(comp));
+}
+
+template <typename Range, typename T, typename Comp = std::less<>,
+        REQUIRES(ForwardRange<Range> &&
+                 IndirectStrictWeakOrder<Comp, const T*, iterator_t<Range>>)>
+std::pair<safe_iterator_t<Range>, safe_iterator_t<Range>>
+equal_range(Range&& range, const T& value, Comp comp = {})
+{
+    return std::equal_range(detail::adl_begin(range), detail::adl_end(range), value, std::move(comp));
+}
+
+// 11.5.3.4 binary_search
 
 template <typename Iter, typename T, typename Comp = std::less<>,
         REQUIRES(ForwardIterator<Iter> &&
@@ -2091,27 +2250,7 @@ bool binary_search(Range&& range, const T& value, Comp comp = {})
     return std::binary_search(detail::adl_begin(range), detail::adl_end(range), value, std::move(comp));
 }
 
-template <typename Iter, typename T, typename Comp = std::less<>,
-          REQUIRES(ForwardIterator<Iter> &&
-                   IndirectStrictWeakOrder<Comp, const T*, Iter>)>
-std::pair<Iter, Iter>
-equal_range(Iter first, Iter last, const T& value, Comp comp = {})
-{
-    return std::equal_range(std::move(first), std::move(last), value, std::move(comp));
-}
-
-template <typename Range, typename T, typename Comp = std::less<>,
-          REQUIRES(ForwardRange<Range> &&
-                   IndirectStrictWeakOrder<Comp, const T*, iterator_t<Range>>)>
-std::pair<safe_iterator_t<Range>, safe_iterator_t<Range>>
-equal_range(Range&& range, const T& value, Comp comp = {})
-{
-    return std::equal_range(detail::adl_begin(range), detail::adl_end(range), value, std::move(comp));
-}
-
-/*
- * Set operations
- */
+// 11.5.4 Merge
 
 template <typename InputIt1, typename InputIt2, typename OutputIt, typename Comp = std::less<>,
         REQUIRES(InputIterator<InputIt1> &&
@@ -2126,10 +2265,10 @@ OutputIt merge(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2,
 }
 
 template <typename InputRng1, typename InputRng2, typename OutputIt, typename Comp = std::less<>,
-        REQUIRES(InputRange<InputRng1> &&
-                 InputRange<InputRng2> &&
-                 WeaklyIncrementable<OutputIt> &&
-                 Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
+          REQUIRES(InputRange<InputRng1> &&
+                   InputRange<InputRng2> &&
+                   WeaklyIncrementable<OutputIt> &&
+                   Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
 OutputIt merge(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp comp = {})
 {
     return std::merge(detail::adl_begin(range1), detail::adl_end(range1),
@@ -2153,10 +2292,14 @@ void inplace_merge(BidirRng&& range, iterator_t<BidirRng> middle, Comp comp = {}
     std::inplace_merge(detail::adl_begin(range), std::move(middle), detail::adl_end(range), std::move(comp));
 }
 
+// 11.5.5. Set operations on sorted structures
+
+// 11.5.5.1 includes
+
 template <typename InputIt1, typename InputIt2, typename Comp = std::less<>,
-        REQUIRES(InputIterator<InputIt1> &&
-                 InputIterator<InputIt2> &&
-                 IndirectStrictWeakOrder<Comp, InputIt1, InputIt2>)>
+          REQUIRES(InputIterator<InputIt1> &&
+                   InputIterator<InputIt2> &&
+                   IndirectStrictWeakOrder<Comp, InputIt1, InputIt2>)>
 bool includes(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, Comp comp = {})
 {
     return std::includes(std::move(first1), std::move(last1),
@@ -2174,6 +2317,62 @@ bool includes(InputRng1&& range1, InputRng2&& range2, Comp comp = {})
                          detail::adl_begin(range2), detail::adl_end(range2),
                          std::move(comp));
 }
+
+// 11.5.5.2 set_union
+
+template <typename InputIt1, typename InputIt2, typename OutputIt, typename Comp = std::less<>,
+        REQUIRES(InputIterator<InputIt1> &&
+                 InputIterator<InputIt2> &&
+                 WeaklyIncrementable<OutputIt> &&
+                 Mergeable<InputIt1, InputIt2, OutputIt, Comp>)>
+OutputIt set_union(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2,
+                   OutputIt ofirst, Comp comp = {})
+{
+    return std::set_union(std::move(first1), std::move(last1),
+                          std::move(first2), std::move(last2),
+                          std::move(ofirst), std::move(comp));
+}
+
+template <typename InputRng1, typename InputRng2, typename OutputIt, typename Comp = std::less<>,
+        REQUIRES(InputRange<InputRng1> &&
+                 InputRange<InputRng2> &&
+                 WeaklyIncrementable<OutputIt> &&
+                 Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
+OutputIt set_union(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp comp = {})
+{
+    return std::set_union(detail::adl_begin(range1), detail::adl_end(range1),
+                          detail::adl_begin(range2), detail::adl_end(range2),
+                          std::move(ofirst), std::move(comp));
+}
+
+// 11.5.5.3 set_intersection
+
+template <typename InputIt1, typename InputIt2, typename OutputIt, typename Comp = std::less<>,
+          REQUIRES(InputIterator<InputIt1> &&
+                   InputIterator<InputIt2> &&
+                   WeaklyIncrementable<OutputIt> &&
+                   Mergeable<InputIt1, InputIt2, OutputIt, Comp>)>
+OutputIt set_intersection(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2,
+                          OutputIt ofirst, Comp comp = {})
+{
+    return std::set_intersection(std::move(first1), std::move(last1),
+                                 std::move(first2), std::move(last2),
+                                 std::move(ofirst), std::move(comp));
+}
+
+template <typename InputRng1, typename InputRng2, typename OutputIt, typename Comp = std::less<>,
+          REQUIRES(InputRange<InputRng1> &&
+                   InputRange<InputRng2> &&
+                   WeaklyIncrementable<OutputIt> &&
+                   Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
+OutputIt set_intersection(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp comp = {})
+{
+    return std::set_intersection(detail::adl_begin(range1), detail::adl_end(range1),
+                                 detail::adl_begin(range2), detail::adl_end(range2),
+                                 std::move(ofirst), std::move(comp));
+}
+
+// 11.5.5.4 set_difference
 
 template <typename InputIt1, typename InputIt2, typename OutputIt, typename Comp = std::less<>,
           REQUIRES(InputIterator<InputIt1> &&
@@ -2200,36 +2399,13 @@ OutputIt set_difference(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst,
                                std::move(ofirst), std::move(comp));
 }
 
-template <typename InputIt1, typename InputIt2, typename OutputIt, typename Comp = std::less<>,
-        REQUIRES(InputIterator<InputIt1> &&
-                         InputIterator<InputIt2> &&
-                         WeaklyIncrementable<OutputIt> &&
-                         Mergeable<InputIt1, InputIt2, OutputIt, Comp>)>
-OutputIt set_intersection(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2,
-                        OutputIt ofirst, Comp comp = {})
-{
-    return std::set_intersection(std::move(first1), std::move(last1),
-                                 std::move(first2), std::move(last2),
-                                 std::move(ofirst), std::move(comp));
-}
-
-template <typename InputRng1, typename InputRng2, typename OutputIt, typename Comp = std::less<>,
-        REQUIRES(InputRange<InputRng1> &&
-                         InputRange<InputRng2> &&
-                         WeaklyIncrementable<OutputIt> &&
-                         Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
-OutputIt set_intersection(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp comp = {})
-{
-    return std::set_intersection(detail::adl_begin(range1), detail::adl_end(range1),
-                                 detail::adl_begin(range2), detail::adl_end(range2),
-                                 std::move(ofirst), std::move(comp));
-}
+// 11.5.5.5 set_symmetric_difference
 
 template <typename InputIt1, typename InputIt2, typename OutputIt, typename Comp = std::less<>,
-        REQUIRES(InputIterator<InputIt1> &&
-                         InputIterator<InputIt2> &&
-                         WeaklyIncrementable<OutputIt> &&
-                         Mergeable<InputIt1, InputIt2, OutputIt, Comp>)>
+          REQUIRES(InputIterator<InputIt1> &&
+                   InputIterator<InputIt2> &&
+                   WeaklyIncrementable<OutputIt> &&
+                   Mergeable<InputIt1, InputIt2, OutputIt, Comp>)>
 OutputIt set_symmetric_difference(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2,
                         OutputIt ofirst, Comp comp = {})
 {
@@ -2240,9 +2416,9 @@ OutputIt set_symmetric_difference(InputIt1 first1, InputIt1 last1, InputIt2 firs
 
 template <typename InputRng1, typename InputRng2, typename OutputIt, typename Comp = std::less<>,
         REQUIRES(InputRange<InputRng1> &&
-                         InputRange<InputRng2> &&
-                         WeaklyIncrementable<OutputIt> &&
-                         Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
+                 InputRange<InputRng2> &&
+                 WeaklyIncrementable<OutputIt> &&
+                 Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
 OutputIt set_symmetric_difference(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp comp = {})
 {
     return std::set_symmetric_difference(detail::adl_begin(range1), detail::adl_end(range1),
@@ -2250,34 +2426,81 @@ OutputIt set_symmetric_difference(InputRng1&& range1, InputRng2&& range2, Output
                                          std::move(ofirst), std::move(comp));
 }
 
-template <typename InputIt1, typename InputIt2, typename OutputIt, typename Comp = std::less<>,
-        REQUIRES(InputIterator<InputIt1> &&
-                         InputIterator<InputIt2> &&
-                         WeaklyIncrementable<OutputIt> &&
-                         Mergeable<InputIt1, InputIt2, OutputIt, Comp>)>
-OutputIt set_union(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2,
-                        OutputIt ofirst, Comp comp = {})
+// 11.5.6 Heap operations
+
+// 11.5.5.1 push_heap
+
+template <typename RandomIt, typename Comp = std::less<>,
+        REQUIRES(RandomAccessIterator<RandomIt> &&
+                 Sortable<RandomIt, Comp>)>
+void push_heap(RandomIt first, RandomIt last, Comp comp = {})
 {
-    return std::set_union(std::move(first1), std::move(last1),
-                          std::move(first2), std::move(last2),
-                          std::move(ofirst), std::move(comp));
+    std::push_heap(std::move(first), std::move(last), std::move(comp));
 }
 
-template <typename InputRng1, typename InputRng2, typename OutputIt, typename Comp = std::less<>,
-        REQUIRES(InputRange<InputRng1> &&
-                         InputRange<InputRng2> &&
-                         WeaklyIncrementable<OutputIt> &&
-                         Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
-OutputIt set_union(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp comp = {})
+template <typename RandomRng, typename Comp = std::less<>,
+        REQUIRES(RandomAccessRange<RandomRng> &&
+                 Sortable<iterator_t<RandomRng>, Comp>)>
+void push_heap(RandomRng&& range, Comp comp = {})
 {
-    return std::set_union(detail::adl_begin(range1), detail::adl_end(range1),
-                          detail::adl_begin(range2), detail::adl_end(range2),
-                          std::move(ofirst), std::move(comp));
+    std::push_heap(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
 }
 
-/*
- * Heap operations
- */
+// 11.5.5.2 pop_heap
+
+template <typename RandomIt, typename Comp = std::less<>,
+          REQUIRES(RandomAccessIterator<RandomIt> &&
+                   Sortable<RandomIt, Comp>)>
+void pop_heap(RandomIt first, RandomIt last, Comp comp = {})
+{
+    std::pop_heap(std::move(first), std::move(last), std::move(comp));
+}
+
+template <typename RandomRng, typename Comp = std::less<>,
+          REQUIRES(RandomAccessRange<RandomRng> &&
+                   Sortable<iterator_t<RandomRng>, Comp>)>
+void pop_heap(RandomRng&& range, Comp comp = {})
+{
+    std::pop_heap(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+}
+
+// 11.5.5.3 make_heap
+
+template <typename RandomIt, typename Comp = std::less<>,
+          REQUIRES(RandomAccessIterator<RandomIt> &&
+                   Sortable<RandomIt, Comp>)>
+void make_heap(RandomIt first, RandomIt last, Comp comp = {})
+{
+    std::make_heap(std::move(first), std::move(last), std::move(comp));
+}
+
+template <typename RandomRng, typename Comp = std::less<>,
+          REQUIRES(RandomAccessRange<RandomRng> &&
+                   Sortable<iterator_t<RandomRng>, Comp>)>
+void make_heap(RandomRng&& range, Comp comp = {})
+{
+    std::make_heap(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+}
+
+// 11.5.6.4 sort_heap
+
+template <typename RandomIt, typename Comp = std::less<>,
+          REQUIRES(RandomAccessIterator<RandomIt> &&
+                   Sortable<RandomIt, Comp>)>
+void sort_heap(RandomIt first, RandomIt last, Comp comp = {})
+{
+    std::sort_heap(std::move(first), std::move(last), std::move(comp));
+}
+
+template <typename RandomRng, typename Comp = std::less<>,
+        REQUIRES(RandomAccessRange<RandomRng> &&
+                 Sortable<iterator_t<RandomRng>, Comp>)>
+void sort_heap(RandomRng&& range, Comp comp = {})
+{
+    std::sort_heap(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+}
+
+// 11.5.6.5 is_heap
 
 template <typename RandomIt, typename Comp = std::less<>,
           REQUIRES(RandomAccessIterator<RandomIt> &&
@@ -2311,77 +2534,35 @@ safe_iterator_t<RandomRng> is_heap_until(RandomRng&& range, Comp comp = {})
     return std::is_heap_until(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
 }
 
-template <typename RandomIt, typename Comp = std::less<>,
-          REQUIRES(RandomAccessIterator<RandomIt> &&
-                   Sortable<RandomIt, Comp>)>
-void make_heap(RandomIt first, RandomIt last, Comp comp = {})
-{
-    std::make_heap(std::move(first), std::move(last), std::move(comp));
-}
-
-template <typename RandomRng, typename Comp = std::less<>,
-        REQUIRES(RandomAccessRange<RandomRng> &&
-                 Sortable<iterator_t<RandomRng>, Comp>)>
-void make_heap(RandomRng&& range, Comp comp = {})
-{
-    std::make_heap(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
-}
-
-template <typename RandomIt, typename Comp = std::less<>,
-        REQUIRES(RandomAccessIterator<RandomIt> &&
-                 Sortable<RandomIt, Comp>)>
-void push_heap(RandomIt first, RandomIt last, Comp comp = {})
-{
-    std::push_heap(std::move(first), std::move(last), std::move(comp));
-}
-
-template <typename RandomRng, typename Comp = std::less<>,
-        REQUIRES(RandomAccessRange<RandomRng> &&
-                 Sortable<iterator_t<RandomRng>, Comp>)>
-void push_heap(RandomRng&& range, Comp comp = {})
-{
-    std::push_heap(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
-}
-
-template <typename RandomIt, typename Comp = std::less<>,
-        REQUIRES(RandomAccessIterator<RandomIt> &&
-                 Sortable<RandomIt, Comp>)>
-void pop_heap(RandomIt first, RandomIt last, Comp comp = {})
-{
-    std::pop_heap(std::move(first), std::move(last), std::move(comp));
-}
-
-template <typename RandomRng, typename Comp = std::less<>,
-        REQUIRES(RandomAccessRange<RandomRng> &&
-                 Sortable<iterator_t<RandomRng>, Comp>)>
-void pop_heap(RandomRng&& range, Comp comp = {})
-{
-    std::pop_heap(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
-}
-
-template <typename RandomIt, typename Comp = std::less<>,
-        REQUIRES(RandomAccessIterator<RandomIt> &&
-                 Sortable<RandomIt, Comp>)>
-void sort_heap(RandomIt first, RandomIt last, Comp comp = {})
-{
-    std::sort_heap(std::move(first), std::move(last), std::move(comp));
-}
-
-template <typename RandomRng, typename Comp = std::less<>,
-        REQUIRES(RandomAccessRange<RandomRng> &&
-                 Sortable<iterator_t<RandomRng>, Comp>)>
-void sort_heap(RandomRng&& range, Comp comp = {})
-{
-    std::sort_heap(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
-}
-
-/*
- * Min/max operations
- */
+// 11.5.7 Minimum and maximum
 
 template <typename T, typename Comp = std::less<>,
-          REQUIRES(Copyable<T> &&
-                   IndirectStrictWeakOrder<Comp, const T*>)>
+          REQUIRES(IndirectStrictWeakOrder<Comp, const T*>)>
+constexpr const T& min(const T& a, const T& b, Comp comp = {})
+{
+    return std::min(a, b, std::move(comp));
+}
+
+template <typename T, typename Comp = std::less<>,
+        REQUIRES(Copyable<T> &&
+                 IndirectStrictWeakOrder<Comp, const T*>)>
+constexpr T min(std::initializer_list<T> ilist, Comp comp = {})
+{
+    return std::min(ilist, std::move(comp));
+}
+
+template <typename ForwardRng, typename Comp = std::less<>,
+          REQUIRES(ForwardRange<ForwardRng> &&
+                   IndirectStrictWeakOrder<Comp, iterator_t<ForwardRng>> &&
+                   Copyable<value_type_t<iterator_t<ForwardRng>>>)>
+constexpr value_type_t<iterator_t<ForwardRng>>
+min(ForwardRng&& range, Comp comp = {})
+{
+    return *std::min_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+}
+
+template <typename T, typename Comp = std::less<>,
+          REQUIRES(IndirectStrictWeakOrder<Comp, const T*>)>
 constexpr const T& max(const T& a, const T& b, Comp comp = {})
 {
     return std::max(a, b, std::move(comp));
@@ -2405,47 +2586,31 @@ max(ForwardRng&& range, Comp comp = {})
     return *std::max_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
 }
 
-template <typename ForwardIt, typename Comp = std::less<>,
-          REQUIRES(ForwardIterator<ForwardIt> &&
-                   IndirectStrictWeakOrder<Comp, ForwardIt>)>
-ForwardIt max_element(ForwardIt first, ForwardIt last, Comp comp = {})
+template <typename T, typename Comp = std::less<>,
+          REQUIRES(IndirectStrictWeakOrder<Comp, const T*>)>
+constexpr std::pair<const T&, const T&>
+minmax(const T& a, const T& b, Comp comp)
 {
-    return std::max_element(std::move(first), std::move(last), std::move(comp));
-}
-
-template <typename ForwardRng, typename Comp = std::less<>,
-          REQUIRES(ForwardRange<ForwardRng> &&
-                   IndirectStrictWeakOrder<Comp, iterator_t<ForwardRng>>)>
-safe_iterator_t<ForwardRng>
-max_element(ForwardRng&& range, Comp comp = {})
-{
-    return std::max_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    return std::minmax(a, b, std::move(comp));
 }
 
 template <typename T, typename Comp = std::less<>,
-        REQUIRES(Copyable<T> &&
-                 IndirectStrictWeakOrder<Comp, const T*>)>
-constexpr const T& min(const T& a, const T& b, Comp comp = {})
+          REQUIRES(Copyable<T> &&
+                   IndirectStrictWeakOrder<Comp, const T*>)>
+constexpr std::pair<T, T>
+minmax(std::initializer_list<T> ilist, Comp comp)
 {
-    return std::min(a, b, std::move(comp));
-}
-
-template <typename T, typename Comp = std::less<>,
-        REQUIRES(Copyable<T> &&
-                 IndirectStrictWeakOrder<Comp, const T*>)>
-constexpr T min(std::initializer_list<T> ilist, Comp comp = {})
-{
-    return std::min(ilist, std::move(comp));
+    return std::minmax(ilist, std::move(comp));
 }
 
 template <typename ForwardRng, typename Comp = std::less<>,
-        REQUIRES(ForwardRange<ForwardRng> &&
-                 IndirectStrictWeakOrder<Comp, iterator_t<ForwardRng>> &&
-                 Copyable<value_type_t<iterator_t<ForwardRng>>>)>
-value_type_t<iterator_t<ForwardRng>>
-min(ForwardRng&& range, Comp comp = {})
+        REQUIRES(Copyable<value_type_t<iterator_t<ForwardRng>>> &&
+                 IndirectStrictWeakOrder<Comp, iterator_t<ForwardRng>>)>
+std::pair<range_value_type_t<ForwardRng>, range_value_type_t<ForwardRng>>
+minmax(ForwardRng&& range, Comp comp = {})
 {
-    return *std::min_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    const auto p = std::minmax_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    return {*p.first, *p.second};
 }
 
 template <typename ForwardIt, typename Comp = std::less<>,
@@ -2465,29 +2630,21 @@ min_element(ForwardRng&& range, Comp comp = {})
     return std::min_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
 }
 
-template <typename T, typename Comp = std::less<>,
-          REQUIRES(IndirectStrictWeakOrder<Comp, const T*>)>
-constexpr std::pair<const T&, const T&> minmax(const T& a, const T& b, Comp comp)
+template <typename ForwardIt, typename Comp = std::less<>,
+          REQUIRES(ForwardIterator<ForwardIt> &&
+                   IndirectStrictWeakOrder<Comp, ForwardIt>)>
+ForwardIt max_element(ForwardIt first, ForwardIt last, Comp comp = {})
 {
-    return std::minmax(a, b, std::move(comp));
-}
-
-template <typename T, typename Comp = std::less<>,
-        REQUIRES(Copyable<T> &&
-                 IndirectStrictWeakOrder<Comp, const T*>)>
-constexpr std::pair<T, T> minmax(std::initializer_list<T> ilist, Comp comp)
-{
-    return std::minmax(ilist, std::move(comp));
+    return std::max_element(std::move(first), std::move(last), std::move(comp));
 }
 
 template <typename ForwardRng, typename Comp = std::less<>,
-          REQUIRES(Copyable<value_type_t<iterator_t<ForwardRng>>> &&
-                   IndirectStrictWeakOrder<Comp, iterator_t<ForwardRng>>)>
-constexpr std::pair<range_value_type_t<ForwardRng>, range_value_type_t<ForwardRng>>
-minmax(ForwardRng&& range, Comp comp = {})
+        REQUIRES(ForwardRange<ForwardRng> &&
+                 IndirectStrictWeakOrder<Comp, iterator_t<ForwardRng>>)>
+safe_iterator_t<ForwardRng>
+max_element(ForwardRng&& range, Comp comp = {})
 {
-    const auto p = std::minmax_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
-    return {*p.first, *p.second};
+    return std::max_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
 }
 
 template <typename ForwardIt, typename Comp = std::less<>,
@@ -2502,11 +2659,13 @@ minmax_element(ForwardIt first, ForwardIt last, Comp comp = {})
 template <typename ForwardRng, typename Comp = std::less<>,
           REQUIRES(ForwardRange<ForwardRng> &&
                    IndirectStrictWeakOrder<Comp, iterator_t<ForwardRng>>)>
-constexpr std::pair<safe_iterator_t<ForwardRng>, safe_iterator_t<ForwardRng>>
+std::pair<safe_iterator_t<ForwardRng>, safe_iterator_t<ForwardRng>>
 minmax_element(ForwardRng&& range, Comp comp = {})
 {
     return std::minmax_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
 }
+
+// 11.5.8 Lexicographical operations
 
 template <typename InputIt1, typename InputIt2, typename Comp = std::less<>,
           REQUIRES(InputIterator<InputIt1> &&
@@ -2531,35 +2690,7 @@ bool lexicographical_compare(InputRng1&& range1, InputRng2&& range2, Comp comp =
                                         std::move(comp));
 }
 
-template <typename ForwardIt1, typename ForwardIt2, typename Pred = std::equal_to<>,
-          REQUIRES(ForwardIterator<ForwardIt1> &&
-                   ForwardIterator<ForwardIt2> &&
-                   IndirectlyComparable<ForwardIt1, ForwardIt2, Pred>)>
-NANORANGE_DEPRECATED
-bool is_permutation(ForwardIt1 first1, ForwardIt1 last1, ForwardIt2 first2, Pred pred = {})
-{
-    return std::is_permutation(std::move(first1), std::move(last1), std::move(first2), std::move(pred));
-}
-
-template <typename ForwardIt1, typename ForwardIt2, typename Pred = std::equal_to<>,
-        REQUIRES(ForwardIterator<ForwardIt1> &&
-                 ForwardIterator<ForwardIt2> &&
-                 IndirectlyComparable<ForwardIt1, ForwardIt2, Pred>)>
-bool is_permutation(ForwardIt1 first1, ForwardIt1 last1, ForwardIt2 first2, ForwardIt2 last2, Pred pred = {})
-{
-    return std::is_permutation(std::move(first1), std::move(last1), std::move(first2), std::move(last2), std::move(pred));
-}
-
-template <typename ForwardRng1, typename ForwardRng2, typename Pred = std::equal_to<>,
-        REQUIRES(ForwardRange<ForwardRng1> &&
-                 ForwardRange<ForwardRng2> &&
-                 IndirectlyComparable<iterator_t<ForwardRng1>, iterator_t<ForwardRng2>, Pred>)>
-bool is_permutation(ForwardRng1&& range1, ForwardRng2&& range2, Pred pred = {})
-{
-    return std::is_permutation(detail::adl_begin(range1), detail::adl_end(range2),
-                               detail::adl_begin(range2), detail::adl_end(range2),
-                               std::move(pred));
-}
+// 11.5.9 Permutation generators
 
 template <typename BidirIt, typename Comp = std::less<>,
           REQUIRES(BidirectionalIterator<BidirIt> &&
@@ -2620,8 +2751,8 @@ void iota(ForwardRng&& range, T value)
 
 template <typename InputIt, typename T, typename BinOp = std::plus<>,
           REQUIRES(InputIterator<InputIt> &&
-                   std::is_assignable<T,
-                           std::result_of_t<BinOp&(const T&, value_type_t<InputIt>)>>::value)>
+                   Copyable<T> &&
+                   Assignable<T, std::result_of_t<BinOp&(const T&, value_type_t<InputIt>)>>)>
 T accumulate(InputIt first, InputIt last, T init, BinOp op = {})
 {
     return std::accumulate(std::move(first), std::move(last), std::move(init), std::move(op));
