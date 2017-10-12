@@ -25,21 +25,6 @@ namespace nanorange {
 
 namespace detail {
 
-inline namespace swap_adl {
-
-using std::swap;
-
-template <typename T, typename U>
-constexpr auto adl_swap(T& t, U& u) -> decltype(swap(t, u))
-{
-    return swap(t, u);
-}
-
-} // end inline namespace swap_adl
-
-template <typename T, typename U>
-using adl_swap_t = decltype(adl_swap(std::declval<T>(), std::declval<U>()));
-
 /* "Detection idiom" machinery from the Library Fundamentals V2 TS */
 template <typename...>
 using void_t = void;
@@ -100,6 +85,11 @@ using test_requires_t = decltype(detail::test_requires<Args...>(std::declval<R&>
 template <typename R, typename... Args>
 constexpr bool requires_ = detail::is_detected_v<test_requires_t, R, Args...>;
 
+// Used to avoid ADL violations with customisation point objects
+// FIXME: use inline constexpr variables in C++17 instead
+template <typename T>
+constexpr T static_const_{};
+
 } // namespace detail
 
 /* Core language concepts [7.3] */
@@ -157,13 +147,23 @@ CONCEPT bool UnsignedIntegral = Integral<I> && !SignedIntegral<I>;
 template <typename T, typename U>
 CONCEPT bool Assignable = std::is_assignable<T, U>::value;
 
+// Hack: we can't predeclare a constexpr variable template, so use a
+// constexpr function to delay the defintion until we've defined swap()
+namespace detail {
+
 template <typename T>
-CONCEPT bool Swappable = detail::is_detected_v<detail::adl_swap_t, T&, T&>;
+constexpr bool is_swappable_f();
 
 template <typename T, typename U>
-CONCEPT bool SwappableWith =
-        detail::is_detected_v<detail::adl_swap_t, T&, U&> &&
-        detail::is_detected_v<detail::adl_swap_t, U&, T&>;
+constexpr bool is_swappable_with_f();
+
+}
+
+template <typename T>
+CONCEPT bool Swappable = detail::is_swappable_f<T>();
+
+template <typename T, typename U>
+CONCEPT bool SwappableWith = detail::is_swappable_with_f<T, U>();
 
 template <typename T>
 CONCEPT bool Destructible = std::is_nothrow_destructible<T>::value;
@@ -377,6 +377,120 @@ CONCEPT bool Relation =
 
 template <typename R, typename T, typename U>
 CONCEPT bool StrictWeakOrder = Relation<R, T, U>;
+
+/*
+ * 8.2 Utility components
+ */
+
+// 8.2.2 exchange
+
+template <typename T, typename U = T,
+          REQUIRES(Assignable<T&, U>)>
+constexpr T exchange(T& obj, U&& new_val)
+        noexcept(std::is_nothrow_move_constructible<T>::value &&
+                 std::is_nothrow_assignable<T&, U>::value)
+{
+    T old_val = std::move(obj);
+    obj = std::forward<U>(new_val);
+    return old_val;
+}
+
+// 8.2.1 swap
+
+namespace detail {
+
+namespace swap_ {
+
+template <typename T>
+void swap(T&, T&) = delete;
+
+template <typename T, std::size_t N>
+void swap(T (&)[N], T (&)[N]) = delete;
+
+template <typename T, typename U>
+using custom_swap_t = decltype(swap(std::declval<T>(), std::declval<U>()));
+
+template <typename T, typename U>
+constexpr bool has_custom_swap_v = detail::is_detected_v<custom_swap_t, T, U>;
+
+// I'll be honest, I copied this from STL2. Thanks Casey.
+template <typename, typename, typename, typename = void>
+constexpr bool is_cpo_swappable_v = false;
+
+template <typename F, typename T, typename U>
+constexpr bool is_cpo_swappable_v<F, T, U, void_t<std::result_of_t<F&(T&, U&)>>> = true;
+
+struct swap_cpo {
+
+    template <typename T, typename U,
+              REQUIRES(has_custom_swap_v<T, U>)>
+    constexpr void operator()(T&& t, U&& u) const
+        noexcept(noexcept(swap(std::forward<T>(t), std::forward<U>(u))))
+    {
+        (void) swap(std::forward<T>(t), std::forward<U>(u));
+    }
+
+    template <typename T, typename U, std::size_t N, typename F = swap_cpo,
+              REQUIRES(!has_custom_swap_v<T (&)[N], U (&)[N]>  &&
+                        is_cpo_swappable_v<F, T, U>)>
+    constexpr void operator()(T (&t)[N], U (&u)[N]) const
+        noexcept(noexcept(std::declval<F&>()(*t, *u)))
+    {
+        for (std::size_t i = 0; i < N; ++i) {
+            (*this)(t[i], u[i]);
+        }
+    }
+
+    template <typename T,
+              REQUIRES(!has_custom_swap_v<T&, T&> &&
+                       MoveConstructible<T> &&
+                       Assignable<T&, T>)>
+    constexpr void operator()(T& a, T& b) const
+        noexcept(noexcept(b = nanorange::exchange(a, std::move(b))))
+    {
+        b = nanorange::exchange(a, std::move(b));
+    }
+
+};
+
+} // end namespace swap_
+
+} // end namespace detail
+
+namespace {
+
+constexpr auto& swap = detail::static_const_<detail::swap_::swap_cpo>;
+
+}
+
+namespace detail {
+
+template <typename T>
+using swap_t = decltype(nanorange::swap(std::declval<T&>(), std::declval<T&>()));
+
+template <typename T>
+constexpr bool is_swappable_f()
+{
+    return is_detected_v<swap_t, T>;
+}
+
+struct SwappableWith_ {
+    template <typename T, typename U>
+    auto requires_(T&& t, U&& u) -> decltype(
+        nanorange::swap(std::forward<T>(t), std::forward<T>(t)),
+        nanorange::swap(std::forward<U>(u), std::forward<U>(u)),
+        nanorange::swap(std::forward<T>(t), std::forward<U>(u)),
+        nanorange::swap(std::forward<U>(u), std::forward<T>(t))
+    );
+};
+
+template <typename T, typename U>
+constexpr bool is_swappable_with_f()
+{
+    return requires_<SwappableWith_, T, U>;
+}
+
+}
 
 /* 9.1 Iterators library */
 
@@ -787,9 +901,6 @@ auto decay_copy(T&& x)
 
 namespace detail {
 
-template <typename T>
-constexpr T static_const_{};
-
 // 10.4.1 begin
 
 namespace begin_ {
@@ -959,7 +1070,7 @@ struct cbegin_cpo {
 
     template <typename T,
               REQUIRES(is_detected_v<begin_t, T>)>
-    NANORANGE_DEPRECATED_FOR("Calling cend() with an rvalue range is deprectated")
+    NANORANGE_DEPRECATED_FOR("Calling cbegin() with an rvalue range is deprectated")
     constexpr auto operator()(const T&& t) const
         noexcept(noexcept(nanorange::begin(t)))
         -> decltype(nanorange::begin(t))
@@ -974,7 +1085,45 @@ struct cbegin_cpo {
 
 namespace {
 
-constexpr auto cbegin = detail::static_const_<detail::cbegin_::cbegin_cpo>;
+constexpr auto& cbegin = detail::static_const_<detail::cbegin_::cbegin_cpo>;
+
+}
+
+namespace detail {
+
+namespace cend_ {
+
+template <typename T> using end_t = decltype(nanorange::end(std::declval<const T&>()));
+
+struct cend_cpo {
+
+    template <typename T,
+              REQUIRES(is_detected_v<end_t, T>)>
+    constexpr auto operator()(const T& t) const
+        noexcept(noexcept(nanorange::end(t)))
+        -> decltype(nanorange::end(t))
+    {
+        return nanorange::end(t);
+    }
+
+    template <typename T,
+              REQUIRES(is_detected_v<end_t, T>)>
+    NANORANGE_DEPRECATED_FOR("Calling cend() with an rvalue range is deprectated")
+    constexpr auto operator()(const T&& t) const
+        noexcept(noexcept(nanorange::end(t)))
+        -> decltype(nanorange::end(t))
+    {
+        return nanorange::end(t);
+    }
+};
+
+} // end namespace cend_
+
+} // end namespace detail
+
+namespace {
+
+constexpr auto& cend = detail::static_const_<detail::cend_::cend_cpo>;
 
 }
 

@@ -1,6 +1,7 @@
 
 #include <nanorange.hpp>
 
+#include <array>
 #include <bitset>
 #include <iterator>
 #include <forward_list>
@@ -8,6 +9,8 @@
 #include <list>
 #include <memory>
 #include <vector>
+
+#include "catch.hpp"
 
 namespace rng = nanorange;
 
@@ -48,6 +51,59 @@ constexpr int arr[] = {1, 2, 3, 4};
 static_assert(nanorange::begin(arr) == arr, "");
 static_assert(nanorange::end(arr) == arr + 4, "");
 
+constexpr bool test_basic_swap()
+{
+    int a = 1;
+    int b = 2;
+    nanorange::swap(a, b);
+    return a == 2 && b == 1;
+}
+
+constexpr bool test_array_swap()
+{
+    int a[] = {1, 2};
+    int b[] = {3, 4};
+
+    nanorange::swap(a, b);
+
+    return a[0] == 3 && a[1] == 4 &&
+            b[0] == 1 && b[1] == 2;
+}
+
+namespace test {
+
+// Pfft, std::array should be constexpr in C++14. Boo.
+template <typename T, std::size_t N>
+struct carray {
+    constexpr const T& operator[](std::size_t i) const { return data[i]; }
+    T data[N];
+
+    friend constexpr bool swap(carray&, carray&) {
+        return false;
+    }
+};
+
+}
+
+constexpr bool test_custom_swap()
+{
+    test::carray<int, 2> a{{1, 2}};
+    test::carray<int, 2> b{{3, 4}};
+
+    nanorange::swap(a, b);
+
+    return a[0] == 1 && a[1] == 2 &&
+            b[0] == 3 && b[1] == 4;
+}
+
+static_assert(test_basic_swap(), "");
+static_assert(test_array_swap(), "");
+static_assert(test_custom_swap(), "");
+
+static_assert(rng::Swappable<int>, "");
+static_assert(rng::Swappable<std::vector<int>>, "");
+static_assert(rng::Swappable<test::carray<int, 3>>, "");
+static_assert(!rng::Swappable<rng::detail::nonesuch>, "");
 
 
 /*
@@ -205,6 +261,15 @@ static_assert(rng::Same<decltype(rng::cbegin(std::declval<const ra_rng_t&>())),
 static_assert(rng::Same<decltype(rng::cbegin(std::declval<ra_rng_t&&>())),
         typename ra_rng_t::const_iterator>, "");
 static_assert(rng::Same<decltype(rng::cbegin(std::declval<const ra_rng_t&&>())),
+        typename ra_rng_t::const_iterator>, "");
+
+static_assert(rng::Same<decltype(rng::cend(std::declval<ra_rng_t&>())),
+        typename ra_rng_t::const_iterator>, "");
+static_assert(rng::Same<decltype(rng::cend(std::declval<const ra_rng_t&>())),
+        typename ra_rng_t::const_iterator>, "");
+static_assert(rng::Same<decltype(rng::cend(std::declval<ra_rng_t&&>())),
+        typename ra_rng_t::const_iterator>, "");
+static_assert(rng::Same<decltype(rng::cend(std::declval<const ra_rng_t&&>())),
         typename ra_rng_t::const_iterator>, "");
 
 // Output range tests
