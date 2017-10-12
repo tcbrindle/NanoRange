@@ -1410,12 +1410,21 @@ using range_value_type_t = value_type_t<iterator_t<Rng>>;
 template <typename Rng>
 using range_difference_type_t = difference_type_t<iterator_t<Rng>>;
 
-// For our purposes, a type is a range if the result of begin() is an
-// iterator, and begin() and end() return the same type
+namespace detail {
+
+struct Range_ {
+    template <typename T>
+    auto requires_(T&& t) -> decltype(
+        nanorange::begin(t),
+        nanorange::end(t)
+    );
+};
+
+}
+
 template <typename T>
 CONCEPT bool Range =
-        Iterator<detail::detected_t<iterator_t, T>> &&
-        Same<detail::detected_t<iterator_t, T>, detail::detected_t<sentinel_t, T>>;
+        detail::requires_<detail::Range_, T>;
 
 
 template <typename T>
