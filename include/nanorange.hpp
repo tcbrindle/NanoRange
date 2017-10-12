@@ -332,25 +332,26 @@ CONCEPT bool Regular =
         Semiregular<T> &&
         EqualityComparable<T>;
 
-/* 7.6 Callable Concepts */
+/* 7.6 Invocable Concepts */
+
+template <typename F, typename... Args>
+std::result_of_t<F&&(Args&&...)> invoke(F&& f, Args&&... args);
 
 namespace detail {
 
-template <typename, typename = void>
-struct is_callable : std::false_type {};
-
-template <typename F, typename... Args>
-struct is_callable<F(Args...), detail::void_t<std::result_of_t<F&&(
-        Args&& ...)>>>
-        : std::true_type {};
+struct Invocable_{
+    template <typename F, typename... Args>
+    auto requires_(F&& f, Args&&... args) -> std::result_of_t<F&&(Args&&...)>;
+    // FIXME: why doesn't Clang like -> decltype(invoke(forward<F>(f), forward<Args>(args)...)) ??
+};
 
 }
 
 template <typename F, typename... Args>
-CONCEPT bool Callable = detail::is_callable<F(Args...)>::value;
+CONCEPT bool Invocable = detail::requires_<detail::Invocable_, F, Args...>;
 
 template <typename F, typename... Args>
-CONCEPT bool RegularCallable = Callable<F, Args...>;
+CONCEPT bool RegularInvocable = Invocable<F, Args...>;
 
 namespace detail {
 
@@ -359,7 +360,7 @@ struct is_predicate : std::false_type {};
 
 template <typename F, typename... Args>
 struct is_predicate<F(Args...), std::enable_if_t<
-                Callable<F, Args...> &&
+                Invocable<F, Args...> &&
                 Boolean<std::result_of_t<F&&(Args&& ...)>>>>
         : std::true_type {};
 
@@ -490,7 +491,20 @@ constexpr bool is_swappable_with_f()
     return requires_<SwappableWith_, T, U>;
 }
 
+} // end namespace detail
+
+// 8.3.1 Function template invoke
+
+#ifdef NANORANGE_HAVE_CPP17
+using std::invoke;
+#else
+// FIXME: Take a deep breath and implement this properly
+template <typename F, typename... Args>
+std::result_of_t<F&&(Args&&...)> invoke(F&& f, Args&&... args)
+{
+    std::forward<F>(f)(std::forward<Args>(args)...);
 }
+#endif
 
 /* 9.1 Iterators library */
 
@@ -776,18 +790,18 @@ CONCEPT bool RandomAccessIterator =
 /* 9.4 Indirect callable concepts */
 
 template <typename F, typename I>
-CONCEPT bool IndirectUnaryCallable =
+CONCEPT bool IndirectUnaryInvocable =
         Readable<I> &&
         CopyConstructible<F> &&
-        Callable<F&, value_type_t<I>> &&
-        Callable<F&, reference_t<I>>;
+        Invocable<F&, value_type_t<I>> &&
+        Invocable<F&, reference_t<I>>;
 
 template <typename F, typename I>
-CONCEPT bool IndirectRegularUnaryCallable =
+CONCEPT bool IndirectRegularUnaryInvocable =
         Readable<I> &&
         CopyConstructible<F> &&
-        RegularCallable<F&, value_type_t<I>> &&
-        RegularCallable<F&, reference_t<I>>;
+        RegularInvocable<F&, value_type_t<I>> &&
+        RegularInvocable<F&, reference_t<I>>;
 
 template <typename F, typename I>
 CONCEPT bool IndirectUnaryPredicate =
@@ -817,7 +831,7 @@ CONCEPT bool IndirectStrictWeakOrder =
 template <typename, typename = void> struct indirect_result_of {};
 
 template <typename F, typename... Is>
-struct indirect_result_of<F(Is...), std::enable_if_t<Callable<F, reference_t<Is>...>>>
+struct indirect_result_of<F(Is...), std::enable_if_t<Invocable<F, reference_t<Is>...>>>
     : std::result_of<F(reference_t<Is>&&...)> {};
 
 template <typename F>
@@ -1475,7 +1489,7 @@ bool none_of(Range&& range, UnaryPredicate pred)
 
 template <typename Iter, typename UnaryFunction,
           REQUIRES(InputIterator<Iter> &&
-                   IndirectUnaryCallable<UnaryFunction, Iter>)>
+                   IndirectUnaryInvocable<UnaryFunction, Iter>)>
 UnaryFunction for_each(Iter first, Iter last, UnaryFunction func)
 {
     return std::for_each(std::move(first), std::move(last), std::move(func));
@@ -1483,7 +1497,7 @@ UnaryFunction for_each(Iter first, Iter last, UnaryFunction func)
 
 template <typename Range, typename UnaryFunction,
           REQUIRES(InputRange<Range> &&
-                   IndirectUnaryCallable<UnaryFunction, iterator_t<Range>>)>
+                   IndirectUnaryInvocable<UnaryFunction, iterator_t<Range>>)>
 UnaryFunction for_each(Range&& range, UnaryFunction func)
 {
     return std::for_each(nanorange::begin(range), nanorange::end(range),
@@ -2127,7 +2141,7 @@ Iter fill_n(Iter first, difference_type_t<Iter> count, const T& value)
 template <typename Iter, typename Generator,
           REQUIRES(Iterator<Iter> &&
                    CopyConstructible<Generator> &&
-                   Callable<Generator&> &&
+                   Invocable<Generator&> &&
                    Writable<Iter, std::result_of_t<Generator&()>>)>
 void generate(Iter first, Iter last, Generator gen)
 {
@@ -2137,7 +2151,7 @@ void generate(Iter first, Iter last, Generator gen)
 template <typename Range, typename Generator,
           REQUIRES(OutputRange<Range, std::result_of_t<Generator&()>> &&
                    CopyConstructible<Generator> &&
-                   Callable<Generator&>)>
+                   Invocable<Generator&>)>
 void generate(Range&& range, Generator gen)
 {
     std::generate(nanorange::begin(range), nanorange::end(range), std::move(gen));
@@ -2146,7 +2160,7 @@ void generate(Range&& range, Generator gen)
 template <typename Iter, typename Generator,
           REQUIRES(Iterator<Iter> &&
                    CopyConstructible<Generator> &&
-                   Callable<Generator&> &&
+                   Invocable<Generator&> &&
                    Writable<Iter, std::result_of_t<Generator&()>>)>
 Iter generate_n(Iter first, difference_type_t<Iter> count, Generator generator)
 {

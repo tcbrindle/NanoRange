@@ -105,6 +105,15 @@ static_assert(rng::Swappable<std::vector<int>>, "");
 static_assert(rng::Swappable<test::carray<int, 3>>, "");
 static_assert(!rng::Swappable<rng::detail::nonesuch>, "");
 
+namespace test {
+
+struct foo{
+    void operator()(int);
+};
+
+}
+
+static_assert(rng::Invocable<test::foo, int>, "");
 
 /*
  * Iterator type traits static tests
