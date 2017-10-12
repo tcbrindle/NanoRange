@@ -26,14 +26,7 @@ namespace nanorange {
 namespace detail {
 inline namespace begin_end_adl {
 
-using std::begin;
 using std::end;
-
-template <typename T>
-constexpr auto adl_begin(T&& t) -> decltype(begin(std::forward<T>(t)))
-{
-    return begin(std::forward<T>(t));
-}
 
 template <typename T>
 constexpr auto adl_end(T&& t) -> decltype(end(std::forward<T>(t)))
@@ -850,7 +843,7 @@ namespace begin_ {
             noexcept(noexcept(decay_copy(begin(t))))
             -> decltype(decay_copy(begin(t)))
         {
-            return decay_copy(t.begin());
+            return decay_copy(begin(t));
         }
 
         template <typename T,
@@ -1187,7 +1180,7 @@ template <typename Range, typename UnaryPredicate,
                    IndirectUnaryPredicate<UnaryPredicate, iterator_t<Range>>)>
 bool all_of(Range&& range, UnaryPredicate pred)
 {
-    return std::all_of(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
+    return std::all_of(nanorange::begin(range), detail::adl_end(range), std::move(pred));
 }
 
 // 11.3.2 Any of
@@ -1205,7 +1198,7 @@ template <typename Range, typename UnaryPredicate,
                    IndirectUnaryPredicate<UnaryPredicate, iterator_t<Range>>)>
 bool any_of(Range&& range, UnaryPredicate pred)
 {
-    return std::any_of(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
+    return std::any_of(nanorange::begin(range), detail::adl_end(range), std::move(pred));
 }
 
 // 11.3.3 None of
@@ -1223,7 +1216,7 @@ template <typename Range, typename UnaryPredicate,
                    IndirectUnaryPredicate<UnaryPredicate, iterator_t<Range>>)>
 bool none_of(Range&& range, UnaryPredicate pred)
 {
-    return std::none_of(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
+    return std::none_of(nanorange::begin(range), detail::adl_end(range), std::move(pred));
 }
 
 // 11.3.4 For each
@@ -1241,7 +1234,7 @@ template <typename Range, typename UnaryFunction,
                    IndirectUnaryCallable<UnaryFunction, iterator_t<Range>>)>
 UnaryFunction for_each(Range&& range, UnaryFunction func)
 {
-    return std::for_each(detail::adl_begin(range), detail::adl_end(range),
+    return std::for_each(nanorange::begin(range), detail::adl_end(range),
                          std::move(func));
 }
 
@@ -1261,7 +1254,7 @@ template <typename Range, typename T,
 safe_iterator_t<Range>
 find(Range&& range, const T& value)
 {
-    return std::find(detail::adl_begin(range), detail::adl_end(range), value);
+    return std::find(nanorange::begin(range), detail::adl_end(range), value);
 }
 
 template <typename Iter, typename UnaryPredicate,
@@ -1278,7 +1271,7 @@ template <typename Range, typename UnaryPredicate,
 safe_iterator_t<Range>
 find_if(Range&& range, UnaryPredicate pred)
 {
-    return std::find_if(detail::adl_begin(range), detail::adl_end(range),
+    return std::find_if(nanorange::begin(range), detail::adl_end(range),
                         std::move(pred));
 }
 
@@ -1296,7 +1289,7 @@ template <typename Range, typename UnaryPredicate,
 safe_iterator_t<Range>
 find_if_not(Range&& range, UnaryPredicate pred)
 {
-    return std::find_if_not(detail::adl_begin(range), detail::adl_end(range),
+    return std::find_if_not(nanorange::begin(range), detail::adl_end(range),
                             std::move(pred));
 }
 
@@ -1320,8 +1313,8 @@ template <typename Range1, typename Range2, typename BinaryPredicate = std::equa
 safe_iterator_t<Range1>
 find_end(Range1&& range1, Range2&& range2, BinaryPredicate pred = {})
 {
-    return std::find_end(detail::adl_begin(range1), detail::adl_end(range1),
-                         detail::adl_begin(range2), detail::adl_end(range2),
+    return std::find_end(nanorange::begin(range1), detail::adl_end(range1),
+                         nanorange::begin(range2), detail::adl_end(range2),
                          std::move(pred));
 }
 
@@ -1345,8 +1338,8 @@ template <typename Range1, typename Range2, typename Pred = std::equal_to<>,
 safe_iterator_t<Range1>
 find_first_of(Range1&& range1, Range2&& range2, Pred pred = {})
 {
-    return std::find_first_of(detail::adl_begin(range1), detail::adl_end(range1),
-                              detail::adl_begin(range2), detail::adl_end(range2),
+    return std::find_first_of(nanorange::begin(range1), detail::adl_end(range1),
+                              nanorange::begin(range2), detail::adl_end(range2),
                               std::move(pred));
 }
 
@@ -1366,7 +1359,7 @@ template <typename Range, typename Pred = std::equal_to<>,
 safe_iterator_t<Range>
 adjacent_find(Range&& range, Pred pred = {})
 {
-    return std::adjacent_find(detail::adl_begin(range), detail::adl_end(range),
+    return std::adjacent_find(nanorange::begin(range), detail::adl_end(range),
                               std::move(pred));
 };
 
@@ -1387,7 +1380,7 @@ template <typename Range, typename T,
 range_difference_type_t<Range>
 count(Range&& rng, const T& value)
 {
-    return std::count(detail::adl_begin(rng), detail::adl_end(rng), value);
+    return std::count(nanorange::begin(rng), detail::adl_end(rng), value);
 }
 
 template <typename Iter, typename UnaryPredicate,
@@ -1405,7 +1398,7 @@ template <typename Range, typename UnaryPredicate,
 range_difference_type_t<Range>
 count_if(Range&& range, UnaryPredicate pred)
 {
-    return std::count_if(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
+    return std::count_if(nanorange::begin(range), detail::adl_end(range), std::move(pred));
 }
 
 // 11.3.10 Mismatch
@@ -1443,8 +1436,8 @@ template <typename Range1, typename Range2, typename BinaryPredicate = std::equa
 std::pair<safe_iterator_t<Range1>, safe_iterator_t<Range2>>
 mismatch(Range1&& range1, Range2&& range2, BinaryPredicate pred = {})
 {
-    return std::mismatch(detail::adl_begin(range1), detail::adl_end(range1),
-                         detail::adl_begin(range2), detail::adl_end(range2),
+    return std::mismatch(nanorange::begin(range1), detail::adl_end(range1),
+                         nanorange::begin(range2), detail::adl_end(range2),
                          std::move(pred));
 }
 
@@ -1480,8 +1473,8 @@ template <typename Range1, typename Range2, typename BinaryPredicate = std::equa
                  IndirectlyComparable<iterator_t<Range1>, iterator_t<Range2>, BinaryPredicate>)>
 bool equal(Range1&& range1, Range2&& range2, BinaryPredicate pred = {})
 {
-    return std::equal(detail::adl_begin(range1), detail::adl_end(range1),
-                      detail::adl_begin(range2), detail::adl_end(range2),
+    return std::equal(nanorange::begin(range1), detail::adl_end(range1),
+                      nanorange::begin(range2), detail::adl_end(range2),
                       std::move(pred));
 }
 
@@ -1513,8 +1506,8 @@ template <typename ForwardRng1, typename ForwardRng2, typename Pred = std::equal
                          IndirectlyComparable<iterator_t<ForwardRng1>, iterator_t<ForwardRng2>, Pred>)>
 bool is_permutation(ForwardRng1&& range1, ForwardRng2&& range2, Pred pred = {})
 {
-    return std::is_permutation(detail::adl_begin(range1), detail::adl_end(range2),
-                               detail::adl_begin(range2), detail::adl_end(range2),
+    return std::is_permutation(nanorange::begin(range1), detail::adl_end(range2),
+                               nanorange::begin(range2), detail::adl_end(range2),
                                std::move(pred));
 }
 
@@ -1537,8 +1530,8 @@ template <typename Range1, typename Range2, typename Pred = std::equal_to<>,
 safe_iterator_t<Range1>
 search(Range1&& range1, Range2&& range2, Pred pred = {})
 {
-    return std::search(detail::adl_begin(range1), detail::adl_end(range1),
-                       detail::adl_begin(range2), detail::adl_end(range2),
+    return std::search(nanorange::begin(range1), detail::adl_end(range1),
+                       nanorange::begin(range2), detail::adl_end(range2),
                        std::move(pred));
 }
 
@@ -1556,7 +1549,7 @@ template <typename Range, typename T, typename Pred = std::equal_to<>,
 safe_iterator_t<Range>
 search_n(Range&& range, difference_type_t<iterator_t<Range>> count, const T& value, Pred pred = {})
 {
-    return std::search_n(detail::adl_begin(range), detail::adl_end(range), count, value, std::move(pred));
+    return std::search_n(nanorange::begin(range), detail::adl_end(range), count, value, std::move(pred));
 }
 
 
@@ -1579,7 +1572,7 @@ template <typename Range1, typename Iter2,
                    IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
 Iter2 copy(Range1&& range, Iter2 ofirst)
 {
-    return std::copy(detail::adl_begin(range), detail::adl_end(range), std::move(ofirst));
+    return std::copy(nanorange::begin(range), detail::adl_end(range), std::move(ofirst));
 }
 
 template <typename Iter1, typename Iter2,
@@ -1608,7 +1601,7 @@ template <typename Range1, typename Iter2, typename Pred,
                    IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
 Iter2 copy_if(Range1&& range, Iter2 ofirst, Pred&& pred)
 {
-    return std::copy_if(detail::adl_begin(range), detail::adl_end(range), std::move(ofirst),
+    return std::copy_if(nanorange::begin(range), detail::adl_end(range), std::move(ofirst),
                         std::move(pred));
 }
 
@@ -1627,7 +1620,7 @@ template <typename Range1, typename Iter2,
                    IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
 Iter2 copy_backward(Range1&& range, Iter2 olast)
 {
-    return std::copy_backward(detail::adl_begin(range), detail::adl_end(range), std::move(olast));
+    return std::copy_backward(nanorange::begin(range), detail::adl_end(range), std::move(olast));
 }
 
 // 11.4.2 Move
@@ -1647,7 +1640,7 @@ template <typename Range1, typename Iter2,
                     IndirectlyMovable<iterator_t<Range1>, Iter2>)>
 Iter2 move(Range1&& range, Iter2 ofirst)
 {
-    return std::move(detail::adl_begin(range), detail::adl_end(range), std::move(ofirst));
+    return std::move(nanorange::begin(range), detail::adl_end(range), std::move(ofirst));
 }
 
 template <typename Iter1, typename Iter2,
@@ -1665,7 +1658,7 @@ template <typename Range1, typename Iter2,
                    IndirectlyMovable<iterator_t<Range1>, Iter2>)>
 Iter2 move_backward(Range1&& range, Iter2 olast)
 {
-    return std::move_backward(detail::adl_begin(range), detail::adl_end(range), std::move(olast));
+    return std::move_backward(nanorange::begin(range), detail::adl_end(range), std::move(olast));
 }
 
 // 11.4.3 Swap
@@ -1701,8 +1694,8 @@ template <typename Range1, typename Range2,
 std::pair<safe_iterator_t<Range1>, safe_iterator_t<Range2>>
 swap_ranges(Range1&& range1, Range2&& range2)
 {
-    return nanorange::swap_ranges(detail::adl_begin(range1), detail::adl_end(range1),
-                                  detail::adl_begin(range2), detail::adl_end(range2));
+    return nanorange::swap_ranges(nanorange::begin(range1), detail::adl_end(range1),
+                                  nanorange::begin(range2), detail::adl_end(range2));
 }
 
 // 11.4.4 Transform
@@ -1724,7 +1717,7 @@ template <typename Range1, typename Iter2, typename UnaryOp,
                  Writable<Iter2, indirect_result_of_t<UnaryOp&(iterator_t<Range1>)>>)>
 Iter2 transform(Range1&& range, Iter2 ofirst, UnaryOp op)
 {
-    return std::transform(detail::adl_begin(range), detail::adl_end(range),
+    return std::transform(nanorange::begin(range), detail::adl_end(range),
                           std::move(ofirst), std::move(op));
 }
 
@@ -1765,8 +1758,8 @@ template <typename Range1, typename Range2, typename Iter3, typename BinOp,
                  Writable<Iter3, indirect_result_of_t<BinOp&(iterator_t<Range1>, iterator_t<Range2>)>>)>
 Iter3 transform(Range1&& range1, Range2&& range2, Iter3 ofirst, BinOp op)
 {
-    return nanorange::transform(detail::adl_begin(range1), detail::adl_end(range1),
-                                detail::adl_begin(range2), detail::adl_end(range2),
+    return nanorange::transform(nanorange::begin(range1), detail::adl_end(range1),
+                                nanorange::begin(range2), detail::adl_end(range2),
                                 std::move(ofirst), std::move(op));
 }
 
@@ -1787,7 +1780,7 @@ template <typename Range, typename T,
                  IndirectRelation<std::equal_to<>, iterator_t<Range>, const T*>)>
 void replace(Range&& range, const T& old_value, const T& new_value)
 {
-    std::replace(detail::adl_begin(range), detail::adl_end(range),
+    std::replace(nanorange::begin(range), detail::adl_end(range),
                  old_value, new_value);
 }
 
@@ -1806,7 +1799,7 @@ template <typename Range, typename Pred, typename T,
                  IndirectUnaryPredicate<Pred, iterator_t<Range>>)>
 void replace_if(Range&& range, Pred pred, const T& new_value)
 {
-    std::replace_if(detail::adl_begin(range), detail::adl_end(range),
+    std::replace_if(nanorange::begin(range), detail::adl_end(range),
                     std::move(pred), new_value);
 }
 
@@ -1828,7 +1821,7 @@ template <typename Range1, typename Iter2, typename T,
                  IndirectRelation<std::equal_to<>, iterator_t<Range1>, const T*>)>
 Iter2 replace_copy(Range1&& range, Iter2 ofirst, const T& old_value, const T& new_value)
 {
-    return std::replace_copy(detail::adl_begin(range), detail::adl_end(range),
+    return std::replace_copy(nanorange::begin(range), detail::adl_end(range),
                              std::move(ofirst), old_value, new_value);
 }
 
@@ -1850,7 +1843,7 @@ template <typename Range1, typename Iter2, typename Pred, typename T,
                  IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
 Iter2 replace_copy_if(Range1&& range, Iter2 ofirst, Pred pred, const T& new_value)
 {
-    return std::replace_copy_if(detail::adl_begin(range), detail::adl_end(range),
+    return std::replace_copy_if(nanorange::begin(range), detail::adl_end(range),
                                 std::move(ofirst), std::move(pred), new_value);
 }
 
@@ -1867,7 +1860,7 @@ template <typename Range, typename T,
           REQUIRES(OutputRange<Range, const T&>)>
 void fill(Range&& range, const T& value)
 {
-    std::fill(detail::adl_begin(range), detail::adl_end(range), value);
+    std::fill(nanorange::begin(range), detail::adl_end(range), value);
 }
 
 template <typename Iter, typename T,
@@ -1895,7 +1888,7 @@ template <typename Range, typename Generator,
                    Callable<Generator&>)>
 void generate(Range&& range, Generator gen)
 {
-    std::generate(detail::adl_begin(range), detail::adl_end(range), std::move(gen));
+    std::generate(nanorange::begin(range), detail::adl_end(range), std::move(gen));
 }
 
 template <typename Iter, typename Generator,
@@ -1925,7 +1918,7 @@ template <typename Range, typename T,
                    IndirectRelation<std::equal_to<>, iterator_t<Range>, const T*>)>
 safe_iterator_t<Range> remove(Range&& range, const T& value)
 {
-    return std::remove(detail::adl_begin(range), detail::adl_end(range), value);
+    return std::remove(nanorange::begin(range), detail::adl_end(range), value);
 }
 
 template <typename Iter, typename Pred,
@@ -1943,7 +1936,7 @@ template <typename Range, typename Pred,
                    Permutable<iterator_t<Range>>)>
 safe_iterator_t<Range> remove_if(Range&& range, Pred pred)
 {
-    return std::remove_if(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
+    return std::remove_if(nanorange::begin(range), detail::adl_end(range), std::move(pred));
 }
 
 template <typename Iter1, typename Iter2, typename T,
@@ -1964,7 +1957,7 @@ template <typename Range1, typename Iter2, typename T,
                  IndirectRelation<std::equal_to<>, iterator_t<Range1>, const T*>)>
 Iter2 remove_copy(Range1&& range, Iter2 ofirst, const T& value)
 {
-    return std::remove_copy(detail::adl_begin(range), detail::adl_end(range),
+    return std::remove_copy(nanorange::begin(range), detail::adl_end(range),
                             std::move(ofirst), value);
 }
 
@@ -1986,7 +1979,7 @@ template <typename Range1, typename Iter2, typename Pred,
                    IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
 Iter2 remove_copy_if(Range1&& range, Iter2 ofirst, Pred pred)
 {
-    return std::remove_copy_if(detail::adl_begin(range), detail::adl_end(range),
+    return std::remove_copy_if(nanorange::begin(range), detail::adl_end(range),
                                std::move(ofirst), std::move(pred));
 }
 
@@ -2007,7 +2000,7 @@ template <typename Range, typename Pred = std::equal_to<>,
                  Permutable<iterator_t<Range>>)>
 safe_iterator_t<Range> unique(Range&& range, Pred pred = {})
 {
-    return std::unique(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
+    return std::unique(nanorange::begin(range), detail::adl_end(range), std::move(pred));
 }
 
 template <typename Iter1, typename Iter2, typename Pred = std::equal_to<>,
@@ -2033,7 +2026,7 @@ template <typename Range1, typename Iter2, typename Pred = std::equal_to<>,
                        IndirectlyCopyableStorable<iterator_t<Range1>, Iter2>))>
 Iter2 unique_copy(Range1&& range, Iter2 ofirst, Pred pred = {})
 {
-    return std::unique_copy(detail::adl_begin(range), detail::adl_end(range), std::move(ofirst), std::move(pred));
+    return std::unique_copy(nanorange::begin(range), detail::adl_end(range), std::move(ofirst), std::move(pred));
 }
 
 // 11.4.10 Reverse
@@ -2051,7 +2044,7 @@ template <typename Range,
                    Permutable<iterator_t<Range>>)>
 void reverse(Range&& range)
 {
-    std::reverse(detail::adl_begin(range), detail::adl_end(range));
+    std::reverse(nanorange::begin(range), detail::adl_end(range));
 }
 
 template <typename Iter1, typename Iter2,
@@ -2069,7 +2062,7 @@ template <typename Range1, typename Iter2,
                    IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
 Iter2 reverse_copy(Range1&& range, Iter2 ofirst)
 {
-    return std::reverse_copy(detail::adl_begin(range), detail::adl_end(range),
+    return std::reverse_copy(nanorange::begin(range), detail::adl_end(range),
                              std::move(ofirst));
 }
 
@@ -2089,7 +2082,7 @@ template <typename Range,
 safe_iterator_t<Range>
 rotate(Range&& range, iterator_t<Range> middle)
 {
-    return std::rotate(detail::adl_begin(range), std::move(middle), detail::adl_end(range));
+    return std::rotate(nanorange::begin(range), std::move(middle), detail::adl_end(range));
 }
 
 template <typename Iter1, typename Iter2,
@@ -2108,7 +2101,7 @@ template <typename Range1, typename Iter2,
                  IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
 Iter2 rotate_copy(Range1&& range, iterator_t<Range1> middle, Iter2 ofirst)
 {
-    return std::rotate_copy(detail::adl_begin(range), std::move(middle),
+    return std::rotate_copy(nanorange::begin(range), std::move(middle),
                             detail::adl_end(range), std::move(ofirst));
 }
 
@@ -2131,7 +2124,7 @@ template <typename Range, typename URNG,
                  ConvertibleTo<std::result_of_t<URNG&()>, range_difference_type_t<Range>>)>
 void shuffle(Range&& range, URNG&& generator)
 {
-    std::shuffle(detail::adl_begin(range), detail::adl_end(range), std::forward<URNG>(generator));
+    std::shuffle(nanorange::begin(range), detail::adl_end(range), std::forward<URNG>(generator));
 }
 
 // 11.4.13 Partitions
@@ -2149,7 +2142,7 @@ template <typename Range, typename Pred,
                    IndirectUnaryPredicate<Pred, iterator_t<Range>>)>
 bool is_partitioned(Range&& range, Pred pred)
 {
-    return std::is_partitioned(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
+    return std::is_partitioned(nanorange::begin(range), detail::adl_end(range), std::move(pred));
 }
 
 template <typename Iter, typename Pred,
@@ -2167,7 +2160,7 @@ template <typename Range, typename Pred,
                    Permutable<iterator_t<Range>>)>
 safe_iterator_t<Range> partition(Range&& range, Pred pred)
 {
-    return std::partition(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
+    return std::partition(nanorange::begin(range), detail::adl_end(range), std::move(pred));
 }
 
 template <typename Iter, typename Pred,
@@ -2185,7 +2178,7 @@ template <typename Range, typename Pred,
                  Permutable<iterator_t<Range>>)>
 safe_iterator_t<Range> stable_partition(Range&& range, Pred pred)
 {
-    return std::stable_partition(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
+    return std::stable_partition(nanorange::begin(range), detail::adl_end(range), std::move(pred));
 }
 
 template <typename Iter1, typename Iter2, typename Iter3, typename Pred,
@@ -2212,7 +2205,7 @@ template <typename Range1, typename Iter2, typename Iter3, typename Pred,
 std::pair<Iter2, Iter3>
 partition_copy(Range1&& range, Iter2 otrue, Iter3 ofalse, Pred pred)
 {
-    return std::partition_copy(detail::adl_begin(range), detail::adl_end(range),
+    return std::partition_copy(nanorange::begin(range), detail::adl_end(range),
                                std::move(otrue), std::move(ofalse), std::move(pred));
 }
 
@@ -2230,7 +2223,7 @@ template <typename Range, typename Pred,
                  IndirectUnaryPredicate<Pred, iterator_t<Range>>)>
 safe_iterator_t<Range> partition_point(Range&& range, Pred pred)
 {
-    return std::partition_point(detail::adl_begin(range), detail::adl_end(range), std::move(pred));
+    return std::partition_point(nanorange::begin(range), detail::adl_end(range), std::move(pred));
 }
 
 /*
@@ -2254,7 +2247,7 @@ template <typename Range, typename Comp = std::less<>,
                  Sortable<iterator_t<Range>, Comp>)>
 void sort(Range&& range, Comp comp = {})
 {
-    std::sort(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    std::sort(nanorange::begin(range), detail::adl_end(range), std::move(comp));
 }
 
 // 11.5.1.2 stable_sort
@@ -2272,7 +2265,7 @@ template <typename Range, typename Comp = std::less<>,
                  Sortable<iterator_t<Range>, Comp>)>
 void stable_sort(Range&& range, Comp comp = {})
 {
-    std::stable_sort(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    std::stable_sort(nanorange::begin(range), detail::adl_end(range), std::move(comp));
 }
 
 // 11.5.1.3 partial_sort
@@ -2290,7 +2283,7 @@ template <typename Range, typename Comp = std::less<>,
                  Sortable<iterator_t<Range>, Comp>)>
 void partial_sort(Range&& range, iterator_t<Range> middle, Comp comp = {})
 {
-    std::partial_sort(detail::adl_begin(range), std::move(middle), detail::adl_end(range), std::move(comp));
+    std::partial_sort(nanorange::begin(range), std::move(middle), detail::adl_end(range), std::move(comp));
 }
 
 // 11.5.1.4 partial_sort_copy
@@ -2316,8 +2309,8 @@ template <typename Range1, typename Range2, typename Comp = std::less<>,
                  IndirectStrictWeakOrder<Comp, iterator_t<Range1>, iterator_t<Range2>>)>
 safe_iterator_t<Range2> partial_sort_copy(Range1&& input, Range2&& result, Comp comp = {})
 {
-    return std::partial_sort_copy(detail::adl_begin(input), detail::adl_end(input),
-                                  detail::adl_begin(result), detail::adl_end(result),
+    return std::partial_sort_copy(nanorange::begin(input), detail::adl_end(input),
+                                  nanorange::begin(result), detail::adl_end(result),
                                   std::move(comp));
 }
 
@@ -2336,7 +2329,7 @@ template <typename Range, typename Comp = std::less<>,
                  IndirectStrictWeakOrder<Comp, iterator_t<Range>>)>
 bool is_sorted(Range&& range, Comp comp = {})
 {
-    return std::is_sorted(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    return std::is_sorted(nanorange::begin(range), detail::adl_end(range), std::move(comp));
 }
 
 template <typename Iter, typename Comp = std::less<>,
@@ -2352,7 +2345,7 @@ template <typename Range, typename Comp = std::less<>,
                  IndirectStrictWeakOrder<Comp, iterator_t<Range>>)>
 safe_iterator_t<Range> is_sorted_until(Range&& range, Comp comp = {})
 {
-    return std::is_sorted_until(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    return std::is_sorted_until(nanorange::begin(range), detail::adl_end(range), std::move(comp));
 }
 
 // 11.5.2 Nth element
@@ -2370,7 +2363,7 @@ template <typename Range, typename Comp = std::less<>,
                  Sortable<iterator_t<Range>, Comp>)>
 void nth_element(Range&& range, iterator_t<Range> nth, Comp comp = {})
 {
-    std::nth_element(detail::adl_begin(range), detail::adl_end(range), std::move(nth), std::move(comp));
+    std::nth_element(nanorange::begin(range), detail::adl_end(range), std::move(nth), std::move(comp));
 }
 
 // 11.5.3 Binary search operations
@@ -2391,7 +2384,7 @@ template <typename Range, typename T, typename Comp = std::less<>,
 safe_iterator_t<Range>
 lower_bound(Range&& range, const T& value, Comp comp = {})
 {
-    return std::lower_bound(detail::adl_begin(range), detail::adl_end(range), value, std::move(comp));
+    return std::lower_bound(nanorange::begin(range), detail::adl_end(range), value, std::move(comp));
 }
 
 // 11.5.3.2 upper_bound
@@ -2410,7 +2403,7 @@ template <typename Range, typename T, typename Comp = std::less<>,
 safe_iterator_t<Range>
 upper_bound(Range&& range, const T& value, Comp comp = {})
 {
-    return std::upper_bound(detail::adl_begin(range), detail::adl_end(range), value, std::move(comp));
+    return std::upper_bound(nanorange::begin(range), detail::adl_end(range), value, std::move(comp));
 }
 
 // 11.5.3.3 equal_range
@@ -2430,7 +2423,7 @@ template <typename Range, typename T, typename Comp = std::less<>,
 std::pair<safe_iterator_t<Range>, safe_iterator_t<Range>>
 equal_range(Range&& range, const T& value, Comp comp = {})
 {
-    return std::equal_range(detail::adl_begin(range), detail::adl_end(range), value, std::move(comp));
+    return std::equal_range(nanorange::begin(range), detail::adl_end(range), value, std::move(comp));
 }
 
 // 11.5.3.4 binary_search
@@ -2448,7 +2441,7 @@ template <typename Range, typename T, typename Comp = std::less<>,
                  IndirectStrictWeakOrder<Comp, const T*, iterator_t<Range>>)>
 bool binary_search(Range&& range, const T& value, Comp comp = {})
 {
-    return std::binary_search(detail::adl_begin(range), detail::adl_end(range), value, std::move(comp));
+    return std::binary_search(nanorange::begin(range), detail::adl_end(range), value, std::move(comp));
 }
 
 // 11.5.4 Merge
@@ -2472,8 +2465,8 @@ template <typename InputRng1, typename InputRng2, typename OutputIt, typename Co
                    Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
 OutputIt merge(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp comp = {})
 {
-    return std::merge(detail::adl_begin(range1), detail::adl_end(range1),
-                      detail::adl_begin(range2), detail::adl_end(range2),
+    return std::merge(nanorange::begin(range1), detail::adl_end(range1),
+                      nanorange::begin(range2), detail::adl_end(range2),
                       std::move(ofirst), std::move(comp));
 }
 
@@ -2490,7 +2483,7 @@ template <typename BidirRng, typename Comp = std::less<>,
                  Sortable<iterator_t<BidirRng>, Comp>)>
 void inplace_merge(BidirRng&& range, iterator_t<BidirRng> middle, Comp comp = {})
 {
-    std::inplace_merge(detail::adl_begin(range), std::move(middle), detail::adl_end(range), std::move(comp));
+    std::inplace_merge(nanorange::begin(range), std::move(middle), detail::adl_end(range), std::move(comp));
 }
 
 // 11.5.5. Set operations on sorted structures
@@ -2514,8 +2507,8 @@ template <typename InputRng1, typename InputRng2, typename Comp = std::less<>,
                  IndirectStrictWeakOrder<Comp, iterator_t<InputRng1>, iterator_t<InputRng2>>)>
 bool includes(InputRng1&& range1, InputRng2&& range2, Comp comp = {})
 {
-    return std::includes(detail::adl_begin(range1), detail::adl_end(range1),
-                         detail::adl_begin(range2), detail::adl_end(range2),
+    return std::includes(nanorange::begin(range1), detail::adl_end(range1),
+                         nanorange::begin(range2), detail::adl_end(range2),
                          std::move(comp));
 }
 
@@ -2541,8 +2534,8 @@ template <typename InputRng1, typename InputRng2, typename OutputIt, typename Co
                  Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
 OutputIt set_union(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp comp = {})
 {
-    return std::set_union(detail::adl_begin(range1), detail::adl_end(range1),
-                          detail::adl_begin(range2), detail::adl_end(range2),
+    return std::set_union(nanorange::begin(range1), detail::adl_end(range1),
+                          nanorange::begin(range2), detail::adl_end(range2),
                           std::move(ofirst), std::move(comp));
 }
 
@@ -2568,8 +2561,8 @@ template <typename InputRng1, typename InputRng2, typename OutputIt, typename Co
                    Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
 OutputIt set_intersection(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp comp = {})
 {
-    return std::set_intersection(detail::adl_begin(range1), detail::adl_end(range1),
-                                 detail::adl_begin(range2), detail::adl_end(range2),
+    return std::set_intersection(nanorange::begin(range1), detail::adl_end(range1),
+                                 nanorange::begin(range2), detail::adl_end(range2),
                                  std::move(ofirst), std::move(comp));
 }
 
@@ -2595,8 +2588,8 @@ template <typename InputRng1, typename InputRng2, typename OutputIt, typename Co
                          Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
 OutputIt set_difference(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp comp = {})
 {
-    return std::set_difference(detail::adl_begin(range1), detail::adl_end(range1),
-                               detail::adl_begin(range2), detail::adl_end(range2),
+    return std::set_difference(nanorange::begin(range1), detail::adl_end(range1),
+                               nanorange::begin(range2), detail::adl_end(range2),
                                std::move(ofirst), std::move(comp));
 }
 
@@ -2622,8 +2615,8 @@ template <typename InputRng1, typename InputRng2, typename OutputIt, typename Co
                  Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
 OutputIt set_symmetric_difference(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp comp = {})
 {
-    return std::set_symmetric_difference(detail::adl_begin(range1), detail::adl_end(range1),
-                                         detail::adl_begin(range2), detail::adl_end(range2),
+    return std::set_symmetric_difference(nanorange::begin(range1), detail::adl_end(range1),
+                                         nanorange::begin(range2), detail::adl_end(range2),
                                          std::move(ofirst), std::move(comp));
 }
 
@@ -2644,7 +2637,7 @@ template <typename RandomRng, typename Comp = std::less<>,
                  Sortable<iterator_t<RandomRng>, Comp>)>
 void push_heap(RandomRng&& range, Comp comp = {})
 {
-    std::push_heap(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    std::push_heap(nanorange::begin(range), detail::adl_end(range), std::move(comp));
 }
 
 // 11.5.5.2 pop_heap
@@ -2662,7 +2655,7 @@ template <typename RandomRng, typename Comp = std::less<>,
                    Sortable<iterator_t<RandomRng>, Comp>)>
 void pop_heap(RandomRng&& range, Comp comp = {})
 {
-    std::pop_heap(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    std::pop_heap(nanorange::begin(range), detail::adl_end(range), std::move(comp));
 }
 
 // 11.5.5.3 make_heap
@@ -2680,7 +2673,7 @@ template <typename RandomRng, typename Comp = std::less<>,
                    Sortable<iterator_t<RandomRng>, Comp>)>
 void make_heap(RandomRng&& range, Comp comp = {})
 {
-    std::make_heap(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    std::make_heap(nanorange::begin(range), detail::adl_end(range), std::move(comp));
 }
 
 // 11.5.6.4 sort_heap
@@ -2698,7 +2691,7 @@ template <typename RandomRng, typename Comp = std::less<>,
                  Sortable<iterator_t<RandomRng>, Comp>)>
 void sort_heap(RandomRng&& range, Comp comp = {})
 {
-    std::sort_heap(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    std::sort_heap(nanorange::begin(range), detail::adl_end(range), std::move(comp));
 }
 
 // 11.5.6.5 is_heap
@@ -2716,7 +2709,7 @@ template <typename RandomRng, typename Comp = std::less<>,
                  IndirectStrictWeakOrder<Comp, iterator_t<RandomRng>>)>
 bool is_heap(RandomRng&& range, Comp comp = {})
 {
-    return std::is_heap(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    return std::is_heap(nanorange::begin(range), detail::adl_end(range), std::move(comp));
 }
 
 template <typename RandomIt, typename Comp = std::less<>,
@@ -2732,7 +2725,7 @@ template <typename RandomRng, typename Comp = std::less<>,
                  IndirectStrictWeakOrder<Comp, iterator_t<RandomRng>>)>
 safe_iterator_t<RandomRng> is_heap_until(RandomRng&& range, Comp comp = {})
 {
-    return std::is_heap_until(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    return std::is_heap_until(nanorange::begin(range), detail::adl_end(range), std::move(comp));
 }
 
 // 11.5.7 Minimum and maximum
@@ -2759,7 +2752,7 @@ template <typename ForwardRng, typename Comp = std::less<>,
 constexpr value_type_t<iterator_t<ForwardRng>>
 min(ForwardRng&& range, Comp comp = {})
 {
-    return *std::min_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    return *std::min_element(nanorange::begin(range), detail::adl_end(range), std::move(comp));
 }
 
 template <typename T, typename Comp = std::less<>,
@@ -2784,7 +2777,7 @@ template <typename ForwardRng, typename Comp = std::less<>,
 value_type_t<iterator_t<ForwardRng>>
 max(ForwardRng&& range, Comp comp = {})
 {
-    return *std::max_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    return *std::max_element(nanorange::begin(range), detail::adl_end(range), std::move(comp));
 }
 
 template <typename T, typename Comp = std::less<>,
@@ -2810,7 +2803,7 @@ template <typename ForwardRng, typename Comp = std::less<>,
 std::pair<range_value_type_t<ForwardRng>, range_value_type_t<ForwardRng>>
 minmax(ForwardRng&& range, Comp comp = {})
 {
-    const auto p = std::minmax_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    const auto p = std::minmax_element(nanorange::begin(range), detail::adl_end(range), std::move(comp));
     return {*p.first, *p.second};
 }
 
@@ -2828,7 +2821,7 @@ template <typename ForwardRng, typename Comp = std::less<>,
 safe_iterator_t<ForwardRng>
 min_element(ForwardRng&& range, Comp comp = {})
 {
-    return std::min_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    return std::min_element(nanorange::begin(range), detail::adl_end(range), std::move(comp));
 }
 
 template <typename ForwardIt, typename Comp = std::less<>,
@@ -2845,7 +2838,7 @@ template <typename ForwardRng, typename Comp = std::less<>,
 safe_iterator_t<ForwardRng>
 max_element(ForwardRng&& range, Comp comp = {})
 {
-    return std::max_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    return std::max_element(nanorange::begin(range), detail::adl_end(range), std::move(comp));
 }
 
 template <typename ForwardIt, typename Comp = std::less<>,
@@ -2863,7 +2856,7 @@ template <typename ForwardRng, typename Comp = std::less<>,
 std::pair<safe_iterator_t<ForwardRng>, safe_iterator_t<ForwardRng>>
 minmax_element(ForwardRng&& range, Comp comp = {})
 {
-    return std::minmax_element(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    return std::minmax_element(nanorange::begin(range), detail::adl_end(range), std::move(comp));
 }
 
 // 11.5.8 Lexicographical operations
@@ -2886,8 +2879,8 @@ template <typename InputRng1, typename InputRng2, typename Comp = std::less<>,
                  IndirectStrictWeakOrder<Comp, iterator_t<InputRng1>, iterator_t<InputRng2>>)>
 bool lexicographical_compare(InputRng1&& range1, InputRng2&& range2, Comp comp = {})
 {
-    return std::lexicographical_compare(detail::adl_begin(range1), detail::adl_end(range1),
-                                        detail::adl_begin(range2), detail::adl_end(range2),
+    return std::lexicographical_compare(nanorange::begin(range1), detail::adl_end(range1),
+                                        nanorange::begin(range2), detail::adl_end(range2),
                                         std::move(comp));
 }
 
@@ -2906,7 +2899,7 @@ template <typename BidirRng, typename Comp = std::less<>,
                  Sortable<iterator_t<iterator_t<BidirRng>>, Comp>)>
 bool next_permutation(BidirRng&& range, Comp comp = {})
 {
-    return std::next_permutation(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    return std::next_permutation(nanorange::begin(range), detail::adl_end(range), std::move(comp));
 }
 
 template <typename BidirIt, typename Comp = std::less<>,
@@ -2922,7 +2915,7 @@ template <typename BidirRng, typename Comp = std::less<>,
                  Sortable<iterator_t<BidirRng>, Comp>)>
 bool prev_permutation(BidirRng&& range, Comp comp = {})
 {
-    return std::prev_permutation(detail::adl_begin(range), detail::adl_end(range), std::move(comp));
+    return std::prev_permutation(nanorange::begin(range), detail::adl_end(range), std::move(comp));
 }
 
 /*
@@ -2947,7 +2940,7 @@ template <typename ForwardRng, typename T,
                    Writable<iterator_t<ForwardRng>, T>)>
 void iota(ForwardRng&& range, T value)
 {
-    return std::iota(detail::adl_begin(range), detail::adl_end(range), std::move(value));
+    return std::iota(nanorange::begin(range), detail::adl_end(range), std::move(value));
 }
 
 template <typename InputIt, typename T, typename BinOp = std::plus<>,
@@ -2965,7 +2958,7 @@ template <typename InputRng, typename T, typename BinOp = std::plus<>,
                          std::result_of_t<BinOp&(const T&, range_value_type_t<InputRng>)>>::value)>
 T accumulate(InputRng&& range, T init, BinOp op = {})
 {
-    return std::accumulate(detail::adl_begin(range), detail::adl_end(range), std::move(init), std::move(op));
+    return std::accumulate(nanorange::begin(range), detail::adl_end(range), std::move(init), std::move(op));
 }
 
 // Oh boy
@@ -3014,8 +3007,8 @@ T inner_product(InputRng1&& range1, InputRng2&& range2,
                 T value, BinOp1 op1 = {}, BinOp2 op2 = {})
 {
     return nanorange::inner_product(
-                 detail::adl_begin(range1), detail::adl_end(range1),
-                 detail::adl_begin(range2), detail::adl_end(range2),
+                 nanorange::begin(range1), detail::adl_end(range1),
+                 nanorange::begin(range2), detail::adl_end(range2),
                  std::move(value), std::move(op1), std::move(op2));
 }
 
@@ -3034,7 +3027,7 @@ template <typename InputRng,  typename OutputIt, typename BinOp = std::minus<>,
                          std::result_of_t<BinOp&(range_value_type_t<InputRng>, range_value_type_t<InputRng>)>>)>
 OutputIt adjacent_difference(InputRng&& range, OutputIt ofirst, BinOp op = {})
 {
-    return std::adjacent_difference(detail::adl_begin(range), detail::adl_end(range), std::move(ofirst), std::move(op));
+    return std::adjacent_difference(nanorange::begin(range), detail::adl_end(range), std::move(ofirst), std::move(op));
 }
 
 template <typename InputIt, typename OutputIt, typename BinOp = std::plus<>,
@@ -3052,7 +3045,7 @@ template <typename InputRng, typename OutputIt, typename BinOp = std::plus<>,
                          std::result_of_t<BinOp&(range_value_type_t<InputRng>, range_value_type_t<InputRng>)>>)>
 OutputIt partial_sum(InputRng&& range, OutputIt ofirst, BinOp op = {})
 {
-    return std::partial_sum(detail::adl_begin(range), detail::adl_end(range), std::move(ofirst), std::move(op));
+    return std::partial_sum(nanorange::begin(range), detail::adl_end(range), std::move(ofirst), std::move(op));
 }
 
 #undef CONCEPT
