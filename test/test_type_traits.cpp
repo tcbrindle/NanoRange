@@ -1,18 +1,38 @@
 
 #include <nanorange.hpp>
 
+#include <bitset>
 #include <iterator>
 #include <forward_list>
 #include <functional>
 #include <list>
+#include <memory>
 #include <vector>
 
 namespace rng = nanorange;
 
+struct move_only {
+    move_only(move_only&&) = default;
+    move_only& operator=(move_only&&) = default;
+};
+
+struct not_movable {
+    not_movable(not_movable&&) = delete;
+    not_movable& operator=(not_movable&&) = delete;
+};
+
+
+struct explicitly_convertible_to_bool {
+    explicit operator bool();
+};
+
+
 static_assert(rng::Boolean<bool>, "");
 static_assert(rng::Boolean<std::true_type>, "");
-// static_assert(!rng::Boolean<int>, "");
-
+static_assert(rng::Boolean<typename std::bitset<1>::reference>, "");
+static_assert(!rng::Boolean<int*>, "");
+static_assert(!rng::Boolean<std::unique_ptr<int>>, "");
+static_assert(!rng::Boolean<explicitly_convertible_to_bool>, "");
 
 static_assert(rng::Same<rng::difference_type_t<int*>, ptrdiff_t>, "");
 
@@ -77,8 +97,6 @@ static_assert(rng::Semiregular<ptr_t>, "");
 static_assert(rng::detail::is_detected_v<rng::difference_type_t, ptr_t>, "");
 static_assert(rng::Same<rng::difference_type_t<ptr_t>, std::ptrdiff_t>, "");
 static_assert(rng::SignedIntegral<rng::detail::detected_t<rng::difference_type_t, ptr_t>>, "");
-static_assert(rng::detail::is_detected_exact_v<ptr_t&, rng::detail::pre_inc_t, ptr_t&>, "");
-static_assert(rng::detail::is_detected_v<rng::detail::post_inc_t, ptr_t&>, "");
 static_assert(rng::Regular<ptr_t>, "");
 
 static_assert(rng::InputIterator<ptr_t>, "");
@@ -175,7 +193,7 @@ static_assert(rng::OutputRange<output_rng_t, char>, "");
  * Predicate type trait tests
  */
 
-void* unary_pred(int);
+bool unary_pred(int);
 
 static_assert(rng::Predicate<decltype(unary_pred)&, int>, "");
 static_assert(!rng::IndirectUnaryPredicate<int, ra_iter_t>, "");

@@ -106,6 +106,16 @@ using is_detected_convertible = std::is_convertible<detected_t<Op, Args...>, To>
 template <class To, template <class...> class Op, class... Args>
 constexpr bool is_detected_convertible_v = is_detected_convertible<To, Op, Args...>::value;
 
+// "Requires clause" testing machinery
+template <typename... Args, typename R, typename = decltype(&R::template requires_<Args...>)>
+auto test_requires(R&) -> void;
+
+template <typename R, typename... Args>
+using test_requires_t = decltype(detail::test_requires<Args...>(std::declval<R&>()));
+
+template <typename R, typename... Args>
+constexpr bool requires_ = detail::is_detected_v<test_requires_t, R, Args...>;
+
 } // namespace detail
 
 /* Core language concepts [7.3] */
@@ -119,6 +129,18 @@ constexpr bool is_detected_convertible_v = is_detected_convertible<To, Op, Args.
 template <typename T, typename U>
 CONCEPT bool Same = std::is_same<T, U>::value;
 
+namespace detail {
+
+// Helper function for requires clause SFINAE: is valid only if
+// the deduced type is an rvalue T
+template <typename T, typename Deduced>
+auto same_rv(Deduced&&) -> std::enable_if_t<Same<T, Deduced>>;
+
+template <typename T, typename Deduced>
+auto same_lv(Deduced&) -> std::enable_if_t<Same<T, Deduced>>;
+
+}
+
 template <typename T, typename U>
 CONCEPT bool DerivedFrom =
         std::is_base_of<U, T>::value &&
@@ -126,6 +148,13 @@ CONCEPT bool DerivedFrom =
 
 template <typename From, typename To>
 CONCEPT bool ConvertibleTo = std::is_convertible<From, To>::value;
+
+namespace detail {
+
+template <typename T, typename Deduced>
+auto convertible_to_rv(Deduced&&) -> std::enable_if_t<ConvertibleTo<Deduced, T>>;
+
+}
 
 // TODO: common_reference_t is a nightmare
 
@@ -174,128 +203,131 @@ CONCEPT bool CopyConstructible =
 
 /* 7.4 Comparison Concepts */
 
-namespace detail {
-
-template <typename T, typename U>
-auto equal_to(T t, U u) -> decltype(t == u);
-
-template <typename T, typename U>
-using equal_to_t = decltype(equal_to(std::declval<T>(), std::declval<U>()));
-
-template <typename T, typename U>
-auto not_equal_to(T t, U u) -> decltype(t != u);
-
-template <typename T, typename U>
-using not_equal_to_t = decltype(not_equal_to(std::declval<T>(), std::declval<U>()));
-
-template <typename T, typename U>
-auto less_than(T t, U u) -> decltype(t < u);
-
-template <typename T, typename U>
-using less_than_t = decltype(less_than(std::declval<T>(), std::declval<U>()));
-
-template <typename T, typename U>
-auto greater_than(T t, U u) -> decltype(t > u);
-
-template <typename T, typename U>
-using greater_than_t = decltype(greater_than(std::declval<T>(), std::declval<U>()));
-
-template <typename T, typename U>
-auto less_than_eq(T t, U u) -> decltype(t <= u);
-
-template <typename T, typename U>
-using less_than_eq_t = decltype(less_than_eq(std::declval<T>(), std::declval<U>()));
-
-template <typename T, typename U>
-auto greater_than_eq(T t, U u) -> decltype(t >= u);
-
-template <typename T, typename U>
-using greater_than_eq_t = decltype(greater_than_eq(std::declval<T>(), std::declval<U>()));
-
-template <typename T>
-auto pre_inc(T t) -> decltype(++t);
-
-template <typename T>
-using pre_inc_t = decltype(pre_inc(std::declval<T>()));
-
-template <typename T>
-auto post_inc(T t) -> decltype(t++);
-
-template <typename T>
-using post_inc_t = decltype(post_inc(std::declval<T>()));
-
-template <typename I>
-auto pre_dec(I i) -> decltype(--i);
-
-template <typename T>
-using pre_dec_t = decltype(pre_dec(std::declval<T>()));
-
-template <typename I>
-auto post_dec(I i) -> decltype(i--);
-
-template <typename T>
-using post_dec_t = decltype(post_dec(std::declval<T>()));
-
-template <typename T>
-auto deref(T t) -> decltype(*t);
-
-template <typename T>
-using deref_t = decltype(deref(std::declval<T>()));
-
-}
-
-
-// TODO: Do this properly
-template <typename B>
-CONCEPT bool Boolean =
-        ConvertibleTo<B, bool>;
-
-template <typename T, typename U>
-CONCEPT bool WeaklyComparibleWith =
-        Boolean<detail::detected_t<detail::equal_to_t, T, U>> &&
-        Boolean<detail::detected_t<detail::not_equal_to_t, T, U>> &&
-        Boolean<detail::detected_t<detail::equal_to_t, U, T>> &&
-        Boolean<detail::detected_t<detail::not_equal_to_t, U, T>>;
-
-template <typename T>
-CONCEPT bool EqualityComparible = WeaklyComparibleWith<T, T>;
-
-template <typename T, typename U>
-CONCEPT bool EqualityComparibleWith =
-        EqualityComparible<T> &&
-        EqualityComparible<U> &&
-        WeaklyComparibleWith<T, U>;
-
-template <typename T>
-CONCEPT bool StrictTotallyOrdered =
-        EqualityComparible<T> &&
-        Boolean<detail::detected_t<detail::less_than_t, T, T>> &&
-        Boolean<detail::detected_t<detail::less_than_eq_t, T, T>> &&
-        Boolean<detail::detected_t<detail::greater_than_t, T, T>> &&
-        Boolean<detail::detected_t<detail::greater_than_eq_t, T, T>>;
-
-template <typename T, typename U>
-CONCEPT bool StrictTotallyOrderedWith =
-        StrictTotallyOrdered<T> &&
-        StrictTotallyOrdered<U> &&
-        EqualityComparibleWith<T, U> &&
-        Boolean<detail::detected_t<detail::less_than_t, T, U>> &&
-        Boolean<detail::detected_t<detail::less_than_eq_t, T, U>> &&
-        Boolean<detail::detected_t<detail::greater_than_t, T, U>> &&
-        Boolean<detail::detected_t<detail::greater_than_eq_t, T, U>> &&
-        Boolean<detail::detected_t<detail::less_than_t, U, T>> &&
-        Boolean<detail::detected_t<detail::less_than_eq_t, U, T>> &&
-        Boolean<detail::detected_t<detail::greater_than_t, U, T>> &&
-        Boolean<detail::detected_t<detail::greater_than_eq_t, U, T>>;
-
-/* 7.5 Object Concepts */
-
 template <typename T>
 CONCEPT bool Movable =
         std::is_object<T>::value &&
         MoveConstructible<T> &&
         Assignable<T&, T> &&
         Swappable<T>;
+
+
+namespace detail {
+
+struct Boolean_ {
+    template <typename B>
+    auto requires_(const std::remove_reference_t<B>& b1,
+                   const std::remove_reference_t<B>& b2,
+                   const bool a) -> decltype (
+        convertible_to_rv<bool>(b1),
+        convertible_to_rv<bool>(!b1),
+        same_rv<bool>(b1 && a),
+        same_rv<bool>(b1 || a),
+        same_rv<bool>(b1 && b2),
+        same_rv<bool>(a && b2),
+        same_rv<bool>(b1 || b2),
+        same_rv<bool>(a || b2),
+        convertible_to_rv<bool>(b1 == b2),
+        convertible_to_rv<bool>(b1 == a),
+        convertible_to_rv<bool>(a == b2),
+        convertible_to_rv<bool>(b1 != b2),
+        convertible_to_rv<bool>(b1 != a),
+        convertible_to_rv<bool>(a != b2)
+    );
+};
+
+}
+
+template <typename B>
+CONCEPT bool Boolean =
+        Movable<std::decay_t<B>> &&
+        ConvertibleTo<B, bool> &&
+        detail::requires_<detail::Boolean_, B>;
+
+namespace detail {
+
+template <typename Deduced>
+auto boolean_rv(Deduced&&) -> std::enable_if_t<Boolean<Deduced>>;
+
+}
+
+
+namespace detail {
+
+struct WeaklyEqualityComparableWith_ {
+    template <typename T, typename U>
+    auto requires_(const std::remove_reference_t<T>& t,
+                   const std::remove_reference_t<U>& u) -> decltype(
+        boolean_rv(t == u),
+        boolean_rv(t != u),
+        boolean_rv(u == t),
+        boolean_rv(u != t)
+    );
+};
+
+}
+
+
+template <typename T, typename U>
+CONCEPT bool WeaklyEqualityComparableWith =
+        detail::requires_<detail::WeaklyEqualityComparableWith_, T, U>;
+
+template <typename T>
+CONCEPT bool EqualityComparable = WeaklyEqualityComparableWith<T, T>;
+
+template <typename T, typename U>
+CONCEPT bool EqualityComparableWith =
+        EqualityComparable<T> &&
+        EqualityComparable<U> &&
+        WeaklyEqualityComparableWith<T, U>;
+
+namespace detail {
+
+struct StrictTotallyOrdered_ {
+    template <typename T>
+    auto requires_(const std::remove_reference_t<T>& a,
+                   const std::remove_reference_t<T>& b) -> decltype(
+        boolean_rv(a < b),
+        boolean_rv(a > b),
+        boolean_rv(a <= b),
+        boolean_rv(a >= b)
+    );
+};
+
+}
+
+template <typename T>
+CONCEPT bool StrictTotallyOrdered =
+        EqualityComparable<T> &&
+        detail::requires_<detail::StrictTotallyOrdered_, T>;
+
+namespace detail {
+
+struct StrictTotallyOrderedWith_ {
+    template <typename T, typename U>
+    auto requires_(const std::remove_reference_t<T>& t,
+                   const std::remove_reference_t<U>& u) -> decltype(
+        boolean_rv(t < u),
+        boolean_rv(t > u),
+        boolean_rv(t <= u),
+        boolean_rv(t >= u),
+        boolean_rv(u < t),
+        boolean_rv(u > t),
+        boolean_rv(u <= t),
+        boolean_rv(u >= t)
+    );
+};
+
+}
+
+template <typename T, typename U>
+CONCEPT bool StrictTotallyOrderedWith =
+        StrictTotallyOrdered<T> &&
+        StrictTotallyOrdered<U> &&
+        EqualityComparableWith<T, U> &&
+        detail::requires_<detail::StrictTotallyOrderedWith_, T, U>;
+
+/* 7.5 Object Concepts */
+
 
 template <typename T>
 CONCEPT bool Copyable =
@@ -311,7 +343,7 @@ CONCEPT bool Semiregular =
 template <typename T>
 CONCEPT bool Regular =
         Semiregular<T> &&
-        EqualityComparible<T>;
+        EqualityComparable<T>;
 
 /* 7.6 Callable Concepts */
 
@@ -455,33 +487,56 @@ CONCEPT bool Readable =
 
 namespace detail {
 
-template <typename Out, typename T>
-auto write_ops_test(Out&& o, T&& t)
-        -> decltype(*o = std::forward<T>(t),
-                    const_cast<const reference_t<Out>&&>(*o) = std::forward<T>(t),
-                    const_cast<const reference_t<Out>&&>(*std::forward<Out>(o)) = std::forward<T>(t));
-
-template <typename Out, typename T>
-using write_ops_t = decltype(write_ops_test(std::declval<Out>(), std::declval<T>()));
+struct Writable_ {
+    template <typename Out, typename T>
+    auto requires_(Out&& o, T&& t) -> decltype(
+        *o = std::forward<T>(t),
+        const_cast<const reference_t<Out>&&>(*o) = std::forward<T>(t),
+        const_cast<const reference_t<Out>&&>(*std::forward<Out>(o)) = std::forward<T>(t)
+    );
+};
 
 }
 
 template <typename Out, typename T>
-CONCEPT bool Writable = detail::is_detected_v<detail::write_ops_t, Out, T>;
+CONCEPT bool Writable = detail::requires_<detail::Writable_, Out, T>;
+
+namespace detail {
+
+struct WeaklyIncrementable_ {
+    template <typename I>
+    auto requires_(I i) -> decltype(
+        difference_type_t<I>{},
+        std::enable_if_t<SignedIntegral<difference_type_t<I>>, int>{},
+        same_lv<I>(++i),
+        i++
+    );
+};
+
+}
 
 template <typename I>
 CONCEPT bool WeaklyIncrementable =
         Semiregular<I> &&
-        detail::is_detected_v<difference_type_t, I> &&
-        SignedIntegral<detail::detected_t<difference_type_t, I>> &&
-        detail::is_detected_exact_v<I&, detail::pre_inc_t, I> &&
-        detail::is_detected_v<detail::post_inc_t, I&>;
+        detail::requires_<detail::WeaklyIncrementable_, I>;
+
+
+namespace detail {
+
+struct Incrementable_ {
+    template <typename I>
+    auto requires_(I i) -> decltype(
+        same_rv<I>(i++)
+    );
+};
+
+}
 
 template <typename I>
 CONCEPT bool Incrementable =
         Regular<I> &&
         WeaklyIncrementable<I> &&
-        detail::is_detected_exact_v<I, detail::post_inc_t, I>;
+        detail::requires_<detail::Incrementable_, I>;
 
 
 namespace detail {
@@ -495,29 +550,66 @@ struct legacy_iterator_traits {
     using iterator_category = typename std::iterator_traits<T>::iterator_category;
 };
 
+template <typename T>
+auto not_void(T&&) -> void;
+
+struct Iterator_ {
+    template <typename I>
+    auto requires_(I i) -> decltype (
+        not_void(*i)
+    );
+};
+
 }
 
 template <typename I>
 CONCEPT bool Iterator =
-        detail::is_detected_v<detail::deref_t, I> &&
-        !std::is_void<detail::detected_t<detail::deref_t, I>>::value &&
+        detail::requires_<detail::Iterator_, I> &&
         WeaklyIncrementable<I> &&
         detail::is_detected_v<detail::legacy_iterator_traits, I>;
+
+template <typename S, typename I>
+CONCEPT bool Sentinel =
+        Semiregular<S> &&
+        Iterator<I> &&
+        WeaklyEqualityComparableWith<S, I> &&
+        Same<S, I>;
+
+template <typename S, typename I>
+constexpr bool disable_sized_sentinel = false;
+
+namespace detail {
+
+struct SizedSentinel_ {
+    template <typename S, typename I>
+    auto requires_(const I& i, const S& s) -> decltype(
+        same_rv<difference_type_t<I>>(s - i),
+        same_rv<difference_type_t<I>>(i - s)
+    );
+};
+
+}
+
+template <typename S, typename I>
+CONCEPT bool SizedSentinel =
+        Sentinel<S, I> &&
+        !disable_sized_sentinel<std::remove_cv_t<S>, std::remove_cv_t<I>> &&
+        detail::requires_<detail::SizedSentinel_, S, I>;
 
 template <typename I>
 CONCEPT bool InputIterator =
         Iterator<I> &&
         Readable<I> &&
-        DerivedFrom<detail::detected_t<iterator_category_t, I>, std::input_iterator_tag> &&
-        EqualityComparible<I>;
+        DerivedFrom<detail::detected_t<iterator_category_t, I>, std::input_iterator_tag>;
 
 namespace detail {
 
-template <typename I, typename T>
-auto output_iter_ops(I i, T&& t) -> decltype(*i++ = std::forward<T>(t));
-
-template <typename I, typename T>
-using output_iter_ops_t = decltype(output_iter_ops(std::declval<I>(), std::declval<T>()));
+struct OutputIterator_ {
+    template <typename I, typename T>
+    auto requires_(I i, T&& t) -> decltype(
+        *i++ = std::forward<T>(t)
+    );
+};
 
 }
 
@@ -525,40 +617,49 @@ template <typename I, typename T>
 CONCEPT bool OutputIterator =
         Iterator<I> &&
         Writable<I, T> &&
-        detail::is_detected_v<detail::output_iter_ops_t, I, T>;
+        detail::requires_<detail::OutputIterator_, I, T>;
 
 
 template <typename I>
 CONCEPT bool ForwardIterator =
         InputIterator<I> &&
         ConvertibleTo<detail::detected_t<iterator_category_t, I>, std::forward_iterator_tag> &&
-        Incrementable<I>;
+        Incrementable<I> &&
+        Sentinel<I, I>;
+
+namespace detail {
+
+struct BidirectionalIterator_{
+    template <typename I>
+    auto requires_(I i) -> decltype(
+        same_lv<I>(--i),
+        same_rv<I>(i--)
+    );
+};
+
+
+}
 
 template <typename I>
 CONCEPT bool BidirectionalIterator =
     ForwardIterator<I> &&
             DerivedFrom<detail::detected_t<iterator_category_t, I>, std::bidirectional_iterator_tag> &&
-            detail::is_detected_exact_v<I&, detail::pre_dec_t, I> &&
-            detail::is_detected_exact_v<I, detail::post_dec_t, I>;
+            detail::requires_<detail::BidirectionalIterator_, I>;
 
 namespace detail {
 
-template <typename I>
-auto random_access_iter_ops(I i, const I j, const difference_type_t<I> n) -> decltype(
-    i += n,
-    j + n,
-    n + j,
-    i -= n,
-    j - n,
-    j[n],
-    Same<decltype(j[n]), reference_t<I>>
-);
-
-template <typename I>
-using random_access_iter = decltype(random_access_iter_ops(
-        std::declval<I>(),
-        std::declval<I>(),
-        std::declval<difference_type_t<I>>()));
+struct RandomAccessIterator_{
+    template <typename I>
+    auto requires_(I i, const I j, const difference_type_t<I> n) -> decltype(
+        same_lv<I>(i += n),
+        same_rv<I>(j + n),
+        same_rv<I>(n + j),
+        same_lv<I>(i -= n),
+        same_rv<I>(j - n),
+        j[n],
+        std::enable_if_t<Same<decltype(j[n]), reference_t<I>>, int>{}
+    );
+};
 
 }
 
@@ -567,7 +668,8 @@ CONCEPT bool RandomAccessIterator =
         BidirectionalIterator<I> &&
         DerivedFrom<detail::detected_t<iterator_category_t, I>, std::random_access_iterator_tag> &&
         StrictTotallyOrdered<I> &&
-        detail::is_detected_v<detail::random_access_iter, I>;
+        SizedSentinel<I, I> &&
+        detail::requires_<detail::RandomAccessIterator_, I>;
 
 
 /* 9.4 Indirect callable concepts */
