@@ -84,18 +84,15 @@ Because NanoRange wraps the existing algorithm implementations from your standar
 library headers rather than providing its own, it deviates from the Ranges TS in
 a number of ways.
 
- * Most importantly, NanoRange does not provide the `Sentinel` concept, and
-   requires that objects of the same type are passed as the first and last pair
-   to all calls.
+ * Most importantly, NanoRange requires that objects of the same type are passed
+   as the `first` and `last` iterator arguments to all calls. That is, NanoRange's
+   `Sentinel<S, I>` concept requires `Same<S, I>`.
 
- * Similarly, NanoRange requires that a valid `Range` returns (exactly) the same
+ * This means that NanoRange requires that a valid `Range` returns the same
    type from calls to `begin()` and `end()`. Put another way, NanoRange's
    `Range` concept is the same as the TS's `BoundedRange`.
 
  * NanoRange does not support projections.
-
- * `Invocable` and related concepts in the TS are named `Callable` in NanoRange, to reflect the fact that `std::invoke()` is not used,
-but only regular function call syxtax.
 
  * For compatibility with the existing standard library `Iterator` concept,
    NanoRange's `Iterator` trait requires that a specialisation of `std::iterator_traits<I>` exists
@@ -114,10 +111,8 @@ but only regular function call syxtax.
    in the TS, whereas the existing version requires a (mutable) `ForwardIterator`.
    In such cases, NanoRange uses the stronger contstraints.
 
- * Customisation point objects such as `ranges::begin` and `ranges::end`
-   are not currently implemented. Instead, NanoRange uses ADL calls to
-   `begin(range)` and `end(range)` from a context that includes `std::begin()`
-   and `std::end()`.
+ * Not all of the Ranges TS's "customisation point objects" have yet been implemented in
+   NanoRange.
 
  * NanoRange does not currently provide implementations of the type traits `common_type_t` or
    `common_reference_t`, or their associated concepts `Common` and `CommonReference`.
@@ -153,7 +148,7 @@ replacements for
 
 which meet both the old and new iterator requirements.
 
-Secondly, the Ranges TS does not provide the "three-legged" forms of algorithms
+Secondly, the Ranges TS deprecates the "three-legged" forms of algorithms
 such as `equal()` and `mismatch()`. These are at best potentially incorrect, and
 at worse potentially dangerous. For example:
 
@@ -166,9 +161,8 @@ assert(std::equal(vec1.begin(), vec1.end(), vec2.begin()); // passes!?
 assert(std::equal(vec2.begin(), vec2.end(), vec1.begin()); // Crash!
 ```
 
-The full four-iterator or range-based versions of these calls should be preferred.
-In line with CMCSTL2, NanoRange provides the three-iterator versions, but marks
-them as `[[deprecated]]`. If you find these deprecation warnings annoying, you
+These functions are annotated with the `[[deprecated]]` attribute in Nanorange.
+If you find these deprecation warnings annoying, you
 can disable them by defining the preprocessor symbol  `NANORANGE_NO_DEPRECATION_WARNINGS`
 before `#include`-ing `nanorange.hpp`.
 
