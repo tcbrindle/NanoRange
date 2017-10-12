@@ -46,6 +46,7 @@ static_assert(!rng::Writable<const int*, int>, "");
 
 constexpr int arr[] = {1, 2, 3, 4};
 static_assert(nanorange::begin(arr) == arr, "");
+static_assert(nanorange::end(arr) == arr + 4, "");
 
 
 
@@ -178,17 +179,6 @@ static_assert(rng::RandomAccessRange<array_t>, "");
 static_assert(rng::OutputRange<array_t, int>, "");
 static_assert(!rng::OutputRange<const array_t, int>, "");
 
-// Output range tests
-namespace test {
-struct output_rng_t;
-
-rng::ostream_iterator<char> begin(output_rng_t&);
-rng::ostream_iterator<char> end(output_rng_t&);
-}
-using test::output_rng_t;
-
-static_assert(rng::detail::begin_::has_nonmember_begin_v<test::output_rng_t&&>, "");
-
 
 static_assert(rng::Same<decltype(rng::begin(std::declval<ra_rng_t&>())),
                         typename ra_rng_t::iterator>, "");
@@ -199,13 +189,52 @@ static_assert(rng::Same<decltype(rng::begin(std::declval<ra_rng_t&&>())),
 static_assert(rng::Same<decltype(rng::begin(std::declval<const ra_rng_t&&>())),
                         typename ra_rng_t::const_iterator>, "");
 
+static_assert(rng::Same<decltype(rng::end(std::declval<ra_rng_t&>())),
+        typename ra_rng_t::iterator>, "");
+static_assert(rng::Same<decltype(rng::end(std::declval<const ra_rng_t&>())),
+        typename ra_rng_t::const_iterator>, "");
+static_assert(rng::Same<decltype(rng::end(std::declval<ra_rng_t&&>())),
+        typename ra_rng_t::const_iterator>, "");
+static_assert(rng::Same<decltype(rng::end(std::declval<const ra_rng_t&&>())),
+        typename ra_rng_t::const_iterator>, "");
+
+// Output range tests
+namespace test {
+struct output_rng_t {
+
+    struct iterator {
+        using value_type = char;
+        using reference = void;
+        using iterator_category = std::output_iterator_tag;
+        using pointer = void;
+        using difference_type = std::ptrdiff_t;
+
+        iterator& operator=(char);
+        iterator& operator*();
+        iterator& operator++();
+        iterator& operator++(int);
+        bool operator==(iterator) const;
+        bool operator!=(iterator) const;
+    };
+
+};
+
+output_rng_t::iterator begin(output_rng_t&);
+output_rng_t::iterator end(output_rng_t&);
+}
+using test::output_rng_t;
 
 static_assert(!rng::InputRange<output_rng_t>, "");
 static_assert(!rng::ForwardRange<output_rng_t>, "");
 static_assert(!rng::BidirectionalRange<output_rng_t>, "");
 static_assert(!rng::RandomAccessRange<output_rng_t>, "");
 static_assert(rng::OutputRange<output_rng_t, char>, "");
-
+static_assert(rng::Range<output_rng_t>, "");
+static_assert(rng::Sentinel<output_rng_t::iterator, output_rng_t::iterator>, "");
+static_assert(rng::Iterator<output_rng_t::iterator>, "");
+static_assert(rng::Semiregular<output_rng_t::iterator>, "");
+static_assert(rng::WeaklyEqualityComparableWith<output_rng_t::iterator, output_rng_t::iterator>, "");
+static_assert(rng::OutputIterator<rng::iterator_t<output_rng_t>, char>, "");
 
 /*
  * Predicate type trait tests

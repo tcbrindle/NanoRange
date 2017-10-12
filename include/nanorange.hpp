@@ -796,77 +796,76 @@ auto decay_copy(T&& x)
 
 /* 10.4 Range access */
 
-// 10.4.1 begin
-
-namespace detail {
-namespace begin_ {
-
-    template <typename T>
-    void begin(T&) = delete;
-
-    template <typename T>
-    using member_begin_t = decltype(std::declval<T&>().begin());
-
-    template <typename T>
-    constexpr bool has_member_begin_v =
-            Iterator<detected_t<member_begin_t, T>>;
-
-    template <typename T>
-    using nonmember_begin_t = decltype(begin(std::declval<T&>()));
-
-    template <typename T>
-    constexpr bool has_nonmember_begin_v =
-            Iterator<detected_t<nonmember_begin_t, T>>;
-
-    struct begin_cpo {
-
-        template <typename T, std::size_t N>
-        constexpr auto operator()(T (&t)[N]) const noexcept
-            -> decltype((t) + 0)
-        {
-            return (t) + 0;
-        }
-
-        template <typename T,
-                  REQUIRES(has_member_begin_v<T>)>
-        constexpr auto operator()(T& t) const
-            noexcept(noexcept(decay_copy(t.begin())))
-            -> decltype(decay_copy(t.begin()))
-        {
-            return decay_copy(t.begin());
-        }
-
-        template <typename T,
-                  REQUIRES(has_nonmember_begin_v<T> &&
-                           !has_member_begin_v<T>)>
-        constexpr auto operator()(T& t) const
-            noexcept(noexcept(decay_copy(begin(t))))
-            -> decltype(decay_copy(begin(t)))
-        {
-            return decay_copy(begin(t));
-        }
-
-        template <typename T,
-                  REQUIRES(!std::is_array<T>::value &&
-                           (has_member_begin_v<T>  ||
-                            has_nonmember_begin_v<T>))>
-        NANORANGE_DEPRECATED_FOR("Calling begin() with an rvalue range is deprecated")
-        constexpr decltype(auto) operator()(const T&& t) const
-            noexcept(noexcept(std::declval<const begin_cpo&>()(static_cast<const T&>(t))))
-        {
-            return (*this)(static_cast<const T&>(t));
-        }
-    };
-
-}
-}
-
 namespace detail {
 
 template <typename T>
 constexpr T static_const_{};
 
-}
+// 10.4.1 begin
+
+namespace begin_ {
+
+template <typename T>
+void begin(T&) = delete;
+
+template <typename T>
+using member_begin_t = decltype(std::declval<T&>().begin());
+
+template <typename T>
+constexpr bool has_member_begin_v =
+        Iterator<detected_t<member_begin_t, T>>;
+
+template <typename T>
+using nonmember_begin_t = decltype(begin(std::declval<T&>()));
+
+template <typename T>
+constexpr bool has_nonmember_begin_v =
+        Iterator<detected_t<nonmember_begin_t, T>>;
+
+struct begin_cpo {
+
+    template <typename T, std::size_t N>
+    constexpr auto operator()(T (& t)[N]) const noexcept
+    -> decltype((t) + 0)
+    {
+        return (t) + 0;
+    }
+
+    template <typename T,
+            REQUIRES(has_member_begin_v<T>)>
+    constexpr auto operator()(T& t) const
+    noexcept(noexcept(decay_copy(t.begin())))
+    -> decltype(decay_copy(t.begin()))
+    {
+        return decay_copy(t.begin());
+    }
+
+    template <typename T,
+            REQUIRES(has_nonmember_begin_v<T> &&
+                             !has_member_begin_v<T>)>
+    constexpr auto operator()(T& t) const
+    noexcept(noexcept(decay_copy(begin(t))))
+    -> decltype(decay_copy(begin(t)))
+    {
+        return decay_copy(begin(t));
+    }
+
+    template <typename T,
+            REQUIRES(!std::is_array<T>::value &&
+                    (has_member_begin_v<const T> ||
+                     has_nonmember_begin_v<const T>))>
+    NANORANGE_DEPRECATED_FOR(
+            "Calling begin() with an rvalue range is deprecated")
+    constexpr decltype(auto) operator()(const T&& t) const
+    noexcept(noexcept(std::declval<const begin_cpo&>()(
+            static_cast<const T&>(t))))
+    {
+        return (*this)(static_cast<const T&>(t));
+    }
+};
+
+} // end namespace begin_
+} // end namespace detail
 
 namespace {
 
@@ -875,11 +874,89 @@ constexpr const auto& begin = detail::static_const_<detail::begin_::begin_cpo>;
 }
 
 
+
+// 10.4.2 end
+
+namespace detail {
+namespace end_ {
+
+    template <typename T>
+    void end(T&) = delete;
+
+    template <typename T> using begin_t = decltype(nanorange::begin(std::declval<T&>()));
+
+    template <typename T>
+    using member_end_t = decltype(std::declval<T&>().end());
+
+    template <typename T>
+    constexpr bool has_member_end_v =
+            Sentinel<detected_t<member_end_t, T>,
+                     detected_t<begin_t, T>>;
+
+    template <typename T>
+    using nonmember_end_t = decltype(end(std::declval<T&>()));
+
+    template <typename T>
+    constexpr bool has_nonmember_end_v =
+            Sentinel<detected_t<nonmember_end_t, T>,
+                     detected_t<begin_t, T>>;
+
+struct end_cpo {
+
+    template <typename T, std::size_t N>
+    constexpr auto operator()(T (&t)[N]) const noexcept
+    -> decltype((t) + N)
+    {
+        return (t) + N;
+    }
+
+    template <typename T,
+            REQUIRES(has_member_end_v<T>)>
+    constexpr auto operator()(T& t) const
+    noexcept(noexcept(decay_copy(t.end())))
+    -> decltype(decay_copy(t.end()))
+    {
+        return decay_copy(t.end());
+    }
+
+    template <typename T,
+            REQUIRES(has_nonmember_end_v<T> &&
+                     !has_member_end_v<T>)>
+    constexpr auto operator()(T& t) const
+    noexcept(noexcept(decay_copy(end(t))))
+        -> decltype(decay_copy(end(t)))
+    {
+        return decay_copy(end(t));
+    }
+
+    template <typename T,
+            REQUIRES(!std::is_array<T>::value &&
+                    (has_member_end_v<const T>  ||
+                     has_nonmember_end_v<const T>))>
+    NANORANGE_DEPRECATED_FOR("Calling end() with an rvalue range is deprecated")
+    constexpr decltype(auto) operator()(const T&& t) const
+    noexcept(noexcept(std::declval<const end_cpo&>()(static_cast<const T&>(t))))
+    {
+        return (*this)(static_cast<const T&>(t));
+    }
+};
+
+} // end namespace end_
+
+} // end namespace detail_
+
+namespace {
+
+constexpr const auto& end = detail::static_const_<detail::end_::end_cpo>;
+
+}
+
+
 template <typename Rng>
 using iterator_t = decltype(nanorange::begin(std::declval<Rng&>()));
 
 template <typename Rng>
-using sentinel_t = decltype(detail::adl_end(std::declval<Rng&>()));
+using sentinel_t = decltype(nanorange::end(std::declval<Rng&>()));
 
 template <typename Rng>
 using range_value_type_t = value_type_t<iterator_t<Rng>>;
