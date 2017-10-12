@@ -15,8 +15,10 @@
 
 #ifdef NANORANGE_NO_DEPRECATION_WARNINGS
 #define NANORANGE_DEPRECATED
+#define NANORANGE_DEPRECATED_FOR(x)
 #else
 #define NANORANGE_DEPRECATED [[deprecated]]
+#define NANORANGE_DEPRECATED_FOR(x) [[deprecated(x)]]
 #endif
 
 namespace nanorange {
@@ -128,6 +130,9 @@ constexpr bool requires_ = detail::is_detected_v<test_requires_t, R, Args...>;
 
 template <typename T, typename U>
 CONCEPT bool Same = std::is_same<T, U>::value;
+
+#define REQUIRES(...) std::enable_if_t<__VA_ARGS__, int> = 0
+
 
 namespace detail {
 
@@ -782,8 +787,103 @@ CONCEPT bool Sortable =
 
 /* 10.0 Ranges Library */
 
+/* 10.2 DECAY_COPY */
+
+namespace detail {
+
+template <typename T>
+auto decay_copy(T&& x)
+    noexcept(noexcept(std::decay_t<decltype((x))>(x)))
+    -> decltype(std::decay_t<decltype((x))>(x))
+{
+    return std::decay_t<decltype((x))>(x);
+}
+
+}
+
+/* 10.4 Range access */
+
+// 10.4.1 begin
+
+namespace detail {
+namespace begin_ {
+
+    template <typename T>
+    void begin(T&) = delete;
+
+    template <typename T>
+    using member_begin_t = decltype(std::declval<T&>().begin());
+
+    template <typename T>
+    constexpr bool has_member_begin_v =
+            Iterator<detected_t<member_begin_t, T>>;
+
+    template <typename T>
+    using nonmember_begin_t = decltype(begin(std::declval<T&>()));
+
+    template <typename T>
+    constexpr bool has_nonmember_begin_v =
+            Iterator<detected_t<nonmember_begin_t, T>>;
+
+    struct begin_cpo {
+
+        template <typename T, std::size_t N>
+        constexpr auto operator()(T (&t)[N]) const noexcept
+            -> decltype((t) + 0)
+        {
+            return (t) + 0;
+        }
+
+        template <typename T,
+                  REQUIRES(has_member_begin_v<T>)>
+        constexpr auto operator()(T& t) const
+            noexcept(noexcept(decay_copy(t.begin())))
+            -> decltype(decay_copy(t.begin()))
+        {
+            return decay_copy(t.begin());
+        }
+
+        template <typename T,
+                  REQUIRES(has_nonmember_begin_v<T> &&
+                           !has_member_begin_v<T>)>
+        constexpr auto operator()(T& t) const
+            noexcept(noexcept(decay_copy(begin(t))))
+            -> decltype(decay_copy(begin(t)))
+        {
+            return decay_copy(t.begin());
+        }
+
+        template <typename T,
+                  REQUIRES(!std::is_array<T>::value &&
+                           (has_member_begin_v<T>  ||
+                            has_nonmember_begin_v<T>))>
+        NANORANGE_DEPRECATED_FOR("Calling begin() with an rvalue range is deprecated")
+        constexpr decltype(auto) operator()(const T&& t) const
+            noexcept(noexcept(std::declval<const begin_cpo&>()(static_cast<const T&>(t))))
+        {
+            return (*this)(static_cast<const T&>(t));
+        }
+    };
+
+}
+}
+
+namespace detail {
+
+template <typename T>
+constexpr T static_const_{};
+
+}
+
+namespace {
+
+constexpr const auto& begin = detail::static_const_<detail::begin_::begin_cpo>;
+
+}
+
+
 template <typename Rng>
-using iterator_t = decltype(detail::adl_begin(std::declval<Rng&>()));
+using iterator_t = decltype(nanorange::begin(std::declval<Rng&>()));
 
 template <typename Rng>
 using sentinel_t = decltype(detail::adl_end(std::declval<Rng&>()));
@@ -831,7 +931,6 @@ CONCEPT bool RandomAccessRange =
         RandomAccessIterator<detail::detected_t<iterator_t, T>>;
 
 
-#define REQUIRES(...) std::enable_if_t<__VA_ARGS__, int> = 0
 
 template <typename Container>
 struct back_insert_iterator

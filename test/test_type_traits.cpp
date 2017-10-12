@@ -44,6 +44,11 @@ static_assert(std::is_rvalue_reference<rng::rvalue_reference_t<typename std::vec
 static_assert(rng::Writable<int*, int>, "");
 static_assert(!rng::Writable<const int*, int>, "");
 
+constexpr int arr[] = {1, 2, 3, 4};
+static_assert(nanorange::begin(arr) == arr, "");
+
+
+
 /*
  * Iterator type traits static tests
  */
@@ -177,10 +182,23 @@ static_assert(!rng::OutputRange<const array_t, int>, "");
 namespace test {
 struct output_rng_t;
 
-rng::ostream_iterator<char> begin(const output_rng_t&);
-rng::ostream_iterator<char> end(const output_rng_t&);
+rng::ostream_iterator<char> begin(output_rng_t&);
+rng::ostream_iterator<char> end(output_rng_t&);
 }
 using test::output_rng_t;
+
+static_assert(rng::detail::begin_::has_nonmember_begin_v<test::output_rng_t&&>, "");
+
+
+static_assert(rng::Same<decltype(rng::begin(std::declval<ra_rng_t&>())),
+                        typename ra_rng_t::iterator>, "");
+static_assert(rng::Same<decltype(rng::begin(std::declval<const ra_rng_t&>())),
+                        typename ra_rng_t::const_iterator>, "");
+static_assert(rng::Same<decltype(rng::begin(std::declval<ra_rng_t&&>())),
+                        typename ra_rng_t::const_iterator>, "");
+static_assert(rng::Same<decltype(rng::begin(std::declval<const ra_rng_t&&>())),
+                        typename ra_rng_t::const_iterator>, "");
+
 
 static_assert(!rng::InputRange<output_rng_t>, "");
 static_assert(!rng::ForwardRange<output_rng_t>, "");
