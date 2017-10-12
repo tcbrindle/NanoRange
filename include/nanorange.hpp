@@ -583,9 +583,68 @@ struct value_type<T, std::enable_if_t<detail::is_detected_v<detail::member_eleme
 template <typename T>
 using value_type_t = typename value_type<T>::type;
 
-// N.B. we use std::iterator_traits here, rather than a nested type
+// 9.6.3, iterator tags:
+struct output_iterator_tag { };
+struct input_iterator_tag { };
+struct forward_iterator_tag : input_iterator_tag { };
+struct bidirectional_iterator_tag : forward_iterator_tag { };
+struct random_access_iterator_tag : bidirectional_iterator_tag { };
+
+template <typename, typename = void>
+struct iterator_category {};
+
 template <typename T>
-using iterator_category_t = typename std::iterator_traits<T>::iterator_category;
+struct iterator_category<T*>
+    : std::enable_if<std::is_object<T>::value, std::random_access_iterator_tag> {};
+
+template <typename T>
+struct iterator_category<const T>
+    : iterator_category<T> {};
+
+namespace detail {
+
+std::random_access_iterator_tag convert_tag(std::random_access_iterator_tag*);
+std::bidirectional_iterator_tag convert_tag(std::bidirectional_iterator_tag*);
+std::forward_iterator_tag convert_tag(std::forward_iterator_tag*);
+std::input_iterator_tag convert_tag(std::input_iterator_tag*);
+
+template <typename T>
+using tag_type_t = decltype(convert_tag(std::declval<typename T::iterator_category*>()));
+
+template <typename T>
+using member_category_t = typename T::iterator_category;
+
+}
+
+template <typename T>
+struct iterator_category<T, std::enable_if_t<
+        DerivedFrom<detail::detected_t<detail::member_category_t, T>,
+                    std::input_iterator_tag>>>
+{
+    using type = detail::tag_type_t<T>;
+};
+
+template <typename T>
+struct iterator_category<T, std::enable_if_t<
+        DerivedFrom<detail::member_category_t<T>,
+                    std::output_iterator_tag> &&
+        !DerivedFrom<detail::detected_t<detail::member_category_t, T>,
+                    std::input_iterator_tag>>>
+{};
+
+template <typename T>
+struct iterator_category<T, std::enable_if_t<
+                detail::is_detected_v<detail::member_category_t, T> &&
+                !DerivedFrom<detail::detected_t<detail::member_category_t, T>,
+                std::output_iterator_tag> &&
+                !DerivedFrom<detail::detected_t<detail::member_category_t, T>,
+                        std::input_iterator_tag>>>
+{
+    using type = typename T::iterator_category;
+};
+
+template <typename T>
+using iterator_category_t = typename iterator_category<T>::type;
 
 template <typename T>
 using reference_t = decltype(*std::declval<T&>());
