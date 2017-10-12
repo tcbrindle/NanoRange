@@ -1200,6 +1200,204 @@ constexpr auto& cend = detail::static_const_<detail::cend_::cend_cpo>;
 
 }
 
+namespace detail {
+
+namespace rbegin_ {
+
+template <typename T> using begin_t = decltype(nanorange::begin(std::declval<T>()));
+template <typename T> using end_t = decltype(nanorange::end(std::declval<T>()));
+
+template <typename T>
+using member_rbegin_t = decltype(std::declval<T>().rbegin());
+
+template <typename T>
+constexpr bool has_member_rbegin_v = Iterator<detected_t<member_rbegin_t, T>>;
+
+template <typename T>
+constexpr bool can_make_reverse_v =
+        Same<detected_t<begin_t, T>, detected_t<end_t, T>> &&
+        BidirectionalIterator<detected_t<begin_t, T>>;
+
+struct rbegin_cpo {
+
+    template <typename T,
+              REQUIRES(has_member_rbegin_v<T>)>
+    constexpr auto operator()(T& t) const
+            noexcept(noexcept(decay_copy(t.rbegin())))
+        -> decltype(decay_copy(t.rbegin()))
+    {
+        return decay_copy(t.rbegin());
+    }
+
+    template <typename T,
+              REQUIRES(!has_member_rbegin_v<T> &&
+                       can_make_reverse_v<T>)>
+    constexpr auto operator()(T& t) const
+        noexcept(noexcept(std::make_reverse_iterator(nanorange::end(t))))
+        -> decltype(std::make_reverse_iterator(nanorange::end(t)))
+    {
+        return std::make_reverse_iterator(nanorange::end(t));
+    }
+
+
+    template <typename T,
+              REQUIRES(has_member_rbegin_v<const T> ||
+                       can_make_reverse_v<const T>)>
+    NANORANGE_DEPRECATED_FOR("Calling cend() with an rvalue range is deprecated")
+    constexpr decltype(auto) operator()(const T&& t) const
+    {
+        return (*this)(static_cast<const T&>(t));
+    }
+
+};
+
+}
+
+}
+
+namespace {
+
+constexpr auto& rbegin = detail::static_const_<detail::rbegin_::rbegin_cpo>;
+
+}
+
+namespace detail {
+
+namespace rend_ {
+
+template <typename T> using begin_t = decltype(nanorange::begin(std::declval<T>()));
+template <typename T> using end_t = decltype(nanorange::end(std::declval<T>()));
+
+template <typename T>
+using member_rend_t = decltype(std::declval<T>().rend());
+
+template <typename T>
+constexpr bool has_member_rend_v = Iterator<detected_t<member_rend_t, T>>;
+
+template <typename T>
+constexpr bool can_make_reverse_v =
+        Same<detected_t<begin_t, T>, detected_t<end_t, T>> &&
+                BidirectionalIterator<detected_t<begin_t, T>>;
+
+struct rend_cpo {
+
+    template <typename T,
+            REQUIRES(has_member_rend_v<T>)>
+    constexpr auto operator()(T& t) const
+    noexcept(noexcept(decay_copy(t.rend())))
+    -> decltype(decay_copy(t.rend()))
+    {
+        return decay_copy(t.rend());
+    }
+
+    template <typename T,
+            REQUIRES(!has_member_rend_v<T> &&
+                    can_make_reverse_v<T>)>
+    constexpr auto operator()(T& t) const
+    noexcept(noexcept(std::make_reverse_iterator(nanorange::begin(t))))
+    -> decltype(std::make_reverse_iterator(nanorange::begin(t)))
+    {
+        return std::make_reverse_iterator(nanorange::begin(t));
+    }
+
+
+    template <typename T,
+            REQUIRES(has_member_rend_v<const T> ||
+                    can_make_reverse_v<const T>)>
+    NANORANGE_DEPRECATED_FOR("Calling cend() with an rvalue range is deprecated")
+    constexpr decltype(auto) operator()(const T&& t) const
+    {
+        return (*this)(static_cast<const T&>(t));
+    }
+
+};
+
+}
+
+}
+
+namespace {
+
+constexpr auto& rend = detail::static_const_<detail::rend_::rend_cpo>;
+
+}
+
+namespace detail {
+
+namespace crbegin_ {
+
+template <typename T> using rbegin_t = decltype(nanorange::rbegin(std::declval<const T&>()));
+
+struct crbegin_cpo {
+
+    template <typename T,
+              REQUIRES(is_detected_v<rbegin_t, T>)>
+    constexpr auto operator()(const T& t) const
+    noexcept(noexcept(nanorange::rbegin(t)))
+    -> decltype(nanorange::rbegin(t))
+    {
+        return nanorange::rbegin(t);
+    }
+
+    template <typename T,
+              REQUIRES(is_detected_v<rbegin_t, T>)>
+    NANORANGE_DEPRECATED_FOR("Calling crbegin() with an rvalue range is deprecated")
+    constexpr auto operator()(const T&& t) const
+    noexcept(noexcept(nanorange::rbegin(t)))
+        -> decltype(nanorange::rbegin(t))
+    {
+        return nanorange::rbegin(t);
+    }
+};
+
+}
+
+}
+
+namespace {
+
+constexpr auto& crbegin = detail::static_const_<detail::crbegin_::crbegin_cpo>;
+
+}
+
+namespace detail {
+
+namespace crend_ {
+
+template <typename T> using rend_t = decltype(nanorange::rend(std::declval<const T&>()));
+
+struct crend_cpo {
+
+    template <typename T,
+            REQUIRES(is_detected_v<rend_t, T>)>
+    constexpr auto operator()(const T& t) const
+    noexcept(noexcept(nanorange::rend(t)))
+    -> decltype(nanorange::rend(t))
+    {
+        return nanorange::rend(t);
+    }
+
+    template <typename T,
+            REQUIRES(is_detected_v<rend_t, T>)>
+    NANORANGE_DEPRECATED_FOR("Calling crend() with an rvalue range is deprecated")
+    constexpr auto operator()(const T&& t) const
+    noexcept(noexcept(nanorange::rend(t)))
+    -> decltype(nanorange::rend(t))
+    {
+        return nanorange::rend(t);
+    }
+};
+
+}
+
+}
+
+namespace {
+
+constexpr auto& crend = detail::static_const_<detail::crend_::crend_cpo>;
+
+}
+
 template <typename Rng>
 using iterator_t = decltype(nanorange::begin(std::declval<Rng&>()));
 

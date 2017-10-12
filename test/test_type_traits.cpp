@@ -278,6 +278,42 @@ static_assert(rng::Same<decltype(rng::cend(std::declval<ra_rng_t&&>())),
 static_assert(rng::Same<decltype(rng::cend(std::declval<const ra_rng_t&&>())),
         typename ra_rng_t::const_iterator>, "");
 
+static_assert(rng::Same<decltype(rng::rbegin(std::declval<ra_rng_t&>())),
+        typename ra_rng_t::reverse_iterator>, "");
+static_assert(rng::Same<decltype(rng::rbegin(std::declval<const ra_rng_t&>())),
+        typename ra_rng_t::const_reverse_iterator>, "");
+static_assert(rng::Same<decltype(rng::rbegin(std::declval<ra_rng_t&&>())),
+        typename ra_rng_t::const_reverse_iterator>, "");
+static_assert(rng::Same<decltype(rng::rbegin(std::declval<const ra_rng_t&&>())),
+        typename ra_rng_t::const_reverse_iterator>, "");
+
+static_assert(rng::Same<decltype(rng::rend(std::declval<ra_rng_t&>())),
+        typename ra_rng_t::reverse_iterator>, "");
+static_assert(rng::Same<decltype(rng::rend(std::declval<const ra_rng_t&>())),
+        typename ra_rng_t::const_reverse_iterator>, "");
+static_assert(rng::Same<decltype(rng::rend(std::declval<ra_rng_t&&>())),
+        typename ra_rng_t::const_reverse_iterator>, "");
+static_assert(rng::Same<decltype(rng::rend(std::declval<const ra_rng_t&&>())),
+        typename ra_rng_t::const_reverse_iterator>, "");
+
+static_assert(rng::Same<decltype(rng::crbegin(std::declval<ra_rng_t&>())),
+        typename ra_rng_t::const_reverse_iterator>, "");
+static_assert(rng::Same<decltype(rng::crbegin(std::declval<const ra_rng_t&>())),
+        typename ra_rng_t::const_reverse_iterator>, "");
+static_assert(rng::Same<decltype(rng::crbegin(std::declval<ra_rng_t&&>())),
+        typename ra_rng_t::const_reverse_iterator>, "");
+static_assert(rng::Same<decltype(rng::crbegin(std::declval<const ra_rng_t&&>())),
+        typename ra_rng_t::const_reverse_iterator>, "");
+
+static_assert(rng::Same<decltype(rng::crend(std::declval<ra_rng_t&>())),
+        typename ra_rng_t::const_reverse_iterator>, "");
+static_assert(rng::Same<decltype(rng::crend(std::declval<const ra_rng_t&>())),
+        typename ra_rng_t::const_reverse_iterator>, "");
+static_assert(rng::Same<decltype(rng::crend(std::declval<ra_rng_t&&>())),
+        typename ra_rng_t::const_reverse_iterator>, "");
+static_assert(rng::Same<decltype(rng::crend(std::declval<const ra_rng_t&&>())),
+        typename ra_rng_t::const_reverse_iterator>, "");
+
 // Output range tests
 namespace test {
 struct output_rng_t {
