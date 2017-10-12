@@ -198,6 +198,15 @@ static_assert(rng::Same<decltype(rng::end(std::declval<ra_rng_t&&>())),
 static_assert(rng::Same<decltype(rng::end(std::declval<const ra_rng_t&&>())),
         typename ra_rng_t::const_iterator>, "");
 
+static_assert(rng::Same<decltype(rng::cbegin(std::declval<ra_rng_t&>())),
+        typename ra_rng_t::const_iterator>, "");
+static_assert(rng::Same<decltype(rng::cbegin(std::declval<const ra_rng_t&>())),
+        typename ra_rng_t::const_iterator>, "");
+static_assert(rng::Same<decltype(rng::cbegin(std::declval<ra_rng_t&&>())),
+        typename ra_rng_t::const_iterator>, "");
+static_assert(rng::Same<decltype(rng::cbegin(std::declval<const ra_rng_t&&>())),
+        typename ra_rng_t::const_iterator>, "");
+
 // Output range tests
 namespace test {
 struct output_rng_t {

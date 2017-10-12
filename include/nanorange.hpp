@@ -932,7 +932,7 @@ struct end_cpo {
 
 } // end namespace end_
 
-} // end namespace detail_
+} // end namespace detail
 
 namespace {
 
@@ -940,6 +940,43 @@ constexpr const auto& end = detail::static_const_<detail::end_::end_cpo>;
 
 }
 
+namespace detail {
+
+namespace cbegin_ {
+
+template <typename T> using begin_t = decltype(nanorange::begin(std::declval<const T&>()));
+
+struct cbegin_cpo {
+
+    template <typename T,
+              REQUIRES(is_detected_v<begin_t, T>)>
+    constexpr auto operator()(const T& t) const
+        noexcept(noexcept(nanorange::begin(t)))
+        -> decltype(nanorange::begin(t))
+    {
+        return nanorange::begin(t);
+    }
+
+    template <typename T,
+              REQUIRES(is_detected_v<begin_t, T>)>
+    NANORANGE_DEPRECATED_FOR("Calling cend() with an rvalue range is deprectated")
+    constexpr auto operator()(const T&& t) const
+        noexcept(noexcept(nanorange::begin(t)))
+        -> decltype(nanorange::begin(t))
+    {
+        return nanorange::begin(t);
+    }
+};
+
+} // end namespace cbegin_
+
+} // end namespace detail
+
+namespace {
+
+constexpr auto cbegin = detail::static_const_<detail::cbegin_::cbegin_cpo>;
+
+}
 
 template <typename Rng>
 using iterator_t = decltype(nanorange::begin(std::declval<Rng&>()));
