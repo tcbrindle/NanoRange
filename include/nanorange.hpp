@@ -123,8 +123,21 @@ CONCEPT bool DerivedFrom =
         std::is_base_of<U, T>::value &&
         std::is_convertible<std::remove_cv_t<T>*, std::remove_cv_t<U>*>::value;
 
+namespace detail {
+
+struct ConvertibleTo_ {
+    template <typename From, typename To>
+    auto requires_(From (&f)()) -> decltype(
+        static_cast<To>(f())
+    );
+};
+
+}
+
 template <typename From, typename To>
-CONCEPT bool ConvertibleTo = std::is_convertible<From, To>::value;
+CONCEPT bool ConvertibleTo =
+        std::is_convertible<From, To>::value &&
+        detail::requires_<detail::ConvertibleTo_, From, To>;
 
 namespace detail {
 
