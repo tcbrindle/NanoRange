@@ -318,8 +318,24 @@ CONCEPT bool SignedIntegral = Integral<I> && std::is_signed<I>::value;
 template <typename I>
 CONCEPT bool UnsignedIntegral = Integral<I> && !SignedIntegral<I>;
 
+namespace detail {
+
+struct Assignable_ {
+    template <typename T, typename U>
+    auto requires_(T t, U&& u) -> decltype(
+        same_rv<T>(t = std::forward<U>(u))
+    );
+};
+
+}
+
 template <typename T, typename U>
-CONCEPT bool Assignable = std::is_assignable<T, U>::value;
+CONCEPT bool Assignable =
+        std::is_lvalue_reference<T>::value &&
+        CommonReference<
+            const std::remove_reference_t<T>&,
+            const std::remove_reference_t<U>&> &&
+        detail::requires_<detail::Assignable_, T, U>;
 
 // Hack: we can't predeclare a constexpr variable template, so use a
 // constexpr function to delay the defintion until we've defined swap()
@@ -439,6 +455,13 @@ template <typename T, typename U>
 CONCEPT bool EqualityComparableWith =
         EqualityComparable<T> &&
         EqualityComparable<U> &&
+        CommonReference<
+            const std::remove_reference_t<T>&,
+            const std::remove_reference_t<U>&> &&
+        EqualityComparable<
+            detail::detected_t<common_reference_t,
+                const std::remove_reference_t<T>&,
+                const std::remove_reference_t<U>&>> &&
         WeaklyEqualityComparableWith<T, U>;
 
 namespace detail {
@@ -484,6 +507,13 @@ template <typename T, typename U>
 CONCEPT bool StrictTotallyOrderedWith =
         StrictTotallyOrdered<T> &&
         StrictTotallyOrdered<U> &&
+        CommonReference<
+            const std::remove_reference_t<T>&,
+            const std::remove_reference_t<U>&> &&
+         StrictTotallyOrdered<
+            detail::detected_t<common_reference_t,
+                const std::remove_reference_t<T>&,
+                const std::remove_reference_t<U>&>> &&
         EqualityComparableWith<T, U> &&
         detail::requires_<detail::StrictTotallyOrderedWith_, T, U>;
 
@@ -546,9 +576,19 @@ CONCEPT bool Predicate = detail::is_predicate<F(Args...)>::value;
 template <typename R, typename T, typename U>
 CONCEPT bool Relation =
         Predicate<R, T, T> &&
-                Predicate<R, U, U> &&
-                Predicate<R, T, U> &&
-                Predicate<R, U, T>;
+        Predicate<R, U, U> &&
+        CommonReference<
+            const std::remove_reference_t<T>&,
+            const std::remove_reference_t<U>&> &&
+        Predicate<R,
+            detail::detected_t<common_reference_t,
+                const std::remove_reference_t<T>&,
+                const std::remove_reference_t<U>&>,
+            detail::detected_t<common_reference_t,
+                const std::remove_reference_t<T>&,
+                const std::remove_reference_t<U>&>> &&
+        Predicate<R, T, U> &&
+        Predicate<R, U, T>;
 
 template <typename R, typename T, typename U>
 CONCEPT bool StrictWeakOrder = Relation<R, T, U>;
@@ -662,7 +702,10 @@ struct SwappableWith_ {
 template <typename T, typename U>
 constexpr bool is_swappable_with_f()
 {
-    return requires_<SwappableWith_, T, U>;
+    return CommonReference<
+               const std::remove_reference_t<T>&,
+               const std::remove_reference_t<U>&> &&
+           requires_<SwappableWith_, T, U>;
 }
 
 } // end namespace detail
@@ -830,7 +873,10 @@ template <typename In>
 CONCEPT bool Readable =
         detail::is_detected_v<value_type_t, In> &&
         detail::is_detected_v<reference_t, In> &&
-        detail::is_detected_v<rvalue_reference_t, In>;
+        detail::is_detected_v<rvalue_reference_t, In> &&
+        CommonReference<detail::detected_t<reference_t, In>&&, detail::detected_t<value_type_t, In>&> &&
+        CommonReference<detail::detected_t<reference_t, In>&&, detail::detected_t<rvalue_reference_t, In>&&> &&
+        CommonReference<detail::detected_t<rvalue_reference_t, In>&&, const detail::detected_t<value_type_t, In>&>;
 
 
 namespace detail {
@@ -1027,14 +1073,20 @@ CONCEPT bool IndirectUnaryInvocable =
         Readable<I> &&
         CopyConstructible<F> &&
         Invocable<F&, value_type_t<I>> &&
-        Invocable<F&, reference_t<I>>;
+        Invocable<F&, reference_t<I>> &&
+        CommonReference<
+            std::result_of_t<F&(value_type_t<I>&)>,
+            std::result_of_t<F&(reference_t<I>&&)>>;
 
 template <typename F, typename I>
 CONCEPT bool IndirectRegularUnaryInvocable =
         Readable<I> &&
         CopyConstructible<F> &&
         RegularInvocable<F&, value_type_t<I>> &&
-        RegularInvocable<F&, reference_t<I>>;
+        RegularInvocable<F&, reference_t<I>> &&
+        CommonReference<
+            std::result_of_t<F&(value_type_t<I>&)>,
+            std::result_of_t<F&(reference_t<I>&&)>>;
 
 template <typename F, typename I>
 CONCEPT bool IndirectUnaryPredicate =
