@@ -75,7 +75,21 @@ using is_detected_convertible = std::is_convertible<detected_t<Op, Args...>, To>
 template <class To, template <class...> class Op, class... Args>
 constexpr bool is_detected_convertible_v = is_detected_convertible<To, Op, Args...>::value;
 
-// "Requires clause" testing machinery
+// std::bool_constant from C++17
+template <bool B>
+using bool_constant = std::integral_constant<bool, B>;
+
+// Adapted from std::conjunction in C++17
+template<class...> struct conjunction : std::true_type { };
+template<class B1> struct conjunction<B1> : B1 { };
+template<class B1, class... Bn>
+struct conjunction<B1, Bn...>
+        : std::conditional_t<bool(B1::value), conjunction<Bn...>, B1> {};
+
+template <typename... Bs>
+constexpr bool and_ = conjunction<Bs...>::value;
+
+// "Requires expression" testing machinery
 template <typename... Args, typename R, typename = decltype(&R::template requires_<Args...>)>
 auto test_requires(R&) -> void;
 
@@ -100,11 +114,11 @@ constexpr T static_const_{};
 #define CONCEPT constexpr
 #endif
 
-template <typename T, typename U>
-CONCEPT bool Same = std::is_same<T, U>::value;
-
 #define REQUIRES(...) std::enable_if_t<__VA_ARGS__, int> = 0
 
+
+template <typename T, typename U>
+CONCEPT bool Same = std::is_same<T, U>::value;
 
 namespace detail {
 
@@ -146,7 +160,154 @@ auto convertible_to_rv(Deduced&&) -> std::enable_if_t<ConvertibleTo<Deduced, T>>
 
 }
 
-// TODO: common_reference_t is a nightmare
+namespace detail {
+
+template <typename T, typename U>
+struct copy_cv { using type = U; };
+
+template <typename T, typename U>
+struct copy_cv<const T, U> { using type = std::add_const_t<U>; };
+
+template <typename T, typename U>
+struct copy_cv<volatile T, U> { using type = std::add_volatile_t<U>; };
+
+template <typename T, typename U>
+struct copy_cv<const volatile T, U> { using type = std::add_cv_t<U>; };
+
+template <typename T, typename U>
+using copy_cv_t = typename copy_cv<T, U>::type;
+
+template <typename T>
+using cref_t = std::add_lvalue_reference_t<const std::remove_reference_t<T>>;
+
+template <typename T>
+using uncvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
+
+template <typename T>
+struct rref_res { using type = T; };
+
+template <typename T>
+struct rref_res<T&> { using type = std::remove_reference_t<T>&&; };
+
+template <typename T>
+using rref_res_t = typename rref_res<T>::type;
+
+template <typename T, typename U>
+using cond_res_t = decltype(std::declval<bool>() ? std::declval<T(&)()>()() : std::declval<U(&)()>()());
+
+// For some value of "simple"
+template <typename T, typename U>
+struct simple_common_reference {};
+
+template <typename T, typename U,
+          typename C = detected_t<cond_res_t, copy_cv_t<T, U>&, copy_cv_t<U, T>&>>
+struct lvalue_simple_common_reference
+        : std::enable_if<std::is_reference<C>::value, C> {};
+
+template <typename T, typename U>
+using lvalue_scr_t = typename lvalue_simple_common_reference<T, U>::type;
+
+template <typename T, typename U>
+struct simple_common_reference<T&, U&>
+    : lvalue_simple_common_reference<T, U> {};
+
+template <typename T, typename U,
+          typename LCR = detected_t<lvalue_scr_t, T, U>,
+          typename C = rref_res_t<LCR>>
+struct rvalue_simple_common_reference
+    : std::enable_if<
+            std::is_convertible<T&&, C>::value &&
+            std::is_convertible<U&&, C>::value, C> {};
+
+template <typename T, typename U>
+struct simple_common_reference<T&&, U&&>
+    : rvalue_simple_common_reference<T, U> {};
+
+template <typename A, typename B,
+          typename C = detected_t<lvalue_scr_t, A, const B>>
+struct mixed_simple_common_reference
+    : std::enable_if<std::is_convertible<B&&, C>::value, C> {};
+
+template <typename A, typename B>
+struct simple_common_reference<A&, B&&>
+    : mixed_simple_common_reference<A, B> {};
+
+template <typename A, typename B>
+struct simple_common_reference<A&&, B&>
+    : simple_common_reference<B&, A&&> {};
+
+template <typename T, typename U>
+using simple_common_reference_t = typename simple_common_reference<T, U>::type;
+
+}
+
+// FIXME: Not to spec
+template <typename... Ts>
+struct common_type
+    : std::common_type<Ts...> {};
+
+template <class T, class U, template <class> class TQual, template <class> class UQual>
+struct basic_common_reference {};
+
+template <typename...>
+struct common_reference;
+
+template <typename... Ts>
+using common_type_t = typename common_type<Ts...>::type;
+
+template <typename... Ts>
+using common_reference_t = typename common_reference<Ts...>::type;
+
+template <>
+struct common_reference<> {};
+
+template <typename T0>
+struct common_reference<T0> {
+    using type = T0;
+};
+
+// FIXME: Not even remotely to spec
+template <typename T1, typename T2>
+struct common_reference<T1, T2>
+    : detail::simple_common_reference<T1, T2> {};
+
+namespace detail {
+
+template <typename Void, typename T1, typename T2, typename... Rest>
+struct multiple_common_reference {};
+
+template <typename T1, typename T2, typename... Rest>
+struct multiple_common_reference<
+        void_t<common_reference_t<T1, T2>>, T1, T2, Rest...>
+    : common_reference<common_reference_t<T1, T2>, Rest...> {};
+
+}
+
+template <typename T1, typename T2, typename... Rest>
+struct common_reference<T1, T2, Rest...>
+    : detail::multiple_common_reference<void, T1, T2, Rest...> {};
+
+template <typename T, typename U>
+CONCEPT bool CommonReference =
+    Same<detail::detected_t<common_reference_t, T, U>,
+         detail::detected_t<common_reference_t, U, T>> &&
+    ConvertibleTo<T, detail::detected_t<common_reference_t, T, U>> &&
+    ConvertibleTo<U, detail::detected_t<common_reference_t, T, U>>;
+
+template <typename T, typename U>
+CONCEPT bool Common =
+    Same<detail::detected_t<common_type_t, T, U>,
+         detail::detected_t<common_type_t, U, T>> &&
+    ConvertibleTo<T, detail::detected_t<common_type_t, T, U>> &&
+    ConvertibleTo<U, detail::detected_t<common_type_t, T, U>> &&
+    CommonReference<
+        std::add_lvalue_reference_t<const T>,
+        std::add_lvalue_reference_t<const U>> &&
+    CommonReference<
+        std::add_lvalue_reference_t<common_type_t<T, U>>,
+        detail::detected_t<common_reference_t,
+            std::add_lvalue_reference_t<const T>,
+            std::add_lvalue_reference_t<const U>>>;
 
 template <typename I>
 CONCEPT bool Integral = std::is_integral<I>::value;

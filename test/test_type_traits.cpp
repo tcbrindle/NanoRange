@@ -430,6 +430,8 @@ static_assert(rng::Same<rng::common_reference_t<test::base&, test::derived&, tes
 static_assert(!rng::detail::is_detected_v<
         rng::common_reference_t, test::derived&, test::derived2&, test::base&>, "");
 
+static_assert(rng::CommonReference<int&, const volatile int&>, "");
+static_assert(rng::Common<const int&&, volatile int>, "");
 
 
 
