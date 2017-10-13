@@ -75,20 +75,6 @@ using is_detected_convertible = std::is_convertible<detected_t<Op, Args...>, To>
 template <class To, template <class...> class Op, class... Args>
 constexpr bool is_detected_convertible_v = is_detected_convertible<To, Op, Args...>::value;
 
-// std::bool_constant from C++17
-template <bool B>
-using bool_constant = std::integral_constant<bool, B>;
-
-// Adapted from std::conjunction in C++17
-template<class...> struct conjunction : std::true_type { };
-template<class B1> struct conjunction<B1> : B1 { };
-template<class B1, class... Bn>
-struct conjunction<B1, Bn...>
-        : std::conditional_t<bool(B1::value), conjunction<Bn...>, B1> {};
-
-template <typename... Bs>
-constexpr bool and_ = conjunction<Bs...>::value;
-
 // "Requires expression" testing machinery
 template <typename... Args, typename R, typename = decltype(&R::template requires_<Args...>)>
 auto test_requires(R&) -> void;
@@ -266,10 +252,47 @@ struct common_reference<T0> {
     using type = T0;
 };
 
-// FIXME: Not even remotely to spec
+namespace detail {
+
+template <typename T, typename U>
+constexpr bool has_simple_common_ref_v = is_detected_v<simple_common_reference_t, T, U>;
+
+template <typename T>
+T common_ref_test_func();
+
+template <typename T, typename U,
+          typename C = decltype(false ? common_ref_test_func<T>() : common_ref_test_func<U>())>
+struct function_common_ref {
+    using type = C;
+};
+
+template <typename T, typename U>
+using function_common_ref_t = typename function_common_ref<T, U>::type;
+
+template <typename T, typename U>
+constexpr bool has_function_common_ref_v = is_detected_v<function_common_ref_t, T, U>;
+
+template <typename T, typename U, typename = void>
+struct binary_common_ref
+    : common_type<T, U> {};
+
+template <typename T, typename U>
+struct binary_common_ref<T, U, std::enable_if_t<
+      has_simple_common_ref_v<T, U>>>
+    : simple_common_reference<T, U> {};
+
+template <typename T, typename U>
+struct binary_common_ref<T, U, std::enable_if_t<
+        has_function_common_ref_v<T, U> &&
+        !has_simple_common_ref_v<T, U>>>
+    : function_common_ref<T, U> {};
+
+}
+
+// FIXME: Handle basic_common_reference
 template <typename T1, typename T2>
 struct common_reference<T1, T2>
-    : detail::simple_common_reference<T1, T2> {};
+    : detail::binary_common_ref<T1, T2> {};
 
 namespace detail {
 
