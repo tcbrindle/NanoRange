@@ -1404,6 +1404,14 @@ using iterator_t = decltype(nanorange::begin(std::declval<Rng&>()));
 template <typename Rng>
 using sentinel_t = decltype(nanorange::end(std::declval<Rng&>()));
 
+template <typename>
+constexpr bool disable_sized_range = false;
+
+template <class T>
+struct enable_view {};
+
+struct view_base {};
+
 template <typename Rng>
 using range_value_type_t = value_type_t<iterator_t<Rng>>;
 
@@ -1426,6 +1434,50 @@ template <typename T>
 CONCEPT bool Range =
         detail::requires_<detail::Range_, T>;
 
+// FIXME: SizedRange, once we've done size
+
+namespace detail {
+
+template <typename, typename = void>
+constexpr bool view_predicate = true;
+
+template <typename T>
+using enable_view_t = typename enable_view<T>::type;
+
+template <typename T>
+constexpr bool has_enable_view_v = is_detected_v<enable_view_t, T>;
+
+template <typename T>
+constexpr bool view_predicate<T, std::enable_if_t<
+        has_enable_view_v<T>>>
+    = enable_view<T>::type::value;
+
+template <typename T>
+constexpr bool view_predicate<T, std::enable_if_t<
+        !has_enable_view_v<T> &&
+        DerivedFrom<T, view_base>>>
+    = true;
+
+template <typename T>
+constexpr bool view_predicate<std::initializer_list<T>> = false;
+
+// FIXME: set etc specialisations
+
+template <typename T>
+constexpr bool view_predicate<T, std::enable_if_t<
+        !has_enable_view_v<T> &&
+        !DerivedFrom<T, view_base> &&
+        Range<T> && Range<const T> &&
+        !Same<reference_t<iterator_t<T>>, reference_t<iterator_t<const T>>>>>
+    = false;
+
+}
+
+template <typename T>
+CONCEPT bool View =
+        Range<T> &&
+        Semiregular<T> &&
+        detail::view_predicate<T>;
 
 template <typename T>
 CONCEPT bool BoundedRange = Range<T>;

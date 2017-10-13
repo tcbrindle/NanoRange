@@ -119,8 +119,6 @@ a number of ways.
    This is largely because the specification of `common_reference_t` in the TS is
    so complicated that attempting to implement it made me want to cry actual tears.
 
- * NanoRange does not currently provide any support for `View`s.
-
  * NanoRange does not currently implement the adaptor classes `reverse_iterator`,
    `move_iterator`, `common_iterator` or `counted_iterator`.
 

@@ -314,6 +314,7 @@ static_assert(rng::Same<decltype(rng::crend(std::declval<ra_rng_t&&>())),
 static_assert(rng::Same<decltype(rng::crend(std::declval<const ra_rng_t&&>())),
         typename ra_rng_t::const_reverse_iterator>, "");
 
+
 // Output range tests
 namespace test {
 struct output_rng_t {
@@ -351,6 +352,34 @@ static_assert(rng::Iterator<output_rng_t::iterator>, "");
 static_assert(rng::Semiregular<output_rng_t::iterator>, "");
 static_assert(rng::WeaklyEqualityComparableWith<output_rng_t::iterator, output_rng_t::iterator>, "");
 static_assert(rng::OutputIterator<rng::iterator_t<output_rng_t>, char>, "");
+
+// View tests
+
+struct my_type{};
+
+template <>
+struct rng::enable_view<std::vector<my_type>> : std::true_type {};
+
+struct my_view1  {
+    int* begin();
+    int* begin() const;
+    int* end();
+    int* end() const;
+};
+
+struct my_view2 : rng::view_base {
+    int* begin();
+    const int* begin() const;
+    int* end();
+    const int* end() const;
+};
+
+static_assert(!rng::View<float>, "");
+static_assert(!rng::View<ra_rng_t>, "");
+static_assert(!rng::View<std::initializer_list<int>>, "");
+static_assert(rng::View<std::vector<my_type>>, "");
+static_assert(rng::View<my_view1>, "");
+static_assert(rng::View<my_view2>, "");
 
 /*
  * Predicate type trait tests
