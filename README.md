@@ -76,7 +76,17 @@ void my_sort(RandomIt first, RandomIt last, Comparator = {})
 }
 ```
 
+You could also use the concepts in C++17 `if constexpr` blocks, for example
 
+```cpp
+if constexpr (rng::RandomAccessIterator<I>) {
+    // do something
+} else if constexpr (rng::BidirectionalIterator<I>) {
+    // do something else
+} else if constexpr (rng::ForwardIterator<I>) {
+    // do a third thing
+}
+```
 
 ## Differences from the Ranges TS ##
 
@@ -114,10 +124,10 @@ a number of ways.
  * Not all of the Ranges TS's "customisation point objects" have yet been implemented in
    NanoRange.
 
- * NanoRange does not currently provide implementations of the type traits `common_type_t` or
-   `common_reference_t`, or their associated concepts `Common` and `CommonReference`.
-   This is largely because the specification of `common_reference_t` in the TS is
-   so complicated that attempting to implement it made me want to cry actual tears.
+ * NanoRange's implementation of `common_type` and `common_reference` do not meet
+   the specification in the Ranges TS. This is largely because the specification of 
+   `common_reference` is so complicated that attempting to implement it made me 
+   want to cry actual tears.
 
  * NanoRange does not currently implement the adaptor classes `reverse_iterator`,
    `move_iterator`, `common_iterator` or `counted_iterator`.
