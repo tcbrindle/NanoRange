@@ -392,3 +392,44 @@ static_assert(!rng::IndirectUnaryPredicate<int, ra_iter_t>, "");
 static_assert(rng::IndirectUnaryPredicate<decltype(unary_pred)&, fwd_iter_t>, "");
 
 
+/*
+ * Common reference trait tests
+ * This is a little hampered by the fact that I don't know exactly what
+ * common_reference_t is supposed to return in complex cases...
+ */
+
+// Zero parameter case
+static_assert(!rng::detail::is_detected_v<rng::common_reference_t>, "");
+
+// One parameter case
+static_assert(rng::Same<rng::common_reference_t<int>, int>, "");
+
+// Two parameter cases
+static_assert(rng::Same<rng::common_reference_t<int&, int&>, int&>, "");
+static_assert(rng::Same<rng::common_reference_t<const int&, int&>, const int&>, "");
+static_assert(rng::Same<rng::common_reference_t<int&&, int&>, const int&>, "");
+static_assert(rng::Same<rng::common_reference_t<int&, int&&>, const int&>, "");
+static_assert(rng::Same<rng::common_reference_t<int&&, int&&>, int&&>, "");
+static_assert(rng::Same<rng::common_reference_t<const int&&, int&&>, const int&&>, "");
+
+namespace  test {
+
+struct base {};
+struct derived : base {};
+struct derived2 : base{};
+
+}
+static_assert(rng::Same<rng::common_reference_t<test::base&, test::derived&>, test::base&>, "");
+static_assert(rng::Same<rng::common_reference_t<test::base&&, test::derived&&>, test::base&&>, "");
+
+
+// Three parameter cases
+static_assert(rng::Same<rng::common_reference_t<int&, const int&, volatile int&>, const volatile int&>, "");
+static_assert(rng::Same<rng::common_reference_t<test::base&, test::derived&, test::derived2&>, test::base&>, "");
+// but...
+static_assert(!rng::detail::is_detected_v<
+        rng::common_reference_t, test::derived&, test::derived2&, test::base&>, "");
+
+
+
+
