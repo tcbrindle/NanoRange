@@ -1815,14 +1815,90 @@ constexpr auto& crend = detail::static_const_<detail::crend_::crend_cpo>;
 
 }
 
+template <typename>
+constexpr bool disable_sized_range = false;
+
+namespace detail {
+namespace size_ {
+
+template <typename T>
+void size(const T&) = delete;
+
+template <typename T>
+using member_size_t = decltype(std::declval<const T&>().size());
+
+template <typename T>
+constexpr bool has_member_size_v = is_detected_v<member_size_t, T>;
+
+template <typename T>
+using nonmember_size_t = decltype(size(std::declval<const T&>()));
+
+template <typename T>
+constexpr bool has_nonmember_size_v = is_detected_v<nonmember_size_t, T>;
+
+template <typename T>
+using cbegin_t = decltype(nanorange::cbegin(std::declval<const T&>()));
+
+template <typename T>
+using cend_t = decltype(nanorange::cend(std::declval<const T&>()));
+
+struct size_cpo {
+
+    template <typename T, std::size_t N>
+    constexpr std::size_t operator()(T (&)[N]) const noexcept
+    {
+        return N;
+    }
+
+    template <typename T,
+              REQUIRES(has_member_size_v<T> &&
+                       Integral<detected_t<member_size_t, T>> &&
+                       !disable_sized_range<T>)>
+    constexpr auto operator()(const T& t) const
+        noexcept(noexcept(t.size()))
+    {
+        return t.size();
+    }
+
+    template <typename T,
+              REQUIRES(!has_member_size_v<T> &&
+                       has_nonmember_size_v<T> &&
+                       Integral<detected_t<nonmember_size_t, T>> &&
+                       !disable_sized_range<T>)>
+    constexpr auto operator()(const T& t) const
+        noexcept(noexcept(size(t)))
+    {
+        return size(t);
+    }
+
+    template <typename T,
+              REQUIRES(!has_member_size_v<T> &&
+                       !has_nonmember_size_v<T> &&
+                       ForwardIterator<detected_t<cbegin_t, T>> &&
+                       SizedSentinel<detected_t<cend_t, T, detected_t<cbegin_t, T>>>)>
+    constexpr auto operator()(const T& t) const
+        noexcept(noexcept(nanorange::cend(t) - nanorange::cbegin(t)))
+    {
+        return nanorange::cend(t) - nanorange::cbegin(t);
+    }
+};
+
+}
+}
+
+namespace {
+
+constexpr auto& size = detail::static_const_<detail::size_::size_cpo>;
+
+}
+
 template <typename Rng>
 using iterator_t = decltype(nanorange::begin(std::declval<Rng&>()));
 
 template <typename Rng>
 using sentinel_t = decltype(nanorange::end(std::declval<Rng&>()));
 
-template <typename>
-constexpr bool disable_sized_range = false;
+
 
 template <class T>
 struct enable_view {};
