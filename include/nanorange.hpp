@@ -748,11 +748,57 @@ std::result_of_t<F&&(Args&&...)> invoke(F&& f, Args&&... args)
 
 /* 9.1 Iterators library */
 
-// FIXME: This is not correct
-template <typename E>
-auto iter_move(E&& e) -> decltype(std::move(*e))
-{
-    return std::move(*e);
+namespace detail {
+namespace iter_move_ {
+
+template <typename T>
+using adl_iter_move_t = decltype(static_cast<decltype(iter_move(std::declval<T>()))>(iter_move(std::declval<T>())));
+
+template <typename T>
+constexpr bool has_adl_iter_move_v = is_detected_v<adl_iter_move_t, T>;
+
+// We define this again in a minute, but never mind
+template <typename T>
+using reference_t = decltype(*std::declval<T&>());
+
+template <typename T>
+constexpr bool is_dereferencable_v = is_detected_v<reference_t, T>;
+
+template <typename T>
+using rvalue_t = std::conditional_t<std::is_reference<T>::value,
+                        std::remove_reference_t<T>&&,
+                        std::decay_t<T>>;
+
+struct iter_move_cpo {
+
+    template <typename T,
+              REQUIRES(has_adl_iter_move_v<T>)>
+    constexpr decltype(auto) operator()(T&& t) const
+        noexcept(noexcept(static_cast<decltype(iter_move(t))>(iter_move(t))))
+    {
+        return static_cast<decltype(iter_move(t))>(iter_move(t));
+    }
+
+    // This definition is nicked straight from CMCSTL2
+    template <typename T,
+              REQUIRES(!has_adl_iter_move_v<T> &&
+                        is_dereferencable_v<T>)>
+    constexpr auto operator()(T&& t) const
+        noexcept(noexcept(static_cast<rvalue_t<reference_t<T>>>(*t)))
+        -> rvalue_t<reference_t<T>>
+    {
+        return static_cast<rvalue_t<reference_t<T>>>(*t);
+    }
+
+};
+
+}
+}
+
+namespace {
+
+constexpr auto& iter_move = detail::static_const_<detail::iter_move_::iter_move_cpo>;
+
 }
 
 template <typename, typename = void>
