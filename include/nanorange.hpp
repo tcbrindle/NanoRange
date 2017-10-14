@@ -108,7 +108,7 @@ CONCEPT bool Same = std::is_same<T, U>::value;
 
 namespace detail {
 
-// Helper function for requires clause SFINAE: is valid only if
+// Helper function for requires expression SFINAE: is valid only if
 // the deduced type is an rvalue T
 template <typename T, typename Deduced>
 auto same_rv(Deduced&&) -> std::enable_if_t<Same<T, Deduced>>;
@@ -892,6 +892,10 @@ using reference_t = decltype(*std::declval<T&>());
 template <typename T>
 using rvalue_reference_t = decltype(nanorange::iter_move(std::declval<T&>()));
 
+template <typename T>
+using iter_common_reference_t =
+    common_reference_t<reference_t<T>, value_type_t<T>&>;
+
 template <typename In>
 CONCEPT bool Readable =
         detail::is_detected_v<value_type_t, In> &&
@@ -1097,6 +1101,7 @@ CONCEPT bool IndirectUnaryInvocable =
         CopyConstructible<F> &&
         Invocable<F&, value_type_t<I>> &&
         Invocable<F&, reference_t<I>> &&
+        Invocable<F&, iter_common_reference_t<I>> &&
         CommonReference<
             std::result_of_t<F&(value_type_t<I>&)>,
             std::result_of_t<F&(reference_t<I>&&)>>;
@@ -1107,6 +1112,7 @@ CONCEPT bool IndirectRegularUnaryInvocable =
         CopyConstructible<F> &&
         RegularInvocable<F&, value_type_t<I>> &&
         RegularInvocable<F&, reference_t<I>> &&
+        RegularInvocable<F&, iter_common_reference_t<I>> &&
         CommonReference<
             std::result_of_t<F&(value_type_t<I>&)>,
             std::result_of_t<F&(reference_t<I>&&)>>;
@@ -1116,7 +1122,8 @@ CONCEPT bool IndirectUnaryPredicate =
         Readable<I> &&
         CopyConstructible<F> &&
         Predicate<F&, value_type_t<I>&> &&
-        Predicate<F&, reference_t<I>>;
+        Predicate<F&, reference_t<I>> &&
+        Predicate<F&, iter_common_reference_t<I>>;
 
 template <typename F, typename I1, typename I2 = I1>
 CONCEPT bool IndirectRelation =
@@ -1125,7 +1132,8 @@ CONCEPT bool IndirectRelation =
         Relation<F&, value_type_t<I1>&, value_type_t<I2>&> &&
         Relation<F&, value_type_t<I1>&, reference_t<I2>> &&
         Relation<F&, reference_t<I1>, value_type_t<I2>&> &&
-        Relation<F&, reference_t<I1>, reference_t<I2>>;
+        Relation<F&, reference_t<I1>, reference_t<I2>> &&
+        Relation<F&, iter_common_reference_t<I1>, iter_common_reference_t<I2>>;
 
 template <typename F, typename I1, typename I2 = I1>
 CONCEPT bool IndirectStrictWeakOrder =
@@ -1134,7 +1142,8 @@ CONCEPT bool IndirectStrictWeakOrder =
         StrictWeakOrder<F&, value_type_t<I1>&, value_type_t<I2>&> &&
         StrictWeakOrder<F&, value_type_t<I1>&, reference_t<I2>> &&
         StrictWeakOrder<F&, reference_t<I1>, value_type_t<I2>&> &&
-        StrictWeakOrder<F&, reference_t<I1>, reference_t<I2>>;
+        StrictWeakOrder<F&, reference_t<I1>, reference_t<I2>> &&
+        StrictWeakOrder<F&, iter_common_reference_t<I1>, iter_common_reference_t<I2>>;
 
 template <typename, typename = void> struct indirect_result_of {};
 
