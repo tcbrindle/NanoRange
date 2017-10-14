@@ -428,8 +428,9 @@ TEST_CASE("swap_ranges()")
 
     SECTION("with iterators, 3-legged")
     {
-        const auto it = rng::swap_ranges(vec.begin(), vec.end(), arr.begin());
-        REQUIRE(it == arr.end());
+        const auto p = rng::swap_ranges(vec.begin(), vec.end(), arr.begin());
+        REQUIRE(p.first == vec.end());
+        REQUIRE(p.second == arr.end());
         REQUIRE(vec == (std::vector<int>{4, 5, 6}));
         REQUIRE(arr == (std::array<int, 3>{{1, 2, 3}}));
     }
@@ -458,13 +459,15 @@ TEST_CASE("reverse()")
     std::list<int> list{1, 2, 3, 4, 5};
 
     SECTION("with iterators") {
-        rng::reverse(list.begin(), list.end());
+        const auto it = rng::reverse(list.begin(), list.end());
         REQUIRE(list == (std::list<int>{5, 4, 3, 2, 1}));
+        REQUIRE(it == list.end());
     }
 
     SECTION("with range") {
-        rng::reverse(list);
+        const auto it = rng::reverse(list);
         REQUIRE(list == (std::list<int>{5, 4, 3, 2, 1}));
+        REQUIRE(it == list.end());
     }
 }
 

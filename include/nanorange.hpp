@@ -951,7 +951,6 @@ CONCEPT bool Readable =
         CommonReference<detail::detected_t<reference_t, In>&&, detail::detected_t<rvalue_reference_t, In>&&> &&
         CommonReference<detail::detected_t<rvalue_reference_t, In>&&, const detail::detected_t<value_type_t, In>&>;
 
-
 namespace detail {
 
 struct Writable_ {
@@ -1211,10 +1210,10 @@ CONCEPT bool IndirectlyMovable =
 template <typename In, typename Out>
 CONCEPT bool IndirectlyMovableStorable =
         IndirectlyMovable<In, Out> &&
-        Writable<Out, value_type_t<In>> &&
-        Movable<value_type_t<In>> &&
-        Constructible<value_type_t<In>, rvalue_reference_t<In>> &&
-        Assignable<value_type_t<In>&, rvalue_reference_t<In>>;
+        Writable<Out, detail::detected_t<value_type_t, In>> &&
+        Movable<detail::detected_t<value_type_t, In>> &&
+        Constructible<detail::detected_t<value_type_t, In>, detail::detected_t<rvalue_reference_t, In>> &&
+        Assignable<detail::detected_t<value_type_t, In>&, detail::detected_t<rvalue_reference_t, In>>;
 
 template <typename In, typename Out>
 CONCEPT bool IndirectlyCopyable =
@@ -1229,10 +1228,108 @@ CONCEPT bool IndirectlyCopyableStorable =
         Constructible<value_type_t<In>, reference_t<In>> &&
         Assignable<value_type_t<In>&, reference_t<In>>;
 
+// This is not really the right place for this, but oh well
+namespace detail {
+namespace iter_swap_ {
+
+template <typename T, typename U>
+void iter_swap(T, U) = delete;
+
+struct ADLIterSwap_ {
+    template <typename T, typename U>
+    auto requires_(T&& t, U&& u) -> decltype(
+    (void) iter_swap(std::forward<T>(t), std::forward<U>(u))
+    );
+};
+
+template <typename T, typename U>
+constexpr bool has_adl_iter_swap_v = requires_<ADLIterSwap_, T, U>;
+
+template <typename T, typename U,
+          typename X = std::remove_reference_t<T>,
+          typename Y = std::remove_reference_t<U>>
+constexpr bool both_readable_and_swappable_v =
+        Readable<X> && Readable<Y> &&
+        SwappableWith<detected_t<reference_t, X>, detected_t<reference_t, Y>>;
+
+template <typename T1, typename T2>
+constexpr bool iter_exchange_move_noexcept =
+    std::is_nothrow_constructible<value_type_t<T1>, rvalue_reference_t<T1>>::value &&
+                std::is_nothrow_assignable<value_type_t<T1>&, rvalue_reference_t<T1>>::value &&
+                std::is_nothrow_assignable<reference_t<T1>, rvalue_reference_t<T2>>::value &&
+                std::is_nothrow_assignable<reference_t<T1>, value_type_t<T2>>::value &&
+                std::is_nothrow_move_constructible<value_type_t<T1>>::value &&
+                noexcept(nanorange::iter_move(std::declval<T1&>()));
+
+template <typename X, typename Y>
+constexpr value_type_t<std::remove_reference_t<X>>
+iter_exchange_move(X&& x, Y&& y)
+    noexcept(iter_exchange_move_noexcept<std::remove_reference_t<X>, std::remove_reference_t<Y>> &&
+             iter_exchange_move_noexcept<std::remove_reference_t<Y>, std::remove_reference_t<X>>)
+{
+    value_type_t<std::remove_reference_t<X>> old_value(nanorange::iter_move(x));
+    *x = nanorange::iter_move(y);
+    return old_value;
+}
+
+struct iter_swap_cpo {
+
+    template <typename T, typename U,
+            REQUIRES(has_adl_iter_swap_v<T, U>)>
+    constexpr auto operator()(T&& t, U&& u) const
+    noexcept(noexcept(iter_swap(std::forward<T>(t), std::forward<U>(u))))
+    {
+        (void) iter_swap(std::forward<T>(t), std::forward<U>(u));
+    }
+
+    template <typename T, typename U,
+            REQUIRES(!has_adl_iter_swap_v<T, U> &&
+                     both_readable_and_swappable_v<T, U>)>
+    constexpr auto operator()(T&& t, U&& u) const
+    noexcept(noexcept(nanorange::swap(*t, *u)))
+    {
+        nanorange::swap(*t, *u);
+    }
+
+    template <typename T, typename U,
+            REQUIRES(!has_adl_iter_swap_v<T, U> &&
+                    !both_readable_and_swappable_v<T, U> &&
+                    IndirectlyMovableStorable<T, U> &&
+                    IndirectlyMovableStorable<U, T>)>
+    constexpr auto operator()(T&& t, U&& u) const
+        noexcept(noexcept(*t = iter_exchange_move(std::forward<U>(u), std::forward<T>(t))))
+    {
+        (void) (*t = iter_exchange_move(std::forward<U>(u), std::forward<T>(t)));
+    }
+};
+
+}
+}
+
+namespace {
+
+constexpr auto& iter_swap = detail::static_const_<detail::iter_swap_::iter_swap_cpo>;
+
+}
+
+namespace detail {
+
+struct IndirectlySwappable_ {
+    template <typename I1, typename I2>
+    auto requires_(I1&& i1, I2&& i2) -> decltype (
+        nanorange::iter_swap(std::forward<I1>(i1), std::forward<I2>(i2)),
+        nanorange::iter_swap(std::forward<I2>(i2), std::forward<I1>(i1)),
+        nanorange::iter_swap(std::forward<I1>(i1), std::forward<I1>(i1)),
+        nanorange::iter_swap(std::forward<I2>(i2), std::forward<I2>(i2))
+    );
+};
+
+}
 
 template <typename I1, typename I2 = I1>
 CONCEPT bool IndirectlySwappable =
-        Readable<I1> && Readable<I2>; // FIXME: add iter_swap requirements
+        Readable<I1> && Readable<I2> &&
+        detail::requires_<detail::IndirectlySwappable_, I1, I2>;
 
 template <typename I1, typename I2, typename R = std::equal_to<>>
 CONCEPT bool IndirectlyComparable =
@@ -2556,9 +2653,14 @@ template <typename Iter1, typename Iter2,
                  ForwardIterator<Iter2> &&
                  IndirectlySwappable<Iter1, Iter2>)>
 NANORANGE_DEPRECATED
-Iter2 swap_ranges(Iter1 first1, Iter1 last1, Iter2 first2)
+std::pair<Iter1, Iter2>
+swap_ranges(Iter1 first1, Iter1 last1, Iter2 first2)
 {
-    return std::swap_ranges(std::move(first1), std::move(last1), std::move(first2));
+    while (first1 != last1) {
+        nanorange::iter_swap(first1, first2);
+        ++first1; ++first2;
+    }
+    return std::make_pair(std::move(first1), std::move(first2));
 }
 
 template <typename Iter1, typename Iter2,
@@ -2569,7 +2671,7 @@ std::pair<Iter1, Iter2>
 swap_ranges(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2)
 {
     while (first1 != last1 && first2 != last2) {
-        std::iter_swap(first1, first2);
+        nanorange::iter_swap(first1, first2);
         ++first1; ++first2;
     }
     return std::make_pair(std::move(first1), std::move(first2));
@@ -2922,17 +3024,22 @@ Iter2 unique_copy(Range1&& range, Iter2 ofirst, Pred pred = {})
 template <typename Iter,
           REQUIRES(BidirectionalIterator<Iter> &&
                    Permutable<Iter>)>
-void reverse(Iter first, Iter last)
+Iter reverse(Iter first, Iter last)
 {
-    std::reverse(std::move(first), std::move(last));
+    auto last_ = last;
+    while ((first != last_) && (first != --last_)) {
+        nanorange::iter_swap(first, last_);
+        ++first;
+    }
+    return last;
 }
 
 template <typename Range,
           REQUIRES(BidirectionalRange<Range> &&
                    Permutable<iterator_t<Range>>)>
-void reverse(Range&& range)
+safe_iterator_t<Range> reverse(Range&& range)
 {
-    std::reverse(nanorange::begin(range), nanorange::end(range));
+    return nanorange::reverse(nanorange::begin(range), nanorange::end(range));
 }
 
 template <typename Iter1, typename Iter2,
