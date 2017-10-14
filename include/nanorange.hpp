@@ -742,7 +742,13 @@ using std::invoke;
 template <typename F, typename... Args>
 std::result_of_t<F&&(Args&&...)> invoke(F&& f, Args&&... args)
 {
-    std::forward<F>(f)(std::forward<Args>(args)...);
+    return std::forward<F>(f)(std::forward<Args>(args)...);
+}
+
+template <typename F, typename... Args>
+std::result_of_t<F&(Args&&...)> invoke(F& f, Args&&... args)
+{
+    return std::ref(f)(std::forward<Args>(args)...);
 }
 #endif
 
