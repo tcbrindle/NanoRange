@@ -2775,38 +2775,40 @@ template <typename Iter, typename T,
         REQUIRES(InputIterator<Iter> &&
                  Writable<Iter, const T&> &&
                  IndirectRelation<equal_to<>, Iter, const T*>)>
-void replace(Iter first, Iter last, const T& old_value, const T& new_value)
+Iter replace(Iter first, Iter last, const T& old_value, const T& new_value)
 {
-    std::replace(std::move(first), std::move(last), old_value, new_value);
+    std::replace(std::move(first), last, old_value, new_value);
+    return last;
 }
 
 template <typename Range, typename T,
         REQUIRES(InputRange<Range> &&
                  Writable<iterator_t<Range>, const T&> &&
                  IndirectRelation<equal_to<>, iterator_t<Range>, const T*>)>
-void replace(Range&& range, const T& old_value, const T& new_value)
+safe_iterator_t<Range> replace(Range&& range, const T& old_value, const T& new_value)
 {
-    std::replace(nanorange::begin(range), nanorange::end(range),
-                 old_value, new_value);
+    return nanorange::replace(nanorange::begin(range), nanorange::end(range),
+                              old_value, new_value);
 }
 
 template <typename Iter, typename Pred, typename T,
         REQUIRES(InputIterator<Iter> &&
                  Writable<Iter, const T&> &&
                  IndirectUnaryPredicate<Pred, Iter>)>
-void replace_if(Iter first, Iter last, Pred pred, const T& new_value)
+Iter replace_if(Iter first, Iter last, Pred pred, const T& new_value)
 {
-    std::replace_if(std::move(first), std::move(last), std::ref(pred), new_value);
+    std::replace_if(std::move(first), last, std::ref(pred), new_value);
+    return last;
 }
 
 template <typename Range, typename Pred, typename T,
         REQUIRES(ForwardRange<Range> &&
                  Writable<iterator_t<Range>, const T&> &&
                  IndirectUnaryPredicate<Pred, iterator_t<Range>>)>
-void replace_if(Range&& range, Pred pred, const T& new_value)
+safe_iterator_t<Range> replace_if(Range&& range, Pred pred, const T& new_value)
 {
-    std::replace_if(nanorange::begin(range), nanorange::end(range),
-                    std::ref(pred), new_value);
+    return nanorange::replace_if(nanorange::begin(range), nanorange::end(range),
+                                 std::ref(pred), new_value);
 }
 
 template <typename Iter1, typename Iter2, typename T,
@@ -2857,16 +2859,17 @@ Iter2 replace_copy_if(Range1&& range, Iter2 ofirst, Pred pred, const T& new_valu
 
 template <typename Iter, typename T,
           REQUIRES(OutputIterator<Iter, const T&>)>
-void fill(Iter first, Iter last, const T& value)
+Iter fill(Iter first, Iter last, const T& value)
 {
-    std::fill(std::move(first), std::move(last), value);
+    std::fill(std::move(first), last, value);
+    return last;
 }
 
 template <typename Range, typename T,
           REQUIRES(OutputRange<Range, const T&>)>
-void fill(Range&& range, const T& value)
+safe_iterator_t<Range> fill(Range&& range, const T& value)
 {
-    std::fill(nanorange::begin(range), nanorange::end(range), value);
+    return nanorange::fill(nanorange::begin(range), nanorange::end(range), value);
 }
 
 template <typename Iter, typename T,
@@ -2883,18 +2886,19 @@ template <typename Iter, typename Generator,
                    CopyConstructible<Generator> &&
                    Invocable<Generator&> &&
                    Writable<Iter, std::result_of_t<Generator&()>>)>
-void generate(Iter first, Iter last, Generator gen)
+Iter generate(Iter first, Iter last, Generator gen)
 {
-    std::generate(std::move(first), std::move(last), std::ref(gen));
+    std::generate(std::move(first), last, std::ref(gen));
+    return last;
 }
 
 template <typename Range, typename Generator,
           REQUIRES(OutputRange<Range, std::result_of_t<Generator&()>> &&
                    CopyConstructible<Generator> &&
                    Invocable<Generator&>)>
-void generate(Range&& range, Generator gen)
+safe_iterator_t<Range> generate(Range&& range, Generator gen)
 {
-    std::generate(nanorange::begin(range), nanorange::end(range), std::ref(gen));
+    return nanorange::generate(nanorange::begin(range), nanorange::end(range), std::ref(gen));
 }
 
 template <typename Iter, typename Generator,
@@ -3123,9 +3127,10 @@ template <typename Iter, typename URNG,
                    Permutable<Iter> &&
                    // UniformRandomNumberGenerator<std::remove_reference_t<URNG>> &&
                    ConvertibleTo<std::result_of_t<URNG&()>, difference_type_t<Iter>>)>
-void shuffle(Iter first, Iter last, URNG&& generator)
+Iter shuffle(Iter first, Iter last, URNG&& generator)
 {
-    std::shuffle(std::move(first), std::move(last), std::forward<URNG>(generator));
+    std::shuffle(std::move(first), last, std::forward<URNG>(generator));
+    return last;
 }
 
 template <typename Range, typename URNG,
@@ -3133,9 +3138,10 @@ template <typename Range, typename URNG,
                  Permutable<iterator_t<Range>> &&
                  // UniformRandomNumberGenerator<std::remove_reference_t<URNG>> &&
                  ConvertibleTo<std::result_of_t<URNG&()>, range_difference_type_t<Range>>)>
-void shuffle(Range&& range, URNG&& generator)
+safe_iterator_t<Range> shuffle(Range&& range, URNG&& generator)
 {
-    std::shuffle(nanorange::begin(range), nanorange::end(range), std::forward<URNG>(generator));
+    return nanorange::shuffle(nanorange::begin(range), nanorange::end(range),
+                              std::forward<URNG>(generator));
 }
 
 // 11.4.13 Partitions
@@ -3248,17 +3254,18 @@ safe_iterator_t<Range> partition_point(Range&& range, Pred pred)
 template <typename Iter, typename Comp = less<>,
         REQUIRES(RandomAccessIterator<Iter> &&
                  Sortable<Iter, Comp>)>
-void sort(Iter first, Iter last, Comp comp = {})
+Iter sort(Iter first, Iter last, Comp comp = {})
 {
-    std::sort(std::move(first), std::move(last), std::ref(comp));
+    std::sort(std::move(first), last, std::ref(comp));
+    return last;
 }
 
 template <typename Range, typename Comp = less<>,
         REQUIRES(RandomAccessRange<Range> &&
                  Sortable<iterator_t<Range>, Comp>)>
-void sort(Range&& range, Comp comp = {})
+safe_iterator_t<Range> sort(Range&& range, Comp comp = {})
 {
-    std::sort(nanorange::begin(range), nanorange::end(range), std::ref(comp));
+    return nanorange::sort(nanorange::begin(range), nanorange::end(range), std::ref(comp));
 }
 
 // 11.5.1.2 stable_sort
@@ -3266,17 +3273,18 @@ void sort(Range&& range, Comp comp = {})
 template <typename Iter, typename Comp = less<>,
         REQUIRES(RandomAccessIterator<Iter> &&
                  Sortable<Iter, Comp>)>
-void stable_sort(Iter first, Iter last, Comp comp = {})
+Iter stable_sort(Iter first, Iter last, Comp comp = {})
 {
-    std::stable_sort(std::move(first), std::move(last), std::ref(comp));
+    std::stable_sort(std::move(first), last, std::ref(comp));
+    return last;
 }
 
 template <typename Range, typename Comp = less<>,
         REQUIRES(RandomAccessRange<Range> &&
                  Sortable<iterator_t<Range>, Comp>)>
-void stable_sort(Range&& range, Comp comp = {})
+safe_iterator_t<Range> stable_sort(Range&& range, Comp comp = {})
 {
-    std::stable_sort(nanorange::begin(range), nanorange::end(range), std::ref(comp));
+    return nanorange::stable_sort(nanorange::begin(range), nanorange::end(range), std::ref(comp));
 }
 
 // 11.5.1.3 partial_sort
@@ -3284,17 +3292,18 @@ void stable_sort(Range&& range, Comp comp = {})
 template <typename Iter, typename Comp = less<>,
         REQUIRES(RandomAccessIterator<Iter> &&
                  Sortable<Iter, Comp>)>
-void partial_sort(Iter first, Iter middle, Iter last, Comp comp = {})
+Iter partial_sort(Iter first, Iter middle, Iter last, Comp comp = {})
 {
-    std::partial_sort(std::move(first), std::move(middle), std::move(last), std::ref(comp));
+    std::partial_sort(std::move(first), std::move(middle), last, std::ref(comp));
+    return last;
 }
 
 template <typename Range, typename Comp = less<>,
         REQUIRES(RandomAccessRange<Range> &&
                  Sortable<iterator_t<Range>, Comp>)>
-void partial_sort(Range&& range, iterator_t<Range> middle, Comp comp = {})
+safe_iterator_t<Range> partial_sort(Range&& range, iterator_t<Range> middle, Comp comp = {})
 {
-    std::partial_sort(nanorange::begin(range), std::move(middle), nanorange::end(range), std::ref(comp));
+    return nanorange::partial_sort(nanorange::begin(range), std::move(middle), nanorange::end(range), std::ref(comp));
 }
 
 // 11.5.1.4 partial_sort_copy
@@ -3364,17 +3373,18 @@ safe_iterator_t<Range> is_sorted_until(Range&& range, Comp comp = {})
 template <typename Iter, typename Comp = less<>,
         REQUIRES(RandomAccessIterator<Iter> &&
                  Sortable<Iter, Comp>)>
-void nth_element(Iter first, Iter nth, Iter last, Comp comp = {})
+Iter nth_element(Iter first, Iter nth, Iter last, Comp comp = {})
 {
-    std::nth_element(std::move(first), std::move(nth), std::move(last), std::ref(comp));
+    std::nth_element(std::move(first), std::move(nth), last, std::ref(comp));
+    return last;
 }
 
 template <typename Range, typename Comp = less<>,
         REQUIRES(RandomAccessRange<Range> &&
                  Sortable<iterator_t<Range>, Comp>)>
-void nth_element(Range&& range, iterator_t<Range> nth, Comp comp = {})
+safe_iterator_t<Range> nth_element(Range&& range, iterator_t<Range> nth, Comp comp = {})
 {
-    std::nth_element(nanorange::begin(range), nanorange::end(range), std::move(nth), std::ref(comp));
+    return nanorange::nth_element(nanorange::begin(range), nanorange::end(range), std::move(nth), std::ref(comp));
 }
 
 // 11.5.3 Binary search operations
@@ -3484,17 +3494,17 @@ OutputIt merge(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp com
 template <typename BidirIt, typename Comp = less<>,
         REQUIRES(BidirectionalIterator<BidirIt> &&
                  Sortable<BidirIt, Comp>)>
-void inplace_merge(BidirIt first, BidirIt middle, BidirIt last, Comp comp = {})
+BidirIt inplace_merge(BidirIt first, BidirIt middle, BidirIt last, Comp comp = {})
 {
-    std::inplace_merge(std::move(first), std::move(middle), std::move(last), std::ref(comp));
+    return std::inplace_merge(std::move(first), std::move(middle), last, std::ref(comp));
 }
 
 template <typename BidirRng, typename Comp = less<>,
         REQUIRES(BidirectionalRange<BidirRng> &&
                  Sortable<iterator_t<BidirRng>, Comp>)>
-void inplace_merge(BidirRng&& range, iterator_t<BidirRng> middle, Comp comp = {})
+safe_iterator_t<BidirRng> inplace_merge(BidirRng&& range, iterator_t<BidirRng> middle, Comp comp = {})
 {
-    std::inplace_merge(nanorange::begin(range), std::move(middle), nanorange::end(range), std::ref(comp));
+    return nanorange::inplace_merge(nanorange::begin(range), std::move(middle), nanorange::end(range), std::ref(comp));
 }
 
 // 11.5.5. Set operations on sorted structures
@@ -3638,17 +3648,17 @@ OutputIt set_symmetric_difference(InputRng1&& range1, InputRng2&& range2, Output
 template <typename RandomIt, typename Comp = less<>,
         REQUIRES(RandomAccessIterator<RandomIt> &&
                  Sortable<RandomIt, Comp>)>
-void push_heap(RandomIt first, RandomIt last, Comp comp = {})
+RandomIt push_heap(RandomIt first, RandomIt last, Comp comp = {})
 {
-    std::push_heap(std::move(first), std::move(last), std::ref(comp));
+    std::push_heap(std::move(first), last, std::ref(comp));
 }
 
 template <typename RandomRng, typename Comp = less<>,
         REQUIRES(RandomAccessRange<RandomRng> &&
                  Sortable<iterator_t<RandomRng>, Comp>)>
-void push_heap(RandomRng&& range, Comp comp = {})
+safe_iterator_t<RandomRng> push_heap(RandomRng&& range, Comp comp = {})
 {
-    std::push_heap(nanorange::begin(range), nanorange::end(range), std::ref(comp));
+    return nanorange::push_heap(nanorange::begin(range), nanorange::end(range), std::ref(comp));
 }
 
 // 11.5.5.2 pop_heap
@@ -3656,17 +3666,18 @@ void push_heap(RandomRng&& range, Comp comp = {})
 template <typename RandomIt, typename Comp = less<>,
           REQUIRES(RandomAccessIterator<RandomIt> &&
                    Sortable<RandomIt, Comp>)>
-void pop_heap(RandomIt first, RandomIt last, Comp comp = {})
+RandomIt pop_heap(RandomIt first, RandomIt last, Comp comp = {})
 {
-    std::pop_heap(std::move(first), std::move(last), std::ref(comp));
+    std::pop_heap(std::move(first), last, std::ref(comp));
+    return last;
 }
 
 template <typename RandomRng, typename Comp = less<>,
           REQUIRES(RandomAccessRange<RandomRng> &&
                    Sortable<iterator_t<RandomRng>, Comp>)>
-void pop_heap(RandomRng&& range, Comp comp = {})
+safe_iterator_t<RandomRng> pop_heap(RandomRng&& range, Comp comp = {})
 {
-    std::pop_heap(nanorange::begin(range), nanorange::end(range), std::ref(comp));
+    return nanorange::pop_heap(nanorange::begin(range), nanorange::end(range), std::ref(comp));
 }
 
 // 11.5.5.3 make_heap
@@ -3674,17 +3685,18 @@ void pop_heap(RandomRng&& range, Comp comp = {})
 template <typename RandomIt, typename Comp = less<>,
           REQUIRES(RandomAccessIterator<RandomIt> &&
                    Sortable<RandomIt, Comp>)>
-void make_heap(RandomIt first, RandomIt last, Comp comp = {})
+RandomIt make_heap(RandomIt first, RandomIt last, Comp comp = {})
 {
-    std::make_heap(std::move(first), std::move(last), std::ref(comp));
+    std::make_heap(std::move(first), last, std::ref(comp));
+    return last;
 }
 
 template <typename RandomRng, typename Comp = less<>,
           REQUIRES(RandomAccessRange<RandomRng> &&
                    Sortable<iterator_t<RandomRng>, Comp>)>
-void make_heap(RandomRng&& range, Comp comp = {})
+safe_iterator_t<RandomRng> make_heap(RandomRng&& range, Comp comp = {})
 {
-    std::make_heap(nanorange::begin(range), nanorange::end(range), std::ref(comp));
+    return nanorange::make_heap(nanorange::begin(range), nanorange::end(range), std::ref(comp));
 }
 
 // 11.5.6.4 sort_heap
@@ -3692,17 +3704,18 @@ void make_heap(RandomRng&& range, Comp comp = {})
 template <typename RandomIt, typename Comp = less<>,
           REQUIRES(RandomAccessIterator<RandomIt> &&
                    Sortable<RandomIt, Comp>)>
-void sort_heap(RandomIt first, RandomIt last, Comp comp = {})
+RandomIt sort_heap(RandomIt first, RandomIt last, Comp comp = {})
 {
-    std::sort_heap(std::move(first), std::move(last), std::ref(comp));
+    std::sort_heap(std::move(first), last, std::ref(comp));
+    return last;
 }
 
 template <typename RandomRng, typename Comp = less<>,
         REQUIRES(RandomAccessRange<RandomRng> &&
                  Sortable<iterator_t<RandomRng>, Comp>)>
-void sort_heap(RandomRng&& range, Comp comp = {})
+safe_iterator_t<RandomRng> sort_heap(RandomRng&& range, Comp comp = {})
 {
-    std::sort_heap(nanorange::begin(range), nanorange::end(range), std::ref(comp));
+    return nanorange::sort_heap(nanorange::begin(range), nanorange::end(range), std::ref(comp));
 }
 
 // 11.5.6.5 is_heap
