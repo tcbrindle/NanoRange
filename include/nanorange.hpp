@@ -1054,8 +1054,7 @@ template <typename S, typename I>
 CONCEPT bool Sentinel =
         Semiregular<S> &&
         Iterator<I> &&
-        WeaklyEqualityComparableWith<S, I> &&
-        Same<S, I>;
+        WeaklyEqualityComparableWith<S, I>;
 
 template <typename S, typename I>
 constexpr bool disable_sized_sentinel = false;
