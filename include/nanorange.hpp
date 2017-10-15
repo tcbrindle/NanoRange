@@ -1927,7 +1927,26 @@ template <typename T>
 CONCEPT bool Range =
         detail::requires_<detail::Range_, T>;
 
-// FIXME: SizedRange, once we've done size
+namespace detail {
+
+template <typename T>
+auto convertible_to_difference_type_f(T) ->
+    std::enable_if_t<ConvertibleTo<difference_type_t<iterator_t<T>>>>;
+
+struct SizedRange_ {
+    template <typename T>
+    auto requires(T& t) -> decltype(
+        convertible_to_difference_type(nanorange::size(t))
+    );
+};
+
+}
+
+template <typename T>
+CONCEPT bool SizedRange =
+    Range<T> &&
+    !disable_sized_range<std::remove_reference<T>> &&
+    detail::requires_<detail::SizedRange_, T>;
 
 namespace detail {
 
