@@ -2142,7 +2142,9 @@ CONCEPT bool View =
         detail::view_predicate<T>;
 
 template <typename T>
-CONCEPT bool BoundedRange = Range<T>;
+CONCEPT bool BoundedRange =
+        Range<T> &&
+        Same<detail::detected_t<iterator_t, T>, detail::detected_t<sentinel_t, T>>;
 
 template <typename T>
 CONCEPT bool InputRange =
