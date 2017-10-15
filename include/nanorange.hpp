@@ -1495,7 +1495,7 @@ struct end_cpo {
 
     template <typename T, std::size_t N>
     constexpr auto operator()(T (&t)[N]) const noexcept
-    -> decltype((t) + N)
+        -> decltype((t) + N)
     {
         return (t) + N;
     }
@@ -1503,20 +1503,20 @@ struct end_cpo {
     template <typename T,
             REQUIRES(has_member_end_v<T>)>
     constexpr auto operator()(T& t) const
-    noexcept(noexcept(decay_copy(t.end())))
-    -> decltype(decay_copy(t.end()))
+        noexcept(noexcept(t.end()))
+        -> decltype(t.end())
     {
-        return decay_copy(t.end());
+        return t.end();
     }
 
     template <typename T,
             REQUIRES(has_nonmember_end_v<T> &&
                      !has_member_end_v<T>)>
     constexpr auto operator()(T& t) const
-    noexcept(noexcept(decay_copy(end(t))))
-        -> decltype(decay_copy(end(t)))
+        noexcept(noexcept(end(t)))
+        -> decltype(end(t))
     {
-        return decay_copy(end(t));
+        return end(t);
     }
 
     template <typename T,
@@ -1889,6 +1889,66 @@ struct size_cpo {
 namespace {
 
 constexpr auto& size = detail::static_const_<detail::size_::size_cpo>;
+
+}
+
+namespace detail {
+namespace empty_ {
+
+template <typename T>
+using member_empty_t = decltype(bool(std::declval<const T&>().empty()));
+
+template <typename T>
+constexpr bool has_member_empty_v = is_detected_v<member_empty_t, T>;
+
+template <typename T>
+using size_cpo_t = decltype(nanorange::size(std::declval<const T&>()));
+
+template <typename T>
+constexpr bool has_size_v = is_detected_v<size_cpo_t, T>;
+
+template <typename T>
+using end_t = decltype(nanorange::end(std::declval<const T&>()));
+
+// end checks begin for us
+template <typename T>
+constexpr bool has_begin_end_v = is_detected_v<end_t, T>;
+
+struct empty_cpo {
+
+    template <typename T,
+              REQUIRES(has_member_empty_v<T>)>
+    constexpr bool operator()(const T& t) const
+        noexcept(noexcept(std::forward<T>(t).empty()))
+    {
+        return std::forward<T>(t).empty();
+    }
+
+    template <typename T,
+              REQUIRES(!has_member_empty_v<T> &&
+                       has_size_v<T>)>
+    constexpr bool operator()(const T& t) const
+        noexcept(noexcept(nanorange::size(t) == 0))
+    {
+        return nanorange::size(t) == 0;
+    }
+
+    template <typename T,
+              REQUIRES(!has_member_empty_v<T> &&
+                       !has_size_v<T> &&
+                       has_begin_end_v<T>)>
+    constexpr bool operator()(const T& t) const
+    {
+        return bool(nanorange::begin(t) == nanorange::end(t));
+    }
+};
+
+}
+}
+
+namespace {
+
+constexpr auto& empty = detail::static_const_<detail::empty_::empty_cpo>;
 
 }
 
