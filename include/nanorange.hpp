@@ -1815,6 +1815,12 @@ constexpr auto& crend = detail::static_const_<detail::crend_::crend_cpo>;
 
 }
 
+template <typename Rng>
+using iterator_t = decltype(nanorange::begin(std::declval<Rng&>()));
+
+template <typename Rng>
+using sentinel_t = decltype(nanorange::end(std::declval<Rng&>()));
+
 template <typename>
 constexpr bool disable_sized_range = false;
 
@@ -1907,12 +1913,9 @@ using size_cpo_t = decltype(nanorange::size(std::declval<const T&>()));
 template <typename T>
 constexpr bool has_size_v = is_detected_v<size_cpo_t, T>;
 
-template <typename T>
-using end_t = decltype(nanorange::end(std::declval<const T&>()));
-
 // end checks begin for us
 template <typename T>
-constexpr bool has_begin_end_v = is_detected_v<end_t, T>;
+constexpr bool has_begin_end_v = is_detected_v<sentinel_t, T>;
 
 struct empty_cpo {
 
@@ -1952,11 +1955,63 @@ constexpr auto& empty = detail::static_const_<detail::empty_::empty_cpo>;
 
 }
 
-template <typename Rng>
-using iterator_t = decltype(nanorange::begin(std::declval<Rng&>()));
+namespace detail {
+namespace data_ {
 
-template <typename Rng>
-using sentinel_t = decltype(nanorange::end(std::declval<Rng&>()));
+template <typename T>
+using member_data_t = decltype(std::declval<T&>().data());
+
+template <typename T>
+constexpr bool is_ptr_to_object_v =
+        std::is_pointer<T>::value &&
+        std::is_object<decltype(*std::declval<T&>())>::value;
+
+template <typename T>
+constexpr bool has_member_data_v =
+        is_ptr_to_object_v<detected_t<member_data_t, T>>;
+
+template <typename T>
+constexpr bool has_ptr_iterator_v =
+        is_ptr_to_object_v<detected_t<iterator_t, T>>;
+
+struct data_cpo {
+
+    template <typename T,
+              REQUIRES(has_member_data_v<T>)>
+    constexpr auto operator()(T& t) const
+        noexcept(noexcept(t.data()))
+    {
+        return t.data();
+    }
+
+    template <typename T,
+              REQUIRES(!has_member_data_v<T> &&
+                       has_ptr_iterator_v<T>)>
+    constexpr auto operator()(T& t) const
+        noexcept(noexcept(nanorange::begin(t)))
+        -> decltype(nanorange::begin(t))
+    {
+        return nanorange::begin(t);
+    }
+
+    template <typename T>
+    NANORANGE_DEPRECATED
+    constexpr auto operator()(const T&& t) const
+        noexcept(noexcept(std::declval<const data_cpo&>()(t)))
+    {
+        return (*this)(t);
+    }
+};
+
+}
+}
+
+namespace {
+
+constexpr auto& data = detail::static_const_<detail::data_::data_cpo>;
+
+}
+
 
 
 
