@@ -2012,8 +2012,43 @@ constexpr auto& data = detail::static_const_<detail::data_::data_cpo>;
 
 }
 
+namespace detail {
+namespace cdata_ {
 
+template <typename T>
+using data_t = decltype(nanorange::data(std::declval<const T&>()));
 
+template <typename T>
+constexpr bool has_data_v = is_detected_v<data_t, T>;
+
+struct cdata_cpo {
+
+    template <typename T,
+              REQUIRES(has_data_v<T>)>
+    constexpr auto operator()(const T& t) const
+        noexcept(noexcept(nanorange::data(t)))
+    {
+        return nanorange::data(t);
+    }
+
+    template <typename T,
+              REQUIRES(has_data_v<T>)>
+    NANORANGE_DEPRECATED
+    constexpr auto operator()(const T&& t) const
+        noexcept(noexcept(nanorange::data(t)))
+    {
+        return nanorange::data(t);
+    }
+};
+
+}
+}
+
+namespace {
+
+constexpr auto& cdata = detail::static_const_<detail::cdata_::cdata_cpo>;
+
+}
 
 template <class T>
 struct enable_view {};
