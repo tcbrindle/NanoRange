@@ -2417,6 +2417,7 @@ using safe_iterator_t = std::conditional_t<
 
 template <typename Iter, typename UnaryPredicate,
           REQUIRES(InputIterator<Iter> &&
+                   Sentinel<Iter, Iter> &&
                    IndirectUnaryPredicate<UnaryPredicate, Iter>)>
 bool all_of(Iter first, Iter last, UnaryPredicate pred)
 {
@@ -2425,6 +2426,7 @@ bool all_of(Iter first, Iter last, UnaryPredicate pred)
 
 template <typename Range, typename UnaryPredicate,
           REQUIRES(InputRange<Range> &&
+                   BoundedRange<Range> &&
                    IndirectUnaryPredicate<UnaryPredicate, iterator_t<Range>>)>
 bool all_of(Range&& range, UnaryPredicate pred)
 {
@@ -2435,6 +2437,7 @@ bool all_of(Range&& range, UnaryPredicate pred)
 
 template <typename Iter, typename UnaryPredicate,
           REQUIRES(InputIterator<Iter> &&
+                   Sentinel<Iter, Iter> &&
                    IndirectUnaryPredicate<UnaryPredicate, Iter>)>
 bool any_of(Iter first, Iter last, UnaryPredicate pred)
 {
@@ -2443,6 +2446,7 @@ bool any_of(Iter first, Iter last, UnaryPredicate pred)
 
 template <typename Range, typename UnaryPredicate,
           REQUIRES(InputRange<Range> &&
+                   BoundedRange<Range> &&
                    IndirectUnaryPredicate<UnaryPredicate, iterator_t<Range>>)>
 bool any_of(Range&& range, UnaryPredicate pred)
 {
@@ -2453,6 +2457,7 @@ bool any_of(Range&& range, UnaryPredicate pred)
 
 template <typename Iter, typename UnaryPredicate,
           REQUIRES(InputIterator<Iter> &&
+                   Sentinel<Iter, Iter> &&
                    IndirectUnaryPredicate<UnaryPredicate, Iter>)>
 bool none_of(Iter first, Iter last, UnaryPredicate pred)
 {
@@ -2461,6 +2466,7 @@ bool none_of(Iter first, Iter last, UnaryPredicate pred)
 
 template <typename Range, typename UnaryPredicate,
           REQUIRES(InputRange<Range> &&
+                   BoundedRange<Range> &&
                    IndirectUnaryPredicate<UnaryPredicate, iterator_t<Range>>)>
 bool none_of(Range&& range, UnaryPredicate pred)
 {
@@ -2471,6 +2477,7 @@ bool none_of(Range&& range, UnaryPredicate pred)
 
 template <typename Iter, typename UnaryFunction,
           REQUIRES(InputIterator<Iter> &&
+                   Sentinel<Iter, Iter> &&
                    IndirectUnaryInvocable<UnaryFunction, Iter>)>
 UnaryFunction for_each(Iter first, Iter last, UnaryFunction func)
 {
@@ -2479,6 +2486,7 @@ UnaryFunction for_each(Iter first, Iter last, UnaryFunction func)
 
 template <typename Range, typename UnaryFunction,
           REQUIRES(InputRange<Range> &&
+                   BoundedRange<Range> &&
                    IndirectUnaryInvocable<UnaryFunction, iterator_t<Range>>)>
 UnaryFunction for_each(Range&& range, UnaryFunction func)
 {
@@ -2490,6 +2498,7 @@ UnaryFunction for_each(Range&& range, UnaryFunction func)
 
 template <typename Iter, typename T,
         REQUIRES(InputIterator<Iter> &&
+                 Sentinel<Iter, Iter> &&
                  IndirectRelation<equal_to<>, Iter, const T*>)>
 Iter find(Iter first, Iter last, const T& value)
 {
@@ -2498,6 +2507,7 @@ Iter find(Iter first, Iter last, const T& value)
 
 template <typename Range, typename T,
         REQUIRES(InputRange<Range> &&
+                 BoundedRange<Range> &&
                  IndirectRelation<equal_to<>, iterator_t<Range>, const T*>)>
 safe_iterator_t<Range>
 find(Range&& range, const T& value)
@@ -2507,6 +2517,7 @@ find(Range&& range, const T& value)
 
 template <typename Iter, typename UnaryPredicate,
         REQUIRES(InputIterator<Iter> &&
+                 Sentinel<Iter, Iter> &&
                  IndirectUnaryPredicate<UnaryPredicate, Iter>)>
 Iter find_if(Iter first, Iter last, UnaryPredicate pred)
 {
@@ -2515,6 +2526,7 @@ Iter find_if(Iter first, Iter last, UnaryPredicate pred)
 
 template <typename Range, typename UnaryPredicate,
         REQUIRES(InputRange<Range> &&
+                 BoundedRange<Range> &&
                  IndirectUnaryPredicate<UnaryPredicate, iterator_t<Range>>)>
 safe_iterator_t<Range>
 find_if(Range&& range, UnaryPredicate pred)
@@ -2525,6 +2537,7 @@ find_if(Range&& range, UnaryPredicate pred)
 
 template <typename Iter, typename UnaryPredicate,
         REQUIRES(InputIterator<Iter> &&
+                 Sentinel<Iter, Iter> &&
                  IndirectUnaryPredicate<UnaryPredicate, Iter>)>
 Iter find_if_not(Iter first, Iter last, UnaryPredicate&& pred)
 {
@@ -2533,6 +2546,7 @@ Iter find_if_not(Iter first, Iter last, UnaryPredicate&& pred)
 
 template <typename Range, typename UnaryPredicate,
         REQUIRES(InputRange<Range> &&
+                 BoundedRange<Range> &&
                  IndirectUnaryPredicate<UnaryPredicate, iterator_t<Range>>)>
 safe_iterator_t<Range>
 find_if_not(Range&& range, UnaryPredicate pred)
@@ -2557,6 +2571,8 @@ Iter1 find_end(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, BinaryPredi
 template <typename Range1, typename Range2, typename BinaryPredicate = equal_to<>,
         REQUIRES(ForwardRange<Range1> &&
                  ForwardRange<Range2> &&
+                 BoundedRange<Range1> &&
+                 BoundedRange<Range2> &&
                  IndirectRelation<BinaryPredicate, iterator_t<Range1>, iterator_t<Range2>>)>
 safe_iterator_t<Range1>
 find_end(Range1&& range1, Range2&& range2, BinaryPredicate pred = {})
@@ -2582,6 +2598,8 @@ Iter1 find_first_of(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, Pred p
 template <typename Range1, typename Range2, typename Pred = equal_to<>,
         REQUIRES(InputRange<Range1> &&
                  InputRange<Range2> &&
+                 BoundedRange<Range1> &&
+                 BoundedRange<Range2> &&
                  IndirectRelation<Pred, iterator_t<Range1>, iterator_t<Range2>>)>
 safe_iterator_t<Range1>
 find_first_of(Range1&& range1, Range2&& range2, Pred pred = {})
@@ -2603,6 +2621,7 @@ Iter adjacent_find(Iter first, Iter last, Pred pred = {})
 
 template <typename Range, typename Pred = equal_to<>,
         REQUIRES(ForwardRange<Range> &&
+                 BoundedRange<Range> &&
                  IndirectRelation<Pred, iterator_t<Range>, iterator_t<Range>>)>
 safe_iterator_t<Range>
 adjacent_find(Range&& range, Pred pred = {})
@@ -2615,6 +2634,7 @@ adjacent_find(Range&& range, Pred pred = {})
 
 template <typename Iter, typename T,
           REQUIRES(InputIterator<Iter> &&
+                   Sentinel<Iter, Iter> &&
                    IndirectRelation<equal_to<>, Iter, const T*>)>
 difference_type_t<Iter>
 count(Iter first, Iter last, const T& value)
@@ -2624,6 +2644,7 @@ count(Iter first, Iter last, const T& value)
 
 template <typename Range, typename T,
           REQUIRES(InputRange<Range> &&
+                   BoundedRange<Range> &&
                    IndirectRelation<equal_to<>, iterator_t<Range>, const T*>)>
 range_difference_type_t<Range>
 count(Range&& rng, const T& value)
@@ -2633,6 +2654,7 @@ count(Range&& rng, const T& value)
 
 template <typename Iter, typename UnaryPredicate,
           REQUIRES(InputIterator<Iter> &&
+                   Sentinel<Iter, Iter> &&
                    IndirectUnaryPredicate<UnaryPredicate, Iter>)>
 difference_type_t<Iter>
 count_if(Iter first, Iter last, UnaryPredicate pred)
@@ -2642,6 +2664,7 @@ count_if(Iter first, Iter last, UnaryPredicate pred)
 
 template <typename Range, typename UnaryPredicate,
           REQUIRES(InputRange<Range> &&
+                   BoundedRange<Range> &&
                    IndirectUnaryPredicate<UnaryPredicate, iterator_t<Range>>)>
 range_difference_type_t<Range>
 count_if(Range&& range, UnaryPredicate pred)
@@ -2656,7 +2679,9 @@ count_if(Range&& range, UnaryPredicate pred)
 // deprecated
 template <typename Iter1, typename Iter2, typename BinaryPredicate = equal_to<>,
           REQUIRES(InputIterator<Iter1> &&
+                   Sentinel<Iter1, Iter1> &&
                    InputIterator<Iter2> &&
+                   Sentinel<Iter2, Iter2> &&
                    IndirectRelation<BinaryPredicate, Iter1, Iter2>)>
 NANORANGE_DEPRECATED
 std::pair<Iter1, Iter2>
@@ -2667,7 +2692,9 @@ mismatch(Iter1 first1, Iter2 last1, Iter2 first2, BinaryPredicate pred = {})
 
 template <typename Iter1, typename Iter2, typename BinaryPredicate = equal_to<>,
         REQUIRES(InputIterator<Iter1> &&
+                 Sentinel<Iter1, Iter1> &&
                  InputIterator<Iter2> &&
+                 Sentinel<Iter2, Iter2> &&
                  IndirectRelation<BinaryPredicate, Iter1, Iter2>)>
 std::pair<Iter1, Iter2>
 mismatch(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, BinaryPredicate pred = {})
@@ -2680,6 +2707,8 @@ mismatch(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, BinaryPredicate p
 template <typename Range1, typename Range2, typename BinaryPredicate = equal_to<>,
         REQUIRES(InputRange<Range1> &&
                  InputRange<Range2> &&
+                 BoundedRange<Range1> &&
+                 BoundedRange<Range2> &&
                  IndirectRelation<BinaryPredicate, iterator_t<Range1>, iterator_t<Range2>>)>
 std::pair<safe_iterator_t<Range1>, safe_iterator_t<Range2>>
 mismatch(Range1&& range1, Range2&& range2, BinaryPredicate pred = {})
@@ -2695,7 +2724,9 @@ mismatch(Range1&& range1, Range2&& range2, BinaryPredicate pred = {})
 // deprecated
 template <typename Iter1, typename Iter2, typename BinaryPredicate = equal_to<>,
         REQUIRES(InputIterator<Iter1> &&
+                 Sentinel<Iter1, Iter1> &&
                  InputIterator<Iter2> &&
+                 Sentinel<Iter2, Iter2> &&
                  IndirectlyComparable<Iter1, Iter2, BinaryPredicate>)>
 NANORANGE_DEPRECATED
 bool equal(Iter1 first1, Iter1 last1, Iter2 first2, BinaryPredicate pred = {})
@@ -2706,7 +2737,9 @@ bool equal(Iter1 first1, Iter1 last1, Iter2 first2, BinaryPredicate pred = {})
 
 template <typename Iter1, typename Iter2, typename BinaryPredicate = equal_to<>,
         REQUIRES(InputIterator<Iter1> &&
+                 Sentinel<Iter1, Iter1> &&
                  InputIterator<Iter2> &&
+                 Sentinel<Iter2, Iter2> &&
                  IndirectlyComparable<Iter1, Iter2, BinaryPredicate>)>
 bool equal(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, BinaryPredicate pred = {})
 {
@@ -2718,6 +2751,8 @@ bool equal(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, BinaryPredicate
 template <typename Range1, typename Range2, typename BinaryPredicate = equal_to<>,
         REQUIRES(InputRange<Range1> &&
                  InputRange<Range2> &&
+                 BoundedRange<Range1> &&
+                 BoundedRange<Range2> &&
                  IndirectlyComparable<iterator_t<Range1>, iterator_t<Range2>, BinaryPredicate>)>
 bool equal(Range1&& range1, Range2&& range2, BinaryPredicate pred = {})
 {
@@ -2750,8 +2785,10 @@ bool is_permutation(ForwardIt1 first1, ForwardIt1 last1, ForwardIt2 first2, Forw
 
 template <typename ForwardRng1, typename ForwardRng2, typename Pred = equal_to<>,
         REQUIRES(ForwardRange<ForwardRng1> &&
-                         ForwardRange<ForwardRng2> &&
-                         IndirectlyComparable<iterator_t<ForwardRng1>, iterator_t<ForwardRng2>, Pred>)>
+                 ForwardRange<ForwardRng2> &&
+                 BoundedRange<ForwardRng1> &&
+                 BoundedRange<ForwardRng2> &&
+                 IndirectlyComparable<iterator_t<ForwardRng1>, iterator_t<ForwardRng2>, Pred>)>
 bool is_permutation(ForwardRng1&& range1, ForwardRng2&& range2, Pred pred = {})
 {
     return std::is_permutation(nanorange::begin(range1), nanorange::end(range2),
@@ -2774,6 +2811,8 @@ Iter1 search(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, Pred pred = {
 template <typename Range1, typename Range2, typename Pred = equal_to<>,
         REQUIRES(ForwardRange<Range1> &&
                  ForwardRange<Range2> &&
+                 BoundedRange<Range1> &&
+                 BoundedRange<Range2> &&
                  IndirectlyComparable<iterator_t<Range1>, iterator_t<Range2>, Pred>)>
 safe_iterator_t<Range1>
 search(Range1&& range1, Range2&& range2, Pred pred = {})
@@ -2793,6 +2832,7 @@ Iter search_n(Iter first, Iter last, difference_type_t<Iter> count, const T& val
 
 template <typename Range, typename T, typename Pred = equal_to<>,
           REQUIRES(ForwardRange<Range> &&
+                   BoundedRange<Range> &&
                    IndirectlyComparable<iterator_t<Range>, const T*, Pred>)>
 safe_iterator_t<Range>
 search_n(Range&& range, difference_type_t<iterator_t<Range>> count, const T& value, Pred pred = {})
@@ -2807,6 +2847,7 @@ search_n(Range&& range, difference_type_t<iterator_t<Range>> count, const T& val
 
 template <typename Iter1, typename Iter2,
           REQUIRES(InputIterator<Iter1> &&
+                   Sentinel<Iter1, Iter1> &&
                    WeaklyIncrementable<Iter2> &&
                    IndirectlyCopyable<Iter1, Iter2>)>
 Iter2 copy(Iter1 first, Iter1 last, Iter2 ofirst)
@@ -2816,6 +2857,7 @@ Iter2 copy(Iter1 first, Iter1 last, Iter2 ofirst)
 
 template <typename Range1, typename Iter2,
           REQUIRES(InputRange<Range1> &&
+                   BoundedRange<Range1> &&
                    WeaklyIncrementable<Iter2> &&
                    IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
 Iter2 copy(Range1&& range, Iter2 ofirst)
@@ -2825,6 +2867,7 @@ Iter2 copy(Range1&& range, Iter2 ofirst)
 
 template <typename Iter1, typename Iter2,
         REQUIRES(InputIterator<Iter1> &&
+                 Sentinel<Iter1, Iter1> &&
                  WeaklyIncrementable<Iter2> &&
                  IndirectlyCopyable<Iter1, Iter2>)>
 Iter2 copy_n(Iter1 first, difference_type_t<Iter1> count, Iter2 ofirst)
@@ -2834,6 +2877,7 @@ Iter2 copy_n(Iter1 first, difference_type_t<Iter1> count, Iter2 ofirst)
 
 template <typename Iter1, typename Iter2, typename Pred,
           REQUIRES(InputIterator<Iter1> &&
+                   Sentinel<Iter1, Iter1> &&
                    WeaklyIncrementable<Iter2> &&
                    IndirectUnaryPredicate<Pred, Iter1> &&
                    IndirectlyCopyable<Iter1, Iter2>)>
@@ -2844,6 +2888,7 @@ Iter2 copy_if(Iter1 first, Iter1 last, Iter2 ofirst, Pred pred)
 
 template <typename Range1, typename Iter2, typename Pred,
           REQUIRES(InputRange<Range1> &&
+                   BoundedRange<Range1> &&
                    WeaklyIncrementable<Iter2> &&
                    IndirectUnaryPredicate<Pred, iterator_t<Range1>> &&
                    IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
@@ -2864,6 +2909,7 @@ Iter2 copy_backward(Iter1 first, Iter1 last, Iter2 olast)
 
 template <typename Range1, typename Iter2,
           REQUIRES(BidirectionalRange<Range1> &&
+                   BoundedRange<Range1> &&
                    BidirectionalIterator<Iter2> &&
                    IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
 Iter2 copy_backward(Range1&& range, Iter2 olast)
@@ -2875,6 +2921,7 @@ Iter2 copy_backward(Range1&& range, Iter2 olast)
 
 template <typename Iter1, typename Iter2,
           REQUIRES(InputIterator<Iter1> &&
+                   Sentinel<Iter1, Iter1> &&
                    WeaklyIncrementable<Iter2> &&
                    IndirectlyMovable<Iter1, Iter2>)>
 Iter2 move(Iter1 first, Iter1 last, Iter2 ofirst)
@@ -2884,6 +2931,7 @@ Iter2 move(Iter1 first, Iter1 last, Iter2 ofirst)
 
 template <typename Range1, typename Iter2,
            REQUIRES(InputRange<Range1> &&
+                    BoundedRange<Range1> &&
                     WeaklyIncrementable<Iter2> &&
                     IndirectlyMovable<iterator_t<Range1>, Iter2>)>
 Iter2 move(Range1&& range, Iter2 ofirst)
@@ -2902,6 +2950,7 @@ Iter2 move_backward(Iter1 first, Iter1 last, Iter2 olast)
 
 template <typename Range1, typename Iter2,
           REQUIRES(BidirectionalRange<Range1> &&
+                   BoundedRange<Range1> &&
                    BidirectionalIterator<Iter2> &&
                    IndirectlyMovable<iterator_t<Range1>, Iter2>)>
 Iter2 move_backward(Range1&& range, Iter2 olast)
@@ -2911,13 +2960,14 @@ Iter2 move_backward(Range1&& range, Iter2 olast)
 
 // 11.4.3 Swap
 
-template <typename Iter1, typename Iter2,
+template <typename Iter1, typename S1, typename Iter2,
         REQUIRES(ForwardIterator<Iter1> &&
+                 Sentinel<S1, Iter1> &&
                  ForwardIterator<Iter2> &&
                  IndirectlySwappable<Iter1, Iter2>)>
 NANORANGE_DEPRECATED
 std::pair<Iter1, Iter2>
-swap_ranges(Iter1 first1, Iter1 last1, Iter2 first2)
+swap_ranges(Iter1 first1, S1 last1, Iter2 first2)
 {
     while (first1 != last1) {
         nanorange::iter_swap(first1, first2);
@@ -2926,12 +2976,14 @@ swap_ranges(Iter1 first1, Iter1 last1, Iter2 first2)
     return std::make_pair(std::move(first1), std::move(first2));
 }
 
-template <typename Iter1, typename Iter2,
+template <typename Iter1, typename S1, typename Iter2, typename S2,
         REQUIRES(ForwardIterator<Iter1> &&
+                 Sentinel<S1, Iter1> &&
                  ForwardIterator<Iter2> &&
+                 Sentinel<S2, Iter2> &&
                  IndirectlySwappable<Iter1, Iter2>)>
 std::pair<Iter1, Iter2>
-swap_ranges(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2)
+swap_ranges(Iter1 first1, S1 last1, Iter2 first2, S2 last2)
 {
     while (first1 != last1 && first2 != last2) {
         nanorange::iter_swap(first1, first2);
@@ -2955,6 +3007,7 @@ swap_ranges(Range1&& range1, Range2&& range2)
 
 template <typename Iter1, typename Iter2, typename UnaryOp,
         REQUIRES(InputIterator<Iter1> &&
+                 Sentinel<Iter1, Iter1> &&
                  WeaklyIncrementable<Iter2> &&
                  CopyConstructible<UnaryOp> &&
                  Writable<Iter2, indirect_result_of_t<UnaryOp&(Iter1)>>)>
@@ -2965,6 +3018,7 @@ Iter2 transform(Iter1 first, Iter1 last, Iter2 ofirst, UnaryOp op)
 
 template <typename Range1, typename Iter2, typename UnaryOp,
         REQUIRES(InputRange<Range1> &&
+                 BoundedRange<Range1> &&
                  WeaklyIncrementable<Iter2> &&
                  CopyConstructible<UnaryOp> &&
                  Writable<Iter2, indirect_result_of_t<UnaryOp&(iterator_t<Range1>)>>)>
@@ -2976,7 +3030,9 @@ Iter2 transform(Range1&& range, Iter2 ofirst, UnaryOp op)
 
 template <typename Iter1, typename Iter2, typename Iter3, typename BinOp,
         REQUIRES(InputIterator<Iter1> &&
+                 Sentinel<Iter1, Iter1> &&
                  InputIterator<Iter2> &&
+                 Sentinel<Iter2, Iter2> &&
                  WeaklyIncrementable<Iter3> &&
                  CopyConstructible<BinOp> &&
                  Writable<Iter3, indirect_result_of_t<BinOp&(Iter1, Iter2)>>)>
@@ -2988,13 +3044,15 @@ Iter3 transform(Iter1 first1, Iter1 last1, Iter2 first2, Iter3 ofirst, BinOp op)
 }
 
 // Hmmm, why doesn't the standard library provide a 6-parameter overload?
-template <typename Iter1, typename Iter2, typename Iter3, typename BinOp,
+template <typename Iter1, typename S1, typename Iter2, typename S2, typename Iter3, typename BinOp,
         REQUIRES(InputIterator<Iter1> &&
+                 Sentinel<S1, Iter1> &&
                  InputIterator<Iter2> &&
+                 Sentinel<S2, Iter2> &&
                  WeaklyIncrementable<Iter3> &&
                  CopyConstructible<BinOp> &&
                  Writable<Iter3, indirect_result_of_t<BinOp&(Iter1, Iter2)>>)>
-Iter3 transform(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, Iter3 ofirst, BinOp op)
+Iter3 transform(Iter1 first1, S1 last1, Iter2 first2, S2 last2, Iter3 ofirst, BinOp op)
 {
     while (first1 != last1 && first2 != last2) {
         *ofirst = invoke(op, *first1, *first2);
@@ -3020,6 +3078,7 @@ Iter3 transform(Range1&& range1, Range2&& range2, Iter3 ofirst, BinOp op)
 
 template <typename Iter, typename T,
         REQUIRES(InputIterator<Iter> &&
+                 Sentinel<Iter, Iter> &&
                  Writable<Iter, const T&> &&
                  IndirectRelation<equal_to<>, Iter, const T*>)>
 Iter replace(Iter first, Iter last, const T& old_value, const T& new_value)
@@ -3030,6 +3089,7 @@ Iter replace(Iter first, Iter last, const T& old_value, const T& new_value)
 
 template <typename Range, typename T,
         REQUIRES(InputRange<Range> &&
+                 BoundedRange<Range> &&
                  Writable<iterator_t<Range>, const T&> &&
                  IndirectRelation<equal_to<>, iterator_t<Range>, const T*>)>
 safe_iterator_t<Range> replace(Range&& range, const T& old_value, const T& new_value)
@@ -3038,8 +3098,9 @@ safe_iterator_t<Range> replace(Range&& range, const T& old_value, const T& new_v
                               old_value, new_value);
 }
 
+// N.B. Ranges TS says InputIterator, STL says ForwardIterator
 template <typename Iter, typename Pred, typename T,
-        REQUIRES(InputIterator<Iter> &&
+        REQUIRES(ForwardIterator<Iter> &&
                  Writable<Iter, const T&> &&
                  IndirectUnaryPredicate<Pred, Iter>)>
 Iter replace_if(Iter first, Iter last, Pred pred, const T& new_value)
@@ -3050,6 +3111,7 @@ Iter replace_if(Iter first, Iter last, Pred pred, const T& new_value)
 
 template <typename Range, typename Pred, typename T,
         REQUIRES(ForwardRange<Range> &&
+                 BoundedRange<Range> &&
                  Writable<iterator_t<Range>, const T&> &&
                  IndirectUnaryPredicate<Pred, iterator_t<Range>>)>
 safe_iterator_t<Range> replace_if(Range&& range, Pred pred, const T& new_value)
@@ -3060,6 +3122,7 @@ safe_iterator_t<Range> replace_if(Range&& range, Pred pred, const T& new_value)
 
 template <typename Iter1, typename Iter2, typename T,
         REQUIRES(InputIterator<Iter1> &&
+                 Sentinel<Iter1, Iter1> &&
                  OutputIterator<Iter2, const T&> &&
                  IndirectlyCopyable<Iter1, Iter2> &&
                  IndirectRelation<equal_to<>, Iter1, const T*>)>
@@ -3071,6 +3134,7 @@ Iter2 replace_copy(Iter1 first, Iter1 last, Iter2 ofirst, const T& old_value, co
 
 template <typename Range1, typename Iter2, typename T,
         REQUIRES(InputRange<Range1> &&
+                 BoundedRange<Range1> &&
                  OutputIterator<Iter2, const T&> &&
                  IndirectlyCopyable<iterator_t<Range1>, Iter2> &&
                  IndirectRelation<equal_to<>, iterator_t<Range1>, const T*>)>
@@ -3082,6 +3146,7 @@ Iter2 replace_copy(Range1&& range, Iter2 ofirst, const T& old_value, const T& ne
 
 template <typename Iter1, typename Iter2, typename Pred, typename T,
         REQUIRES(InputIterator<Iter1> &&
+                 Sentinel<Iter1, Iter1> &&
                  OutputIterator<Iter2, const T&> &&
                  IndirectUnaryPredicate<Pred, Iter1> &&
                  IndirectlyCopyable<Iter1, Iter2>)>
@@ -3093,6 +3158,7 @@ Iter2 replace_copy_if(Iter1 first, Iter1 last, Iter2 ofirst, Pred pred, const T&
 
 template <typename Range1, typename Iter2, typename Pred, typename T,
         REQUIRES(InputRange<Range1> &&
+                 BoundedRange<Range1> &&
                  OutputIterator<Iter2, const T&> &&
                  IndirectUnaryPredicate<Pred, iterator_t<Range1>> &&
                  IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
@@ -3104,8 +3170,10 @@ Iter2 replace_copy_if(Range1&& range, Iter2 ofirst, Pred pred, const T& new_valu
 
 // 11.4.6 Fill
 
+// N.B Ranges TS requires OutputIterator, STL requires ForwardIterator
 template <typename Iter, typename T,
-          REQUIRES(OutputIterator<Iter, const T&>)>
+          REQUIRES(OutputIterator<Iter, const T&> &&
+                   ForwardIterator<Iter>)>
 Iter fill(Iter first, Iter last, const T& value)
 {
     std::fill(std::move(first), last, value);
@@ -3113,7 +3181,8 @@ Iter fill(Iter first, Iter last, const T& value)
 }
 
 template <typename Range, typename T,
-          REQUIRES(OutputRange<Range, const T&>)>
+          REQUIRES(OutputRange<Range, const T&> &&
+                   ForwardRange<Range>)>
 safe_iterator_t<Range> fill(Range&& range, const T& value)
 {
     return nanorange::fill(nanorange::begin(range), nanorange::end(range), value);
@@ -3128,8 +3197,9 @@ Iter fill_n(Iter first, difference_type_t<Iter> count, const T& value)
 
 // 11.4.7 Generate
 
+// N.B Ranges TS just requires Iterator, STL says ForwardIterator
 template <typename Iter, typename Generator,
-          REQUIRES(Iterator<Iter> &&
+          REQUIRES(ForwardIterator<Iter> &&
                    CopyConstructible<Generator> &&
                    Invocable<Generator&> &&
                    Writable<Iter, std::result_of_t<Generator&()>>)>
@@ -3140,7 +3210,9 @@ Iter generate(Iter first, Iter last, Generator gen)
 }
 
 template <typename Range, typename Generator,
-          REQUIRES(OutputRange<Range, std::result_of_t<Generator&()>> &&
+          REQUIRES(ForwardRange<Range> &&
+                   BoundedRange<Range> &&
+                   OutputRange<Range, std::result_of_t<Generator&()>> &&
                    CopyConstructible<Generator> &&
                    Invocable<Generator&>)>
 safe_iterator_t<Range> generate(Range&& range, Generator gen)
@@ -3171,6 +3243,7 @@ Iter remove(Iter first, Iter last, const T& value)
 
 template <typename Range, typename T,
           REQUIRES(ForwardRange<Range> &&
+                   BoundedRange<Range> &&
                    Permutable<iterator_t<Range>> &&
                    IndirectRelation<equal_to<>, iterator_t<Range>, const T*>)>
 safe_iterator_t<Range> remove(Range&& range, const T& value)
@@ -3198,6 +3271,7 @@ safe_iterator_t<Range> remove_if(Range&& range, Pred pred)
 
 template <typename Iter1, typename Iter2, typename T,
           REQUIRES(InputIterator<Iter1> &&
+                   Sentinel<Iter1, Iter1> &&
                    WeaklyIncrementable<Iter2> &&
                    IndirectlyCopyable<Iter1, Iter2> &&
                    IndirectRelation<equal_to<>, Iter1, const T*>)>
@@ -3209,6 +3283,7 @@ Iter2 remove_copy(Iter1 first, Iter1 last, Iter2 ofirst, const T& value)
 
 template <typename Range1, typename Iter2, typename T,
         REQUIRES(InputRange<Range1> &&
+                 BoundedRange<Range1> &&
                  WeaklyIncrementable<Iter2> &&
                  IndirectlyCopyable<iterator_t<Range1>, Iter2> &&
                  IndirectRelation<equal_to<>, iterator_t<Range1>, const T*>)>
@@ -3220,6 +3295,7 @@ Iter2 remove_copy(Range1&& range, Iter2 ofirst, const T& value)
 
 template <typename Iter1, typename Iter2, typename Pred,
           REQUIRES(InputIterator<Iter1> &&
+                   Sentinel<Iter1, Iter1> &&
                    WeaklyIncrementable<Iter2> &&
                    IndirectUnaryPredicate<Pred, Iter1> &&
                    IndirectlyCopyable<Iter1, Iter2>)>
@@ -3231,6 +3307,7 @@ Iter2 remove_copy_if(Iter1 first, Iter1 last, Iter2 ofirst, Pred pred)
 
 template <typename Range1, typename Iter2, typename Pred,
           REQUIRES(InputRange<Range1> &&
+                   BoundedRange<Range1> &&
                    WeaklyIncrementable<Iter2> &&
                    IndirectUnaryPredicate<Pred, iterator_t<Range1>> &&
                    IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
@@ -3253,6 +3330,7 @@ Iter unique(Iter first, Iter last, Pred pred = {})
 
 template <typename Range, typename Pred = equal_to<>,
         REQUIRES(ForwardRange<Range> &&
+                 BoundedRange<Range> &&
                  IndirectRelation<Pred, iterator_t<Range>> &&
                  Permutable<iterator_t<Range>>)>
 safe_iterator_t<Range> unique(Range&& range, Pred pred = {})
@@ -3262,6 +3340,7 @@ safe_iterator_t<Range> unique(Range&& range, Pred pred = {})
 
 template <typename Iter1, typename Iter2, typename Pred = equal_to<>,
         REQUIRES(InputIterator<Iter1> &&
+                 Sentinel<Iter1, Iter1> &&
                  WeaklyIncrementable<Iter2> &&
                  IndirectRelation<Pred, Iter1> &&
                  IndirectlyCopyable<Iter1, Iter2> &&
@@ -3275,6 +3354,7 @@ Iter2 unique_copy(Iter1 first, Iter1 last, Iter2 ofirst, Pred pred = {})
 
 template <typename Range1, typename Iter2, typename Pred = equal_to<>,
         REQUIRES(InputRange<Range1> &&
+                 BoundedRange<Range1> &&
                  WeaklyIncrementable<Iter2> &&
                  IndirectRelation<Pred, iterator_t<Range1>> &&
                  IndirectlyCopyable<iterator_t<Range1>, Iter2> &&
@@ -3303,6 +3383,7 @@ Iter reverse(Iter first, Iter last)
 
 template <typename Range,
           REQUIRES(BidirectionalRange<Range> &&
+                   BoundedRange<Range> &&
                    Permutable<iterator_t<Range>>)>
 safe_iterator_t<Range> reverse(Range&& range)
 {
@@ -3320,6 +3401,7 @@ Iter2 reverse_copy(Iter1 first, Iter1 last, Iter2 ofirst)
 
 template <typename Range1, typename Iter2,
           REQUIRES(BidirectionalRange<Range1> &&
+                   BoundedRange<Range1> &&
                    WeaklyIncrementable<Iter2> &&
                    IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
 Iter2 reverse_copy(Range1&& range, Iter2 ofirst)
@@ -3340,6 +3422,7 @@ Iter rotate(Iter first, Iter middle, Iter last)
 
 template <typename Range,
           REQUIRES(ForwardRange<Range> &&
+                   BoundedRange<Range> &&
                    Permutable<iterator_t<Range>>)>
 safe_iterator_t<Range>
 rotate(Range&& range, iterator_t<Range> middle)
@@ -3359,6 +3442,7 @@ Iter2 rotate_copy(Iter1 first, Iter1 middle, Iter1 last, Iter2 ofirst)
 
 template <typename Range1, typename Iter2,
         REQUIRES(ForwardRange<Range1> &&
+                 BoundedRange<Range1> &&
                  WeaklyIncrementable<Iter2> &&
                  IndirectlyCopyable<iterator_t<Range1>, Iter2>)>
 Iter2 rotate_copy(Range1&& range, iterator_t<Range1> middle, Iter2 ofirst)
@@ -3382,6 +3466,7 @@ Iter shuffle(Iter first, Iter last, URNG&& generator)
 
 template <typename Range, typename URNG,
         REQUIRES(RandomAccessRange<Range> &&
+                 BoundedRange<Range> &&
                  Permutable<iterator_t<Range>> &&
                  // UniformRandomNumberGenerator<std::remove_reference_t<URNG>> &&
                  ConvertibleTo<std::result_of_t<URNG&()>, range_difference_type_t<Range>>)>
@@ -3395,6 +3480,7 @@ safe_iterator_t<Range> shuffle(Range&& range, URNG&& generator)
 
 template <typename Iter, typename Pred,
           REQUIRES(InputIterator<Iter> &&
+                   Sentinel<Iter, Iter> &&
                    IndirectUnaryPredicate<Pred, Iter>)>
 bool is_partitioned(Iter first, Iter last, Pred pred)
 {
@@ -3403,6 +3489,7 @@ bool is_partitioned(Iter first, Iter last, Pred pred)
 
 template <typename Range, typename Pred,
           REQUIRES(InputRange<Range> &&
+                   BoundedRange<Range> &&
                    IndirectUnaryPredicate<Pred, iterator_t<Range>>)>
 bool is_partitioned(Range&& range, Pred pred)
 {
@@ -3420,6 +3507,7 @@ Iter partition(Iter first, Iter last, Pred pred)
 
 template <typename Range, typename Pred,
           REQUIRES(ForwardRange<Range> &&
+                   BoundedRange<Range> &&
                    IndirectUnaryPredicate<Pred, iterator_t<Range>> &&
                    Permutable<iterator_t<Range>>)>
 safe_iterator_t<Range> partition(Range&& range, Pred pred)
@@ -3438,6 +3526,7 @@ Iter stable_partition(Iter first, Iter last, Pred pred)
 
 template <typename Range, typename Pred,
         REQUIRES(BidirectionalRange<Range> &&
+                 BoundedRange<Range> &&
                  IndirectUnaryPredicate<Pred, iterator_t<Range>> &&
                  Permutable<iterator_t<Range>>)>
 safe_iterator_t<Range> stable_partition(Range&& range, Pred pred)
@@ -3447,6 +3536,7 @@ safe_iterator_t<Range> stable_partition(Range&& range, Pred pred)
 
 template <typename Iter1, typename Iter2, typename Iter3, typename Pred,
           REQUIRES(InputIterator<Iter1> &&
+                   Sentinel<Iter1, Iter1> &&
                    WeaklyIncrementable<Iter2> &&
                    WeaklyIncrementable<Iter3> &&
                    IndirectUnaryPredicate<Pred, Iter1> &&
@@ -3461,6 +3551,7 @@ partition_copy(Iter1 first, Iter1 last, Iter2 otrue, Iter3 ofalse, Pred pred)
 
 template <typename Range1, typename Iter2, typename Iter3, typename Pred,
         REQUIRES(InputRange<Range1> &&
+                 BoundedRange<Range1> &&
                  WeaklyIncrementable<Iter2> &&
                  WeaklyIncrementable<Iter3> &&
                  IndirectUnaryPredicate<Pred, iterator_t<Range1>> &&
@@ -3484,6 +3575,7 @@ Iter partition_point(Iter first, Iter last, Pred pred)
 
 template <typename Range, typename Pred,
         REQUIRES(ForwardRange<Range> &&
+                 BoundedRange<Range> &&
                  IndirectUnaryPredicate<Pred, iterator_t<Range>>)>
 safe_iterator_t<Range> partition_point(Range&& range, Pred pred)
 {
@@ -3509,6 +3601,7 @@ Iter sort(Iter first, Iter last, Comp comp = {})
 
 template <typename Range, typename Comp = less<>,
         REQUIRES(RandomAccessRange<Range> &&
+                 BoundedRange<Range> &&
                  Sortable<iterator_t<Range>, Comp>)>
 safe_iterator_t<Range> sort(Range&& range, Comp comp = {})
 {
@@ -3528,6 +3621,7 @@ Iter stable_sort(Iter first, Iter last, Comp comp = {})
 
 template <typename Range, typename Comp = less<>,
         REQUIRES(RandomAccessRange<Range> &&
+                 BoundedRange<Range> &&
                  Sortable<iterator_t<Range>, Comp>)>
 safe_iterator_t<Range> stable_sort(Range&& range, Comp comp = {})
 {
@@ -3547,6 +3641,7 @@ Iter partial_sort(Iter first, Iter middle, Iter last, Comp comp = {})
 
 template <typename Range, typename Comp = less<>,
         REQUIRES(RandomAccessRange<Range> &&
+                 BoundedRange<Range> &&
                  Sortable<iterator_t<Range>, Comp>)>
 safe_iterator_t<Range> partial_sort(Range&& range, iterator_t<Range> middle, Comp comp = {})
 {
@@ -3557,6 +3652,7 @@ safe_iterator_t<Range> partial_sort(Range&& range, iterator_t<Range> middle, Com
 
 template <typename Iter1, typename Iter2, typename Comp = less<>,
         REQUIRES(InputIterator<Iter1> &&
+                 Sentinel<Iter1, Iter1> &&
                  RandomAccessIterator<Iter2> &&
                  IndirectlyCopyable<Iter1, Iter2> &&
                  Sortable<Iter2, Comp> &&
@@ -3570,6 +3666,7 @@ Iter2 partial_sort_copy(Iter1 first, Iter1 last, Iter2 rfirst, Iter2 rlast, Comp
 
 template <typename Range1, typename Range2, typename Comp = less<>,
         REQUIRES(InputRange<Range1> &&
+                 BoundedRange<Range1> &&
                  RandomAccessRange<Range2> &&
                  IndirectlyCopyable<iterator_t<Range1>, iterator_t<Range2>> &&
                  Sortable<iterator_t<Range2>, Comp> &&
@@ -3593,6 +3690,7 @@ bool is_sorted(Iter first, Iter last, Comp comp = {})
 
 template <typename Range, typename Comp = less<>,
         REQUIRES(ForwardRange<Range> &&
+                 BoundedRange<Range> &&
                  IndirectStrictWeakOrder<Comp, iterator_t<Range>>)>
 bool is_sorted(Range&& range, Comp comp = {})
 {
@@ -3609,6 +3707,7 @@ Iter is_sorted_until(Iter first, Iter last, Comp comp = {})
 
 template <typename Range, typename Comp = less<>,
         REQUIRES(ForwardRange<Range> &&
+                 BoundedRange<Range> &&
                  IndirectStrictWeakOrder<Comp, iterator_t<Range>>)>
 safe_iterator_t<Range> is_sorted_until(Range&& range, Comp comp = {})
 {
@@ -3628,6 +3727,7 @@ Iter nth_element(Iter first, Iter nth, Iter last, Comp comp = {})
 
 template <typename Range, typename Comp = less<>,
         REQUIRES(RandomAccessRange<Range> &&
+                 BoundedRange<Range> &&
                  Sortable<iterator_t<Range>, Comp>)>
 safe_iterator_t<Range> nth_element(Range&& range, iterator_t<Range> nth, Comp comp = {})
 {
@@ -3648,6 +3748,7 @@ Iter lower_bound(Iter first, Iter last, const T& value, Comp comp = {})
 
 template <typename Range, typename T, typename Comp = less<>,
           REQUIRES(ForwardRange<Range> &&
+                   BoundedRange<Range> &&
                    IndirectStrictWeakOrder<Comp, const T*, iterator_t<Range>>)>
 safe_iterator_t<Range>
 lower_bound(Range&& range, const T& value, Comp comp = {})
@@ -3667,6 +3768,7 @@ Iter upper_bound(Iter first, Iter last, const T& value, Comp comp = {})
 
 template <typename Range, typename T, typename Comp = less<>,
         REQUIRES(ForwardRange<Range> &&
+                 BoundedRange<Range> &&
                  IndirectStrictWeakOrder<Comp, const T*, iterator_t<Range>>)>
 safe_iterator_t<Range>
 upper_bound(Range&& range, const T& value, Comp comp = {})
@@ -3687,6 +3789,7 @@ equal_range(Iter first, Iter last, const T& value, Comp comp = {})
 
 template <typename Range, typename T, typename Comp = less<>,
         REQUIRES(ForwardRange<Range> &&
+                 BoundedRange<Range> &&
                  IndirectStrictWeakOrder<Comp, const T*, iterator_t<Range>>)>
 std::pair<safe_iterator_t<Range>, safe_iterator_t<Range>>
 equal_range(Range&& range, const T& value, Comp comp = {})
@@ -3706,6 +3809,7 @@ bool binary_search(Iter first, Iter last, const T& value, Comp comp = {})
 
 template <typename Range, typename T, typename Comp = less<>,
         REQUIRES(ForwardRange<Range> &&
+                 BoundedRange<Range> &&
                  IndirectStrictWeakOrder<Comp, const T*, iterator_t<Range>>)>
 bool binary_search(Range&& range, const T& value, Comp comp = {})
 {
@@ -3716,7 +3820,9 @@ bool binary_search(Range&& range, const T& value, Comp comp = {})
 
 template <typename InputIt1, typename InputIt2, typename OutputIt, typename Comp = less<>,
         REQUIRES(InputIterator<InputIt1> &&
+                 Sentinel<InputIt1, InputIt1> &&
                  InputIterator<InputIt2> &&
+                 Sentinel<InputIt2, InputIt2> &&
                  WeaklyIncrementable<OutputIt> &&
                  Mergeable<InputIt1, InputIt2, OutputIt, Comp>)>
 OutputIt merge(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2,  OutputIt ofirst, Comp comp = {})
@@ -3729,6 +3835,8 @@ OutputIt merge(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2,
 template <typename InputRng1, typename InputRng2, typename OutputIt, typename Comp = less<>,
           REQUIRES(InputRange<InputRng1> &&
                    InputRange<InputRng2> &&
+                   BoundedRange<InputRng1> &&
+                   BoundedRange<InputRng2> &&
                    WeaklyIncrementable<OutputIt> &&
                    Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
 OutputIt merge(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp comp = {})
@@ -3748,6 +3856,7 @@ BidirIt inplace_merge(BidirIt first, BidirIt middle, BidirIt last, Comp comp = {
 
 template <typename BidirRng, typename Comp = less<>,
         REQUIRES(BidirectionalRange<BidirRng> &&
+                 BoundedRange<BidirRng> &&
                  Sortable<iterator_t<BidirRng>, Comp>)>
 safe_iterator_t<BidirRng> inplace_merge(BidirRng&& range, iterator_t<BidirRng> middle, Comp comp = {})
 {
@@ -3760,7 +3869,9 @@ safe_iterator_t<BidirRng> inplace_merge(BidirRng&& range, iterator_t<BidirRng> m
 
 template <typename InputIt1, typename InputIt2, typename Comp = less<>,
           REQUIRES(InputIterator<InputIt1> &&
+                   Sentinel<InputIt1, InputIt1> &&
                    InputIterator<InputIt2> &&
+                   Sentinel<InputIt2, InputIt2> &&
                    IndirectStrictWeakOrder<Comp, InputIt1, InputIt2>)>
 bool includes(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, Comp comp = {})
 {
@@ -3772,6 +3883,8 @@ bool includes(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, 
 template <typename InputRng1, typename InputRng2, typename Comp = less<>,
         REQUIRES(InputRange<InputRng1> &&
                  InputRange<InputRng2> &&
+                 BoundedRange<InputRng1> &&
+                 BoundedRange<InputRng2> &&
                  IndirectStrictWeakOrder<Comp, iterator_t<InputRng1>, iterator_t<InputRng2>>)>
 bool includes(InputRng1&& range1, InputRng2&& range2, Comp comp = {})
 {
@@ -3784,7 +3897,9 @@ bool includes(InputRng1&& range1, InputRng2&& range2, Comp comp = {})
 
 template <typename InputIt1, typename InputIt2, typename OutputIt, typename Comp = less<>,
         REQUIRES(InputIterator<InputIt1> &&
+                 Sentinel<InputIt1, InputIt1> &&
                  InputIterator<InputIt2> &&
+                 Sentinel<InputIt2, InputIt2> &&
                  WeaklyIncrementable<OutputIt> &&
                  Mergeable<InputIt1, InputIt2, OutputIt, Comp>)>
 OutputIt set_union(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2,
@@ -3798,6 +3913,8 @@ OutputIt set_union(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 la
 template <typename InputRng1, typename InputRng2, typename OutputIt, typename Comp = less<>,
         REQUIRES(InputRange<InputRng1> &&
                  InputRange<InputRng2> &&
+                 BoundedRange<InputRng1> &&
+                 BoundedRange<InputRng2> &&
                  WeaklyIncrementable<OutputIt> &&
                  Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
 OutputIt set_union(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp comp = {})
@@ -3811,7 +3928,9 @@ OutputIt set_union(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp
 
 template <typename InputIt1, typename InputIt2, typename OutputIt, typename Comp = less<>,
           REQUIRES(InputIterator<InputIt1> &&
+                   Sentinel<InputIt1, InputIt1> &&
                    InputIterator<InputIt2> &&
+                   Sentinel<InputIt2, InputIt2> &&
                    WeaklyIncrementable<OutputIt> &&
                    Mergeable<InputIt1, InputIt2, OutputIt, Comp>)>
 OutputIt set_intersection(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2,
@@ -3825,6 +3944,8 @@ OutputIt set_intersection(InputIt1 first1, InputIt1 last1, InputIt2 first2, Inpu
 template <typename InputRng1, typename InputRng2, typename OutputIt, typename Comp = less<>,
           REQUIRES(InputRange<InputRng1> &&
                    InputRange<InputRng2> &&
+                   BoundedRange<InputRng1> &&
+                   BoundedRange<InputRng2> &&
                    WeaklyIncrementable<OutputIt> &&
                    Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
 OutputIt set_intersection(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp comp = {})
@@ -3838,7 +3959,9 @@ OutputIt set_intersection(InputRng1&& range1, InputRng2&& range2, OutputIt ofirs
 
 template <typename InputIt1, typename InputIt2, typename OutputIt, typename Comp = less<>,
           REQUIRES(InputIterator<InputIt1> &&
+                   Sentinel<InputIt1, InputIt1> &&
                    InputIterator<InputIt2> &&
+                   Sentinel<InputIt2, InputIt2> &&
                    WeaklyIncrementable<OutputIt> &&
                    Mergeable<InputIt1, InputIt2, OutputIt, Comp>)>
 OutputIt set_difference(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2,
@@ -3851,9 +3974,11 @@ OutputIt set_difference(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputI
 
 template <typename InputRng1, typename InputRng2, typename OutputIt, typename Comp = less<>,
         REQUIRES(InputRange<InputRng1> &&
-                         InputRange<InputRng2> &&
-                         WeaklyIncrementable<OutputIt> &&
-                         Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
+                 InputRange<InputRng2> &&
+                 BoundedRange<InputRng1> &&
+                 BoundedRange<InputRng2> &&
+                 WeaklyIncrementable<OutputIt> &&
+                 Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
 OutputIt set_difference(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp comp = {})
 {
     return std::set_difference(nanorange::begin(range1), nanorange::end(range1),
@@ -3865,7 +3990,9 @@ OutputIt set_difference(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst,
 
 template <typename InputIt1, typename InputIt2, typename OutputIt, typename Comp = less<>,
           REQUIRES(InputIterator<InputIt1> &&
+                   Sentinel<InputIt1, InputIt1> &&
                    InputIterator<InputIt2> &&
+                   Sentinel<InputIt2, InputIt2> &&
                    WeaklyIncrementable<OutputIt> &&
                    Mergeable<InputIt1, InputIt2, OutputIt, Comp>)>
 OutputIt set_symmetric_difference(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2,
@@ -3879,6 +4006,8 @@ OutputIt set_symmetric_difference(InputIt1 first1, InputIt1 last1, InputIt2 firs
 template <typename InputRng1, typename InputRng2, typename OutputIt, typename Comp = less<>,
         REQUIRES(InputRange<InputRng1> &&
                  InputRange<InputRng2> &&
+                 BoundedRange<InputRng1> &&
+                 BoundedRange<InputRng2> &&
                  WeaklyIncrementable<OutputIt> &&
                  Mergeable<iterator_t<InputRng1>, iterator_t<InputRng2>, OutputIt, Comp>)>
 OutputIt set_symmetric_difference(InputRng1&& range1, InputRng2&& range2, OutputIt ofirst, Comp comp = {})
@@ -3902,6 +4031,7 @@ RandomIt push_heap(RandomIt first, RandomIt last, Comp comp = {})
 
 template <typename RandomRng, typename Comp = less<>,
         REQUIRES(RandomAccessRange<RandomRng> &&
+                 BoundedRange<RandomRng> &&
                  Sortable<iterator_t<RandomRng>, Comp>)>
 safe_iterator_t<RandomRng> push_heap(RandomRng&& range, Comp comp = {})
 {
@@ -3921,6 +4051,7 @@ RandomIt pop_heap(RandomIt first, RandomIt last, Comp comp = {})
 
 template <typename RandomRng, typename Comp = less<>,
           REQUIRES(RandomAccessRange<RandomRng> &&
+                   BoundedRange<RandomRng> &&
                    Sortable<iterator_t<RandomRng>, Comp>)>
 safe_iterator_t<RandomRng> pop_heap(RandomRng&& range, Comp comp = {})
 {
@@ -3940,6 +4071,7 @@ RandomIt make_heap(RandomIt first, RandomIt last, Comp comp = {})
 
 template <typename RandomRng, typename Comp = less<>,
           REQUIRES(RandomAccessRange<RandomRng> &&
+                   BoundedRange<RandomRng> &&
                    Sortable<iterator_t<RandomRng>, Comp>)>
 safe_iterator_t<RandomRng> make_heap(RandomRng&& range, Comp comp = {})
 {
@@ -3959,6 +4091,7 @@ RandomIt sort_heap(RandomIt first, RandomIt last, Comp comp = {})
 
 template <typename RandomRng, typename Comp = less<>,
         REQUIRES(RandomAccessRange<RandomRng> &&
+                 BoundedRange<RandomRng> &&
                  Sortable<iterator_t<RandomRng>, Comp>)>
 safe_iterator_t<RandomRng> sort_heap(RandomRng&& range, Comp comp = {})
 {
@@ -3977,6 +4110,7 @@ bool is_heap(RandomIt first, RandomIt last, Comp comp = {})
 
 template <typename RandomRng, typename Comp = less<>,
         REQUIRES(RandomAccessRange<RandomRng> &&
+                 BoundedRange<RandomRng> &&
                  IndirectStrictWeakOrder<Comp, iterator_t<RandomRng>>)>
 bool is_heap(RandomRng&& range, Comp comp = {})
 {
@@ -3993,6 +4127,7 @@ RandomIt is_heap_until(RandomIt first, RandomIt last, Comp comp = {})
 
 template <typename RandomRng, typename Comp = less<>,
         REQUIRES(RandomAccessRange<RandomRng> &&
+                 BoundedRange<RandomRng> &&
                  IndirectStrictWeakOrder<Comp, iterator_t<RandomRng>>)>
 safe_iterator_t<RandomRng> is_heap_until(RandomRng&& range, Comp comp = {})
 {
@@ -4018,6 +4153,7 @@ constexpr T min(std::initializer_list<T> ilist, Comp comp = {})
 
 template <typename ForwardRng, typename Comp = less<>,
           REQUIRES(ForwardRange<ForwardRng> &&
+                   BoundedRange<ForwardRng> &&
                    IndirectStrictWeakOrder<Comp, iterator_t<ForwardRng>> &&
                    Copyable<value_type_t<iterator_t<ForwardRng>>>)>
 constexpr value_type_t<iterator_t<ForwardRng>>
@@ -4043,6 +4179,7 @@ constexpr T max(std::initializer_list<T> ilist, Comp comp = {})
 
 template <typename ForwardRng, typename Comp = less<>,
           REQUIRES(ForwardRange<ForwardRng> &&
+                   BoundedRange<ForwardRng> &&
                    Copyable<value_type_t<iterator_t<ForwardRng>>> &&
                    IndirectStrictWeakOrder<Comp, iterator_t<ForwardRng>>)>
 value_type_t<iterator_t<ForwardRng>>
@@ -4088,6 +4225,7 @@ ForwardIt min_element(ForwardIt first, ForwardIt last, Comp comp = {})
 
 template <typename ForwardRng, typename Comp = less<>,
         REQUIRES(ForwardRange<ForwardRng> &&
+                 BoundedRange<ForwardRng> &&
                  IndirectStrictWeakOrder<Comp, iterator_t<ForwardRng>>)>
 safe_iterator_t<ForwardRng>
 min_element(ForwardRng&& range, Comp comp = {})
@@ -4105,6 +4243,7 @@ ForwardIt max_element(ForwardIt first, ForwardIt last, Comp comp = {})
 
 template <typename ForwardRng, typename Comp = less<>,
         REQUIRES(ForwardRange<ForwardRng> &&
+                 BoundedRange<ForwardRng> &&
                  IndirectStrictWeakOrder<Comp, iterator_t<ForwardRng>>)>
 safe_iterator_t<ForwardRng>
 max_element(ForwardRng&& range, Comp comp = {})
@@ -4123,6 +4262,7 @@ minmax_element(ForwardIt first, ForwardIt last, Comp comp = {})
 
 template <typename ForwardRng, typename Comp = less<>,
           REQUIRES(ForwardRange<ForwardRng> &&
+                   BoundedRange<ForwardRng> &&
                    IndirectStrictWeakOrder<Comp, iterator_t<ForwardRng>>)>
 std::pair<safe_iterator_t<ForwardRng>, safe_iterator_t<ForwardRng>>
 minmax_element(ForwardRng&& range, Comp comp = {})
@@ -4134,7 +4274,9 @@ minmax_element(ForwardRng&& range, Comp comp = {})
 
 template <typename InputIt1, typename InputIt2, typename Comp = less<>,
           REQUIRES(InputIterator<InputIt1> &&
+                   Sentinel<InputIt1, InputIt1> &&
                    InputIterator<InputIt2> &&
+                   Sentinel<InputIt2, InputIt2> &&
                    IndirectStrictWeakOrder<Comp, InputIt1, InputIt2>)>
 bool lexicographical_compare(InputIt1 first1, InputIt2 last1,
                              InputIt2 first2, InputIt2 last2, Comp comp = {})
@@ -4147,6 +4289,8 @@ bool lexicographical_compare(InputIt1 first1, InputIt2 last1,
 template <typename InputRng1, typename InputRng2, typename Comp = less<>,
         REQUIRES(InputRange<InputRng1> &&
                  InputRange<InputRng2> &&
+                 BoundedRange<InputRng1> &&
+                 BoundedRange<InputRng2> &&
                  IndirectStrictWeakOrder<Comp, iterator_t<InputRng1>, iterator_t<InputRng2>>)>
 bool lexicographical_compare(InputRng1&& range1, InputRng2&& range2, Comp comp = {})
 {
@@ -4167,6 +4311,7 @@ bool next_permutation(BidirIt first, BidirIt last, Comp comp = {})
 
 template <typename BidirRng, typename Comp = less<>,
         REQUIRES(BidirectionalRange<BidirRng> &&
+                 BoundedRange<BidirRng> &&
                  Sortable<iterator_t<iterator_t<BidirRng>>, Comp>)>
 bool next_permutation(BidirRng&& range, Comp comp = {})
 {
@@ -4183,6 +4328,7 @@ bool prev_permutation(BidirIt first, BidirIt last, Comp comp = {})
 
 template <typename BidirRng, typename Comp = less<>,
         REQUIRES(BidirectionalRange<BidirRng> &&
+                 BoundedRange<BidirRng> &&
                  Sortable<iterator_t<BidirRng>, Comp>)>
 bool prev_permutation(BidirRng&& range, Comp comp = {})
 {
@@ -4208,6 +4354,7 @@ void iota(ForwardIt first, ForwardIt last, T value)
 
 template <typename ForwardRng, typename T,
           REQUIRES(ForwardRange<ForwardRng> &&
+                   BoundedRange<ForwardRng> &&
                    Writable<iterator_t<ForwardRng>, T>)>
 void iota(ForwardRng&& range, T value)
 {
@@ -4216,6 +4363,7 @@ void iota(ForwardRng&& range, T value)
 
 template <typename InputIt, typename T, typename BinOp = std::plus<>,
           REQUIRES(InputIterator<InputIt> &&
+                   Sentinel<InputIt, InputIt> &&
                    Copyable<T> &&
                    Assignable<T, std::result_of_t<BinOp&(const T&, value_type_t<InputIt>)>>)>
 T accumulate(InputIt first, InputIt last, T init, BinOp op = {})
@@ -4225,8 +4373,9 @@ T accumulate(InputIt first, InputIt last, T init, BinOp op = {})
 
 template <typename InputRng, typename T, typename BinOp = std::plus<>,
         REQUIRES(InputRange<InputRng> &&
-                std::is_assignable<T,
-                         std::result_of_t<BinOp&(const T&, range_value_type_t<InputRng>)>>::value)>
+                 BoundedRange<InputRng> &&
+                 std::is_assignable<T,
+                    std::result_of_t<BinOp&(const T&, range_value_type_t<InputRng>)>>::value)>
 T accumulate(InputRng&& range, T init, BinOp op = {})
 {
     return std::accumulate(nanorange::begin(range), nanorange::end(range), std::move(init), std::ref(op));
@@ -4236,7 +4385,9 @@ T accumulate(InputRng&& range, T init, BinOp op = {})
 template <typename InputIt1, typename InputIt2, typename T,
           typename BinOp1 = std::plus<>, typename BinOp2 = std::multiplies<>,
           REQUIRES(InputIterator<InputIt1> &&
+                   Sentinel<InputIt1, InputIt1> &&
                    InputIterator<InputIt2> &&
+                   Sentinel<InputIt2, InputIt2> &&
                    std::is_assignable<T, std::result_of_t<
                        BinOp1&(T, std::result_of_t<
                            BinOp2&(value_type_t<InputIt1>, value_type_t<InputIt2>)>)>>::value)>
@@ -4251,7 +4402,9 @@ T inner_product(InputIt1 first1, InputIt1 last1, InputIt2 first2,
 template <typename InputIt1, typename InputIt2, typename T,
         typename BinOp1 = std::plus<>, typename BinOp2 = std::multiplies<>,
         REQUIRES(InputIterator<InputIt1> &&
-                         InputIterator<InputIt2> &&
+                 Sentinel<InputIt1, InputIt1> &&
+                 InputIterator<InputIt2> &&
+                 Sentinel<InputIt2, InputIt2> &&
                                  std::is_assignable<T, std::result_of_t<
                                  BinOp1&(T, std::result_of_t<
                          BinOp2&(value_type_t<InputIt1>, value_type_t<InputIt2>)>)>>::value)>
@@ -4271,6 +4424,8 @@ template <typename InputRng1, typename InputRng2, typename T,
         typename BinOp1 = std::plus<>, typename BinOp2 = std::multiplies<>,
         REQUIRES(InputRange<InputRng1> &&
                          InputRange<InputRng2> &&
+                 BoundedRange<InputRng1> &&
+                 BoundedRange<InputRng2> &&
                                  std::is_assignable<T, std::result_of_t<
                                  BinOp1&(T, std::result_of_t<
                          BinOp2&(range_value_type_t<InputRng1>, range_value_type_t<InputRng2>)>)>>::value)>
@@ -4285,6 +4440,7 @@ T inner_product(InputRng1&& range1, InputRng2&& range2,
 
 template <typename InputIt,  typename OutputIt, typename BinOp = std::minus<>,
           REQUIRES(InputIterator<InputIt> &&
+                   Sentinel<InputIt> &&
                    OutputIterator<OutputIt,
                         std::result_of_t<BinOp&(value_type_t<InputIt>, value_type_t<InputIt>)>>)>
 OutputIt adjacent_difference(InputIt first, InputIt last, OutputIt ofirst, BinOp op = {})
@@ -4294,6 +4450,7 @@ OutputIt adjacent_difference(InputIt first, InputIt last, OutputIt ofirst, BinOp
 
 template <typename InputRng,  typename OutputIt, typename BinOp = std::minus<>,
         REQUIRES(InputRange<InputRng> &&
+                 BoundedRange<InputRng> &&
                 OutputIterator<OutputIt,
                          std::result_of_t<BinOp&(range_value_type_t<InputRng>, range_value_type_t<InputRng>)>>)>
 OutputIt adjacent_difference(InputRng&& range, OutputIt ofirst, BinOp op = {})
@@ -4303,6 +4460,7 @@ OutputIt adjacent_difference(InputRng&& range, OutputIt ofirst, BinOp op = {})
 
 template <typename InputIt, typename OutputIt, typename BinOp = std::plus<>,
           REQUIRES(InputIterator<InputIt> &&
+                   Sentinel<InputIt, InputIt> &&
                    OutputIterator<OutputIt,
                        std::result_of_t<BinOp&(value_type_t<InputIt>, value_type_t<InputIt>)>>)>
 OutputIt partial_sum(InputIt first, InputIt last, OutputIt ofirst, BinOp op = {})
@@ -4312,7 +4470,8 @@ OutputIt partial_sum(InputIt first, InputIt last, OutputIt ofirst, BinOp op = {}
 
 template <typename InputRng, typename OutputIt, typename BinOp = std::plus<>,
         REQUIRES(InputRange<InputRng> &&
-                OutputIterator<OutputIt,
+                 BoundedRange<InputRng> &&
+                 OutputIterator<OutputIt,
                          std::result_of_t<BinOp&(range_value_type_t<InputRng>, range_value_type_t<InputRng>)>>)>
 OutputIt partial_sum(InputRng&& range, OutputIt ofirst, BinOp op = {})
 {
