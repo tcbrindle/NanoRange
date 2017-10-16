@@ -767,6 +767,38 @@ using std::less;
 using std::greater_equal;
 using std::less_equal;
 
+// 8.4 Metaprogramming and type traits
+
+namespace detail {
+
+template <typename T, typename U>
+using swap_t2 = decltype(nanorange::swap(std::declval<T>(), std::declval<U>()));
+
+template <typename T, typename U>
+constexpr bool nothrow_swappable = noexcept(nanorange::swap(std::declval<T>(), std::declval<U>()));
+
+}
+
+template <typename T, typename U>
+struct is_swappable_with
+    : std::integral_constant<bool, detail::is_detected_v<detail::swap_t2, T, U> &&
+                                   detail::is_detected_v<detail::swap_t2, U, T>> {};
+
+template <typename T>
+struct is_swappable
+    : is_swappable_with<detail::add_lref_t<T>, detail::add_lref_t<T>> {};
+
+template <typename T, typename U>
+struct is_nothrow_swappable_with
+        : std::integral_constant<bool, detail::is_detected_v<detail::swap_t2, T, U> &&
+                                       detail::is_detected_v<detail::swap_t2, U, T> &&
+                                       detail::nothrow_swappable<T, U> &&
+                                       detail::nothrow_swappable<U, T>> {};
+
+template <typename T, typename U>
+struct is_nothrow_swappable
+    : is_nothrow_swappable_with<detail::add_lref_t<T>, detail::add_lref_t<T>> {};
+
 /* 9.1 Iterators library */
 
 namespace detail {
