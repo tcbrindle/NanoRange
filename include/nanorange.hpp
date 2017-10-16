@@ -13,6 +13,11 @@
 #include <numeric>
 #include <type_traits>
 
+// These need to be dragged in because we're not allowed to forward declare
+// standard library classes. Sorry.
+#include <set>
+#include <unordered_set>
+
 #ifdef NANORANGE_NO_DEPRECATION_WARNINGS
 #define NANORANGE_DEPRECATED
 #define NANORANGE_DEPRECATED_FOR(x)
@@ -2122,7 +2127,17 @@ constexpr bool view_predicate<T, std::enable_if_t<
 template <typename T>
 constexpr bool view_predicate<std::initializer_list<T>> = false;
 
-// FIXME: set etc specialisations
+template <typename K, typename C, typename A>
+constexpr bool view_predicate<std::set<K, C, A>> = false;
+
+template <typename K, typename C, typename A>
+constexpr bool view_predicate<std::multiset<K, C, A>> = false;
+
+template <typename K, typename H, typename E, typename A>
+constexpr bool view_predicate<std::unordered_set<K, H, E, A>> = false;
+
+template <typename K, typename H, typename E, typename A>
+constexpr bool view_predicate<std::unordered_multiset<K, H, E, A>> = false;
 
 template <typename T>
 constexpr bool view_predicate<T, std::enable_if_t<
