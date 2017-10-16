@@ -1880,7 +1880,7 @@ struct size_cpo {
               REQUIRES(!has_member_size_v<T> &&
                        !has_nonmember_size_v<T> &&
                        ForwardIterator<detected_t<cbegin_t, T>> &&
-                       SizedSentinel<detected_t<cend_t, T, detected_t<cbegin_t, T>>>)>
+                       SizedSentinel<detected_t<cend_t, T>, detected_t<cbegin_t, T>>)>
     constexpr auto operator()(const T& t) const
         noexcept(noexcept(nanorange::cend(t) - nanorange::cbegin(t)))
     {
