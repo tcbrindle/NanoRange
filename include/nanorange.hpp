@@ -2078,14 +2078,14 @@ CONCEPT bool Range =
 
 namespace detail {
 
-template <typename T>
-auto convertible_to_difference_type_f(T) ->
-    std::enable_if_t<ConvertibleTo<difference_type_t<iterator_t<T>>>>;
+template <typename T, typename D>
+auto convertible_to_difference_type_f(D) ->
+    std::enable_if_t<ConvertibleTo<D, difference_type_t<iterator_t<T>>>>;
 
 struct SizedRange_ {
     template <typename T>
-    auto requires(T& t) -> decltype(
-        convertible_to_difference_type(nanorange::size(t))
+    auto requires_(T& t) -> decltype(
+        convertible_to_difference_type_f<T>(nanorange::size(t))
     );
 };
 
@@ -2094,7 +2094,7 @@ struct SizedRange_ {
 template <typename T>
 CONCEPT bool SizedRange =
     Range<T> &&
-    !disable_sized_range<std::remove_reference<T>> &&
+    !disable_sized_range<std::remove_cv_t<std::remove_reference_t<T>>> &&
     detail::requires_<detail::SizedRange_, T>;
 
 namespace detail {

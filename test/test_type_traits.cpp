@@ -229,6 +229,10 @@ static_assert(rng::InputRange<ra_rng_t>, "");
 static_assert(rng::ForwardRange<ra_rng_t>, "");
 static_assert(rng::BidirectionalRange<ra_rng_t>, "");
 static_assert(rng::RandomAccessRange<ra_rng_t>, "");
+//static_assert(rng::SizedRange<ra_rng_t>, "");
+static_assert(rng::Same<decltype(rng::size(std::declval<ra_rng_t>())), std::size_t>, "");
+static_assert(rng::Same<rng::range_difference_type_t<ra_rng_t>, std::ptrdiff_t>, "");
+static_assert(rng::ConvertibleTo<std::size_t, std::ptrdiff_t>, "");
 static_assert(rng::OutputRange<ra_rng_t, int>, "");
 static_assert(!rng::OutputRange<const ra_rng_t, int>, "");
 
