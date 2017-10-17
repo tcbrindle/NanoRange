@@ -95,6 +95,12 @@ constexpr bool requires_ = detail::is_detected_v<test_requires_t, R, Args...>;
 template <typename T>
 constexpr T static_const_{};
 
+// Shortcuts
+#define LREF(x) std::add_lvalue_reference_t<x>
+#define RREF(x) std::add_rvalue_reference_t<x>
+#define PTR(x) std::add_pointer_t<x>
+
+
 } // namespace detail
 
 /* Core language concepts [7.3] */
@@ -126,7 +132,8 @@ auto same_lv(Deduced&) -> std::enable_if_t<Same<T, Deduced>>;
 template <typename T, typename U>
 CONCEPT bool DerivedFrom =
         std::is_base_of<U, T>::value &&
-        std::is_convertible<std::remove_cv_t<T>*, std::remove_cv_t<U>*>::value;
+        std::is_convertible<PTR(std::remove_cv_t<T>),
+                            PTR(std::remove_cv_t<U>)>::value;
 
 namespace detail {
 
@@ -332,7 +339,7 @@ CONCEPT bool Common =
         std::add_lvalue_reference_t<const T>,
         std::add_lvalue_reference_t<const U>> &&
     CommonReference<
-        std::add_lvalue_reference_t<common_type_t<T, U>>,
+        std::add_lvalue_reference_t<detail::detected_t<common_type_t, T, U>>,
         detail::detected_t<common_reference_t,
             std::add_lvalue_reference_t<const T>,
             std::add_lvalue_reference_t<const U>>>;
@@ -361,8 +368,8 @@ template <typename T, typename U>
 CONCEPT bool Assignable =
         std::is_lvalue_reference<T>::value &&
         CommonReference<
-            const std::remove_reference_t<T>&,
-            const std::remove_reference_t<U>&> &&
+            const LREF(std::remove_reference_t<T>),
+            const LREF(std::remove_reference_t<U>)> &&
         detail::requires_<detail::Assignable_, T, U>;
 
 // Hack: we can't predeclare a constexpr variable template, so use a
@@ -401,8 +408,8 @@ CONCEPT bool MoveConstructible =
 template <typename T>
 CONCEPT bool CopyConstructible =
         MoveConstructible<T> &&
-        Constructible<T, T&> && ConvertibleTo<T&, T> &&
-        Constructible<T, const T&> && ConvertibleTo<const T&, T> &&
+        Constructible<T, LREF(T)> && ConvertibleTo<LREF(T), T> &&
+        Constructible<T, const LREF(T)> && ConvertibleTo<const LREF(T), T> &&
         Constructible<T, const T> && ConvertibleTo<const T, T>;
 
 
@@ -412,7 +419,7 @@ template <typename T>
 CONCEPT bool Movable =
         std::is_object<T>::value &&
         MoveConstructible<T> &&
-        Assignable<T&, T> &&
+        Assignable<LREF(T), T> &&
         Swappable<T>;
 
 
@@ -484,12 +491,12 @@ CONCEPT bool EqualityComparableWith =
         EqualityComparable<T> &&
         EqualityComparable<U> &&
         CommonReference<
-            const std::remove_reference_t<T>&,
-            const std::remove_reference_t<U>&> &&
+            const LREF(std::remove_reference_t<T>),
+            const LREF(std::remove_reference_t<U>)> &&
         EqualityComparable<
             detail::detected_t<common_reference_t,
-                const std::remove_reference_t<T>&,
-                const std::remove_reference_t<U>&>> &&
+                const LREF(std::remove_reference_t<T>),
+                const LREF(std::remove_reference_t<U>)>> &&
         WeaklyEqualityComparableWith<T, U>;
 
 namespace detail {
@@ -536,12 +543,12 @@ CONCEPT bool StrictTotallyOrderedWith =
         StrictTotallyOrdered<T> &&
         StrictTotallyOrdered<U> &&
         CommonReference<
-            const std::remove_reference_t<T>&,
-            const std::remove_reference_t<U>&> &&
+            const LREF(std::remove_reference_t<T>),
+            const LREF(std::remove_reference_t<U>)> &&
          StrictTotallyOrdered<
             detail::detected_t<common_reference_t,
-                const std::remove_reference_t<T>&,
-                const std::remove_reference_t<U>&>> &&
+                const LREF(std::remove_reference_t<T>),
+                const LREF(std::remove_reference_t<U>)>> &&
         EqualityComparableWith<T, U> &&
         detail::requires_<detail::StrictTotallyOrderedWith_, T, U>;
 
@@ -552,7 +559,7 @@ template <typename T>
 CONCEPT bool Copyable =
         CopyConstructible<T> &&
         Movable<T> &&
-        Assignable<T&, const T&>;
+        Assignable<LREF(T), const LREF(T)>;
 
 template <typename T>
 CONCEPT bool Semiregular =
@@ -786,7 +793,7 @@ struct is_swappable_with
 
 template <typename T>
 struct is_swappable
-    : is_swappable_with<detail::add_lref_t<T>, detail::add_lref_t<T>> {};
+    : is_swappable_with<LREF(T), LREF(T)> {};
 
 template <typename T, typename U>
 struct is_nothrow_swappable_with
@@ -797,7 +804,7 @@ struct is_nothrow_swappable_with
 
 template <typename T, typename U>
 struct is_nothrow_swappable
-    : is_nothrow_swappable_with<detail::add_lref_t<T>, detail::add_lref_t<T>> {};
+    : is_nothrow_swappable_with<LREF(T), LREF(T)> {};
 
 /* 9.1 Iterators library */
 
@@ -898,7 +905,8 @@ struct value_type<I, std::enable_if_t<std::is_array<I>::value>>
     : value_type<std::decay_t<I>> {};
 
 template <typename I>
-struct value_type<const I> : value_type<std::decay_t<I>> {};
+struct value_type<const I, std::enable_if_t<!std::is_array<I>::value>>
+    : value_type<std::decay_t<I>> {};
 
 namespace detail {
 
@@ -915,7 +923,8 @@ struct value_type<T, std::enable_if_t<detail::is_detected_v<detail::member_value
     : std::enable_if<std::is_object<typename T::value_type>::value, typename T::value_type> {};
 
 template <typename T>
-struct value_type<T, std::enable_if_t<detail::is_detected_v<detail::member_element_type_t, T>>>
+struct value_type<T, std::enable_if_t<detail::is_detected_v<detail::member_element_type_t, T> &&
+                                      !detail::is_detected_v<detail::member_value_type_t, T>>>
     : std::enable_if<std::is_object<typename T::element_type>::value,
                      std::remove_cv_t<typename T::element_type>> {};
 
@@ -995,11 +1004,22 @@ template <typename T>
 using iter_common_reference_t =
     common_reference_t<reference_t<T>, value_type_t<T>&>;
 
+namespace detail {
+
+struct Readable_ {
+    template <typename In>
+    auto requires_() -> decltype(
+        std::declval<value_type_t<In>>(),
+        std::declval<reference_t<In>>(),
+        std::declval<rvalue_reference_t<In>>()
+    );
+};
+
+}
+
 template <typename In>
 CONCEPT bool Readable =
-        detail::is_detected_v<value_type_t, In> &&
-        detail::is_detected_v<reference_t, In> &&
-        detail::is_detected_v<rvalue_reference_t, In> &&
+        detail::requires_<detail::Readable_, In> &&
         CommonReference<detail::detected_t<reference_t, In>&&, detail::detected_t<value_type_t, In>&> &&
         CommonReference<detail::detected_t<reference_t, In>&&, detail::detected_t<rvalue_reference_t, In>&&> &&
         CommonReference<detail::detected_t<rvalue_reference_t, In>&&, const detail::detected_t<value_type_t, In>&>;
@@ -4524,6 +4544,9 @@ OutputIt partial_sum(InputRng&& range, OutputIt ofirst, BinOp op = {})
     return std::partial_sum(nanorange::begin(range), nanorange::end(range), std::move(ofirst), std::ref(op));
 }
 
+#undef LREF
+#undef RREF
+#undef PTR
 #undef CONCEPT
 #undef REQUIRES
 
