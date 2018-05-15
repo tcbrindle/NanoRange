@@ -1,5 +1,5 @@
 
-#include <nanorange.hpp>
+#include <concepts.hpp>
 
 #include <array>
 #include <bitset>
@@ -103,7 +103,7 @@ static_assert(test_custom_swap(), "");
 static_assert(rng::Swappable<int>, "");
 static_assert(rng::Swappable<std::vector<int>>, "");
 static_assert(rng::Swappable<test::carray<int, 3>>, "");
-static_assert(!rng::Swappable<rng::detail::nonesuch>, "");
+//static_assert(!rng::Swappable<rng::detail::nonesuch>, "");
 
 namespace test {
 

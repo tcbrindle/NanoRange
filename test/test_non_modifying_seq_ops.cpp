@@ -1,7 +1,8 @@
 
 #include "catch.hpp"
 
-#include <nanorange.hpp>
+#include <concepts.hpp>
+//#include <nanorange.hpp>
 
 #include <array>
 #include <vector>
@@ -17,6 +18,17 @@ TEST_CASE("all_of")
     REQUIRE(rng::all_of(arr, pred));
 }
 
+TEST_CASE("all_of with projection")
+{
+    const std::array<int, 3> arr{{1, 1, 1}};
+    const auto pred = [] (int i) { return i == 7; };
+    const auto proj = [] (int i) { return i + 6; };
+
+    REQUIRE(rng::all_of(arr.begin(), arr.end(),pred, proj));
+    REQUIRE(rng::all_of(arr, pred, proj));
+}
+
+
 TEST_CASE("any_of")
 {
     constexpr std::array<int, 3> arr{{1, 2, 3}};
@@ -26,6 +38,7 @@ TEST_CASE("any_of")
     REQUIRE(rng::any_of(arr, pred));
 }
 
+
 TEST_CASE("none of")
 {
     constexpr std::array<int, 3> arr{{1, 2, 3}};
@@ -34,6 +47,7 @@ TEST_CASE("none of")
     REQUIRE(rng::none_of(arr, pred));
 }
 
+
 TEST_CASE("for_each")
 {
     constexpr std::array<int, 3> arr{{1, 2, 3}};
@@ -41,7 +55,7 @@ TEST_CASE("for_each")
     const auto func = [&sum] (int i) { sum += i; };
 
     const auto func2 = rng::for_each(arr, func);
-    static_assert(std::is_same<decltype(func), decltype(func2)>::value, "");
+    REQUIRE(func2.first == arr.end());
 
     REQUIRE(sum == 6);
 }
@@ -59,6 +73,8 @@ TEST_CASE("count_if")
     const auto n = rng::count_if(arr, [](int i) { return i == 2; });
     REQUIRE(n == 3);
 }
+
+#if 0
 
 TEST_CASE("three-legged mismatch() (deprecated)")
 {
@@ -169,6 +185,8 @@ TEST_CASE("four-legged equal() with predicate")
         REQUIRE(b);
     }
 }
+#endif
+
 
 TEST_CASE("find()")
 {
@@ -190,6 +208,7 @@ TEST_CASE("find()")
         REQUIRE(it == arr.end());
     }
 }
+
 
 TEST_CASE("find_if()")
 {
@@ -318,6 +337,7 @@ TEST_CASE("adjacent_find() (with predicate)")
 
 }
 
+#if 0
 TEST_CASE("search()")
 {
     const std::vector<int> vec = {1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -384,3 +404,4 @@ TEST_CASE("search_n() (with predicate)")
     }
 }
 
+#endif

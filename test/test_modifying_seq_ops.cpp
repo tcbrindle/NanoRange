@@ -198,17 +198,17 @@ TEST_CASE("transform() (two ranges)")
         const auto it = rng::transform(real.begin(), real.end(),imag.begin(),
                                        cmplx.begin(), make_complex);
         REQUIRE(it == cmplx.end());
-        REQUIRE(cmplx[0] == 1.0 + -1.0i);
-        REQUIRE(cmplx[1] == 0.0 + 0.i);
-        REQUIRE(cmplx[2] == -1.0 + 1.0i);
+        REQUIRE(cmplx[0] == std::complex<double>(1.0, -1.0));
+        REQUIRE(cmplx[1] == std::complex<double>(0.0 , 0.0));
+        REQUIRE(cmplx[2] == std::complex<double>(-1.0, 1.0));
     }
 
     SECTION("with ranges") {
         const auto it = rng::transform(real, imag, cmplx.begin(), make_complex);
         REQUIRE(it == cmplx.end());
-        REQUIRE(cmplx[0] == 1.0 + -1.0i);
-        REQUIRE(cmplx[1] == 0.0 + 0.i);
-        REQUIRE(cmplx[2] == -1.0 + 1.0i);
+        REQUIRE(cmplx[0] == std::complex<double>(1.0, -1.0));
+        REQUIRE(cmplx[1] == std::complex<double>(0.0 , 0.0));
+        REQUIRE(cmplx[2] == std::complex<double>(-1.0, 1.0));
     }
 }
 

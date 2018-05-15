@@ -112,7 +112,7 @@ constexpr T static_const_{};
 #endif
 
 #define REQUIRES(...) std::enable_if_t<__VA_ARGS__, int> = 0
-
+#define SIMPLE_REQUIRES(...) typename = std::enable_if_t<__VA_ARGS__>
 
 template <typename T, typename U>
 CONCEPT bool Same = std::is_same<T, U>::value;
@@ -841,7 +841,7 @@ struct iter_move_cpo {
 
     // This definition is nicked straight from CMCSTL2
     template <typename T,
-              REQUIRES(!has_adl_iter_move_v<T> &&
+              SIMPLE_REQUIRES(!has_adl_iter_move_v<T> &&
                         is_dereferencable_v<T>)>
     constexpr auto operator()(T&& t) const
         noexcept(noexcept(static_cast<rvalue_t<reference_t<T>>>(*t)))
@@ -997,8 +997,13 @@ using iterator_category_t = typename iterator_category<T>::type;
 template <typename T>
 using reference_t = decltype(*std::declval<T&>());
 
+//template <typename T>
+//using rvalue_reference_t = decltype(nanorange::iter_move(std::declval<T&>()));
 template <typename T>
-using rvalue_reference_t = decltype(nanorange::iter_move(std::declval<T&>()));
+using rvalue_reference_t = std::conditional_t<std::is_reference<reference_t<T>>::value,
+        std::remove_reference_t<reference_t<T>>&&,
+        std::decay_t<reference_t<T>>>;
+
 
 template <typename T>
 using iter_common_reference_t =
@@ -1304,8 +1309,8 @@ CONCEPT bool IndirectlyCopyableStorable =
 namespace detail {
 namespace iter_swap_ {
 
-template <typename T, typename U>
-void iter_swap(T, U) = delete;
+//template <typename T, typename U>
+//void iter_swap(T, U) = delete;
 
 struct ADLIterSwap_ {
     template <typename T, typename U>
@@ -1451,8 +1456,8 @@ namespace detail {
 
 namespace begin_ {
 
-template <typename T>
-void begin(T&) = delete;
+//template <typename T>
+//void begin(T&) = delete;
 
 template <typename T>
 using member_begin_t = decltype(std::declval<T&>().begin());
@@ -1464,9 +1469,16 @@ constexpr bool has_member_begin_v =
 template <typename T>
 using nonmember_begin_t = decltype(begin(std::declval<T&>()));
 
+template <typename, typename = void>
+constexpr bool has_nonmember_begin_v = false;
+
 template <typename T>
-constexpr bool has_nonmember_begin_v =
-        Iterator<detected_t<nonmember_begin_t, T>>;
+constexpr bool has_nonmember_begin_v<T, void_t<nonmember_begin_t<T>>> =
+        Iterator<nonmember_begin_t<T>>;
+
+//template <typename T>
+//constexpr bool has_nonmember_begin_v =
+//        Iterator<typename detector<nonesuch, void, nonmember_begin_t, T>::type>;
 
 struct begin_cpo {
 
@@ -1526,8 +1538,8 @@ constexpr const auto& begin = detail::static_const_<detail::begin_::begin_cpo>;
 namespace detail {
 namespace end_ {
 
-    template <typename T>
-    void end(T&) = delete;
+    //template <typename T>
+    //void end(T&) = delete;
 
     template <typename T> using begin_t = decltype(nanorange::begin(std::declval<T&>()));
 
@@ -1542,10 +1554,17 @@ namespace end_ {
     template <typename T>
     using nonmember_end_t = decltype(end(std::declval<T&>()));
 
+//    template <typename T>
+//    constexpr bool has_nonmember_end_v =
+//            Sentinel<detected_t<nonmember_end_t, T>,
+//                     detected_t<begin_t, T>>;
+    template <typename, typename = void>
+    constexpr bool has_nonmember_end_v = false;
+
     template <typename T>
-    constexpr bool has_nonmember_end_v =
-            Sentinel<detected_t<nonmember_end_t, T>,
-                     detected_t<begin_t, T>>;
+    constexpr bool has_nonmember_end_v<T, void_t<
+            nonmember_end_t<T>, begin_t<T>>> =
+        Sentinel<nonmember_end_t<T>, begin_t<T>>;
 
 struct end_cpo {
 
@@ -1883,8 +1902,8 @@ constexpr bool disable_sized_range = false;
 namespace detail {
 namespace size_ {
 
-template <typename T>
-void size(const T&) = delete;
+//template <typename T>
+//void size(const T&) = delete;
 
 template <typename T>
 using member_size_t = decltype(std::declval<const T&>().size());
@@ -2482,7 +2501,7 @@ using safe_iterator_t = std::conditional_t<
 // 11.3.1 All of
 
 template <typename Iter, typename UnaryPredicate,
-          REQUIRES(InputIterator<Iter> &&
+          SIMPLE_REQUIRES(InputIterator<Iter> &&
                    Sentinel<Iter, Iter> &&
                    IndirectUnaryPredicate<UnaryPredicate, Iter>)>
 bool all_of(Iter first, Iter last, UnaryPredicate pred)
@@ -2491,7 +2510,7 @@ bool all_of(Iter first, Iter last, UnaryPredicate pred)
 }
 
 template <typename Range, typename UnaryPredicate,
-          REQUIRES(InputRange<Range> &&
+          SIMPLE_REQUIRES(InputRange<Range> &&
                    BoundedRange<Range> &&
                    IndirectUnaryPredicate<UnaryPredicate, iterator_t<Range>>)>
 bool all_of(Range&& range, UnaryPredicate pred)
@@ -4506,7 +4525,7 @@ T inner_product(InputRng1&& range1, InputRng2&& range2,
 
 template <typename InputIt,  typename OutputIt, typename BinOp = std::minus<>,
           REQUIRES(InputIterator<InputIt> &&
-                   Sentinel<InputIt> &&
+                   Sentinel<InputIt, InputIt> &&
                    OutputIterator<OutputIt,
                         std::result_of_t<BinOp&(value_type_t<InputIt>, value_type_t<InputIt>)>>)>
 OutputIt adjacent_difference(InputIt first, InputIt last, OutputIt ofirst, BinOp op = {})

@@ -11,5 +11,6 @@ cmake-build*/
 
 # VS Code
 .vscode/
+.vs/
 
 
