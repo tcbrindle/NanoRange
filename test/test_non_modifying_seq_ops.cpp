@@ -1,8 +1,7 @@
 
 #include "catch.hpp"
 
-#include <concepts.hpp>
-//#include <nanorange.hpp>
+#include <nanorange.hpp>
 
 #include <array>
 #include <vector>

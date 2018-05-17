@@ -1,5 +1,6 @@
 
-#include <concepts.hpp>
+#include <nanorange.hpp>
+//#include <nanorange-old.hpp>
 
 #include <bitset>
 #include <functional>
@@ -7,6 +8,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <array>
 
 namespace rng = nanorange;
 
@@ -79,11 +81,9 @@ static_assert(!rng::ConvertibleTo<std::string, const char*>, "");
 // CommonReference tests
 static_assert(rng::CommonReference<int&, int&>, "");
 static_assert(!rng::CommonReference<void, int>, "");
-static_assert(rng::detail::has_cond_res_v<void, void>, "");
-static_assert(!rng::detail::has_simple_common_reference_v<void, void>);
 using void_cr = rng::common_reference_t<void, void>;
-static_assert(rng::Same<void_cr, void>);
-static_assert(rng::ConvertibleTo<void, void>);
+static_assert(rng::Same<void_cr, void>, "");
+static_assert(rng::ConvertibleTo<void, void>, "");
 static_assert(rng::CommonReference<void, void>, "");
 
 
@@ -238,6 +238,7 @@ static_assert(!rng::StrictTotallyOrderedWith<void, void>, "");
 static_assert(rng::StrictTotallyOrderedWith<int, int>, "");
 //static_assert(rng::StrictTotallyOrderedWith<int, float>, "");
 static_assert(rng::StrictTotallyOrderedWith<std::string, const char*>, "");
+static_assert(rng::StrictTotallyOrderedWith<int, double>, "");
 
 // Copyable tests
 struct odd_assign {
@@ -277,7 +278,7 @@ static_assert(!rng::Predicate<void>, "");
 static_assert(rng::Predicate<decltype(int_cmp), int, int>, "");
 static_assert(rng::Predicate<std::equal_to<>, int, int>, "");
 const auto cmp = [] (auto const& lhs, auto const& rhs) { return lhs < rhs; };
-static_assert(rng::Predicate<decltype(cmp), int, float>);
+static_assert(rng::Predicate<decltype(cmp), int, float>, "");
 
 // Relation tests
 static_assert(!rng::Relation<void, void, void>, "");
@@ -289,6 +290,13 @@ static_assert(!rng::Readable<int>, "");
 static_assert(rng::Readable<int*>, "");
 static_assert(rng::Readable<std::unique_ptr<int>>, "");
 static_assert(rng::Readable<std::vector<int>::const_iterator>, "");
+
+struct MoveOnlyReadable {
+    using value_type = std::unique_ptr<int>;
+    value_type operator*() const;
+};
+
+static_assert(rng::Readable<MoveOnlyReadable>, "");
 
 // Writable tests
 static_assert(!rng::Writable<void, void>, "");
@@ -369,7 +377,7 @@ static_assert(rng::Range<std::vector<int>>, "");
 
 // SizedRange tests
 static_assert(!rng::SizedRange<void>, "");
-static_assert(rng::SizedRange<std::vector<int>&>, "");
+static_assert(rng::SizedRange<std::vector<int>>, "");
 
 // View tests
 static_assert(!rng::View<void>, "");
@@ -379,6 +387,6 @@ static_assert(!rng::View<std::vector<int>&>, "");
 using I = rng::common_iterator<int*, rng::unreachable>;
 static_assert(rng::Iterator<rng::common_iterator<int*, rng::unreachable>>, "");
 static_assert(rng::InputIterator<rng::common_iterator<int*, rng::unreachable>>, "");
-//static_assert(rng::ForwardIterator<rng::common_iterator<int*, rng::unreachable>>, "");
+static_assert(rng::ForwardIterator<rng::common_iterator<int*, rng::unreachable>>, "");
 static_assert(rng::EqualityComparable<I>, "");
 using eq = decltype(std::declval<I const&>() == std::declval<I const&>());
