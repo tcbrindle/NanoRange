@@ -63,7 +63,7 @@ add_executable(test_nanorange
     #algorithm/min_element.cpp
     #algorithm/minmax.cpp
     #algorithm/minmax_element.cpp
-    #algorithm/mismatch.cpp
+    algorithm/mismatch.cpp
     #algorithm/move.cpp
     #algorithm/move_backward.cpp
     #algorithm/next_permutation.cpp
@@ -126,6 +126,17 @@ add_executable(test_nanorange
     #algorithm/unique.cpp
     #algorithm/unique_copy.cpp
     #algorithm/upper_bound.cpp
+
+    #utility/common_iterator.cpp
+    #utility/common_type.cpp
+    #utility/concepts.cpp
+    #utility/functional.cpp
+    #utility/reverse_iterator.cpp
+    #utility/swap.cpp
 )
 target_compile_definitions(test_nanorange PRIVATE "-DNANORANGE_NO_DEPRECATION_WARNINGS")
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_options(test_nanorange PRIVATE "-Wno-unneeded-internal-declaration")
+endif()
 

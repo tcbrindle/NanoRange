@@ -60,6 +60,12 @@ public:
 	constexpr sentinel() : it_() {}
 	constexpr explicit sentinel(It it) : it_(it) {}
 	constexpr It base() const { return it_; }
+
+	constexpr friend bool operator==(const sentinel& x, const sentinel& y)
+	{
+		return x.it_ == y.it_;
+	}
+
 	template <typename I>
 	constexpr friend bool operator==(const I& x, const sentinel& y)
 	{

@@ -24,14 +24,47 @@
 
 namespace nanorange {
 
-#define NANO_CONCEPT constexpr bool
+#if (__cplusplus >= 201703) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#define NANO_HAVE_CPP17
+#endif
+
+#if defined(NANO_HAVE_CPP17) || defined(__cpp_inline_variables)
+#define NANO_HAVE_INLINE_VARS
+#endif
 
 // FIXME: Work out how to use the "poison pills" on MSVC
 #ifdef _MSC_VER
 #define NANO_MSVC_NO_POISON_PILLS
 #endif
 
+
+#define NANO_CONCEPT constexpr bool
+
+
+#ifdef NANO_HAVE_INLINE_VARS
+#define NANO_INLINE_VAR(type, name) \
+    inline namespace function_objects { \
+        inline constexpr type name{}; \
+    }
+
+#else
+#define NANO_INLINE_VAR(type, name) \
+    inline namespace function_objects { \
+        inline namespace { \
+            constexpr const auto& name = ::nanorange::detail::static_const_<type>::value; \
+        } \
+    }
+#endif
+
 namespace detail {
+
+template <typename T>
+struct static_const_ {
+    static constexpr T value{};
+};
+
+template <typename T>
+constexpr T static_const_<T>::value;
 
 template <typename T>
 using lref_t = std::add_lvalue_reference_t<T>;
@@ -698,39 +731,45 @@ constexpr bool is_cpo_swappable_v = false;
 template <typename F, typename T, typename U>
 constexpr bool is_cpo_swappable_v<F, T, U, void_t<std::result_of_t<F&(T&, U&)>>> = true;
 
-struct swap_cpo {
-
+struct fn {
+private:
     template <typename T, typename U>
-    constexpr auto operator()(T&& t, U&& u) const
+    static constexpr auto do_swap(T&& t, U&& u, priority_tag<2>)
         noexcept(noexcept(swap(std::forward<T>(t), std::forward<U>(u))))
         -> decltype(static_cast<void>(swap(std::forward<T>(t), std::forward<U>(u))))
     {
         (void) swap(std::forward<T>(t), std::forward<U>(u));
     }
 
-    template <typename T, typename U, std::size_t N, typename F = swap_cpo>
-    constexpr auto operator()(T (&t)[N], U (&u)[N]) const
+    template <typename T, typename U, std::size_t N, typename F = fn>
+    static constexpr auto do_swap(T (&t)[N], U (&u)[N], priority_tag<1>)
     noexcept(noexcept(std::declval<F&>()(*t, *u)))
-        -> std::enable_if_t<
-                !has_custom_swap_v<T (&)[N], U (&)[N]> &&
-                 is_cpo_swappable_v<F, T, U>>
+        -> decltype(std::declval<F&>()(*t, *u))
     {
         for (std::size_t i = 0; i < N; ++i) {
-                (*this)(t[i], u[i]);
+             fn::do_swap(t[i], u[i], priority_tag<2>{});
         }
     }
 
     template <typename T>
-    constexpr auto operator()(T& a, T& b) const
+    static constexpr auto do_swap(T& a, T& b, priority_tag<0>)
         noexcept(std::is_nothrow_move_constructible<T>::value &&
                  std::is_nothrow_assignable<T&, T>::value)
-        -> std::enable_if_t<!has_custom_swap_v<T&, T&> &&
-                            MoveConstructible<T> &&
+        -> std::enable_if_t<MoveConstructible<T> &&
                             Assignable<T&, T>>
     {
         T temp = std::move(a);
         a = std::move(b);
         b = std::move(temp);
+    }
+
+public:
+    template <typename T, typename U>
+    constexpr auto operator()(T&& t, U&& u) const
+        noexcept(noexcept(fn::do_swap(std::forward<T>(t), std::forward<U>(u), priority_tag<2>{})))
+        -> decltype(fn::do_swap(std::forward<T>(t), std::forward<U>(u), priority_tag<2>{}))
+    {
+        return fn::do_swap(std::forward<T>(t), std::forward<U>(u), priority_tag<2>{});
     }
 
 };
@@ -739,7 +778,7 @@ struct swap_cpo {
 
 } // end namespace detail
 
-constexpr auto swap = detail::swap_::swap_cpo{};
+NANO_INLINE_VAR(detail::swap_::fn, swap)
 
 namespace detail {
 
@@ -778,6 +817,35 @@ constexpr bool swappable_with_f()
 
 }
 
+// [range.comparisons]
+
+// TODO: Constrained versions of the rest of these
+template <typename T = void, bool = EqualityComparable<T>>
+struct equal_to;
+
+template <typename T>
+struct equal_to<T, true>
+        : std::equal_to<T> {};
+
+template <>
+struct equal_to<void>
+{
+    template <typename T, typename U>
+    constexpr auto operator()(T&& t, U&& u)
+    -> std::enable_if_t<EqualityComparableWith<T, U>, bool>
+    {
+        return std::equal_to<>{}(std::forward<T>(t), std::forward<U>(u));
+    }
+
+    using is_transparent = std::true_type;
+};
+
+using std::not_equal_to;
+using std::less;
+using std::greater;
+using std::less_equal;
+using std::greater_equal;
+
 
 // [range.synopsis]
 
@@ -809,7 +877,7 @@ using adl_iter_move_t = decltype(static_cast<decltype(iter_move(
 template <typename T>
 constexpr bool has_adl_iter_move_v = exists_v<adl_iter_move_t, T>;
 
-struct iter_move_cpo {
+struct fn {
     template <typename T>
     constexpr auto operator()(T&& t) const
     noexcept(noexcept(static_cast<decltype(iter_move(t))>(iter_move(t))))
@@ -839,15 +907,9 @@ struct iter_move_cpo {
 
 }
 
-
 }
 
-
-namespace {
-
-constexpr auto iter_move = detail::iter_move_::iter_move_cpo{};
-
-}
+NANO_INLINE_VAR(detail::iter_move_::fn, iter_move)
 
 template <typename>
 struct difference_type;
@@ -1434,7 +1496,7 @@ template <typename I1, typename I2>
 void iter_swap(I1, I2) = delete;
 #endif
 
-struct iter_swap_cpo {
+struct fn {
 private:
     template <typename T1, typename T2>
     static constexpr bool iter_exchange_move_noexcept =
@@ -1479,17 +1541,17 @@ private:
         -> std::enable_if_t<IndirectlyMovableStorable<T, U> &&
                             IndirectlyMovableStorable<U, T>>
     {
-        return *t = iter_swap_cpo::iter_exchange_move(std::forward<U>(u),
-                                                      std::forward<T>(t));
+        return *t = fn::iter_exchange_move(std::forward<U>(u),
+                                           std::forward<T>(t));
     }
 
 public:
     template <typename T, typename U>
     constexpr auto operator()(T&& t, U&& u) const
-        noexcept(noexcept(do_swap(std::forward<T>(t), std::forward<U>(u), priority_tag<2>{})))
-        -> decltype(do_swap(std::forward<T>(t), std::forward<U>(u), priority_tag<2>{}))
+        noexcept(noexcept(fn::do_swap(std::forward<T>(t), std::forward<U>(u), priority_tag<2>{})))
+        -> decltype(fn::do_swap(std::forward<T>(t), std::forward<U>(u), priority_tag<2>{}))
     {
-        return do_swap(std::forward<T>(t), std::forward<U>(u), priority_tag<2>{});
+        return fn::do_swap(std::forward<T>(t), std::forward<U>(u), priority_tag<2>{});
     }
 
 };
@@ -1497,11 +1559,7 @@ public:
 }
 }
 
-namespace {
-
-constexpr auto iter_swap = detail::iter_swap_::iter_swap_cpo{};
-
-}
+NANO_INLINE_VAR(detail::iter_swap_::fn, iter_swap)
 
 
 namespace detail {
@@ -1525,7 +1583,7 @@ NANO_CONCEPT IndirectlySwappable =
 
 // [range.commonalgoreq.indirectlycomparable]
 
-template <typename I1, typename I2, typename R = std::equal_to<>,
+template <typename I1, typename I2, typename R = equal_to<>,
           typename P1 = identity, typename P2 = identity>
 NANO_CONCEPT IndirectlyComparable =
     IndirectRelation<R, projected<I1, P2>, projected<I2, P2>>;
@@ -1540,7 +1598,7 @@ NANO_CONCEPT Permutable =
 
 // [range.commonalgoreq.mergeable]
 
-template <typename I1, typename I2, typename Out, typename R = std::less<>,
+template <typename I1, typename I2, typename Out, typename R = less<>,
           typename P1 = identity, typename P2 = identity>
 NANO_CONCEPT Mergeable =
     InputIterator<I1> &&
@@ -1560,12 +1618,13 @@ NANO_CONCEPT Sortable =
 
 //  [range.iterator.operations]
 
-
 // [range.iterators.predef]
 
 // [range.iterators.reverse]
 
 // [range.iterators.common]
+
+namespace common_iterator_ {
 
 template <typename I, typename S>
 class common_iterator {
@@ -1654,25 +1713,13 @@ public:
     }
 
 private:
-
-
     // TODO: Some sort of variant-like union
     bool is_sentinel_;
     I iter_;
     S sentinel_;
 };
 
-template <typename I, typename S>
-struct value_type<common_iterator<I, S>> {
-    using type = value_type_t<I>;
-};
 
-template <typename I, typename S>
-struct iterator_category<common_iterator<I, S>>
-    : std::conditional<
-        ForwardIterator<I>,
-        forward_iterator_tag,
-        input_iterator_tag> {};
 
 template <typename I1, typename I2, typename S1, typename S2,
           std::enable_if_t<!EqualityComparableWith<I1, I2>, int> = 0>
@@ -1720,6 +1767,21 @@ operator-(const common_iterator<I1, S1>& x, const common_iterator<I2, S2>& y)
 
 }
 
+} // namespace common_iterator
+
+using common_iterator_::common_iterator;
+
+template <typename I, typename S>
+struct value_type<common_iterator<I, S>> {
+using type = value_type_t<I>;
+};
+
+template <typename I, typename S>
+struct iterator_category<common_iterator<I, S>>
+: std::conditional<
+        ForwardIterator<I>,
+forward_iterator_tag,
+input_iterator_tag> {};
 
 // [range.unreachable.sentinels]
 
@@ -1758,32 +1820,20 @@ operator!=(unreachable, const I&) noexcept
 // [range.access.begin]
 
 namespace detail {
-
-inline namespace begin_poison_pill {
+namespace begin_ {
 
 #ifndef NANO_MSVC_NO_POISON_PILLS
 template <typename T>
-void begin(T&) = delete;
+void begin(T&&) = delete;
+
+template <typename T>
+void begin(std::initializer_list<T>&&) = delete;
 #endif
 
-template <typename T>
-using member_begin_t = decltype(std::declval<T&>().begin());
-
-template <typename T>
-constexpr bool has_member_begin_v = exists_v<member_begin_t, T>;
-
-struct begin_cpo {
+struct fn {
 private:
-    template <typename T>
-    static constexpr auto do_begin(const T&& t, priority_tag<3>)
-        noexcept(noexcept(do_begin(static_cast<const T&>(t), priority_tag<2>{})))
-        -> decltype(do_begin(static_cast<const T&>(t), priority_tag<2>{}))
-    {
-        return do_begin(static_cast<const T&>(t), priority_tag<2>{});
-    }
-
     template <typename T, std::size_t N>
-    static constexpr auto do_begin(T (& t)[N], priority_tag<2>) noexcept
+    static constexpr auto do_begin(T (&t)[N], priority_tag<2>) noexcept
         -> decltype((t) + 0)
     {
         return (t) + 0;
@@ -1819,23 +1869,20 @@ public:
 }
 }
 
-constexpr auto begin = detail::begin_cpo{};
+NANO_INLINE_VAR(detail::begin_::fn, begin)
 
 namespace detail {
-inline namespace end_poison_pill {
+namespace end_ {
 
 #ifndef NANO_MSVC_NO_POISON_PILLS
 template <typename T>
-void end(T&) = delete;
+void end(T&&) = delete;
+
+template <typename T>
+void end(std::initializer_list<T>&&) = delete;
 #endif
 
-template <typename T>
-using member_end_t = decltype(std::declval<T&>().end());
-
-template <typename T>
-constexpr bool has_member_end_v = exists_v<member_end_t, T>;
-
-struct end_cpo {
+struct fn {
 private:
     template <typename T, std::size_t N>
     static constexpr auto do_end(T (&t)[N], priority_tag<2>) noexcept
@@ -1864,14 +1911,6 @@ private:
         return end(t);
     }
 
-    template <typename T>
-    static constexpr auto do_end(const T&& t, priority_tag<3>)
-    noexcept(noexcept(do_end(static_cast<const T&>(t), priority_tag<3>{})))
-    -> decltype(do_end(static_cast<const T&>(t), priority_tag<3>{}))
-    {
-        return do_end(static_cast<const T&>(t), priority_tag<2>{});
-    }
-
 public:
     template <typename T>
     constexpr auto operator()(T&& t) const
@@ -1885,16 +1924,25 @@ public:
 }
 }
 
-constexpr auto end = detail::end_cpo{};
+NANO_INLINE_VAR(detail::end_::fn, end)
 
 // [range.access.cbegin]
 
 namespace detail {
+namespace cbegin_ {
 
-struct cbegin_cpo {
+struct fn {
 
     template <typename T>
     constexpr auto operator()(const T& t) const
+    noexcept(noexcept(nanorange::begin(t)))
+    -> decltype(nanorange::begin(t))
+    {
+        return nanorange::begin(t);
+    }
+
+    template <typename T>
+    constexpr auto operator()(const T&& t) const
         noexcept(noexcept(nanorange::begin(t)))
         -> decltype(nanorange::begin(t))
     {
@@ -1904,14 +1952,16 @@ struct cbegin_cpo {
 };
 
 }
+}
 
-constexpr auto cbegin = detail::begin_cpo{};
+NANO_INLINE_VAR(detail::cbegin_::fn, cbegin);
 
 // [ranges.access.cend]
 
 namespace detail {
+namespace cend_ {
 
-struct cend_cpo {
+struct fn {
 
     template <typename T>
     constexpr auto operator()(const T& t) const
@@ -1921,13 +1971,20 @@ struct cend_cpo {
         return nanorange::end(t);
     }
 
+    template <typename T>
+    constexpr auto operator()(const T&& t) const
+        noexcept(noexcept(nanorange::end(t)))
+        -> decltype(nanorange::end(t))
+    {
+        return nanorange::end(t);
+    }
+
 };
 
-
+}
 }
 
-constexpr auto cend = detail::cend_cpo{};
-
+NANO_INLINE_VAR(detail::cend_::fn, cend)
 
 // [range.primitives.size]
 
@@ -1935,11 +1992,11 @@ template <typename T>
 constexpr bool disable_sized_range = false;
 
 namespace detail {
-inline namespace size_poison_pill {
+namespace size_ {
 
 #ifndef MSVC_NO_POISON_PILLS
 template <typename T>
-void size(const T&) = delete;
+void size(T&&) = delete;
 #endif
 
 template <typename T>
@@ -1948,7 +2005,7 @@ using member_size_t = decltype(std::declval<const T&>().size());
 template <typename T>
 constexpr bool has_member_size_v = exists_v<member_size_t, T>;
 
-struct size_cpo {
+struct fn {
 
     template <typename T, std::size_t N>
     constexpr std::size_t operator()(const T(&)[N]) const noexcept
@@ -1991,17 +2048,54 @@ struct size_cpo {
 }
 }
 
-constexpr auto size = detail::size_cpo{};
+NANO_INLINE_VAR(detail::size_::fn, size)
 
-// [range.comparisons]
+// [range.primitives.empty]
 
-// TODO: Constrained versions of these
-using std::equal_to;
-using std::not_equal_to;
-using std::less;
-using std::greater;
-using std::less_equal;
-using std::greater_equal;
+namespace detail {
+namespace empty_ {
+
+struct fn {
+private:
+    template <typename T>
+    static constexpr auto do_empty(T&& t, priority_tag<2>)
+        noexcept(noexcept((bool(std::forward<T>(t).empty()))))
+        -> decltype((bool(std::forward<T>(t).empty())))
+    {
+        return bool((std::forward<T>(t).empty()));
+    }
+
+    template <typename T>
+    static constexpr auto do_empty(T&& t, priority_tag<1>)
+        noexcept(noexcept(nanorange::size(std::forward<T>(t)) == 0))
+        -> decltype(nanorange::size(std::forward<T>(t)) == 0)
+    {
+        return nanorange::size(std::forward<T>(t)) == 0;
+    }
+
+    template <typename T, typename I = decltype(nanorange::begin(std::declval<T>()))>
+    static constexpr auto do_empty(T&& t, priority_tag<0>)
+        noexcept(noexcept(nanorange::begin(t) == nanorange::end(t)))
+        -> std::enable_if_t<ForwardIterator<I>,
+                            decltype(nanorange::begin(t) == nanorange::end(t))>
+    {
+        return nanorange::begin(t) == nanorange::end(t);
+    }
+
+public:
+    template <typename T>
+    constexpr auto operator()(T&& t)
+            noexcept(noexcept(fn::do_empty(std::forward<T>(t), priority_tag<2>{})))
+        -> decltype(fn::do_empty(std::forward<T>(t), priority_tag<2>{}))
+    {
+        return fn::do_empty(std::forward<T>(t), priority_tag<2>{});
+    }
+};
+
+}
+}
+
+NANO_INLINE_VAR(detail::empty_::fn, empty)
 
 template <typename T>
 using iterator_t = decltype(nanorange::begin(std::declval<T&>()));
@@ -2127,6 +2221,35 @@ template <typename T>
 NANO_CONCEPT CommonRange =
     Range<T> && Same<detail::checked_iterator_t<T>, detail::checked_sentinel_t<T>>;
 
+// [ranges.viewable]
+
+template <typename T>
+NANO_CONCEPT ViewableRange =
+        Range<T> && (std::is_lvalue_reference<T>::value || View<std::decay_t<T>>);
+
+// [range.dangling.wrap]
+
+template <typename T>
+struct dangling {
+    static_assert(CopyConstructible<T>,
+                  "Argument to dangling<T> must satisfy CopyConstructible<T>");
+
+    template <typename U = T, std::enable_if_t<DefaultConstructible<U>>>
+    dangling() : value_{} {}
+
+    dangling(T t) : value_(t) {}
+
+    T get_unsafe() { return value_; }
+
+private:
+    T value_;
+};
+
+template <typename Range>
+using safe_iterator_t = std::conditional_t<
+        std::is_lvalue_reference<Range>::value,
+        iterator_t<Range>, dangling<iterator_t<Range>>>;
+
 // [range.input]
 
 template <typename T>
@@ -2149,29 +2272,161 @@ template <typename T>
 NANO_CONCEPT RandomAccessRange =
     BidirectionalRange<T> && RandomAccessIterator<detail::checked_iterator_t<T>>;
 
-// [range.dangling.wrap]
+// [ranges.view_interface]
 
-template <typename T>
-struct dangling {
-    static_assert(CopyConstructible<T>,
-                  "Argument to dangling<T> must satisfy CopyConstructible<T>");
+namespace detail {
 
-    template <typename U = T, std::enable_if_t<DefaultConstructible<U>>>
-    dangling() : value_{} {}
+template <typename, typename = void>
+struct range_common_iterator_impl;
 
-    dangling(T t) : value_(t) {}
-
-    T get_unsafe() { return value_; }
-
-private:
-    T value_;
+template <typename R>
+struct range_common_iterator_impl<R,
+        std::enable_if_t<Range<R> && !CommonRange<R>>>
+{
+    using type = common_iterator<iterator_t<R>, sentinel_t<R>>;
 };
 
-template <typename Range>
-using safe_iterator_t = std::conditional_t<
-    std::is_lvalue_reference<Range>::value,
-    iterator_t<Range>, dangling<iterator_t<Range>>>;
+template <typename R>
+struct range_common_iterator_impl<R, std::enable_if_t<CommonRange<R>>>
+{
+    using type = iterator_t<R>;
+};
 
+template <typename R>
+using range_common_iterator_t = typename range_common_iterator_impl<R>::type;
+
+}
+
+template <typename D>
+class view_interface {
+
+    static_assert(std::is_class<D>::value, "");
+
+private:
+
+    constexpr D& derived() noexcept
+    {
+        return static_cast<D&>(*this);
+    }
+
+    constexpr const D& derived() const noexcept
+    {
+        return static_cast<const D&>(*this);
+    }
+
+public:
+    template <typename R = D>
+    constexpr auto empty()
+    -> std::enable_if_t<ForwardRange<R>, bool>
+    {
+        return nanorange::begin(derived()) == nanorange::end(derived());
+    }
+
+    template <typename = decltype(nanorange::empty(std::declval<const D&>()))>
+    constexpr explicit operator bool() const
+    {
+        return nanorange::begin(derived());
+    }
+
+    template <typename R = D>
+    constexpr auto data() const
+        -> std::enable_if_t<RandomAccessRange<R> &&
+                            std::is_pointer<iterator_t<R>>::value,
+                            decltype(nanorange::begin(derived()))>
+    {
+        return nanorange::begin(derived());
+    }
+
+    template <typename R = D>
+    constexpr auto size() const
+        -> std::enable_if_t<ForwardRange<const R> &&
+                            SizedSentinel<sentinel_t<const R>, iterator_t<const R>>,
+                            decltype(nanorange::end(derived()) - nanorange::begin(derived()))>
+    {
+        return nanorange::end(derived()) - nanorange::begin(derived());
+    }
+
+    template <typename R = D>
+    constexpr auto front()
+        -> std::enable_if_t<ForwardRange<R>, decltype(*nanorange::begin(derived()))>
+    {
+        return *nanorange::begin(derived());
+    }
+
+    template <typename R = D>
+    constexpr auto front() const
+    -> std::enable_if_t<ForwardRange<const R>, decltype(*nanorange::begin(derived()))>
+    {
+        return *nanorange::begin(derived());
+    }
+
+    template <typename R = D>
+    constexpr auto back()
+        -> std::enable_if_t<BidirectionalRange<R> && CommonRange<R>,
+                            decltype(*prev(nanorange::end(derived())))>
+    {
+        return *prev(nanorange::end(derived()));
+    }
+
+    template <typename R = D>
+    constexpr auto back()
+    -> std::enable_if_t<BidirectionalRange<const R> && CommonRange<const R>,
+            decltype(*prev(nanorange::end(derived())))>
+    {
+        return *prev(nanorange::end(derived()));
+    }
+
+    template <typename R = D>
+    constexpr auto operator[](difference_type_t<iterator_t<R>> n)
+        -> std::enable_if_t<RandomAccessRange<R>,
+                            decltype(nanorange::begin(derived())[n])>
+    {
+        return nanorange::begin(derived())[n];
+    }
+
+    template <typename R = const D>
+    constexpr auto operator[](difference_type_t<iterator_t<R>> n) const
+    -> std::enable_if_t<RandomAccessRange<R>,
+            decltype(nanorange::begin(derived())[n])>
+    {
+        return nanorange::begin(derived())[n];
+    }
+
+    template <typename R = D>
+    constexpr auto at(difference_type_t<iterator_t<R>> n)
+    -> std::enable_if_t<RandomAccessRange<R> && SizedRange<R>,
+                        decltype(derived()[n])>
+    {
+        if (n < 0 || n >= nanorange::size(derived())) {
+            throw std::out_of_range{""};
+        };
+
+        return derived()[n];
+    }
+
+    template <typename R = const D>
+    constexpr auto at(difference_type_t<iterator_t<R>> n) const
+    -> std::enable_if_t<RandomAccessRange<R> && SizedRange<R>,
+            decltype(derived()[n])>
+    {
+        if (n < 0 || n >= nanorange::size(derived())) {
+            throw std::out_of_range{""};
+        };
+
+        return derived()[n];
+    }
+
+    template <typename C, typename = std::enable_if_t<
+            ForwardRange<C> &&
+            !View<C> &&
+            ConvertibleTo<reference_t<iterator_t<const D>>, value_type_t<iterator_t<C>>> &&
+            Constructible<C, detail::range_common_iterator_t<const D>, detail::range_common_iterator_t<const D>>>>
+    operator C() const
+    {
+        using I = detail::range_common_iterator_t<D>;
+        return C(I{nanorange::begin(derived()), nanorange::end(derived())});
+    }
+};
 
 // [range.alg.all_of]
 
@@ -2268,7 +2523,7 @@ for_each(I first, S last, Fun fun, Proj proj = Proj{})
 template <typename Rng, typename Proj = identity, typename Fun>
 std::enable_if_t<
     InputRange<Rng> &&
-    IndirectUnaryInvocable<Fun, iterator_t<Rng>/*projected<iterator_t<Rng>, Proj>*/>,
+    IndirectUnaryInvocable<Fun, projected<iterator_t<Rng>, Proj>>,
     std::pair<safe_iterator_t<Rng>, Fun>>
 for_each(Rng&& rng, Fun fun, Proj proj = Proj{})
 {
@@ -2510,6 +2765,84 @@ count_if(Rng&& rng, Pred pred, Proj proj = Proj{})
 {
     return count_if(nanorange::begin(rng), nanorange::end(rng), std::ref(pred), std::ref(proj));
 }
+
+// [range.mismatch]
+
+// FIXME: Use tagged pair
+
+// N.B Three-legged forms are deprecated
+template <typename I1, typename S1, typename I2,
+          typename Proj1 = identity, typename Proj2 = identity,
+          typename Pred = equal_to<>>
+std::enable_if_t<
+    InputIterator<I1> &&
+    Sentinel<S1, I1> &&
+    InputIterator<I2> &&
+    IndirectRelation<Pred, projected<I1, Proj1>, projected<I2, Proj2>>,
+    std::pair<I1, I2>>
+mismatch(I1 first1, S1 last1, I2 first2, Pred pred = Pred{},
+         Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{})
+{
+    while (first1 != last1 &&
+           detail::invoke(pred, detail::invoke(proj1, *first1), detail::invoke(proj2, *first2)))
+    {
+        ++first1; ++first2;
+    }
+
+    return {first1, first2};
+}
+
+template <typename Rng1, typename I2, typename Proj1 = identity,
+          typename Proj2 = identity, typename Pred = equal_to<>>
+std::enable_if_t<
+    InputRange<Rng1> &&
+    InputIterator<I2> &&
+    IndirectRelation<Pred, projected<iterator_t<Rng1>, Proj1>, projected<I2, Proj2>>,
+    std::pair<safe_iterator_t<Rng1>, I2>>
+mismatch(Rng1&& rng1, I2 first2, Pred pred = Pred{}, Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{})
+{
+    return nanorange::mismatch(
+            nanorange::begin(rng1), nanorange::end(rng1), std::move(first2),
+            std::ref(pred), std::ref(proj1), std::ref(proj2));
+}
+
+template <typename I1, typename S1, typename I2, typename S2,
+          typename Proj1 = identity, typename Proj2 = identity,
+          typename Pred = equal_to<>>
+std::enable_if_t<
+    InputIterator<I1> &&
+    Sentinel<S1, I1> &&
+    InputIterator<I2> &&
+    Sentinel<S2, I2> &&
+    IndirectRelation<Pred, projected<I1, Proj1>, projected<I2, Proj2>>,
+    std::pair<I1, I2>>
+mismatch(I1 first1, S1 last1, I2 first2, S2 last2,
+         Pred pred = Pred{}, Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{})
+{
+    while (first1 != last1 && first2 != last2 &&
+           detail::invoke(pred, detail::invoke(proj1, *first1), detail::invoke(proj2, *first2)))
+    {
+        ++first1; ++first2;
+    }
+
+    return {first1, first2};
+}
+
+template <typename Rng1, typename Rng2, typename Proj1 = identity,
+          typename Proj2 = identity, typename Pred = equal_to<>>
+std::enable_if_t<
+    InputRange<Rng1> &&
+    InputRange<Rng2> &&
+    IndirectRelation<Pred, projected<iterator_t<Rng1>, Proj1>, projected<iterator_t<Rng2>, Proj2>>,
+    std::pair<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>>>
+mismatch(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{}, Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{})
+{
+    return nanorange::mismatch(
+            nanorange::begin(rng1), nanorange::end(rng1),
+            nanorange::begin(rng2), nanorange::end(rng2),
+            std::ref(pred), std::ref(proj1), std::ref(proj2));
+}
+
 
 }; // namespace nanorange
 

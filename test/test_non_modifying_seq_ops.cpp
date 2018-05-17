@@ -73,8 +73,6 @@ TEST_CASE("count_if")
     REQUIRE(n == 3);
 }
 
-#if 0
-
 TEST_CASE("three-legged mismatch() (deprecated)")
 {
     constexpr std::array<int, 3> arr1 = {{1, 2, 3}};
@@ -95,6 +93,7 @@ TEST_CASE("three-legged mismatch() with predicate (deprecated)")
     REQUIRE(p.first == std::prev(arr1.end()));
     REQUIRE(p.second == std::prev(arr2.end()));
 }
+
 
 TEST_CASE("four-legged mismatch()")
 {
@@ -131,6 +130,8 @@ TEST_CASE("four-legged mismatch() with predicate")
         REQUIRE(p.second == std::prev(arr2.end()));
     }
 }
+
+#if 0
 
 TEST_CASE("three-legged equal() (deprecated)")
 {
