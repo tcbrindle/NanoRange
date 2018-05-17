@@ -269,6 +269,8 @@ CONCEPT_ASSERT(models::CopyConstructible<const nonmovable&>);
 CONCEPT_ASSERT(!models::CopyConstructible<const nonmovable&&>);
 
 // https://github.com/ericniebler/stl2/issues/301
+// FIXME MSVC
+#ifndef _MSC_VER
 struct not_mutable_ref {
 	not_mutable_ref() = default;
 
@@ -291,6 +293,7 @@ struct not_const_ref_ref {
 
 CONCEPT_ASSERT(!models::CopyConstructible<not_mutable_ref>);
 CONCEPT_ASSERT(!models::CopyConstructible<not_const_ref_ref>);
+#endif
 
 CONCEPT_ASSERT(models::Movable<int>);
 CONCEPT_ASSERT(!models::Movable<const int>);

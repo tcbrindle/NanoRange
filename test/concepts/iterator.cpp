@@ -197,8 +197,10 @@ namespace readable_test {
 		value_type& operator*() const;
 	};
 
+	// FIXME MSVC
+#ifndef _MSC_VER
 	CONCEPT_ASSERT(models::Readable<ArrayReadable>);
-
+#endif
 	struct Abstract {
 		virtual void foo() = 0;
 	};

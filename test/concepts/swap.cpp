@@ -26,7 +26,10 @@ namespace swappable_test {
 	CONCEPT_ASSERT(models::Swappable<int>);
 	CONCEPT_ASSERT(models::SwappableWith<int&, int&>);
 	CONCEPT_ASSERT(models::Swappable<int[4]>);
+// FIXME MSVC
+#ifndef _MSC_VER
 	CONCEPT_ASSERT(models::SwappableWith<int(&)[4], int(&)[4]>);
+#endif
 	CONCEPT_ASSERT(!models::SwappableWith<int, int>);
 	CONCEPT_ASSERT(!models::SwappableWith<int&, double&>);
 	CONCEPT_ASSERT(!models::SwappableWith<int(&)[4], bool(&)[4]>);
@@ -40,10 +43,13 @@ namespace swappable_test {
 //#if VALIDATE_STL2
 	// range-v3 doesn't support swapping multidimensional arrays
 	CONCEPT_ASSERT(models::Swappable<int[3][4]>);
+// FIXME MSVC
+#ifndef _MSC_VER
 	CONCEPT_ASSERT(models::SwappableWith<int(&)[3][4], int(&)[3][4]>);
 	CONCEPT_ASSERT(models::Swappable<int[3][4][1][2]>);
 	CONCEPT_ASSERT(models::SwappableWith<int(&)[3][4][1][2], int(&)[3][4][1][2]>);
 	CONCEPT_ASSERT(!models::SwappableWith<int(&)[3][4][1][2], int(&)[4][4][1][2]>);
+#endif
 	//CONCEPT_ASSERT(ns::is_nothrow_swappable<int(&)[6][7], int(&)[6][7]>());
 
 	struct unswappable : std::string { // Has std:: as an associated namespace
@@ -141,7 +147,10 @@ TEST_CASE("concepts.swap")
 		int a[2][2] = {{0, 1}, {2, 3}};
 		int b[2][2] = {{4, 5}, {6, 7}};
 
+// FIXME MSVC
+#ifndef _MSC_VER
 		CONCEPT_ASSERT(models::SwappableWith<decltype((a)),decltype((b))>);
+#endif
 		ns::swap(a, b);
 		CONCEPT_ASSERT(noexcept(ns::swap(a, b)));
 
