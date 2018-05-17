@@ -848,11 +848,11 @@ constexpr bool swappable_with_f()
 // [range.comparisons]
 
 // TODO: Constrained versions of the rest of these
-template <typename T = void, bool = EqualityComparable<T>>
+template <typename = void, typename = void>
 struct equal_to;
 
 template <typename T>
-struct equal_to<T, true>
+struct equal_to<T, std::enable_if_t<EqualityComparable<T>>>
         : std::equal_to<T> {};
 
 template <>
