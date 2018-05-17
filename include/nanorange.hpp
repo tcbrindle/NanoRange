@@ -130,133 +130,161 @@ template <> struct priority_tag<0> {};
 
 }
 
-// Note: this is supposed to go in type_traits, but we're putting it in here to avoid adding another header
-
-template <typename T, typename U, template <class> class TQual, template <class> class UQual>
-struct basic_common_reference {};
-
-// FIXME: Bite the bullet and do this properly
 namespace detail {
 
-inline namespace common_reference_stuff {
+template <typename T, typename U>
+struct copy_cv { using type = U; };
 
-template<typename From, typename To>
-struct copy_cv {
-    using type = To;
-};
+template <typename T, typename U>
+struct copy_cv<const T, U> { using type = std::add_const_t<U>; };
 
-template<typename From, typename To>
-struct copy_cv<const From, To> {
-    using type = const To;
-};
+template <typename T, typename U>
+struct copy_cv<volatile T, U> { using type = std::add_volatile_t<U>; };
 
-template<typename From, typename To>
-struct copy_cv<volatile From, To> {
-    using type = volatile To;
-};
+template <typename T, typename U>
+struct copy_cv<const volatile T, U> { using type = std::add_cv_t<U>; };
 
-template<typename From, typename To>
-struct copy_cv<const volatile From, To> {
-    using type = const volatile To;
-};
+template <typename T, typename U>
+using copy_cv_t = typename copy_cv<T, U>::type;
 
-template<typename From, typename To>
-using COPY_CV = typename copy_cv<From, To>::type;
+template <typename T>
+using cref_t = std::add_lvalue_reference_t<const std::remove_reference_t<T>>;
 
-template<typename X, typename Y>
-using COND_RES = decltype(std::declval<bool>() ? std::declval<X(&)()>()() : std::declval<Y(&)()>()());
+template <typename T>
+using uncvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
 
-template <typename X, typename Y>
-constexpr bool has_cond_res_v = exists_v<COND_RES, X, Y>;
+template <typename T>
+struct rref_res { using type = T; };
 
-template<typename A, typename B, typename = void>
-struct COMMON_REF_S {};
+template <typename T>
+struct rref_res<T&> { using type = std::remove_reference_t<T>&&; };
 
-template<typename A, typename B>
-using COMMON_REF = typename COMMON_REF_S<A, B>::type;
+template <typename T>
+using rref_res_t = typename rref_res<T>::type;
 
-template <typename A, typename B, typename C = test_t<COND_RES, COPY_CV<A, B>&, COPY_CV<B, A>&>>
-struct lvalue_COMMON_REF_S
+template <typename T, typename U>
+using cond_res_t = decltype(std::declval<bool>() ? std::declval<T(&)()>()() : std::declval<U(&)()>()());
+
+// For some value of "simple"
+template <typename T, typename U>
+struct simple_common_reference {};
+
+template <typename T, typename U,
+    typename C = test_t<cond_res_t, copy_cv_t<T, U>&, copy_cv_t<U, T>&>>
+struct lvalue_simple_common_reference
     : std::enable_if<std::is_reference<C>::value, C> {};
 
-template<typename A, typename B>
-struct COMMON_REF_S<A&, B&>
-    : lvalue_COMMON_REF_S<A, B> {};
+template <typename T, typename U>
+using lvalue_scr_t = typename lvalue_simple_common_reference<T, U>::type;
 
-template <typename A, typename B>
-struct COMMON_REF_S<A&&, B&&>
+template <typename T, typename U>
+struct simple_common_reference<T&, U&>
+    : lvalue_simple_common_reference<T, U> {};
+
+template <typename T, typename U,
+    typename LCR = test_t<lvalue_scr_t, T, U>,
+    typename C = rref_res_t<LCR>>
+struct rvalue_simple_common_reference
     : std::enable_if<
-        std::is_convertible<A&&, std::remove_reference_t<COMMON_REF<A&, B&>>&&>::value &&
-        std::is_convertible<B&&, std::remove_reference_t<COMMON_REF<A&, B&>>&&>::value,
-        std::remove_reference_t<COMMON_REF<A&, B&>>&&> {};
+        std::is_convertible<T&&, C>::value &&
+        std::is_convertible<U&&, C>::value, C> {};
+
+template <typename T, typename U>
+struct simple_common_reference<T&&, U&&>
+    : rvalue_simple_common_reference<T, U> {};
+
+template <typename A, typename B,
+    typename C = test_t<lvalue_scr_t, A, const B>>
+struct mixed_simple_common_reference
+    : std::enable_if<std::is_convertible<B&&, C>::value, C> {};
 
 template <typename A, typename B>
-struct COMMON_REF_S<A&&, B&, void_t<COMMON_REF<const A&, B&>>>
-    : std::enable_if<
-        std::is_convertible<A&&, COMMON_REF<const A&, B&>>::value,
-        COMMON_REF<const A&, B&>> {};
+struct simple_common_reference<A&, B&&>
+    : mixed_simple_common_reference<A, B> {};
 
 template <typename A, typename B>
-struct COMMON_REF_S<A&, B&&>
-    : COMMON_REF_S<B&&, A&> {};
+struct simple_common_reference<A&&, B&>
+    : simple_common_reference<B&, A&&> {};
+
+template <typename T, typename U>
+using simple_common_reference_t = typename simple_common_reference<T, U>::type;
 
 }
 
-template <typename T, typename U>
-constexpr bool has_simple_common_reference_v = exists_v<COMMON_REF, T, U>;
-
-template <typename T, typename U, typename = void>
-struct binary_common_reference
-    : std::common_type<T, U> {};
-
-template <typename T, typename U>
-struct binary_common_reference<T, U, std::enable_if_t<has_simple_common_reference_v<T, U>>>
-    : COMMON_REF_S<T, U> {};
-
-template <typename T, typename U>
-struct binary_common_reference<T, U, std::enable_if_t<
-    !has_simple_common_reference_v<T, U> &&
-    has_cond_res_v<T, U>>> {
-    using type = COND_RES<T, U>;
-};
-
-}
+template <class T, class U, template <class> class TQual, template <class> class UQual>
+struct basic_common_reference {};
 
 template <typename...>
 struct common_reference;
 
+template <typename... Ts>
+using common_reference_t = typename common_reference<Ts...>::type;
+
 template <>
 struct common_reference<> {};
 
-template <typename T>
-struct common_reference<T> {
-    using type = T;
+template <typename T0>
+struct common_reference<T0> {
+    using type = T0;
 };
-
-template <typename T, typename U>
-struct common_reference<T, U> :
-    detail::binary_common_reference<T, U> {};
 
 namespace detail {
 
-template<typename Void, typename, typename, typename...>
-struct multiple_common_reference {
+template <typename T, typename U>
+constexpr bool has_simple_common_ref_v = exists_v<simple_common_reference_t, T, U>;
+
+template <typename T>
+T common_ref_test_func();
+
+template <typename T, typename U,
+    typename C = decltype(false ? common_ref_test_func<T>() : common_ref_test_func<U>())>
+struct function_common_ref {
+    using type = C;
 };
 
-template<typename T, typename U, typename... Rest>
-struct multiple_common_reference<void_t<typename binary_common_reference<T, U>::type>, T, U, Rest...>
-    : common_reference<typename binary_common_reference<T, U>::type, Rest...>
-{
-};
+template <typename T, typename U>
+using function_common_ref_t = typename function_common_ref<T, U>::type;
+
+template <typename T, typename U>
+constexpr bool has_function_common_ref_v = exists_v<function_common_ref_t, T, U>;
+
+template <typename T, typename U, typename = void>
+struct binary_common_ref
+    : std::common_type<T, U> {};
+
+template <typename T, typename U>
+struct binary_common_ref<T, U, std::enable_if_t<
+    has_simple_common_ref_v<T, U>>>
+    : simple_common_reference<T, U> {};
+
+template <typename T, typename U>
+struct binary_common_ref<T, U, std::enable_if_t<
+    has_function_common_ref_v<T, U> &&
+    !has_simple_common_ref_v<T, U>>>
+    : function_common_ref<T, U> {};
+
+}
+
+// FIXME: Handle basic_common_reference
+template <typename T1, typename T2>
+struct common_reference<T1, T2>
+    : detail::binary_common_ref<T1, T2> {};
+
+namespace detail {
+
+template <typename Void, typename T1, typename T2, typename... Rest>
+struct multiple_common_reference {};
+
+template <typename T1, typename T2, typename... Rest>
+struct multiple_common_reference<
+    void_t<common_reference_t<T1, T2>>, T1, T2, Rest...>
+    : common_reference<common_reference_t<T1, T2>, Rest...> {};
 
 }
 
 template <typename T1, typename T2, typename... Rest>
 struct common_reference<T1, T2, Rest...>
     : detail::multiple_common_reference<void, T1, T2, Rest...> {};
-
-template <typename... T>
-using common_reference_t = typename common_reference<T...>::type;
 
 namespace detail {
 
@@ -395,7 +423,7 @@ NANO_CONCEPT DefaultConstructible = Constructible<T>;
 template <typename T>
 NANO_CONCEPT MoveConstructible = Constructible<T, T> && ConvertibleTo<T, T>;
 
-// concepts.lib.corelang.copyconstructible]
+// [concepts.lib.corelang.copyconstructible]
 template <typename T>
 NANO_CONCEPT CopyConstructible = MoveConstructible<T> &&
     Constructible<T, detail::lref_t<T>> && ConvertibleTo<detail::lref_t<T>, T> &&
@@ -729,7 +757,7 @@ template <typename, typename, typename, typename = void>
 constexpr bool is_cpo_swappable_v = false;
 
 template <typename F, typename T, typename U>
-constexpr bool is_cpo_swappable_v<F, T, U, void_t<std::result_of_t<F&(T&, U&)>>> = true;
+constexpr bool is_cpo_swappable_v<F, T, U, void_t<invoke_result_t<F&, T&, U&>>> = true;
 
 struct fn {
 private:
@@ -1491,7 +1519,7 @@ NANO_CONCEPT IndirectlyCopyableStorable =
 namespace detail {
 namespace iter_swap_ {
 
-#ifndef MSVC_NO_POISON_PILLS
+#ifndef NANO_MSVC_NO_POISON_PILLS
 template <typename I1, typename I2>
 void iter_swap(I1, I2) = delete;
 #endif
@@ -1994,7 +2022,7 @@ constexpr bool disable_sized_range = false;
 namespace detail {
 namespace size_ {
 
-#ifndef MSVC_NO_POISON_PILLS
+#ifndef NANO_MSVC_NO_POISON_PILLS
 template <typename T>
 void size(T&&) = delete;
 #endif
