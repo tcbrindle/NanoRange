@@ -2966,69 +2966,89 @@ NANO_INLINE_VAR(detail::adjacent_find_fn, adjacent_find)
 
 // [rng.alg.count]
 
-template <typename I, typename S, typename T, typename Proj = identity>
-constexpr
-std::enable_if_t<
-    InputIterator<I> &&
-    Sentinel<S, I> &&
-    IndirectRelation<equal_to<>, projected<I, Proj>, const T*>,
-    difference_type_t<I>>
-count(I first, S last, const T& value, Proj proj = Proj{})
-{
-    difference_type_t<I> counter = 0;
+namespace detail {
 
-    while (first != last) {
-        if (nano::invoke(proj, *first) == value) {
-            ++counter;
+struct count_if_fn {
+private:
+    friend struct count_fn;
+
+    template <typename I, typename S, typename Proj, typename Pred>
+    static constexpr difference_type_t<I>
+    impl(I first, S last, Pred pred, Proj proj)
+    {
+        difference_type_t<I> counter = 0;
+
+        for (; first != last; ++first) {
+            if (nano::invoke(pred, nano::invoke(proj, *first))) {
+                ++counter;
+            }
         }
-        ++first;
+
+        return counter;
     }
 
-    return counter;
-}
+public:
 
-template <typename Rng, typename T, typename Proj = identity>
-constexpr
-std::enable_if_t<
-    InputRange<Rng> &&
-    IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>, const T*>,
-    difference_type_t<iterator_t<Rng>>>
-count(Rng&& rng, const T& value, Proj proj = Proj{})
-{
-    return count(nano::begin(rng), nano::end(rng), value, std::move(proj));
-}
-
-template <typename I, typename S, typename Proj = identity, typename Pred>
-constexpr
-std::enable_if_t<
-    InputIterator<I> &&
-    Sentinel<S, I> &&
-    IndirectUnaryPredicate<Pred, projected<I, Proj>>,
-    difference_type_t<I>>
-count_if(I first, S last, Pred pred, Proj proj = Proj{})
-{
-    difference_type_t<I> counter = 0;
-
-    while (first != last) {
-        if (nano::invoke(pred, nano::invoke(proj, *first)) != false) {
-            ++counter;
-        }
-        ++first;
+    template <typename I, typename S, typename Proj = identity, typename Pred>
+    constexpr std::enable_if_t<
+        InputIterator<I> &&
+        Sentinel<S, I> &&
+        IndirectUnaryPredicate<Pred, projected<I, Proj>>,
+        difference_type_t<I>>
+    operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
+    {
+        return count_if_fn::impl(std::move(first), std::move(last),
+                                 std::move(pred), std::move(proj));
     }
 
-    return counter;
+    template <typename Rng, typename Proj = identity, typename Pred>
+    constexpr std::enable_if_t<
+        InputRange<Rng> &&
+        IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
+        difference_type_t<iterator_t<Rng>>>
+    operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
+    {
+        return count_if_fn::impl(nano::begin(rng), nano::end(rng),
+                                 std::move(pred), std::move(proj));
+    }
+
+};
 }
 
-template <typename Rng, typename Proj = identity, typename Pred>
-constexpr
-std::enable_if_t<
-    InputRange<Rng> &&
-    IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
-    difference_type_t<iterator_t<Rng>>>
-count_if(Rng&& rng, Pred pred, Proj proj = Proj{})
-{
-    return count_if(nano::begin(rng), nano::end(rng), std::move(pred), std::move(proj));
+NANO_INLINE_VAR(detail::count_if_fn, count_if)
+
+namespace detail {
+
+struct count_fn {
+    template <typename I, typename S, typename T, typename Proj = identity>
+    constexpr std::enable_if_t<
+        InputIterator<I> &&
+        Sentinel<S, I> &&
+        IndirectRelation<equal_to<>, projected<I, Proj>, const T*>,
+        difference_type_t<I>>
+    operator()(I first, S last, const T& value, Proj proj = Proj{}) const
+    {
+        return count_if_fn::impl(std::move(first), std::move(last),
+                                 [&value] (const auto& v) { return v == value; },
+                                 std::move(proj));
+    }
+
+    template <typename Rng, typename T, typename Proj = identity>
+    constexpr std::enable_if_t<
+       InputRange<Rng> &&
+       IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>, const T*>,
+       difference_type_t<iterator_t<Rng>>>
+    operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
+    {
+        return count_if_fn::impl(nano::begin(rng), nano::end(rng),
+                                 [&value] (const auto& v) { return v == value; },
+                                 std::move(proj));
+    }
+};
 }
+
+NANO_INLINE_VAR(detail::count_fn, count)
+
 
 // [range.mismatch]
 
