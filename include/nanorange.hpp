@@ -2913,40 +2913,56 @@ NANO_INLINE_VAR(detail::find_first_of_fn, find_first_of)
 
 // [range.alg.adjacent.find]
 
-template <typename I, typename S, typename Proj = identity, typename Pred = equal_to<>>
-constexpr
-std::enable_if_t<
-    ForwardIterator<I> &&
-    Sentinel<S, I> &&
-    IndirectRelation<Pred, projected<I, Proj>>, I>
-adjacent_find(I first, S last, Pred pred = Pred{}, Proj proj = Proj{})
-{
-    if (first == last) {
+namespace detail {
+
+struct adjacent_find_fn {
+private:
+    template <typename I, typename S, typename Proj, typename Pred>
+    static constexpr I impl(I first, S last, Pred pred, Proj proj)
+    {
+        if (first == last) {
+            return first;
+        }
+
+        I next = first;
+        ++next;
+
+        while (next != last) {
+            if (nano::invoke(pred, nano::invoke(proj, *first), nano::invoke(proj, *next))) {
+                return first;
+            }
+            ++first; ++next;
+        }
+
         return first;
     }
 
-    I next = first;
-    ++next;
-    while (next != last) {
-        if (nano::invoke(pred, nano::invoke(proj, *first), nano::invoke(proj, *next)) != false) {
-            return first;
-        }
-        ++first; ++next;
+public:
+    template <typename I, typename S, typename Proj = identity, typename Pred = equal_to<>>
+    constexpr std::enable_if_t<
+        ForwardIterator<I> &&
+        Sentinel<S, I> &&
+        IndirectRelation<Pred, projected<I, Proj>>, I>
+    operator()(I first, S last, Pred pred = Pred{}, Proj proj = Proj{}) const
+    {
+        return adjacent_find_fn::impl(std::move(first), std::move(last),
+                                      std::move(pred), std::move(proj));
     }
 
-    return first;
+    template <typename Rng, typename Proj = identity, typename Pred = equal_to<>>
+    constexpr std::enable_if_t<
+        ForwardRange<Rng> &&
+        IndirectRelation<Pred, projected<iterator_t<Rng>, Proj>>,
+        safe_iterator_t<Rng>>
+    operator()(Rng&& rng, Pred pred = Pred{}, Proj proj = Proj{}) const
+    {
+        return adjacent_find_fn::impl(nano::begin(rng), nano::end(rng),
+                                      std::move(pred), std::move(proj));
+    }
+};
 }
 
-template <typename Rng, typename Proj = identity, typename Pred = equal_to<>>
-constexpr
-std::enable_if_t<
-    ForwardRange<Rng> &&
-    IndirectRelation<Pred, projected<iterator_t<Rng>, Proj>>,
-    safe_iterator_t<Rng>>
-adjacent_find(Rng&& rng, Pred pred = Pred{}, Proj proj = Proj{})
-{
-    return adjacent_find(nano::begin(rng), nano::end(rng), std::move(pred), std::move(proj));
-}
+NANO_INLINE_VAR(detail::adjacent_find_fn, adjacent_find)
 
 // [rng.alg.count]
 
@@ -3017,7 +3033,6 @@ count_if(Rng&& rng, Pred pred, Proj proj = Proj{})
 // [range.mismatch]
 
 // FIXME: Use tagged pair
-
 // N.B Three-legged forms are deprecated
 template <typename I1, typename S1, typename I2,
           typename Proj1 = identity, typename Proj2 = identity,
