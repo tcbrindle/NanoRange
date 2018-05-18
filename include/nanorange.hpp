@@ -2757,7 +2757,18 @@ NANO_INLINE_VAR(detail::find_if_fn, find_if)
 namespace detail {
 
 struct find_fn {
+private:
+    template <typename ValueType>
+    struct equal_to_pred {
+        const ValueType& val;
 
+        template <typename T>
+        constexpr bool operator()(const T& t) const {
+            return t == val;
+        }
+    };
+
+public:
     template <typename I, typename S, typename T, typename Proj = identity>
     constexpr
     std::enable_if_t<
@@ -2767,7 +2778,7 @@ struct find_fn {
     operator()(I first, S last, const T& value, Proj proj = Proj{}) const
     {
         return find_if_fn::impl(std::move(first), std::move(last),
-                                [&value] (const auto& v){ return v == value; },
+                                equal_to_pred<T>{value},
                                 std::move(proj));
     }
 
@@ -2780,7 +2791,7 @@ struct find_fn {
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
     {
         return find_if_fn::impl(nano::begin(rng), nano::end(rng),
-                                [&value] (const auto& v) { return v == value; },
+                                equal_to_pred<T>{value},
                                 std::move(proj));
     }
 };
@@ -2791,7 +2802,18 @@ NANO_INLINE_VAR(detail::find_fn, find)
 namespace detail {
 
 struct find_if_not_fn {
+private:
+    template <typename Pred>
+    struct not_pred {
+        Pred& p;
 
+        template <typename T>
+        constexpr bool operator()(T&& t) const {
+            return !nano::invoke(p, std::forward<T>(t));
+        }
+    };
+
+public:
 template <typename I, typename S, typename Proj = identity, typename Pred>
 constexpr
 std::enable_if_t<
@@ -2801,8 +2823,7 @@ std::enable_if_t<
 operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
 {
     return find_if_fn::impl(std::move(first), std::move(last),
-                            [&pred] (auto&& v) {
-                                return !nano::invoke(pred, static_cast<decltype(v)>(v)); },
+                            not_pred<Pred>{pred},
                             std::move(proj));
 }
 
@@ -2815,8 +2836,7 @@ std::enable_if_t<
 operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
 {
     return find_if_fn::impl(nano::begin(rng), nano::end(rng),
-                           [&pred] (auto&& v) {
-                               return !nano::invoke(pred, static_cast<decltype(v)>(v)); },
+                           not_pred<Pred>{pred},
                            std::move(proj));
 }
 
@@ -3027,6 +3047,18 @@ NANO_INLINE_VAR(detail::count_if_fn, count_if)
 namespace detail {
 
 struct count_fn {
+private:
+    template <typename ValueType>
+    struct equal_to_pred {
+        const ValueType& val;
+
+        template <typename T>
+        constexpr bool operator()(const T& t) const {
+            return t == val;
+        }
+    };
+
+public:
     template <typename I, typename S, typename T, typename Proj = identity>
     constexpr std::enable_if_t<
         InputIterator<I> &&
@@ -3036,7 +3068,7 @@ struct count_fn {
     operator()(I first, S last, const T& value, Proj proj = Proj{}) const
     {
         return count_if_fn::impl(std::move(first), std::move(last),
-                                 [&value] (const auto& v) { return v == value; },
+                                 equal_to_pred<T>{value},
                                  std::move(proj));
     }
 
@@ -3048,7 +3080,7 @@ struct count_fn {
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
     {
         return count_if_fn::impl(nano::begin(rng), nano::end(rng),
-                                 [&value] (const auto& v) { return v == value; },
+                                 equal_to_pred<T>{value},
                                  std::move(proj));
     }
 };
