@@ -24,8 +24,8 @@ struct S {
 
 TEST_CASE("alg.count")
 {
-	using namespace nanorange;
-	using nanorange::ext::make_range;
+	using namespace nano;
+	using nano::ext::make_range;
 
 	int ia[] = {0, 1, 2, 2, 0, 1, 2, 3};
 	constexpr unsigned cia = size(ia);

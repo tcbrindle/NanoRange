@@ -31,7 +31,7 @@ template <class> class show_type;
 
 TEST_CASE("alg.find")
 {
-	using namespace nanorange;
+	using namespace nano;
 
 	int ia[] = {0, 1, 2, 3, 4, 5};
 	auto first = [&ia]{ return input_iterator<const int*>{ia}; };

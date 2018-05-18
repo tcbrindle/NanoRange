@@ -9,7 +9,8 @@
 
 #include "nanorange.hpp"
 
-namespace nanorange {
+namespace nano {
+inline namespace ranges {
 inline namespace ext {
 
 template <typename I, typename S>
@@ -29,6 +30,7 @@ iterator_range<I, S> make_range(I i, S s)
 }
 
 } // namespace ext
+} // namespace ranges
 } // namespace nanorange
 
 #endif

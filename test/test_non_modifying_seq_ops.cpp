@@ -6,7 +6,7 @@
 #include <array>
 #include <vector>
 
-namespace rng = nanorange;
+namespace rng = nano::ranges;
 
 TEST_CASE("all_of")
 {

@@ -14,7 +14,7 @@
 
 #include <nanorange.hpp>
 
-namespace ranges = nanorange;
+namespace ranges = nano::ranges;
 
 namespace models {
 	template <class... Ts>

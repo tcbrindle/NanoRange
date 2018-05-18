@@ -25,8 +25,8 @@
 #include "../test_iterators.hpp"
 
 namespace ranges {
-	using namespace nanorange;
-	using nanorange::ext::make_range;
+	using namespace nano::ranges;
+	using nano::ranges::ext::make_range;
 }
 
 template <typename Iter, typename Sent = Iter>

@@ -10,7 +10,7 @@
 #include <vector>
 #include <array>
 
-namespace rng = nanorange;
+namespace rng = nano::ranges;
 
 struct incomplete;
 

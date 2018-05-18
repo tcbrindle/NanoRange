@@ -16,7 +16,7 @@
 
 #include "../catch.hpp"
 
-namespace ranges = nanorange;
+namespace ranges = nano::ranges;
 
 namespace {
 

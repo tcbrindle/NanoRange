@@ -12,7 +12,7 @@
 #include <nanorange.hpp>
 #include "../catch.hpp"
 
-namespace ranges = nanorange;
+namespace ranges = nano::ranges;
 
 TEST_CASE("alg.adjacent_find")
 {

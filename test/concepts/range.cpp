@@ -16,7 +16,7 @@
 
 #include <iostream>
 
-namespace ns = ::nanorange;
+namespace ns = ::nano::ranges;
 
 // FIXME: This whole file gives MSVC a headache
 #ifndef _MSC_VER
@@ -68,7 +68,7 @@ struct mutable_only_badsized_range :
 struct immutable_badsized_range :
 	immutable_sized_range {};
 
-namespace nanorange {
+namespace nano {
 template <>
 constexpr bool disable_sized_range<mutable_badsized_range> = true;
 template <>
@@ -89,14 +89,14 @@ struct strange_view
 struct strange_view2 : strange_view, ns::view_base {};
 struct strange_view3 : strange_view2 {};
 
-namespace nanorange {
+namespace nano {
 	template <>
 	struct enable_view<strange_view> : std::true_type {};
 	template <>
 	struct enable_view<strange_view3> : std::false_type {};
 }
 
-namespace models = nanorange;
+namespace models = nano::ranges;
 
 void ridiculously_exhaustive_range_property_test() {
 	CONCEPT_ASSERT(!models::Range<void>);

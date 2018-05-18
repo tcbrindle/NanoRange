@@ -26,8 +26,8 @@ struct T
 
 TEST_CASE("alg.count_if")
 {
-	using namespace nanorange;
-	using nanorange::make_range;
+	using namespace nano;
+	using nano::make_range;
 	auto equals = [](auto&& i){
 	  return [i = std::forward<decltype(i)>(i)](const auto& j) {
 		return i == j;

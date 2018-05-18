@@ -11,7 +11,7 @@
 // Project home: https://github.com/ericniebler/range-v3
 
 #include <nanorange.hpp>
-namespace ranges = nanorange;
+namespace ranges = nano::ranges;
 #include <vector>
 #include "../catch.hpp"
 

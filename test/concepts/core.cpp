@@ -13,8 +13,8 @@
 
 #include <nanorange.hpp>
 
-namespace models = nanorange;
-namespace ns = nanorange;
+namespace models = nano::ranges;
+namespace ns = nano::ranges;
 
 #include <iostream>
 #include <type_traits>
@@ -83,7 +83,7 @@ result f(A) {
 }
 
 template <class T, class U>
-constexpr bool ConvertibleTo = nanorange::ConvertibleTo<T, U>;
+constexpr bool ConvertibleTo = nano::ConvertibleTo<T, U>;
 
 template <class T>
 std::enable_if_t<

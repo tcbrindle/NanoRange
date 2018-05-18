@@ -13,7 +13,7 @@
 #include <memory>
 #include "../catch.hpp"
 
-namespace stl2 = nanorange;
+namespace stl2 = nano::ranges;
 
 constexpr struct {
 	template <typename T>

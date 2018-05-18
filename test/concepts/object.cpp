@@ -13,7 +13,7 @@
 
 #include <nanorange.hpp>
 
-namespace models = nanorange;
+namespace models = nano::ranges;
 
 namespace {
 

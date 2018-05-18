@@ -13,10 +13,10 @@
 
 #include <nanorange.hpp>
 
-namespace models = nanorange;
-namespace ns = nanorange;
+namespace models = nano;
+namespace ns = nano;
 
-namespace nanorange {
+namespace nano {
 using std::declval;
 }
 

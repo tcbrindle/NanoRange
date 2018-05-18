@@ -29,7 +29,7 @@ struct S
 
 TEST_CASE("alg.find_if_not")
 {
-	using namespace nanorange;
+	using namespace nano;
 
 	int ia[] = {0, 1, 2, 3, 4, 5};
 	constexpr unsigned s = size(ia);

@@ -16,7 +16,7 @@
 #include <type_traits>
 #include <bitset>
 
-namespace models = nanorange;
+namespace models = nano::ranges;
 
 namespace boolean_test {
 // Better have at least these three, since we use them as
