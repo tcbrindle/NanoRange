@@ -128,6 +128,15 @@ using requires_expr = std::enable_if_t<Expr, int>;
 template <std::size_t I> struct priority_tag : priority_tag<I - 1> {};
 template <> struct priority_tag<0> {};
 
+template <typename T>
+constexpr std::decay_t<T> decay_copy(T&& t)
+    noexcept(noexcept(static_cast<std::decay_t<T>>(std::forward<T>(t))))
+{
+    return std::forward<T>(t);
+}
+
+// #define decay_copy(x) (static_cast<std::decay_t<decltype((x))>>(x))
+
 }
 
 namespace detail {
@@ -1557,17 +1566,20 @@ private:
 
     template <typename T, typename U>
     static constexpr auto do_swap(T&& t, U&& u, priority_tag<1>)
+        noexcept(noexcept(nanorange::swap(*std::forward<T>(t), *std::forward<U>(u))))
     -> std::enable_if_t<Readable<T> &&
                         Readable<U> &&
                         SwappableWith<reference_t<T>, reference_t<U>>>
     {
-        nanorange::swap(std::forward<T>(t), std::forward<U>(u));
+        nanorange::swap(*std::forward<T>(t), *std::forward<U>(u));
     }
 
     template <typename T, typename U>
     static constexpr auto do_swap(T&& t, U&& u, priority_tag<0>)
-        -> std::enable_if_t<IndirectlyMovableStorable<T, U> &&
-                            IndirectlyMovableStorable<U, T>>
+        noexcept(noexcept(*t = fn::iter_exchange_move(std::forward<U>(u),
+                                                      std::forward<T>(t))))
+        -> std::enable_if_t<IndirectlyMovableStorable<T&&, U&&> &&
+                            IndirectlyMovableStorable<U&&, T&&>>
     {
         return *t = fn::iter_exchange_move(std::forward<U>(u),
                                            std::forward<T>(t));
@@ -1850,46 +1862,47 @@ operator!=(unreachable, const I&) noexcept
 namespace detail {
 namespace begin_ {
 
-#ifndef NANO_MSVC_NO_POISON_PILLS
+// MSVC doesn't mind this for some reason
 template <typename T>
 void begin(T&&) = delete;
 
 template <typename T>
 void begin(std::initializer_list<T>&&) = delete;
-#endif
 
 struct fn {
 private:
     template <typename T, std::size_t N>
-    static constexpr auto do_begin(T (&t)[N], priority_tag<2>) noexcept
+    static constexpr auto impl(T (&t)[N], priority_tag<2>) noexcept
         -> decltype((t) + 0)
     {
         return (t) + 0;
     }
 
     template <typename T>
-    static constexpr auto do_begin(T& t, priority_tag<1>)
-        noexcept(noexcept(t.begin()))
-        -> std::enable_if_t<Iterator<decltype(t.begin())>, decltype(t.begin())>
+    static constexpr auto impl(T& t, priority_tag<1>)
+        noexcept(noexcept(decay_copy(t.begin())))
+        -> std::enable_if_t<Iterator<decltype(decay_copy(t.begin()))>,
+                           decltype(decay_copy(t.begin()))>
     {
-        return t.begin();
+        return decay_copy(t.begin());
     }
 
     template <typename T>
-    static constexpr auto do_begin(T& t, priority_tag<0>)
-        noexcept(noexcept(begin(t)))
-        -> std::enable_if_t<Iterator<decltype(begin(t))>, decltype(begin(t))>
+    static constexpr auto impl(T&& t, priority_tag<0>)
+        noexcept(noexcept(decay_copy(begin(std::forward<T>(t)))))
+        -> std::enable_if_t<Iterator<decltype(decay_copy(begin(std::forward<T>(t))))>,
+                            decltype(decay_copy(begin(std::forward<T>(t))))>
     {
-        return begin(t);
+        return decay_copy(begin(t));
     }
 
 public:
     template <typename T>
     constexpr auto operator()(T&& t) const
-        noexcept(noexcept(do_begin(std::forward<T>(t), priority_tag<3>{})))
-        -> decltype(do_begin(std::forward<T>(t), priority_tag<3>{}))
+        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<2>{})))
+        -> decltype(fn::impl(std::forward<T>(t), priority_tag<2>{}))
     {
-        return do_begin(std::forward<T>(t), priority_tag<3>{});
+        return fn::impl(std::forward<T>(t), priority_tag<2>{});
     }
 
 };
@@ -1902,50 +1915,50 @@ NANO_INLINE_VAR(detail::begin_::fn, begin)
 namespace detail {
 namespace end_ {
 
-#ifndef NANO_MSVC_NO_POISON_PILLS
 template <typename T>
 void end(T&&) = delete;
 
 template <typename T>
 void end(std::initializer_list<T>&&) = delete;
-#endif
 
 struct fn {
 private:
     template <typename T, std::size_t N>
-    static constexpr auto do_end(T (&t)[N], priority_tag<2>) noexcept
+    static constexpr auto impl(T (&t)[N], priority_tag<2>) noexcept
         -> decltype(t + N)
     {
         return t + N;
     }
 
     template <typename T,
-              typename S = decltype(std::declval<T&>().end()),
+              typename S = decltype(decay_copy(std::declval<T&>().end())),
               typename I = decltype(nanorange::begin(std::declval<T&>()))>
-    static constexpr auto do_end(T& t, priority_tag<1>)
-        noexcept(noexcept(t.end()))
-        -> std::enable_if_t<Sentinel<S, I>, S>
+    static constexpr auto impl(T& t, priority_tag<1>)
+        noexcept(noexcept(decay_copy(t.end())))
+        -> std::enable_if_t<Sentinel<S, I>,
+                            decltype(decay_copy(t.end()))>
     {
-        return t.end();
+        return decay_copy(t.end());
     }
 
     template <typename T,
-              typename S = decltype(end(std::declval<T&>())),
-              typename I = decltype(nanorange::begin(std::declval<T&>()))>
-    static constexpr auto do_end(T& t, priority_tag<0>)
-        noexcept(noexcept(end(t)))
+              typename S = decltype(decay_copy(end(std::declval<T>()))),
+              typename I = decltype(nanorange::begin(std::declval<T>()))>
+    static constexpr auto impl(T&& t, priority_tag<0>)
+        noexcept(noexcept(decay_copy(end(std::forward<T>(t)))))
          -> std::enable_if_t<Sentinel<S, I>, S>
     {
-        return end(t);
+        return decay_copy(end(std::forward<T>(t)));
     }
 
 public:
+
     template <typename T>
     constexpr auto operator()(T&& t) const
-        noexcept(noexcept(do_end(std::forward<T>(t), priority_tag<3>{})))
-        -> decltype(do_end(std::forward<T>(t), priority_tag<3>{}))
+        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<2>{})))
+        -> decltype(fn::impl(std::forward<T>(t), priority_tag<2>{}))
     {
-        return do_end(std::forward<T>(t), priority_tag<3>{});
+        return fn::impl(std::forward<T>(t), priority_tag<2>{});
     }
 };
 
@@ -1964,17 +1977,17 @@ struct fn {
     template <typename T>
     constexpr auto operator()(const T& t) const
     noexcept(noexcept(nanorange::begin(t)))
-    -> decltype(nanorange::begin(t))
+        -> decltype(nanorange::begin(t))
     {
         return nanorange::begin(t);
     }
 
     template <typename T>
     constexpr auto operator()(const T&& t) const
-        noexcept(noexcept(nanorange::begin(t)))
-        -> decltype(nanorange::begin(t))
+        noexcept(noexcept(nanorange::begin(static_cast<const T&&>(t))))
+        -> decltype(nanorange::begin(static_cast<const T&&>(t)))
     {
-        return nanorange::begin(t);
+        return nanorange::begin(static_cast<const T&&>(t));
     }
 
 };
@@ -2001,10 +2014,10 @@ struct fn {
 
     template <typename T>
     constexpr auto operator()(const T&& t) const
-        noexcept(noexcept(nanorange::end(t)))
-        -> decltype(nanorange::end(t))
+        noexcept(noexcept(nanorange::end(static_cast<const T&&>(t))))
+        -> decltype(nanorange::end(static_cast<const T&&>(t)))
     {
-        return nanorange::end(t);
+        return nanorange::end(static_cast<const T&&>(t));
     }
 
 };
