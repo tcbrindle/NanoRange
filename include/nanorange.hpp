@@ -2523,7 +2523,7 @@ std::enable_if_t<
     IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>, bool>
 all_of(Rng&& rng, Pred pred, Proj proj = Proj{})
 {
-    return nanorange::all_of(nanorange::begin(rng), nanorange::end(rng), std::ref(pred), std::ref(proj));
+    return nanorange::all_of(nanorange::begin(rng), nanorange::end(rng), std::move(pred), std::move(proj));
 }
 
 // [ranges.alg.any_of]
@@ -2552,7 +2552,7 @@ std::enable_if_t<
     IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>, bool>
 any_of(Rng&& rng, Pred pred, Proj proj = Proj{})
 {
-    return any_of(nanorange::begin(rng), nanorange::end(rng), std::ref(pred), std::ref(proj));
+    return any_of(nanorange::begin(rng), nanorange::end(rng), std::move(pred), std::move(proj));
 }
 
 // [ranges.alg.none_of]
@@ -2565,7 +2565,7 @@ std::enable_if_t<
     IndirectUnaryPredicate<Pred, projected<I, Proj>>, bool>
 none_of(I first, S last, Pred pred, Proj proj = Proj{})
 {
-    return !any_of(first, last, std::ref(pred), std::ref(proj));
+    return !any_of(first, last, std::move(pred), std::move(proj));
 }
 
 template <typename Rng, typename Proj = identity, typename Pred>
@@ -2575,7 +2575,7 @@ std::enable_if_t<
     IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>, bool>
 none_of(Rng&& rng, Pred pred, Proj proj = Proj{})
 {
-    return none_of(nanorange::begin(rng), nanorange::end(rng), std::ref(pred), std::ref(proj));
+    return none_of(nanorange::begin(rng), nanorange::end(rng), std::move(pred), std::move(proj));
 }
 
 // [range.alg.foreach]
@@ -2604,7 +2604,7 @@ std::enable_if_t<
     std::pair<safe_iterator_t<Rng>, Fun>>
 for_each(Rng&& rng, Fun fun, Proj proj = Proj{})
 {
-    return for_each(nanorange::begin(rng), nanorange::end(rng), std::ref(fun), std::ref(proj));
+    return for_each(nanorange::begin(rng), nanorange::end(rng), std::move(fun), std::move(proj));
 }
 
 // [ranges.alg.find]
@@ -2634,7 +2634,7 @@ std::enable_if_t<
     safe_iterator_t<Rng>>
 find(Rng&& rng, const T& value, Proj proj = Proj{})
 {
-    return find(nanorange::begin(rng), nanorange::end(rng), value, std::ref(proj));
+    return find(nanorange::begin(rng), nanorange::end(rng), value, std::move(proj));
 }
 
 template <typename I, typename S, typename Proj = identity, typename Pred>
@@ -2662,7 +2662,7 @@ std::enable_if_t<
     safe_iterator_t<Rng>>
 find_if(Rng&& rng, Pred pred, Proj proj = Proj{})
 {
-    return find_if(nanorange::begin(rng), nanorange::end(rng), std::ref(pred), std::ref(proj));
+    return find_if(nanorange::begin(rng), nanorange::end(rng), std::move(pred), std::move(proj));
 }
 
 template <typename I, typename S, typename Proj = identity, typename Pred>
@@ -2690,7 +2690,7 @@ std::enable_if_t<
     safe_iterator_t<Rng>>
 find_if_not(Rng&& rng, Pred pred, Proj proj = Proj{})
 {
-    return find_if_not(nanorange::begin(rng), nanorange::end(rng), std::ref(pred), std::ref(proj));
+    return find_if_not(nanorange::begin(rng), nanorange::end(rng), std::move(pred), std::move(proj));
 }
 
 // [ranges.alg.find.end]
@@ -2704,7 +2704,7 @@ find_end(I1 first1, I1 last1, I2 first2, I2 last2, Pred pred = Pred{})
 {
     return std::find_end(std::move(first1), std::move(last1),
                          std::move(first2), std::move(last2),
-                         std::ref(pred));
+                         std::move(pred));
 }
 
 template <typename Rng1, typename Rng2, typename Pred = equal_to<>>
@@ -2719,7 +2719,7 @@ find_end(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{})
 {
     return std::find_end(nanorange::begin(rng1), nanorange::end(rng1),
                          nanorange::begin(rng2), nanorange::end(rng2),
-                         std::ref(pred));
+                         std::move(pred));
 }
 
 // [range.alg.find.first.of]
@@ -2733,7 +2733,7 @@ find_first_of(I1 first1, I1 last1, I2 first2, I2 last2, Pred pred = Pred{})
 {
     return std::find_first_of(std::move(first1), std::move(last1),
                               std::move(first2), std::move(last2),
-                              std::ref(pred));
+                              std::move(pred));
 }
 
 template <typename Rng1, typename Rng2, typename Pred = equal_to<>>
@@ -2748,7 +2748,7 @@ find_first_of(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{})
 {
     return std::find_first_of(nanorange::begin(rng1), nanorange::end(rng1),
                               nanorange::begin(rng2), nanorange::end(rng2),
-                              std::ref(pred));
+                              std::move(pred));
 }
 
 
@@ -2786,7 +2786,7 @@ std::enable_if_t<
     safe_iterator_t<Rng>>
 adjacent_find(Rng&& rng, Pred pred = Pred{}, Proj proj = Proj{})
 {
-    return adjacent_find(nanorange::begin(rng), nanorange::end(rng), std::ref(pred), std::ref(proj));
+    return adjacent_find(nanorange::begin(rng), nanorange::end(rng), std::move(pred), std::move(proj));
 }
 
 // [rng.alg.count]
@@ -2820,7 +2820,7 @@ std::enable_if_t<
     difference_type_t<iterator_t<Rng>>>
 count(Rng&& rng, const T& value, Proj proj = Proj{})
 {
-    return count(nanorange::begin(rng), nanorange::end(rng), value, std::ref(proj));
+    return count(nanorange::begin(rng), nanorange::end(rng), value, std::move(proj));
 }
 
 template <typename I, typename S, typename Proj = identity, typename Pred>
@@ -2894,7 +2894,7 @@ mismatch(Rng1&& rng1, I2 first2, Pred pred = Pred{}, Proj1 proj1 = Proj1{}, Proj
 {
     return nanorange::mismatch(
             nanorange::begin(rng1), nanorange::end(rng1), std::move(first2),
-            std::ref(pred), std::ref(proj1), std::ref(proj2));
+            std::move(pred), std::move(proj1), std::move(proj2));
 }
 
 template <typename I1, typename S1, typename I2, typename S2,
@@ -2933,7 +2933,7 @@ mismatch(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{}, Proj1 proj1 = Proj1{}, Pr
     return nanorange::mismatch(
             nanorange::begin(rng1), nanorange::end(rng1),
             nanorange::begin(rng2), nanorange::end(rng2),
-            std::ref(pred), std::ref(proj1), std::ref(proj2));
+            std::move(pred), std::move(proj1), std::move(proj2));
 }
 
 
