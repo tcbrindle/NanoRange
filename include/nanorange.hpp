@@ -573,105 +573,106 @@ NANO_CONCEPT Regular = Semiregular<T> && EqualityComparable<T>;
 
 namespace detail {
 
-#ifdef NANO_HAVE_CPP17
-using std::invoke;
-using std::invoke_result;
-using std::invoke_result_t;
-#else
 // Reimplementation of std::invoke
 inline namespace invoke_ {
 
-template <typename>
+template<typename>
 constexpr bool is_reference_wrapper_v = false;
 
-template <typename T>
+template<typename T>
 constexpr bool is_reference_wrapper_v<std::reference_wrapper<T>> = true;
 
-template <class Base, class T, class Derived, class... Args>
-auto INVOKE(T Base::*pmf, Derived&& ref, Args&&... args)
+template<class Base, class T, class Derived, class... Args>
+constexpr auto INVOKE(T Base::*pmf, Derived &&ref, Args &&... args)
 -> typename std::enable_if<std::is_function<T>::value &&
                            std::is_base_of<Base, typename std::decay<Derived>::type>::value,
-    decltype((std::forward<Derived>(ref).*pmf)(std::forward<Args>(args)...))>::type
-{
+    decltype((std::forward<Derived>(ref).*pmf)(std::forward<Args>(args)...))>::type {
     return (std::forward<Derived>(ref).*pmf)(std::forward<Args>(args)...);
 }
 
-template <class Base, class T, class RefWrap, class... Args>
-auto INVOKE(T Base::*pmf, RefWrap&& ref, Args&&... args)
+template<class Base, class T, class RefWrap, class... Args>
+constexpr auto INVOKE(T Base::*pmf, RefWrap &&ref, Args &&... args)
 -> typename std::enable_if<std::is_function<T>::value &&
                            is_reference_wrapper_v<typename std::decay<RefWrap>::type>,
-    decltype((ref.get().*pmf)(std::forward<Args>(args)...))>::type
-{
+    decltype((ref.get().*pmf)(std::forward<Args>(args)...))>::type {
     return (ref.get().*pmf)(std::forward<Args>(args)...);
 }
 
-template <class Base, class T, class Pointer, class... Args>
-auto INVOKE(T Base::*pmf, Pointer&& ptr, Args&&... args)
+template<class Base, class T, class Pointer, class... Args>
+constexpr auto INVOKE(T Base::*pmf, Pointer &&ptr, Args &&... args)
 -> typename std::enable_if<std::is_function<T>::value &&
                            !is_reference_wrapper_v<typename std::decay<Pointer>::type> &&
                            !std::is_base_of<Base, typename std::decay<Pointer>::type>::value,
-    decltype(((*std::forward<Pointer>(ptr)).*pmf)(std::forward<Args>(args)...))>::type
-{
+    decltype(((*std::forward<Pointer>(ptr)).*pmf)(std::forward<Args>(args)...))>::type {
     return ((*std::forward<Pointer>(ptr)).*pmf)(std::forward<Args>(args)...);
 }
 
-template <class Base, class T, class Derived>
-auto INVOKE(T Base::*pmd, Derived&& ref)
+template<class Base, class T, class Derived>
+constexpr auto INVOKE(T Base::*pmd, Derived &&ref)
 -> typename std::enable_if<!std::is_function<T>::value &&
                            std::is_base_of<Base, typename std::decay<Derived>::type>::value,
-    decltype(std::forward<Derived>(ref).*pmd)>::type
-{
+    decltype(std::forward<Derived>(ref).*pmd)>::type {
     return std::forward<Derived>(ref).*pmd;
 }
 
-template <class Base, class T, class RefWrap>
-auto INVOKE(T Base::*pmd, RefWrap&& ref)
+template<class Base, class T, class RefWrap>
+constexpr auto INVOKE(T Base::*pmd, RefWrap &&ref)
 -> typename std::enable_if<!std::is_function<T>::value &&
                            is_reference_wrapper_v<typename std::decay<RefWrap>::type>,
-    decltype(ref.get().*pmd)>::type
-{
+    decltype(ref.get().*pmd)>::type {
     return ref.get().*pmd;
 }
 
-template <class Base, class T, class Pointer>
-auto INVOKE(T Base::*pmd, Pointer&& ptr)
+template<class Base, class T, class Pointer>
+constexpr auto INVOKE(T Base::*pmd, Pointer &&ptr)
 -> typename std::enable_if<!std::is_function<T>::value &&
                            !is_reference_wrapper_v<typename std::decay<Pointer>::type> &&
                            !std::is_base_of<Base, typename std::decay<Pointer>::type>::value,
-    decltype((*std::forward<Pointer>(ptr)).*pmd)>::type
-{
+    decltype((*std::forward<Pointer>(ptr)).*pmd)>::type {
     return (*std::forward<Pointer>(ptr)).*pmd;
 }
 
-template <class F, class... Args>
-auto INVOKE(F&& f, Args&&... args)
+template<class F, class... Args>
+constexpr auto INVOKE(F &&f, Args &&... args)
 -> typename std::enable_if<!std::is_member_pointer<typename std::decay<F>::type>::value,
-    decltype(std::forward<F>(f)(std::forward<Args>(args)...))>::type
-{
+    decltype(std::forward<F>(f)(std::forward<Args>(args)...))>::type {
     return std::forward<F>(f)(std::forward<Args>(args)...);
 }
 
 }
-
-template <typename F, typename... Args>
-auto invoke(F&& f, Args&&... args) -> decltype(INVOKE(std::forward<F>(f), std::forward<Args>(args)...))
-{
-    return INVOKE(std::forward<F>(f), std::forward<Args>(args)...);
 }
 
-template <typename Void, typename, typename...>
-struct invoke_result {};
+// A hack
+inline namespace nano {
 
-template <typename F, typename... Args>
-struct invoke_result<void_t<decltype(INVOKE(std::declval<F>(), std::declval<Args>()...))>, F, Args...>
-{
+template<typename F, typename... Args>
+constexpr auto invoke(F &&f, Args &&... args)
+-> decltype(detail::INVOKE(std::forward<F>(f), std::forward<Args>(args)...)) {
+    return detail::INVOKE(std::forward<F>(f), std::forward<Args>(args)...);
+}
+
+}
+
+namespace detail {
+
+template<typename Void, typename, typename...>
+struct invoke_result_helper {
+};
+
+template<typename F, typename... Args>
+struct invoke_result_helper<void_t<decltype(INVOKE(std::declval<F>(), std::declval<Args>()...))>, F, Args...> {
     using type = decltype(INVOKE(std::declval<F>(), std::declval<Args>()...));
 };
 
-template <typename F, typename... Args>
-using invoke_result_t = typename invoke_result<void, F, Args...>::type;
+}
 
-#endif
+template <typename F, typename... Args>
+struct invoke_result : detail::invoke_result_helper<void, F, Args...> {};
+
+template <typename F, typename... Args>
+using invoke_result_t = typename invoke_result<F, Args...>::type;
+
+namespace detail {
 
 template <typename F, typename... Args>
 using checked_invoke_result_t = test_t<invoke_result_t, F, Args...>;
@@ -679,7 +680,7 @@ using checked_invoke_result_t = test_t<invoke_result_t, F, Args...>;
 struct Invocable_req {
     /*template <typename F, typename... Args>
     auto requires_(F&& f, Args&&... args) -> decltype(
-        detail::invoke(std::forward<F>(f), std::forward<Args>(args)...)
+        nano::invoke(std::forward<F>(f), std::forward<Args>(args)...)
     );*/
     // FIXME: Clang really doesn't like the above, work out why
     template <typename F, typename... Args>
@@ -730,8 +731,8 @@ namespace detail {
 struct UniformRandomBitGenerator_req {
     template <typename G>
     auto requires_() -> decltype(valid_expr(
-        G::min(), requires_expr<Same<decltype(G::min()), detail::invoke_result_t<G&>>>{},
-        G::max(), requires_expr<Same<decltype(G::max()), detail::invoke_result_t<G&>>>{}
+        G::min(), requires_expr<Same<decltype(G::min()), invoke_result_t<G&>>>{},
+        G::max(), requires_expr<Same<decltype(G::max()), invoke_result_t<G&>>>{}
     ));
 };
 
@@ -2499,6 +2500,7 @@ public:
 // [range.alg.all_of]
 
 template <typename I, typename S, typename Proj = identity, typename Pred>
+constexpr
 std::enable_if_t<
     InputIterator<I> &&
     Sentinel<S, I> &&
@@ -2506,7 +2508,7 @@ std::enable_if_t<
 all_of(I first, S last,  Pred pred, Proj proj = Proj{})
 {
     while (first != last) {
-        if (!detail::invoke(pred, detail::invoke(proj, *first))) {
+        if (!nano::invoke(pred, nano::invoke(proj, *first))) {
             return false;
         }
         ++first;
@@ -2515,6 +2517,7 @@ all_of(I first, S last,  Pred pred, Proj proj = Proj{})
 }
 
 template <typename Rng, typename Proj = identity, typename Pred>
+constexpr
 std::enable_if_t<
     InputRange<Rng> &&
     IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>, bool>
@@ -2526,6 +2529,7 @@ all_of(Rng&& rng, Pred pred, Proj proj = Proj{})
 // [ranges.alg.any_of]
 
 template <typename I, typename S, typename Proj = identity, typename Pred>
+constexpr
 std::enable_if_t<
     InputIterator<I> &&
     Sentinel<S, I> &&
@@ -2533,7 +2537,7 @@ std::enable_if_t<
 any_of(I first, S last, Pred pred, Proj proj = Proj{})
 {
     while (first != last) {
-        if (detail::invoke(pred, detail::invoke(proj, *first)) == true) {
+        if (nano::invoke(pred, nano::invoke(proj, *first)) == true) {
             return true;
         }
         ++first;
@@ -2542,6 +2546,7 @@ any_of(I first, S last, Pred pred, Proj proj = Proj{})
 }
 
 template <typename Rng, typename Proj = identity, typename Pred>
+constexpr
 std::enable_if_t<
     InputRange<Rng> &&
     IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>, bool>
@@ -2553,6 +2558,7 @@ any_of(Rng&& rng, Pred pred, Proj proj = Proj{})
 // [ranges.alg.none_of]
 
 template <typename I, typename S, typename Proj = identity, typename Pred>
+constexpr
 std::enable_if_t<
     InputIterator<I> &&
     Sentinel<S, I> &&
@@ -2563,6 +2569,7 @@ none_of(I first, S last, Pred pred, Proj proj = Proj{})
 }
 
 template <typename Rng, typename Proj = identity, typename Pred>
+constexpr
 std::enable_if_t<
     InputRange<Rng> &&
     IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>, bool>
@@ -2574,6 +2581,7 @@ none_of(Rng&& rng, Pred pred, Proj proj = Proj{})
 // [range.alg.foreach]
 
 template <typename I, typename S, typename Proj = identity, typename Fun>
+constexpr
 std::enable_if_t<
     InputIterator<I> &&
     Sentinel<S, I> &&
@@ -2582,13 +2590,14 @@ std::enable_if_t<
 for_each(I first, S last, Fun fun, Proj proj = Proj{})
 {
     while (first != last) {
-        detail::invoke(fun, detail::invoke(proj, *first));
+        nano::invoke(fun, nano::invoke(proj, *first));
         ++first;
     }
     return {last, std::move(fun)};
 }
 
 template <typename Rng, typename Proj = identity, typename Fun>
+constexpr
 std::enable_if_t<
     InputRange<Rng> &&
     IndirectUnaryInvocable<Fun, projected<iterator_t<Rng>, Proj>>,
@@ -2601,6 +2610,7 @@ for_each(Rng&& rng, Fun fun, Proj proj = Proj{})
 // [ranges.alg.find]
 
 template <typename I, typename S, typename T, typename Proj = identity>
+constexpr
 std::enable_if_t<
     InputIterator<I> &&
     Sentinel<S, I> &&
@@ -2608,7 +2618,7 @@ std::enable_if_t<
 find(I first, S last, const T& value, Proj proj = Proj{})
 {
     while (first != last) {
-        if (detail::invoke(proj, *first) == value) {
+        if (nano::invoke(proj, *first) == value) {
             return first;
         }
         ++first;
@@ -2617,6 +2627,7 @@ find(I first, S last, const T& value, Proj proj = Proj{})
 }
 
 template <typename Rng, typename T, typename Proj = identity>
+constexpr
 std::enable_if_t<
     InputRange<Rng> &&
     IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>, const T*>,
@@ -2627,6 +2638,7 @@ find(Rng&& rng, const T& value, Proj proj = Proj{})
 }
 
 template <typename I, typename S, typename Proj = identity, typename Pred>
+constexpr
 std::enable_if_t<
     InputIterator<I> &&
     Sentinel<S, I> &&
@@ -2634,7 +2646,7 @@ std::enable_if_t<
 find_if(I first, S last, Pred pred, Proj proj = Proj{})
 {
     while (first != last) {
-        if (detail::invoke(pred, detail::invoke(proj, *first))) {
+        if (nano::invoke(pred, nano::invoke(proj, *first))) {
             return first;
         }
         ++first;
@@ -2643,6 +2655,7 @@ find_if(I first, S last, Pred pred, Proj proj = Proj{})
 }
 
 template <typename Rng, typename Proj = identity, typename Pred>
+constexpr
 std::enable_if_t<
     InputRange<Rng> &&
     IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
@@ -2653,6 +2666,7 @@ find_if(Rng&& rng, Pred pred, Proj proj = Proj{})
 }
 
 template <typename I, typename S, typename Proj = identity, typename Pred>
+constexpr
 std::enable_if_t<
     InputIterator<I> &&
     Sentinel<S, I> &&
@@ -2660,7 +2674,7 @@ std::enable_if_t<
 find_if_not(I first, S last, Pred pred, Proj proj = Proj{})
 {
     while (first != last) {
-        if (detail::invoke(pred, detail::invoke(proj, *first)) == false) {
+        if (nano::invoke(pred, nano::invoke(proj, *first)) == false) {
             return first;
         }
         ++first;
@@ -2669,6 +2683,7 @@ find_if_not(I first, S last, Pred pred, Proj proj = Proj{})
 }
 
 template <typename Rng, typename Proj = identity, typename Pred>
+constexpr
 std::enable_if_t<
     InputRange<Rng> &&
     IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
@@ -2740,6 +2755,7 @@ find_first_of(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{})
 // [range.alg.adjacent.find]
 
 template <typename I, typename S, typename Proj = identity, typename Pred = equal_to<>>
+constexpr
 std::enable_if_t<
     ForwardIterator<I> &&
     Sentinel<S, I> &&
@@ -2753,7 +2769,7 @@ adjacent_find(I first, S last, Pred pred = Pred{}, Proj proj = Proj{})
     I next = first;
     ++next;
     while (next != last) {
-        if (detail::invoke(pred, detail::invoke(proj, *first), detail::invoke(proj, *next)) != false) {
+        if (nano::invoke(pred, nano::invoke(proj, *first), nano::invoke(proj, *next)) != false) {
             return first;
         }
         ++first; ++next;
@@ -2763,6 +2779,7 @@ adjacent_find(I first, S last, Pred pred = Pred{}, Proj proj = Proj{})
 }
 
 template <typename Rng, typename Proj = identity, typename Pred = equal_to<>>
+constexpr
 std::enable_if_t<
     ForwardRange<Rng> &&
     IndirectRelation<Pred, projected<iterator_t<Rng>, Proj>>,
@@ -2775,6 +2792,7 @@ adjacent_find(Rng&& rng, Pred pred = Pred{}, Proj proj = Proj{})
 // [rng.alg.count]
 
 template <typename I, typename S, typename T, typename Proj = identity>
+constexpr
 std::enable_if_t<
     InputIterator<I> &&
     Sentinel<S, I> &&
@@ -2785,7 +2803,7 @@ count(I first, S last, const T& value, Proj proj = Proj{})
     difference_type_t<I> counter = 0;
 
     while (first != last) {
-        if (detail::invoke(proj, *first) == value) {
+        if (nano::invoke(proj, *first) == value) {
             ++counter;
         }
         ++first;
@@ -2795,6 +2813,7 @@ count(I first, S last, const T& value, Proj proj = Proj{})
 }
 
 template <typename Rng, typename T, typename Proj = identity>
+constexpr
 std::enable_if_t<
     InputRange<Rng> &&
     IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>, const T*>,
@@ -2805,6 +2824,7 @@ count(Rng&& rng, const T& value, Proj proj = Proj{})
 }
 
 template <typename I, typename S, typename Proj = identity, typename Pred>
+constexpr
 std::enable_if_t<
     InputIterator<I> &&
     Sentinel<S, I> &&
@@ -2815,7 +2835,7 @@ count_if(I first, S last, Pred pred, Proj proj = Proj{})
     difference_type_t<I> counter = 0;
 
     while (first != last) {
-        if (detail::invoke(pred, detail::invoke(proj, *first)) != false) {
+        if (nano::invoke(pred, nano::invoke(proj, *first)) != false) {
             ++counter;
         }
         ++first;
@@ -2825,13 +2845,14 @@ count_if(I first, S last, Pred pred, Proj proj = Proj{})
 }
 
 template <typename Rng, typename Proj = identity, typename Pred>
+constexpr
 std::enable_if_t<
     InputRange<Rng> &&
     IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
     difference_type_t<iterator_t<Rng>>>
 count_if(Rng&& rng, Pred pred, Proj proj = Proj{})
 {
-    return count_if(nanorange::begin(rng), nanorange::end(rng), std::ref(pred), std::ref(proj));
+    return count_if(nanorange::begin(rng), nanorange::end(rng), std::move(pred), std::move(proj));
 }
 
 // [range.mismatch]
@@ -2842,6 +2863,7 @@ count_if(Rng&& rng, Pred pred, Proj proj = Proj{})
 template <typename I1, typename S1, typename I2,
           typename Proj1 = identity, typename Proj2 = identity,
           typename Pred = equal_to<>>
+constexpr
 std::enable_if_t<
     InputIterator<I1> &&
     Sentinel<S1, I1> &&
@@ -2852,7 +2874,7 @@ mismatch(I1 first1, S1 last1, I2 first2, Pred pred = Pred{},
          Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{})
 {
     while (first1 != last1 &&
-           detail::invoke(pred, detail::invoke(proj1, *first1), detail::invoke(proj2, *first2)))
+           nano::invoke(pred, nano::invoke(proj1, *first1), nano::invoke(proj2, *first2)))
     {
         ++first1; ++first2;
     }
@@ -2862,6 +2884,7 @@ mismatch(I1 first1, S1 last1, I2 first2, Pred pred = Pred{},
 
 template <typename Rng1, typename I2, typename Proj1 = identity,
           typename Proj2 = identity, typename Pred = equal_to<>>
+constexpr
 std::enable_if_t<
     InputRange<Rng1> &&
     InputIterator<I2> &&
@@ -2877,6 +2900,7 @@ mismatch(Rng1&& rng1, I2 first2, Pred pred = Pred{}, Proj1 proj1 = Proj1{}, Proj
 template <typename I1, typename S1, typename I2, typename S2,
           typename Proj1 = identity, typename Proj2 = identity,
           typename Pred = equal_to<>>
+constexpr
 std::enable_if_t<
     InputIterator<I1> &&
     Sentinel<S1, I1> &&
@@ -2888,7 +2912,7 @@ mismatch(I1 first1, S1 last1, I2 first2, S2 last2,
          Pred pred = Pred{}, Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{})
 {
     while (first1 != last1 && first2 != last2 &&
-           detail::invoke(pred, detail::invoke(proj1, *first1), detail::invoke(proj2, *first2)))
+           nano::invoke(pred, nano::invoke(proj1, *first1), nano::invoke(proj2, *first2)))
     {
         ++first1; ++first2;
     }
@@ -2898,6 +2922,7 @@ mismatch(I1 first1, S1 last1, I2 first2, S2 last2,
 
 template <typename Rng1, typename Rng2, typename Proj1 = identity,
           typename Proj2 = identity, typename Pred = equal_to<>>
+constexpr
 std::enable_if_t<
     InputRange<Rng1> &&
     InputRange<Rng2> &&
