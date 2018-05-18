@@ -2570,7 +2570,7 @@ namespace detail {
 struct any_of_fn {
 private:
     // Allow none_of to use this implementation
-    friend class none_of_fn;
+    friend struct none_of_fn;
 
     template <typename I, typename S, typename Proj, typename Pred>
     static constexpr bool impl(I first, S last, Pred pred, Proj proj)
@@ -2651,62 +2651,139 @@ NANO_INLINE_VAR(detail::none_of_fn, none_of)
 
 // [range.alg.foreach]
 
-template <typename I, typename S, typename Proj = identity, typename Fun>
-constexpr
-std::enable_if_t<
-    InputIterator<I> &&
-    Sentinel<S, I> &&
-    IndirectUnaryInvocable<Fun, projected<I, Proj>>,
-    std::pair<I, Fun>> // FIXME: use tagged_pair
-for_each(I first, S last, Fun fun, Proj proj = Proj{})
-{
-    while (first != last) {
-        nano::invoke(fun, nano::invoke(proj, *first));
-        ++first;
+namespace detail {
+
+struct for_each_fn {
+private:
+    template <typename I, typename S, typename Proj, typename Fun>
+    static constexpr std::pair<I, Fun> // FIXME: Used tagged pair
+    impl(I first, S last, Fun fun, Proj proj)
+    {
+        while (first != last) {
+            nano::invoke(fun, nano::invoke(proj, *first));
+            ++first;
+        }
+        return {last, std::move(fun)};
     }
-    return {last, std::move(fun)};
+
+public:
+    template <typename I, typename S, typename Proj = identity, typename Fun>
+    constexpr
+    std::enable_if_t<
+        InputIterator<I> &&
+        Sentinel<S, I> &&
+        IndirectUnaryInvocable<Fun, projected<I, Proj>>,
+        std::pair<I, Fun>> // FIXME: use tagged_pair
+    operator()(I first, S last, Fun fun, Proj proj = Proj{}) const
+    {
+        return for_each_fn::impl(std::move(first), std::move(last),
+                                 std::move(fun), std::move(proj));
+    }
+
+    template <typename Rng, typename Proj = identity, typename Fun>
+    constexpr
+    std::enable_if_t<
+        InputRange<Rng> &&
+        IndirectUnaryInvocable<Fun, projected<iterator_t<Rng>, Proj>>,
+        std::pair<safe_iterator_t<Rng>, Fun>>
+    operator()(Rng&& rng, Fun fun, Proj proj = Proj{}) const
+    {
+        return for_each_fn::impl(nano::begin(rng), nano::end(rng),
+                                 std::move(fun), std::move(proj));
+    }
+
+};
 }
 
-template <typename Rng, typename Proj = identity, typename Fun>
-constexpr
-std::enable_if_t<
-    InputRange<Rng> &&
-    IndirectUnaryInvocable<Fun, projected<iterator_t<Rng>, Proj>>,
-    std::pair<safe_iterator_t<Rng>, Fun>>
-for_each(Rng&& rng, Fun fun, Proj proj = Proj{})
-{
-    return for_each(nano::begin(rng), nano::end(rng), std::move(fun), std::move(proj));
-}
+NANO_INLINE_VAR(detail::for_each_fn, for_each)
 
 // [ranges.alg.find]
 
-template <typename I, typename S, typename T, typename Proj = identity>
-constexpr
-std::enable_if_t<
-    InputIterator<I> &&
-    Sentinel<S, I> &&
-    IndirectRelation<equal_to<>, projected<I, Proj>, const T*>, I>
-find(I first, S last, const T& value, Proj proj = Proj{})
-{
-    while (first != last) {
-        if (nano::invoke(proj, *first) == value) {
-            return first;
+namespace detail {
+
+struct find_if_fn {
+private:
+    friend struct find_fn;
+    friend struct find_if_not_fn;
+
+    template <typename I, typename S, typename Pred, typename Proj>
+    static constexpr I impl(I first, S last, Pred pred, Proj proj)
+    {
+        while (first != last) {
+            if (nano::invoke(pred, nano::invoke(proj, *first))) {
+                return first;
+            }
+            ++first;
         }
-        ++first;
+        return first;
     }
-    return first;
+
+public:
+    template <typename I, typename S, typename Proj = identity, typename Pred>
+    constexpr
+    std::enable_if_t<
+        InputIterator<I> &&
+        Sentinel<S, I> &&
+        IndirectUnaryPredicate<Pred, projected<I, Proj>>, I>
+    operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
+    {
+        return find_if_fn::impl(std::move(first), std::move(last),
+                                std::move(pred), std::move(proj));
+    }
+
+    template <typename Rng, typename Proj = identity, typename Pred>
+    constexpr
+    std::enable_if_t<
+            InputRange<Rng> &&
+                    IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
+            safe_iterator_t<Rng>>
+    operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
+    {
+        return find_if_fn::impl(nano::begin(rng), nano::end(rng),
+                                std::move(pred), std::move(proj));
+    }
+};
 }
 
-template <typename Rng, typename T, typename Proj = identity>
-constexpr
-std::enable_if_t<
-    InputRange<Rng> &&
-    IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>, const T*>,
-    safe_iterator_t<Rng>>
-find(Rng&& rng, const T& value, Proj proj = Proj{})
-{
-    return find(nano::begin(rng), nano::end(rng), value, std::move(proj));
+NANO_INLINE_VAR(detail::find_if_fn, find_if)
+
+namespace detail {
+
+struct find_fn {
+
+    template <typename I, typename S, typename T, typename Proj = identity>
+    constexpr
+    std::enable_if_t<
+        InputIterator<I> &&
+        Sentinel<S, I> &&
+        IndirectRelation<equal_to<>, projected<I, Proj>, const T*>, I>
+    operator()(I first, S last, const T& value, Proj proj = Proj{}) const
+    {
+        return find_if_fn::impl(std::move(first), std::move(last),
+                                [&value] (const auto& v){ return v == value; },
+                                std::move(proj));
+    }
+
+    template <typename Rng, typename T, typename Proj = identity>
+    constexpr
+    std::enable_if_t<
+        InputRange<Rng> &&
+        IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>, const T*>,
+        safe_iterator_t<Rng>>
+    operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
+    {
+        return find_if_fn::impl(nano::begin(rng), nano::end(rng),
+                                [&value] (const auto& v) { return v == value; },
+                                std::move(proj));
+    }
+};
 }
+
+NANO_INLINE_VAR(detail::find_fn, find)
+
+namespace detail {
+
+struct find_if_not_fn {
 
 template <typename I, typename S, typename Proj = identity, typename Pred>
 constexpr
@@ -2714,15 +2791,12 @@ std::enable_if_t<
     InputIterator<I> &&
     Sentinel<S, I> &&
     IndirectUnaryPredicate<Pred, projected<I, Proj>>, I>
-find_if(I first, S last, Pred pred, Proj proj = Proj{})
+operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
 {
-    while (first != last) {
-        if (nano::invoke(pred, nano::invoke(proj, *first))) {
-            return first;
-        }
-        ++first;
-    }
-    return first;
+    return find_if_fn::impl(std::move(first), std::move(last),
+                            [&pred] (auto&& v) {
+                                return !nano::invoke(pred, static_cast<decltype(v)>(v)); },
+                            std::move(proj));
 }
 
 template <typename Rng, typename Proj = identity, typename Pred>
@@ -2731,38 +2805,18 @@ std::enable_if_t<
     InputRange<Rng> &&
     IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
     safe_iterator_t<Rng>>
-find_if(Rng&& rng, Pred pred, Proj proj = Proj{})
+operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
 {
-    return find_if(nano::begin(rng), nano::end(rng), std::move(pred), std::move(proj));
+    return find_if_fn::impl(nano::begin(rng), nano::end(rng),
+                           [&pred] (auto&& v) {
+                               return !nano::invoke(pred, static_cast<decltype(v)>(v)); },
+                           std::move(proj));
 }
 
-template <typename I, typename S, typename Proj = identity, typename Pred>
-constexpr
-std::enable_if_t<
-    InputIterator<I> &&
-    Sentinel<S, I> &&
-    IndirectUnaryPredicate<Pred, projected<I, Proj>>, I>
-find_if_not(I first, S last, Pred pred, Proj proj = Proj{})
-{
-    while (first != last) {
-        if (nano::invoke(pred, nano::invoke(proj, *first)) == false) {
-            return first;
-        }
-        ++first;
-    }
-    return first;
+};
 }
 
-template <typename Rng, typename Proj = identity, typename Pred>
-constexpr
-std::enable_if_t<
-    InputRange<Rng> &&
-    IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
-    safe_iterator_t<Rng>>
-find_if_not(Rng&& rng, Pred pred, Proj proj = Proj{})
-{
-    return find_if_not(nano::begin(rng), nano::end(rng), std::move(pred), std::move(proj));
-}
+NANO_INLINE_VAR(detail::find_if_not_fn, find_if_not)
 
 // [ranges.alg.find.end]
 
