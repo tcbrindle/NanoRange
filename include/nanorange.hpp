@@ -2035,54 +2035,67 @@ constexpr bool disable_sized_range = false;
 namespace detail {
 namespace size_ {
 
-#ifndef NANO_MSVC_NO_POISON_PILLS
 template <typename T>
 void size(T&&) = delete;
-#endif
 
+// For some reason MSVC doesn't mind poison pills,
+// as long as there are two
 template <typename T>
-using member_size_t = decltype(std::declval<const T&>().size());
-
-template <typename T>
-constexpr bool has_member_size_v = exists_v<member_size_t, T>;
+void size(T&) = delete;
 
 struct fn {
+private:
 
     template <typename T, std::size_t N>
-    constexpr std::size_t operator()(const T(&)[N]) const noexcept
+    static constexpr std::size_t impl(const T(&&)[N], priority_tag<3>) noexcept
     {
         return N;
     }
 
-    template <typename T, typename I = decltype(std::declval<const T&>().size())>
-    constexpr auto operator()(const T& t) const
-        noexcept(noexcept(t.size()))
-        -> std::enable_if_t<Integral<I> &&
-                            !disable_sized_range<T>, I>
+    template <typename T, std::size_t N>
+    static constexpr std::size_t impl(const T(&)[N], priority_tag<3>) noexcept
     {
-        return t.size();
+        return N;
     }
 
-    template <typename T, typename I = decltype(size(std::declval<const T&>()))>
-    constexpr auto operator()(const T& t) const
-        noexcept(noexcept(size(t)))
-        -> std::enable_if_t<!has_member_size_v<T> &&
-                            Integral<I> &&
-                            !disable_sized_range<T>, I>
+    template <typename T, typename I = decltype(decay_copy(std::declval<T>().size()))>
+    static constexpr auto impl(T&& t, priority_tag<2>)
+        noexcept(noexcept(decay_copy(std::forward<T>(t).size())))
+        -> std::enable_if_t<Integral<I> &&
+                            !disable_sized_range<remove_cvref_t<T>>, I>
     {
-        return size(t);
+        return decay_copy(std::forward<T>(t).size());
+    }
+
+    template <typename T, typename I = decltype(decay_copy(size(std::declval<T>())))>
+    static constexpr auto impl(T&& t, priority_tag<1>)
+        noexcept(noexcept(decay_copy(size(std::forward<T>(t)))))
+        -> std::enable_if_t<Integral<I> &&
+                            !disable_sized_range<remove_cvref_t<T>>, I>
+    {
+        return decay_copy(size(std::forward<T>(t)));
     }
 
     template <typename T,
-              typename I = decltype(nanorange::cbegin(std::declval<T>())),
-              typename S = decltype(nanorange::cend(std::declval<T>())),
-              typename D = decltype(std::declval<S>() - std::declval<I>())>
-    constexpr auto operator()(T&& t) const
-        noexcept(noexcept(nanorange::cend(t) - nanorange::cbegin(t)))
-        -> std::enable_if_t<SizedSentinel<S, I> &&
-                            ForwardIterator<I>, D>
+              typename I = decltype(nanorange::begin(std::declval<T>())),
+              typename S = decltype(nanorange::end(std::declval<T>())),
+              typename D = decltype(decay_copy(std::declval<S>() - std::declval<I>()))>
+    static constexpr auto impl(T&& t, priority_tag<0>)
+        noexcept(noexcept(decay_copy(nanorange::end(t) - nanorange::begin(t))))
+    -> std::enable_if_t<!std::is_array<remove_cvref_t<T>>::value && // MSVC sillyness?
+                        SizedSentinel<S, I> &&
+                        ForwardIterator<I>, D>
     {
-        return nanorange::cend(t) - nanorange::cbegin(t);
+        return decay_copy(nanorange::end(t) - nanorange::begin(t));
+    }
+
+public:
+    template <typename T>
+    constexpr auto operator()(T&& t) const
+        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<3>{})))
+        -> decltype(fn::impl(std::forward<T>(t), priority_tag<3>{}))
+    {
+        return fn::impl(std::forward<T>(t), priority_tag<3>{});
     }
 };
 
@@ -2099,7 +2112,7 @@ namespace empty_ {
 struct fn {
 private:
     template <typename T>
-    static constexpr auto do_empty(T&& t, priority_tag<2>)
+    static constexpr auto impl(T&& t, priority_tag<2>)
         noexcept(noexcept((bool(std::forward<T>(t).empty()))))
         -> decltype((bool(std::forward<T>(t).empty())))
     {
@@ -2107,7 +2120,7 @@ private:
     }
 
     template <typename T>
-    static constexpr auto do_empty(T&& t, priority_tag<1>)
+    static constexpr auto impl(T&& t, priority_tag<1>)
         noexcept(noexcept(nanorange::size(std::forward<T>(t)) == 0))
         -> decltype(nanorange::size(std::forward<T>(t)) == 0)
     {
@@ -2115,7 +2128,7 @@ private:
     }
 
     template <typename T, typename I = decltype(nanorange::begin(std::declval<T>()))>
-    static constexpr auto do_empty(T&& t, priority_tag<0>)
+    static constexpr auto impl(T&& t, priority_tag<0>)
         noexcept(noexcept(nanorange::begin(t) == nanorange::end(t)))
         -> std::enable_if_t<ForwardIterator<I>,
                             decltype(nanorange::begin(t) == nanorange::end(t))>
@@ -2126,10 +2139,10 @@ private:
 public:
     template <typename T>
     constexpr auto operator()(T&& t)
-            noexcept(noexcept(fn::do_empty(std::forward<T>(t), priority_tag<2>{})))
-        -> decltype(fn::do_empty(std::forward<T>(t), priority_tag<2>{}))
+            noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<2>{})))
+        -> decltype(fn::impl(std::forward<T>(t), priority_tag<2>{}))
     {
-        return fn::do_empty(std::forward<T>(t), priority_tag<2>{});
+        return fn::impl(std::forward<T>(t), priority_tag<2>{});
     }
 };
 
@@ -2278,7 +2291,7 @@ struct dangling {
     template <typename U = T, std::enable_if_t<DefaultConstructible<U>>>
     dangling() : value_{} {}
 
-    dangling(T t) : value_(t) {}
+    dangling(T t) : value_(std::move(t)) {}
 
     T get_unsafe() { return value_; }
 
@@ -2286,10 +2299,24 @@ private:
     T value_;
 };
 
+namespace detail {
+
+template <typename R, typename = void_t<iterator_t<R>>>
+struct safe_iterator_helper {
+    using type = dangling<iterator_t<R>>;
+};
+
+template <typename R>
+struct safe_iterator_helper<R,
+    void_t<decltype(nanorange::begin(std::declval<R>()))>>
+{
+    using type = iterator_t<R>;
+};
+
+}
+
 template <typename Range>
-using safe_iterator_t = std::conditional_t<
-        std::is_lvalue_reference<Range>::value,
-        iterator_t<Range>, dangling<iterator_t<Range>>>;
+using safe_iterator_t = typename detail::safe_iterator_helper<Range>::type;
 
 // [range.input]
 
