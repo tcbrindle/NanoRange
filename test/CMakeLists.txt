@@ -127,6 +127,8 @@ add_executable(test_nanorange
     #algorithm/unique_copy.cpp
     #algorithm/upper_bound.cpp
 
+    functional/invoke.cpp
+
     #utility/common_iterator.cpp
     #utility/common_type.cpp
     #utility/concepts.cpp
