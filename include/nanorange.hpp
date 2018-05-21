@@ -784,19 +784,6 @@ template <typename T, std::size_t N>
 void swap(T (&)[N], T (&)[N]) = delete;
 #endif
 
-template <typename T, typename U>
-using custom_swap_t = decltype(swap(std::declval<T>(), std::declval<U>()));
-
-template <typename T, typename U>
-constexpr bool has_custom_swap_v = exists_v<custom_swap_t, T, U>;
-
-// I'll be honest, I copied this from STL2. Thanks Casey.
-template <typename, typename, typename, typename = void>
-constexpr bool is_cpo_swappable_v = false;
-
-template <typename F, typename T, typename U>
-constexpr bool is_cpo_swappable_v<F, T, U, void_t<invoke_result_t<F&, T&, U&>>> = true;
-
 struct fn {
 private:
     template <typename T, typename U>

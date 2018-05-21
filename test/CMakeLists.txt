@@ -130,8 +130,8 @@ add_executable(test_nanorange
     functional/invoke.cpp
 
     utility/common_iterator.cpp
-    #utility/common_type.cpp
-    #utility/concepts.cpp
+    utility/common_type.cpp
+    utility/concepts.cpp
     #utility/functional.cpp
     #utility/reverse_iterator.cpp
     #utility/swap.cpp
