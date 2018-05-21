@@ -14,7 +14,7 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 if (MSVC)
-    target_compile_options(nanorange INTERFACE "/permissive- /std:c++latest")
+    target_compile_options(nanorange INTERFACE /permissive- /std:c++latest)
 endif()
 
 add_subdirectory(test)
