@@ -18,9 +18,6 @@
 
 namespace ns = ::nano::ranges;
 
-// FIXME: This whole file gives MSVC a headache
-#ifndef _MSC_VER
-
 template <bool allow_nonconst, bool allow_const, bool allow_size>
 struct arbitrary_range {
     template <bool B = allow_nonconst, typename = std::enable_if_t<B>>
@@ -494,5 +491,3 @@ TEST_CASE("concepts.range")
 	CONCEPT_ASSERT(!models::View<std::unordered_set<int>>);
 	CONCEPT_ASSERT(!models::View<std::unordered_multiset<int>>);
 }
-
-#endif
