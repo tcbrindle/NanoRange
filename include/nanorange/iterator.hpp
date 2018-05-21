@@ -17,5 +17,6 @@
 #include <nanorange/detail/iterator/unreachable.hpp>
 #include <nanorange/iterator/common_iterator.hpp>
 #include <nanorange/iterator/concepts.hpp>
+#include <nanorange/iterator/operations.hpp>
 
 #endif
