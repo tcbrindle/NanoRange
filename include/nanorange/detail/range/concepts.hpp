@@ -118,11 +118,15 @@ template <typename K, typename H, typename E, typename A>
 constexpr bool view_predicate<std::unordered_multiset<K, H, E, A>> = false;
 
 template <typename T>
-constexpr bool view_predicate<
-    T, std::enable_if_t<!has_enable_view_v<T> && !DerivedFrom<T, view_base> &&
-                        Range<T> && Range<const T> &&
-                        !Same<reference_t<iterator_t<T>>,
-                              reference_t<iterator_t<const T>>>>> = false;
+constexpr bool view_predicate_helper =
+    !has_enable_view_v<T> && !DerivedFrom<T, view_base> && Range<T> &&
+    Range<const T> &&
+    !Same<checked_reference_t<checked_iterator_t<T>>,
+          checked_reference_t<checked_iterator_t<const T>>>;
+
+template <typename T>
+constexpr bool view_predicate<T, std::enable_if_t<view_predicate_helper<T>>> =
+    false;
 
 } // namespace detail
 
