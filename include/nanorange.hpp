@@ -1701,6 +1701,50 @@ class common_iterator {
     static_assert(Sentinel<S, I>, "");
     static_assert(!Same<I, S>, "");
 
+    template <typename II, typename SS>
+    friend class common_iterator;
+
+    class op_arrow_proxy {
+        value_type_t<I> keep_;
+
+        op_arrow_proxy(reference_t<I>&& x)
+            : keep_(std::move(x)) {}
+
+    public:
+        const value_type_t<I>* operator->() const
+        {
+            return std::addressof(keep_);
+        }
+    };
+
+    template <typename II>
+    using op_arrow_t = decltype(std::declval<const II&>().operator->());
+
+    template <typename II>
+    static constexpr auto do_op_arrow(const II& i, detail::priority_tag<2>)
+        -> std::enable_if_t<
+                std::is_pointer<II>::value ||
+                detail::exists_v<op_arrow_t, II>, I>
+    {
+        return i;
+    }
+
+    template <typename II>
+    static constexpr auto do_op_arrow(const II& i, detail::priority_tag<1>)
+        -> std::enable_if_t<std::is_reference<reference_t<const II>>::value,
+                            std::add_pointer_t<reference_t<const II>>>
+    {
+        auto&& tmp = *i;
+        return std::addressof(tmp);
+    }
+
+    template <typename II>
+    static constexpr auto do_op_arrow(const II& i, detail::priority_tag<0>)
+         -> op_arrow_proxy
+    {
+        return {i};
+    }
+
 public:
     using difference_type = difference_type_t<I>;
 
@@ -1747,7 +1791,13 @@ public:
         return *iter_;
     };
 
-    decltype(auto) operator->() const;
+    template <typename II = I>
+    auto operator->() const
+        -> decltype(common_iterator::do_op_arrow(std::declval<const II&>(),
+                                                 detail::priority_tag<2>{}))
+    {
+        return do_op_arrow(iter_, detail::priority_tag<2>{});
+    }
 
     common_iterator& operator++()
     {
@@ -1781,7 +1831,7 @@ public:
         return ranges::iter_swap(x.iter_, y.iter_);
     }
 
-private:
+//private:
     // TODO: Some sort of variant-like union
     bool is_sentinel_;
     I iter_;
