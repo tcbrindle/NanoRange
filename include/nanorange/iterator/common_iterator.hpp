@@ -205,15 +205,16 @@ NANO_END_NAMESPACE
 namespace std {
 
 template <typename I, typename S>
-struct iterator_traits<nano::common_iterator<I, S>> {
+struct iterator_traits<::nano::common_iterator<I, S>> {
     using difference_type =
-        nano::difference_type_t<nano::common_iterator<I, S>>;
-    using value_type = nano::value_type_t<nano::common_iterator<I, S>>;
+        ::nano::difference_type_t<::nano::common_iterator<I, S>>;
+    using value_type = ::nano::value_type_t<::nano::common_iterator<I, S>>;
     using pointer =
-        std::add_pointer_t<nano::reference_t<nano::common_iterator<I, S>>>;
-    using reference = nano::reference_t<nano::common_iterator<I, S>>;
+        std::add_pointer_t<::nano::reference_t<::nano::common_iterator<I, S>>>;
+    using reference = ::nano::reference_t<::nano::common_iterator<I, S>>;
     using iterator_category =
-        std::conditional_t<nano::ForwardIterator<I>, std::forward_iterator_tag,
+        std::conditional_t<::nano::ForwardIterator<I>,
+                           std::forward_iterator_tag,
                            std::input_iterator_tag>;
 };
 
