@@ -36,7 +36,7 @@ add_executable(test_nanorange
     algorithm/find_first_of.cpp
     algorithm/find_if.cpp
     algorithm/find_if_not.cpp
-    #algorithm/for_each.cpp
+    algorithm/for_each.cpp
     #algorithm/generate.cpp
     #algorithm/generate_n.cpp
     #algorithm/includes.cpp
