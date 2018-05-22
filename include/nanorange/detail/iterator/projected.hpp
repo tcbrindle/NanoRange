@@ -28,7 +28,10 @@ struct projected_helper<
     std::enable_if_t<Readable<I> && IndirectRegularUnaryInvocable<Proj, I>>> {
     using value_type =
         std::remove_cv_t<std::remove_reference_t<indirect_result_t<Proj&, I>>>;
-    indirect_result_t<Proj&, I> operator*() const;
+
+    // We shouldn't need to define this, as we only need its return type,
+    // but GCC gets stroppy sometimes.
+    indirect_result_t<Proj&, I> operator*() const { throw 0; };
 };
 
 } // namespace detail
