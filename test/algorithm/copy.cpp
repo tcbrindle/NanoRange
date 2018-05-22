@@ -16,7 +16,7 @@
 
 #include "../catch.hpp"
 
-namespace ranges = nanorange;
+namespace ranges = nano;
 
 TEST_CASE("alg.copy")
 {
@@ -29,18 +29,20 @@ TEST_CASE("alg.copy")
     std::pair<int, int> out[size(a)] = {};
 
     auto res = ranges::copy(begin(a), end(a), out);
-    //REQUIRE(res.first == end(a));
-    REQUIRE(res == out + size(out));
-    //REQUIRE(&res.first == &res.in());
-    //REQUIRE(&res.second == &res.out());
+    REQUIRE(res.first == end(a));
+    REQUIRE(res.second == out + size(out));
+#if HAVE_TAGGED_PAIR
+    REQUIRE(&res.first == &res.in());
+    REQUIRE(&res.second == &res.out());
+#endif
     REQUIRE(std::equal(a, a + size(a), out));
 
     std::fill_n(out, size(out), std::make_pair(0, 0));
     REQUIRE(!std::equal(a, a + size(a), out));
 
     res = ranges::copy(a, out);
-    //REQUIRE(res.first == a + size(a));
-    REQUIRE(res == out + size(out));
+    REQUIRE(res.first == a + size(a));
+    REQUIRE(res.second == out + size(out));
     REQUIRE(std::equal(a, a + size(a), out));
 
     std::fill_n(out, size(out), std::make_pair(0, 0));

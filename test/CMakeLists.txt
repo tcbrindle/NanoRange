@@ -21,10 +21,10 @@ add_executable(test_nanorange
     algorithm/all_of.cpp
     algorithm/any_of.cpp
     #algorithm/binary_search.cpp
-    #algorithm/copy.cpp
-    #algorithm/copy_backward.cpp
-    #algorithm/copy_if.cpp
-    #algorithm/copy_n.cpp
+    algorithm/copy.cpp
+    algorithm/copy_backward.cpp
+    algorithm/copy_if.cpp
+    algorithm/copy_n.cpp
     algorithm/count.cpp
     algorithm/count_if.cpp
     algorithm/equal.cpp

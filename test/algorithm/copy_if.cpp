@@ -12,7 +12,7 @@
 #include <nanorange.hpp>
 #include "../catch.hpp"
 
-namespace ranges = nanorange;
+namespace ranges = nano;
 
 TEST_CASE("alg.copy_if") {
 	static const int source[] = {5,4,3,2,1,0};
@@ -35,8 +35,8 @@ TEST_CASE("alg.copy_if") {
 		};
 
 		auto res = ranges::copy_if(source, source + n, target, is_even);
-		//REQUIRE(res.in() == source + n);
-		REQUIRE(res == target + n / 2);
+		REQUIRE(res.first == source + n);
+		REQUIRE(res.second == target + n / 2);
 
 		REQUIRE(std::equal(target, target + n / 2, evens));
 		REQUIRE(std::count(target + n / 2, target + n, -1) == n / 2);
@@ -47,8 +47,8 @@ TEST_CASE("alg.copy_if") {
 		std::fill_n(target, n, -1);
 
 		auto res = ranges::copy_if(source, target, is_even);
-		//REQUIRE(res.in() == source + n);
-		REQUIRE(res == target + n / 2);
+		REQUIRE(res.first == source + n);
+		REQUIRE(res.second == target + n / 2);
 
 		REQUIRE(std::equal(target, target + n / 2, evens));
 		REQUIRE(std::count(target + n / 2, target + n, -1) == n / 2);
@@ -59,14 +59,14 @@ TEST_CASE("alg.copy_if") {
 		std::fill_n(target, n, -1);
 
 		auto res = ranges::copy_if(std::move(source), target, is_even);
-		//REQUIRE(res.in().get_unsafe() == source + n);
-		REQUIRE(res == target + n / 2);
+//		REQUIRE(res.first.get_unsafe() == source + n);
+        REQUIRE(res.first == source + n);
+		REQUIRE(res.second == target + n / 2);
 
 		REQUIRE(std::equal(target, target + n / 2, evens));
 		REQUIRE(std::count(target + n / 2, target + n, -1) == n / 2);
 	}
 
-#ifdef HAVE_PROJECTIONS
     {
 		struct S { int value; };
 		S source[n];
@@ -79,8 +79,10 @@ TEST_CASE("alg.copy_if") {
 		}
 
 		auto res = ranges::copy_if(source, target, is_even, &S::value);
-		REQUIRE(res.in() == source + n);
-		REQUIRE(res.out() == target + n / 2);
+		//REQUIRE(res.in() == source + n);
+		REQUIRE(res.first == source + n);
+		//REQUIRE(res.out() == target + n / 2);
+        REQUIRE(res.second == target + n / 2);
 
 		for (auto i = n / 2; i-- > 0;) {
 			REQUIRE(target[i].value == source[2 * i].value);
@@ -89,7 +91,6 @@ TEST_CASE("alg.copy_if") {
 		REQUIRE(std::count_if(target + n / 2, target + n, [](const S& s){
 					return s.value == -1; }) == n / 2);
     }
-#endif
 
 
     {
@@ -99,7 +100,7 @@ TEST_CASE("alg.copy_if") {
 		{
 			auto l = {5,4,3,2,1,0};
 			auto res = ranges::copy_if(std::move(l), target, is_even);
-			REQUIRE(res == target + n / 2);
+			REQUIRE(res.second == target + n / 2);
 		}
 
 		REQUIRE(std::equal(target, target + n / 2, evens));

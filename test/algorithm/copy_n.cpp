@@ -13,7 +13,7 @@
 #include <algorithm>
 #include "../catch.hpp"
 
-namespace stl2 = nanorange;
+namespace stl2 = nano;
 
 TEST_CASE("alg.copy_n") {
 	static const int source[] = {5,4,3,2,1,0};
@@ -24,7 +24,7 @@ TEST_CASE("alg.copy_n") {
 	static_assert(n >= 2, "");
 	auto res = stl2::copy_n(source, n - 2, target);
 	//REQUIRE(res.in() == source + n - 2);
-	REQUIRE(res == target + n - 2);
+	REQUIRE(res.second == target + n - 2);
 
 	REQUIRE(std::equal(source, source + n - 2, target));
 	REQUIRE(target[n - 2] == 0);
