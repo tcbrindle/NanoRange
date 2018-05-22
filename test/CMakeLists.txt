@@ -9,14 +9,6 @@ add_executable(test_nanorange
     #test_type_traits.cpp
 
     # Range-V3/CMCSTL2 tests
-    concepts/compare.cpp
-    concepts/core.cpp
-    concepts/fundamental.cpp
-    concepts/iterator.cpp
-    concepts/object.cpp
-    concepts/range.cpp
-    concepts/swap.cpp
-
     algorithm/adjacent_find.cpp
     algorithm/all_of.cpp
     algorithm/any_of.cpp
@@ -127,14 +119,48 @@ add_executable(test_nanorange
     #algorithm/unique_copy.cpp
     #algorithm/upper_bound.cpp
 
+    concepts/compare.cpp
+    concepts/core.cpp
+    concepts/fundamental.cpp
+    concepts/iterator.cpp
+    concepts/object.cpp
+    concepts/range.cpp
+    concepts/swap.cpp
+
     functional/invoke.cpp
 
-    utility/common_iterator.cpp
+    iterator/common_iterator.cpp
+    #iterator/counted_iterator.cpp
+    #iterator/incomplete.cpp
+    #iterator/istream_iterator.cpp
+    #iterator/istreambuf_iterator.cpp
+    #iterator/iterator.cpp
+    #iterator/make_range.cpp
+    #iterator/move_iterator.cpp
+    #iterator/operations.cpp
+    #iterator/ostream_iterator.cpp
+    #iterator/ostreambuf_iterator.cpp
+    #iterator/reverse_iterator.cpp
+    #iterator/unreachable.cpp
+
+    #range_access.cpp
+
     utility/common_type.cpp
     utility/concepts.cpp
-    #utility/functional.cpp
-    #utility/reverse_iterator.cpp
-    #utility/swap.cpp
+
+    #view/bounded_view.cpp
+    #view/counted_view.cpp
+    #view/filter_view.cpp
+    #view/join_view.cpp
+    #view/move_view.cpp
+    #view/repeat_n_view.cpp
+    #view/repeat_view.cpp
+    #view/reverse_view.cpp
+    #view/span.cpp
+    #view/split_view.cpp
+    #view/subrange.cpp
+    #view/take_view.cpp
+    #view/transform_view.cpp
 )
 target_compile_definitions(test_nanorange PRIVATE "-DNANORANGE_NO_DEPRECATION_WARNINGS")
 target_link_libraries(test_nanorange PRIVATE nanorange)
