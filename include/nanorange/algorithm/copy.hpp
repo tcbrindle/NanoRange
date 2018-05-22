@@ -17,8 +17,27 @@ namespace detail {
 struct copy_fn {
 private:
     // FIXME: Use tagged_pair
+
+    // If we know the distance between first and last, we can use that
+    // information to (potentially) allow better codegen
     template <typename I, typename S, typename O>
-    static constexpr std::pair<I, O> impl(I first, S last, O result)
+    static constexpr std::enable_if_t<SizedSentinel<S, I>, std::pair<I, O>>
+    impl(I first, S last, O result, priority_tag<1>)
+    {
+        const auto dist = last - first;
+
+        for (difference_type_t<I> i = 0; i < dist; ++i) {
+            *result = *first;
+            ++first;
+            ++result;
+        }
+
+        return {std::move(first), std::move(result)};
+    }
+
+    template <typename I, typename S, typename O>
+    static constexpr std::pair<I, O> impl(I first, S last, O result,
+                                          priority_tag<0>)
     {
         while (first != last) {
             *result = *first;
@@ -38,7 +57,7 @@ public:
     operator()(I first, S last, O result) const
     {
         return copy_fn::impl(std::move(first), std::move(last),
-                             std::move(result));
+                             std::move(result), priority_tag<1>{});
     }
 
     template <typename Rng, typename O>
@@ -48,7 +67,7 @@ public:
     operator()(Rng&& rng, O result) const
     {
         return copy_fn::impl(nano::begin(rng), nano::end(rng),
-                             std::move(result));
+                             std::move(result), priority_tag<1>{});
     }
 };
 
