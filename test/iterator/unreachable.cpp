@@ -9,9 +9,9 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <stl2/iterator.hpp>
+#include <nanorange.hpp>
 #include <algorithm>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 
 // Believe it or not, this generates reasonable code:
 // _Z11strlen_testPKc:
@@ -31,13 +31,20 @@
 // 	ret
 // 	.cfi_endproc
 
+namespace __stl2 = ::nano::ranges;
+
+static
 int strlen_test(const char* p) noexcept {
 	using C = __stl2::common_iterator<const char*, __stl2::unreachable>;
 	return __stl2::distance(C{p}, std::find(C{p}, C{__stl2::unreachable{}}, '\0'));
 }
 
-int main() {
-	// Not yet: static_assert(strlen_test("Hello, world!") == 13);
+static constexpr int constexpr_strlen_test(const char* p) noexcept {
+	using C = __stl2::common_iterator<const char*, __stl2::unreachable>;
+	return __stl2::distance(C{p}, nano::find(C{p}, C{__stl2::unreachable{}}, '\0'));
+}
+
+TEST_CASE("iter.unreachable") {
+	static_assert(constexpr_strlen_test("Hello, world!") == 13, "");
 	CHECK(strlen_test("123This is a test, this is only a test.456") == 42);
-	return ::test_result();
 }

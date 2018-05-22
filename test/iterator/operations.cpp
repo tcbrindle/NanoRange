@@ -9,31 +9,79 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <stl2/detail/iterator/operations.hpp>
-#include <stl2/view/iota.hpp>
-#include <stl2/view/take_exactly.hpp>
-#include <stl2/detail/iterator/basic_iterator.hpp>
+#include <nanorange.hpp>
+//#include <stl2/view/iota.hpp>
+//#include <stl2/view/take_exactly.hpp>
+//#include <stl2/detail/iterator/basic_iterator.hpp>
 
-namespace ranges = std::experimental::ranges;
+namespace ranges = nano::ranges;
 
 namespace {
     template <class T, std::size_t N, bool Bidi = true>
     struct unsized_range {
         T array_[N];
 
-        struct cursor {
+        struct iterator {
+            using value_type = T;
+            using difference_type = std::ptrdiff_t;
+            using iterator_category =
+                std::conditional_t<Bidi,
+                    std::bidirectional_iterator_tag,
+                    std::forward_iterator_tag>;
+
+            //iterator() = default;
+
+            //iterator(const T* ptr)
+            //    : ptr_(ptr) {}
+
             const T* ptr_;
 
-            constexpr const T& read() const noexcept { return *ptr_; }
-            constexpr void next() noexcept { ++ptr_; }
-            constexpr void prev() noexcept requires Bidi { --ptr_; }
-            constexpr bool equal(cursor that) const noexcept { return ptr_ == that.ptr_; }
+            constexpr const T& operator*() const noexcept { return *ptr_; }
+
+            constexpr iterator& operator++() noexcept
+            {
+                ++ptr_;
+                return *this;
+            }
+
+            constexpr iterator operator++(int) noexcept
+            {
+                auto temp = *this;
+                this->operator++();
+                return temp;
+            }
+
+            template <bool B = Bidi>
+            constexpr std::enable_if_t<B, iterator&> operator--() noexcept
+            {
+                --ptr_;
+                return *this;
+            }
+
+            template <bool B = Bidi>
+            constexpr std::enable_if_t<B, iterator> operator--(int) noexcept
+            {
+                auto temp = *this;
+                this->operator--();
+                return temp;
+            }
+
+            friend constexpr bool operator==(const iterator& lhs, const iterator& rhs)
+            {
+                return lhs.ptr_ == rhs.ptr_;
+            }
+
+            friend constexpr bool operator!=(const iterator& lhs, const iterator& rhs)
+            {
+                return !(lhs == rhs);
+            }
         };
 
-        using iterator = ranges::basic_iterator<cursor>;
-        constexpr iterator begin() const noexcept { return iterator{cursor{array_ + 0}}; }
-        constexpr iterator end() const noexcept { return iterator{cursor{array_ + N}}; }
+        constexpr iterator begin() const noexcept { return iterator{array_ + 0}; }
+        constexpr iterator end() const noexcept { return iterator{array_ + N}; }
     };
+
+    static_assert(ranges::BidirectionalIterator<unsized_range<int, 4, true>::iterator>, "");
 
     constexpr bool test_advance() {
         {
@@ -62,6 +110,8 @@ namespace {
             if (pos != rng + 0) return false;
         }
 
+        // TODO: Re-enable when we have views
+#ifdef HAVE_VIEWS
         {
             auto rng = ranges::ext::take_exactly_view<ranges::ext::iota_view<int>>{{}, 42};
             static_assert(ranges::models::RandomAccessRange<decltype(rng)>);
@@ -88,7 +138,7 @@ namespace {
             if (ranges::advance(pos, -42, ranges::begin(rng)) != -2) return false;
             if (pos != ranges::begin(rng) + 0) return false;
         }
-
+#endif
         {
             constexpr unsized_range<int, 4> rng = {0,1,2,3};
             auto pos = ranges::begin(rng);
@@ -139,7 +189,7 @@ namespace {
 
         return true;
     }
-    static_assert(test_advance());
+    static_assert(test_advance(), "");
 
     constexpr bool test_next() {
         {
@@ -165,7 +215,7 @@ namespace {
             pos = ranges::next(pos, -42, ranges::begin(rng));
             if (pos != rng + 0) return false;
         }
-
+#ifdef HAVE_VIEWS
         {
             auto rng = ranges::ext::take_exactly_view<ranges::ext::iota_view<int>>{{}, 42};
             static_assert(ranges::models::RandomAccessRange<decltype(rng)>);
@@ -190,6 +240,7 @@ namespace {
             pos = ranges::next(pos, -42, ranges::begin(rng));
             if (pos != ranges::begin(rng) + 0) return false;
         }
+#endif
 
         {
             constexpr unsized_range<int, 4> rng = {0,1,2,3};
@@ -239,7 +290,7 @@ namespace {
 
         return true;
     }
-    static_assert(test_next());
+    static_assert(test_next(), "");
 
     constexpr bool test_prev() {
         {
@@ -256,6 +307,7 @@ namespace {
             if (pos != rng + 0) return false;
         }
 
+#ifdef HAVE_VIEWS
         {
             auto rng = ranges::ext::take_exactly_view<ranges::ext::iota_view<int>>{{}, 42};
             static_assert(ranges::models::RandomAccessRange<decltype(rng)>);
@@ -270,6 +322,7 @@ namespace {
             pos = ranges::prev(pos, 42, ranges::begin(rng));
             if (pos != ranges::begin(rng) + 0) return false;
         }
+#endif
 
         {
             constexpr unsized_range<int, 4> rng = {0,1,2,3};
@@ -287,18 +340,19 @@ namespace {
 
         return true;
     }
-    static_assert(test_prev());
+    static_assert(test_prev(), "");
 
     constexpr bool test_distance() {
         {
             constexpr int rng[] = {0,1,2,3};
             if (ranges::distance(rng) != 4) return false;
             if (ranges::distance(ranges::begin(rng), ranges::end(rng)) != 4) return false;
-            auto bound = std::make_pair(std::ptrdiff_t{4}, ranges::end(rng));
-            if (ranges::ext::enumerate(rng) != bound) return false;
-            if (ranges::ext::enumerate(ranges::begin(rng), ranges::end(rng)) != bound) return false;
+//            auto bound = std::make_pair(std::ptrdiff_t{4}, ranges::end(rng));
+//            if (ranges::ext::enumerate(rng) != bound) return false;
+//            if (ranges::ext::enumerate(ranges::begin(rng), ranges::end(rng)) != bound) return false;
         }
 
+#ifdef HAVE_VIEWS
         {
             auto rng = ranges::ext::take_exactly_view<ranges::ext::iota_view<int>>{{}, 42};
             if (ranges::distance(rng) != 42) return false;
@@ -314,28 +368,27 @@ namespace {
                 if (result.end() != ranges::default_sentinel{}) return false;
             }
         }
+#endif
 
         {
             constexpr unsized_range<int, 4> rng = {0,1,2,3};
             if (ranges::distance(rng) != 4) return false;
             if (ranges::distance(ranges::begin(rng), ranges::end(rng)) != 4) return false;
-            auto bound = std::make_pair(std::ptrdiff_t{4}, ranges::end(rng));
-            if (ranges::ext::enumerate(rng) != bound) return false;
-            if (ranges::ext::enumerate(ranges::begin(rng), ranges::end(rng)) != bound) return false;
+//            auto bound = std::make_pair(std::ptrdiff_t{4}, ranges::end(rng));
+//            if (ranges::ext::enumerate(rng) != bound) return false;
+//            if (ranges::ext::enumerate(ranges::begin(rng), ranges::end(rng)) != bound) return false;
         }
 
         {
             constexpr unsized_range<int, 4, false> rng = {0,1,2,3};
             if (ranges::distance(rng) != 4) return false;
             if (ranges::distance(ranges::begin(rng), ranges::end(rng)) != 4) return false;
-            auto bound = std::make_pair(std::ptrdiff_t{4}, ranges::end(rng));
-            if (ranges::ext::enumerate(rng) != bound) return false;
-            if (ranges::ext::enumerate(ranges::begin(rng), ranges::end(rng)) != bound) return false;
+ //           auto bound = std::make_pair(std::ptrdiff_t{4}, ranges::end(rng));
+ //           if (ranges::ext::enumerate(rng) != bound) return false;
+ //           if (ranges::ext::enumerate(ranges::begin(rng), ranges::end(rng)) != bound) return false;
         }
 
         return true;
     }
-    static_assert(test_distance());
+    static_assert(test_distance(), "");
 } // unnamed namespace
-
-int main() {}
