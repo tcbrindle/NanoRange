@@ -27,10 +27,10 @@ class common_iterator {
     class op_arrow_proxy {
         value_type_t<I> keep_;
 
-        op_arrow_proxy(reference_t<I>&& x) : keep_(std::move(x)) {}
+        constexpr op_arrow_proxy(reference_t<I>&& x) : keep_(std::move(x)) {}
 
     public:
-        const value_type_t<I>* operator->() const
+        constexpr const value_type_t<I>* operator->() const
         {
             return std::addressof(keep_);
         }
@@ -92,50 +92,50 @@ public:
         return *this;
     };
 
-    decltype(auto) operator*() { return *iter_; }
+    constexpr decltype(auto) operator*() { return *iter_; }
 
     template <typename II = I,
               std::enable_if_t<detail::Dereferenceable<const I>, int> = 0>
-    decltype(auto) operator*() const
+    constexpr decltype(auto) operator*() const
     {
         return *iter_;
     };
 
     template <typename II = I>
-    auto operator-> () const
+    constexpr auto operator-> () const
         -> decltype(common_iterator::do_op_arrow(std::declval<const II&>(),
                                                  detail::priority_tag<2>{}))
     {
         return do_op_arrow(iter_, detail::priority_tag<2>{});
     }
 
-    common_iterator& operator++()
+    constexpr common_iterator& operator++()
     {
         ++iter_;
         return *this;
     }
 
     template <typename II = I, std::enable_if_t<!ForwardIterator<II>, int> = 0>
-    decltype(auto) operator++(int)
+    constexpr  decltype(auto) operator++(int)
     {
         return iter_++;
     }
 
     template <typename II = I, std::enable_if_t<ForwardIterator<II>, int> = 0>
-    common_iterator operator++(int)
+    constexpr common_iterator operator++(int)
     {
         common_iterator tmp = *this;
         ++iter_;
         return tmp;
     }
 
-    friend rvalue_reference_t<I> iter_move(const common_iterator& i)
+    friend constexpr rvalue_reference_t<I> iter_move(const common_iterator& i)
     {
         return ranges::iter_move(i.iter_);
     }
 
     template <typename I2, typename S2>
-    friend std::enable_if_t<IndirectlySwappable<I2, I>>
+    friend constexpr std::enable_if_t<IndirectlySwappable<I2, I>>
     iter_swap(const common_iterator& x, const common_iterator<I2, S2>& y)
     {
         return ranges::iter_swap(x.iter_, y.iter_);
@@ -143,15 +143,15 @@ public:
 
     // private:
     // TODO: Some sort of variant-like union
-    bool is_sentinel_;
-    I iter_;
-    S sentinel_;
+    bool is_sentinel_{};
+    I iter_{};
+    S sentinel_{};
 };
 
 template <typename I1, typename I2, typename S1, typename S2,
           std::enable_if_t<!EqualityComparableWith<I1, I2>, int> = 0>
-bool operator==(const common_iterator<I1, S1>& x,
-                const common_iterator<I2, S2>& y)
+constexpr bool operator==(const common_iterator<I1, S1>& x,
+                          const common_iterator<I2, S2>& y)
 {
     return x.is_sentinel_ ? (y.is_sentinel_ || y.iter_ == x.sentinel_)
                           : (!y.is_sentinel_ || x.iter_ == y.sentinel_);
@@ -159,8 +159,8 @@ bool operator==(const common_iterator<I1, S1>& x,
 
 template <typename I1, typename I2, typename S1, typename S2,
           std::enable_if_t<EqualityComparableWith<I1, I2>, int> = 0>
-bool operator==(const common_iterator<I1, S1>& x,
-                const common_iterator<I2, S2>& y)
+constexpr bool operator==(const common_iterator<I1, S1>& x,
+                          const common_iterator<I2, S2>& y)
 {
     return x.is_sentinel_
                ? (y.is_sentinel_ || y.iter_ == x.sentinel_)
@@ -168,13 +168,14 @@ bool operator==(const common_iterator<I1, S1>& x,
 }
 
 template <typename I1, typename I2, typename S1, typename S2>
-bool operator!=(const common_iterator<I1, S1>& x,
-                const common_iterator<I2, S2>& y)
+constexpr bool operator!=(const common_iterator<I1, S1>& x,
+                          const common_iterator<I2, S2>& y)
 {
     return !(x == y);
 }
 
 template <typename I2, typename I1, typename S1, typename S2>
+constexpr
 std::enable_if_t<SizedSentinel<I1, I2> && SizedSentinel<S1, I2> &&
                      SizedSentinel<S2, I2>,
                  difference_type_t<I2>>
