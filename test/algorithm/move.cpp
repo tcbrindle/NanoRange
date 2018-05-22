@@ -18,70 +18,74 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/move.hpp>
-#include <stl2/detail/range/range.hpp>
+#include <nanorange/algorithm/move.hpp>
+#include <nanorange_extras.hpp>
 #include <memory>
 #include <algorithm>
-#include "../simple_test.hpp"
-#include "../test_utils.hpp"
+#include "../catch.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace {
 
-template <typename InIter, typename OutIter, typename Sent = InIter>
-void
-test()
+namespace stl2 = nano;
+
+template <typename T>
+T& as_lvalue(T&& t)
 {
+	return t;
+}
+
+template<typename InIter, typename OutIter, typename Sent = InIter>
+void
+test() {
 	{
 		const int N = 1000;
 		int ia[N];
-		for(int i = 0; i < N; ++i)
+		for (int i = 0; i < N; ++i)
 			ia[i] = i;
 		int ib[N] = {0};
 
-		std::pair<InIter, OutIter> r = stl2::move(InIter(ia), Sent(ia+N), OutIter(ib));
-		CHECK(base(r.first) == ia+N);
-		CHECK(base(r.second) == ib+N);
-		for(int i = 0; i < N; ++i)
+		std::pair<InIter, OutIter> r = stl2::move(InIter(ia), Sent(ia + N), OutIter(ib));
+		CHECK(base(r.first) == ia + N);
+		CHECK(base(r.second) == ib + N);
+		for (int i = 0; i < N; ++i)
 			CHECK(ia[i] == ib[i]);
 	}
 
 	{
 		const int N = 1000;
 		int ia[N];
-		for(int i = 0; i < N; ++i)
+		for (int i = 0; i < N; ++i)
 			ia[i] = i;
 		int ib[N] = {0};
 
-		std::pair<InIter, OutIter> r = stl2::move(as_lvalue(stl2::ext::make_range(InIter(ia), Sent(ia+N))), OutIter(ib));
-		CHECK(base(r.first) == ia+N);
-		CHECK(base(r.second) == ib+N);
-		for(int i = 0; i < N; ++i)
+		std::pair<InIter, OutIter> r = stl2::move(as_lvalue(stl2::ext::make_range(InIter(ia), Sent(ia + N))),
+												  OutIter(ib));
+		CHECK(base(r.first) == ia + N);
+		CHECK(base(r.second) == ib + N);
+		for (int i = 0; i < N; ++i)
 			CHECK(ia[i] == ib[i]);
 	}
 }
 
-struct S
-{
+struct S {
 	std::unique_ptr<int> p;
 };
 
-template <typename InIter, typename OutIter, typename Sent = InIter>
+template<typename InIter, typename OutIter, typename Sent = InIter>
 void
-test1()
-{
+test1() {
 	{
 		const int N = 100;
 		std::unique_ptr<int> ia[N];
-		for(int i = 0; i < N; ++i)
+		for (int i = 0; i < N; ++i)
 			ia[i].reset(new int(i));
 		std::unique_ptr<int> ib[N];
 
-		std::pair<InIter, OutIter> r = stl2::move(InIter(ia), Sent(ia+N), OutIter(ib));
-		CHECK(base(r.first) == ia+N);
-		CHECK(base(r.second) == ib+N);
-		for(int i = 0; i < N; ++i)
-		{
+		std::pair<InIter, OutIter> r = stl2::move(InIter(ia), Sent(ia + N), OutIter(ib));
+		CHECK(base(r.first) == ia + N);
+		CHECK(base(r.second) == ib + N);
+		for (int i = 0; i < N; ++i) {
 			CHECK(ia[i].get() == nullptr);
 			CHECK(*ib[i] == i);
 		}
@@ -90,33 +94,34 @@ test1()
 	{
 		const int N = 100;
 		std::unique_ptr<int> ia[N];
-		for(int i = 0; i < N; ++i)
+		for (int i = 0; i < N; ++i)
 			ia[i].reset(new int(i));
 		std::unique_ptr<int> ib[N];
 
-		std::pair<InIter, OutIter> r = stl2::move(as_lvalue(stl2::ext::make_range(InIter(ia), Sent(ia+N))), OutIter(ib));
-		CHECK(base(r.first) == ia+N);
-		CHECK(base(r.second) == ib+N);
-		for(int i = 0; i < N; ++i)
-		{
+		std::pair<InIter, OutIter> r = stl2::move(as_lvalue(stl2::ext::make_range(InIter(ia), Sent(ia + N))),
+												  OutIter(ib));
+		CHECK(base(r.first) == ia + N);
+		CHECK(base(r.second) == ib + N);
+		for (int i = 0; i < N; ++i) {
 			CHECK(ia[i].get() == nullptr);
 			CHECK(*ib[i] == i);
 		}
 
-		stl2::move(ib, ib+N, ia);
+		stl2::move(ib, ib + N, ia);
 
-		auto r2 = stl2::move(stl2::ext::make_range(InIter(ia), Sent(ia+N)), OutIter(ib));
-		CHECK(base(r2.first.get_unsafe()) == ia+N);
-		CHECK(base(r2.second) == ib+N);
-		for(int i = 0; i < N; ++i)
-		{
+		auto r2 = stl2::move(stl2::ext::make_range(InIter(ia), Sent(ia + N)), OutIter(ib));
+		CHECK(base(r2.first.get_unsafe()) == ia + N);
+		CHECK(base(r2.second) == ib + N);
+		for (int i = 0; i < N; ++i) {
 			CHECK(ia[i].get() == nullptr);
 			CHECK(*ib[i] == i);
 		}
 	}
 }
 
-int main()
+}
+
+TEST_CASE("alg.move")
 {
 	test<input_iterator<const int*>, output_iterator<int*> >();
 	test<input_iterator<const int*>, input_iterator<int*> >();
@@ -238,6 +243,4 @@ int main()
 	test1<random_access_iterator<std::unique_ptr<int>*>, forward_iterator<std::unique_ptr<int>*>, sentinel<std::unique_ptr<int>*> >();
 	test1<random_access_iterator<std::unique_ptr<int>*>, bidirectional_iterator<std::unique_ptr<int>*>, sentinel<std::unique_ptr<int>*> >();
 	test1<random_access_iterator<std::unique_ptr<int>*>, random_access_iterator<std::unique_ptr<int>*>, sentinel<std::unique_ptr<int>*> >();
-
-	return test_result();
 }

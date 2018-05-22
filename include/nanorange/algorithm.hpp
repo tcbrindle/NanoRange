@@ -18,6 +18,7 @@
 #include <nanorange/algorithm/find_first_of.hpp>
 #include <nanorange/algorithm/for_each.hpp>
 #include <nanorange/algorithm/mismatch.hpp>
+#include <nanorange/algorithm/move.hpp>
 #include <nanorange/algorithm/none_of.hpp>
 
 // Algorithms which reuse the STL implementation

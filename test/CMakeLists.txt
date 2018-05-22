@@ -64,8 +64,8 @@ add_executable(test_nanorange
     #algorithm/minmax.cpp
     #algorithm/minmax_element.cpp
     algorithm/mismatch.cpp
-    #algorithm/move.cpp
-    #algorithm/move_backward.cpp
+    algorithm/move.cpp
+    algorithm/move_backward.cpp
     #algorithm/next_permutation.cpp
     algorithm/none_of.cpp
     #algorithm/nth_element.cpp
