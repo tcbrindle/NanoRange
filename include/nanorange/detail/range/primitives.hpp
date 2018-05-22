@@ -128,7 +128,7 @@ private:
 
 public:
     template <typename T>
-    constexpr auto operator()(T&& t) noexcept(
+    constexpr auto operator()(T&& t) const noexcept(
         noexcept(fn::impl(std::forward<T>(t), priority_tag<2>{})))
         -> decltype(fn::impl(std::forward<T>(t), priority_tag<2>{}))
     {
