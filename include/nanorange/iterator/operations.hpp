@@ -90,7 +90,7 @@ private:
     {
         if (fn::abs(n) >= fn::abs(bound - i)) {
             auto dist = bound - i;
-            fn::impl(i, bound);
+            fn::impl(i, bound, priority_tag<2>{});
             return dist;
         } else {
             fn::impl(i, n);
@@ -107,10 +107,10 @@ private:
         difference_type_t<I> counter{0};
 
         if (n < zero) {
-            while (n++ < zero && i != bound) {
+            do {
                 --i;
-                ++counter;
-            }
+                --counter; // Yes, really
+            } while (++n < zero && i != bound);
         } else {
             while (n-- > zero && i != bound) {
                 ++i;
@@ -150,7 +150,7 @@ public:
         -> std::enable_if_t<Iterator<I> && Sentinel<S, I>>
     {
         fn::impl(i, bound, priority_tag<2>{});
-    };
+    }
 
     template <typename I, typename S>
     constexpr auto operator()(I& i, difference_type_t<I> n, S bound) const
