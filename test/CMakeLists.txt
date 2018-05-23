@@ -157,7 +157,7 @@ add_executable(test_nanorange
     #view/reverse_view.cpp
     #view/span.cpp
     #view/split_view.cpp
-    #view/subrange.cpp
+    view/subrange.cpp
     #view/take_view.cpp
     #view/transform_view.cpp
 )

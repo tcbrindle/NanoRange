@@ -44,7 +44,15 @@ TEST_CASE("view.subrange") {
 	}
 
 	{
+        std::vector<int> v1{1, 2, 3, 4, 5};
+        auto r = make_subrange(v1);
 
+        CHECK(!r.empty());
+        CHECK(size(r) == size(v1));
+
+        std::vector<int> v2 = r;
+
+        CHECK(v1 == v2);
 	}
 
 	// Deduction guides and tuple interface

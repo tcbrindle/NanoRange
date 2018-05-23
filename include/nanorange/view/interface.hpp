@@ -59,7 +59,7 @@ public:
     template <typename R = D, typename = decltype(ranges::empty(std::declval<const R&>()))>
     constexpr explicit operator bool() const
     {
-        return ranges::begin(derived());
+        return !ranges::empty(derived());
     }
 
     template <typename R = D, typename = std::enable_if_t<
@@ -140,16 +140,16 @@ public:
     }
 
     template <typename C, typename R = D,
-              typename = std::enable_if_t<
+              std::enable_if_t<
                   ForwardRange<C> && !View<C> &&
                   ConvertibleTo<reference_t<iterator_t<const R>>,
                                 value_type_t<iterator_t<C>>> &&
                   Constructible<C, detail::range_common_iterator_t<const R>,
-                                detail::range_common_iterator_t<const R>>>>
+                                detail::range_common_iterator_t<const R>>, int> = 0>
     operator C() const
     {
         using I = detail::range_common_iterator_t<D>;
-        return C(I{ranges::begin(derived()), ranges::end(derived())});
+        return C(I{ranges::begin(derived())}, I{ranges::end(derived())});
     }
 };
 

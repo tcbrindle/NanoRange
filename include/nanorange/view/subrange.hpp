@@ -91,6 +91,8 @@ private:
 
     detail::subrange_data<I, S, StoreSize> data_{};
 
+    using base = view_interface<subrange>;
+
 public:
     using iterator = I;
     using sentinel = S;
@@ -185,6 +187,23 @@ public:
     constexpr operator PairLike_() const
     {
         return PairLike_(begin(), end());
+    }
+
+    // The above has hidden the conversion operator in view_interface.
+    // There doesn't seem to be any obvious syntax to bring it back into
+    // scope, so we'll just reimplement it here
+
+    template <typename C, typename R = subrange,
+            std::enable_if_t<
+            ForwardRange<C> && !View<C> &&
+            ConvertibleTo<reference_t<iterator_t<const R>>,
+                          value_type_t<iterator_t<C>>> &&
+            Constructible<C, detail::range_common_iterator_t<const R>,
+                          detail::range_common_iterator_t<const R>>, int> = 0>
+    operator C() const
+    {
+        using CI = detail::range_common_iterator_t<R>;
+        return C(CI{ranges::begin(*this)}, CI{ranges::end(*this)});
     }
 
     constexpr I begin() const
