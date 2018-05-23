@@ -28,6 +28,16 @@
 #define NANO_DEPRECATED_FOR(x) [[deprecated(x)]]
 #endif
 
+#ifdef NANO_HAVE_CPP17
+#define NANO_NODISCARD [[nodiscard]]
+#else
+#define NANO_NODISCARD
+#endif
+
+#if defined(NANO_HAVE_CPP17) || defined(__cpp_deduction_guides)
+#define NANO_HAVE_DEDUCTION_GUIDES
+#endif
+
 #define NANO_CONCEPT constexpr bool
 
 #define NANO_BEGIN_NAMESPACE                                                   \
