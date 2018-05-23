@@ -68,6 +68,7 @@ iterators and sentinels of different types, and allow the use of projections.
 * copy_backward
 * move
 * move_backward
+* swap_ranges
 
 ## Partially implemented (using STL) ##
 
@@ -93,7 +94,6 @@ The following algorithms have not yet been implemented in Nanorange:
 
 #### Modifying sequence ops ####
 
-* swap_ranges
 * transform
 * replace
 * replace_if

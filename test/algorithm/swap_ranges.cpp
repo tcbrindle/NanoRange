@@ -18,14 +18,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/swap_ranges.hpp>
+#include <nanorange/algorithm/swap_ranges.hpp>
+#include <nanorange_extras.hpp>
 #include <memory>
 #include <algorithm>
-#include "../simple_test.hpp"
-#include "../test_utils.hpp"
+#include "../catch.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano::ranges;
+
+namespace {
+
+template <typename T>
+T& as_lvalue(T&& t)
+{
+	return t;
+}
 
 template <class Iter1, class Iter2>
 void test_iter_3()
@@ -187,7 +195,9 @@ void test()
 	test_rng_4<Iter1, Iter2>();
 }
 
-int main()
+}
+
+TEST_CASE("alg.swap_ranges")
 {
 	test<forward_iterator<int*>, forward_iterator<int*> >();
 	test<forward_iterator<int*>, bidirectional_iterator<int*> >();
@@ -228,6 +238,4 @@ int main()
 	test_move_only<std::unique_ptr<int>*, bidirectional_iterator<std::unique_ptr<int>*> >();
 	test_move_only<std::unique_ptr<int>*, random_access_iterator<std::unique_ptr<int>*> >();
 	test_move_only<std::unique_ptr<int>*, std::unique_ptr<int>*>();
-
-	return ::test_result();
 }
