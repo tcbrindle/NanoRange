@@ -22,53 +22,77 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/search.hpp>
+#include <nanorange/algorithm/search.hpp>
+#include <nanorange_extras.hpp>
 #include <initializer_list>
-#include <stl2/functional.hpp>
-#include <stl2/iterator.hpp>
-#include "../simple_test.hpp"
-#include "../test_utils.hpp"
+#include "../catch.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
+
+namespace {
+
+template <typename T>
+T& as_lvalue(T&& t)
+{
+	return t;
+}
 
 template <class Iter1, class Iter2, typename Sent1 = Iter1, typename Sent2 = Iter2>
 void
 test_iter_impl()
 {
 	int ia[] = {0, 1, 2, 3, 4, 5};
-	const unsigned sa = sizeof(ia)/sizeof(ia[0]);
-	CHECK(stl2::search(Iter1(ia), Sent1(ia+sa), Iter2(ia), Sent2(ia)) == Iter1(ia));
-	CHECK(stl2::search(Iter1(ia), Sent1(ia+sa), Iter2(ia), Sent2(ia+1)) == Iter1(ia));
-	CHECK(stl2::search(Iter1(ia), Sent1(ia+sa), Iter2(ia+1), Sent2(ia+2)) == Iter1(ia+1));
-	CHECK(stl2::search(Iter1(ia), Sent1(ia+sa), Iter2(ia+2), Sent2(ia+2)) == Iter1(ia));
-	CHECK(stl2::search(Iter1(ia), Sent1(ia+sa), Iter2(ia+2), Sent2(ia+3)) == Iter1(ia+2));
-	CHECK(stl2::search(Iter1(ia), Sent1(ia+sa), Iter2(ia+2), Sent2(ia+3)) == Iter1(ia+2));
-	CHECK(stl2::search(Iter1(ia), Sent1(ia), Iter2(ia+2), Sent2(ia+3)) == Iter1(ia));
-	CHECK(stl2::search(Iter1(ia), Sent1(ia+sa), Iter2(ia+sa-1), Sent2(ia+sa)) == Iter1(ia+sa-1));
-	CHECK(stl2::search(Iter1(ia), Sent1(ia+sa), Iter2(ia+sa-3), Sent2(ia+sa)) == Iter1(ia+sa-3));
-	CHECK(stl2::search(Iter1(ia), Sent1(ia+sa), Iter2(ia), Sent2(ia+sa)) == Iter1(ia));
-	CHECK(stl2::search(Iter1(ia), Sent1(ia+sa-1), Iter2(ia), Sent2(ia+sa)) == Iter1(ia+sa-1));
-	CHECK(stl2::search(Iter1(ia), Sent1(ia+1), Iter2(ia), Sent2(ia+sa)) == Iter1(ia+1));
+	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
+	CHECK(stl2::search(Iter1(ia), Sent1(ia + sa), Iter2(ia), Sent2(ia))
+				  == Iter1(ia));
+	CHECK(stl2::search(Iter1(ia), Sent1(ia + sa), Iter2(ia), Sent2(ia + 1))
+				  == Iter1(ia));
+	CHECK(stl2::search(Iter1(ia), Sent1(ia + sa), Iter2(ia + 1), Sent2(ia + 2))
+				  == Iter1(ia + 1));
+	CHECK(stl2::search(Iter1(ia), Sent1(ia + sa), Iter2(ia + 2), Sent2(ia + 2))
+				  == Iter1(ia));
+	CHECK(stl2::search(Iter1(ia), Sent1(ia + sa), Iter2(ia + 2), Sent2(ia + 3))
+				  == Iter1(ia + 2));
+	CHECK(stl2::search(Iter1(ia), Sent1(ia + sa), Iter2(ia + 2), Sent2(ia + 3))
+				  == Iter1(ia + 2));
+	CHECK(stl2::search(Iter1(ia), Sent1(ia), Iter2(ia + 2), Sent2(ia + 3))
+				  == Iter1(ia));
+	CHECK(stl2::search(Iter1(ia), Sent1(ia + sa), Iter2(ia + sa - 1),
+					   Sent2(ia + sa)) == Iter1(ia + sa - 1));
+	CHECK(stl2::search(Iter1(ia), Sent1(ia + sa), Iter2(ia + sa - 3),
+					   Sent2(ia + sa)) == Iter1(ia + sa - 3));
+	CHECK(stl2::search(Iter1(ia), Sent1(ia + sa), Iter2(ia), Sent2(ia + sa))
+				  == Iter1(ia));
+	CHECK(stl2::search(Iter1(ia), Sent1(ia + sa - 1), Iter2(ia), Sent2(ia + sa))
+				  == Iter1(ia + sa - 1));
+	CHECK(stl2::search(Iter1(ia), Sent1(ia + 1), Iter2(ia), Sent2(ia + sa))
+				  == Iter1(ia + 1));
 	int ib[] = {0, 1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 4};
-	const unsigned sb = sizeof(ib)/sizeof(ib[0]);
+	const unsigned sb = sizeof(ib) / sizeof(ib[0]);
 	int ic[] = {1};
-	CHECK(stl2::search(Iter1(ib), Sent1(ib+sb), Iter2(ic), Sent2(ic+1)) == Iter1(ib+1));
+	CHECK(stl2::search(Iter1(ib), Sent1(ib + sb), Iter2(ic), Sent2(ic + 1))
+				  == Iter1(ib + 1));
 	int id[] = {1, 2};
-	CHECK(stl2::search(Iter1(ib), Sent1(ib+sb), Iter2(id), Sent2(id+2)) == Iter1(ib+1));
+	CHECK(stl2::search(Iter1(ib), Sent1(ib + sb), Iter2(id), Sent2(id + 2))
+				  == Iter1(ib + 1));
 	int ie[] = {1, 2, 3};
-	CHECK(stl2::search(Iter1(ib), Sent1(ib+sb), Iter2(ie), Sent2(ie+3)) == Iter1(ib+4));
+	CHECK(stl2::search(Iter1(ib), Sent1(ib + sb), Iter2(ie), Sent2(ie + 3))
+				  == Iter1(ib + 4));
 	int ig[] = {1, 2, 3, 4};
-	CHECK(stl2::search(Iter1(ib), Sent1(ib+sb), Iter2(ig), Sent2(ig+4)) == Iter1(ib+8));
+	CHECK(stl2::search(Iter1(ib), Sent1(ib + sb), Iter2(ig), Sent2(ig + 4))
+				  == Iter1(ib + 8));
 	int ih[] = {0, 1, 1, 1, 1, 2, 3, 0, 1, 2, 3, 4};
-	const unsigned sh = sizeof(ih)/sizeof(ih[0]);
+	const unsigned sh = sizeof(ih) / sizeof(ih[0]);
 	int ii[] = {1, 1, 2};
-	CHECK(stl2::search(Iter1(ih), Sent1(ih+sh), Iter2(ii), Sent2(ii+3)) == Iter1(ih+3));
+	CHECK(stl2::search(Iter1(ih), Sent1(ih + sh), Iter2(ii), Sent2(ii + 3))
+				  == Iter1(ih + 3));
 	int ij[] = {0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0};
-	const unsigned sj = sizeof(ij)/sizeof(ij[0]);
+	const unsigned sj = sizeof(ij) / sizeof(ij[0]);
 	int ik[] = {0, 0, 0, 0, 1, 1, 1, 1, 0, 0};
-	const unsigned sk = sizeof(ik)/sizeof(ik[0]);
-	CHECK(stl2::search(Iter1(ij), Sent1(ij+sj), Iter2(ik), Sent2(ik+sk)) == Iter1(ij+6));
+	const unsigned sk = sizeof(ik) / sizeof(ik[0]);
+	CHECK(stl2::search(Iter1(ij), Sent1(ij + sj), Iter2(ik), Sent2(ik + sk))
+				  == Iter1(ij + 6));
 }
 
 template <class Iter1, class Iter2>
@@ -92,38 +116,75 @@ void
 test_range_impl()
 {
 	int ia[] = {0, 1, 2, 3, 4, 5};
-	const unsigned sa = sizeof(ia)/sizeof(ia[0]);
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia+sa))), stl2::ext::make_range(Iter2(ia), Sent2(ia))) ==Iter1(ia));
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia+sa))), stl2::ext::make_range(Iter2(ia), Sent2(ia+1))) ==Iter1(ia));
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia+sa))), stl2::ext::make_range(Iter2(ia+1), Sent2(ia+2))) ==Iter1(ia+1));
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia+sa))), stl2::ext::make_range(Iter2(ia+2), Sent2(ia+2))) ==Iter1(ia));
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia+sa))), stl2::ext::make_range(Iter2(ia+2), Sent2(ia+3))) ==Iter1(ia+2));
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia+sa))), stl2::ext::make_range(Iter2(ia+2), Sent2(ia+3))) ==Iter1(ia+2));
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia))), stl2::ext::make_range(Iter2(ia+2), Sent2(ia+3))) ==Iter1(ia));
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia+sa))), stl2::ext::make_range(Iter2(ia+sa-1), Sent2(ia+sa))) ==Iter1(ia+sa-1));
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia+sa))), stl2::ext::make_range(Iter2(ia+sa-3), Sent2(ia+sa))) ==Iter1(ia+sa-3));
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia+sa))), stl2::ext::make_range(Iter2(ia), Sent2(ia+sa))) ==Iter1(ia));
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia+sa-1))), stl2::ext::make_range(Iter2(ia), Sent2(ia+sa))) ==Iter1(ia+sa-1));
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia+1))), stl2::ext::make_range(Iter2(ia), Sent2(ia+sa))) ==Iter1(ia+1));
+	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
+	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia
+																				  + sa))), stl2::ext::make_range(
+			Iter2(ia), Sent2(ia))) ==Iter1(ia));
+	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia
+																				  + sa))), stl2::ext::make_range(
+			Iter2(ia), Sent2(ia + 1))) ==Iter1(ia));
+	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia
+																				  + sa))), stl2::ext::make_range(
+			Iter2(ia + 1), Sent2(ia + 2))) ==Iter1(ia+1));
+	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia
+																				  + sa))), stl2::ext::make_range(
+			Iter2(ia + 2), Sent2(ia + 2))) ==Iter1(ia));
+	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia
+																				  + sa))), stl2::ext::make_range(
+			Iter2(ia + 2), Sent2(ia + 3))) ==Iter1(ia+2));
+	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia
+																				  + sa))), stl2::ext::make_range(
+			Iter2(ia + 2), Sent2(ia + 3))) ==Iter1(ia+2));
+	CHECK(stl2::search(::as_lvalue(
+			stl2::ext::make_range(Iter1(ia), Sent1(ia))), stl2::ext::make_range(
+			Iter2(ia + 2), Sent2(ia + 3))) ==Iter1(ia));
+	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia
+																				  + sa))), stl2::ext::make_range(
+			Iter2(ia + sa - 1), Sent2(ia + sa))) ==Iter1(ia+sa-1));
+	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia
+																				  + sa))), stl2::ext::make_range(
+			Iter2(ia + sa - 3), Sent2(ia + sa))) ==Iter1(ia+sa-3));
+	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia
+																				  + sa))), stl2::ext::make_range(
+			Iter2(ia), Sent2(ia + sa))) ==Iter1(ia));
+	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia),
+														 Sent1(ia + sa
+																	   - 1))), stl2::ext::make_range(
+			Iter2(ia), Sent2(ia + sa))) ==Iter1(ia+sa-1));
+	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ia), Sent1(ia
+																				  + 1))), stl2::ext::make_range(
+			Iter2(ia), Sent2(ia + sa))) ==Iter1(ia+1));
 	int ib[] = {0, 1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 4};
-	const unsigned sb = sizeof(ib)/sizeof(ib[0]);
+	const unsigned sb = sizeof(ib) / sizeof(ib[0]);
 	int ic[] = {1};
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ib), Sent1(ib+sb))), stl2::ext::make_range(Iter2(ic), Sent2(ic+1))) ==Iter1(ib+1));
+	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ib), Sent1(ib
+																				  + sb))), stl2::ext::make_range(
+			Iter2(ic), Sent2(ic + 1))) ==Iter1(ib+1));
 	int id[] = {1, 2};
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ib), Sent1(ib+sb))), stl2::ext::make_range(Iter2(id), Sent2(id+2))) ==Iter1(ib+1));
+	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ib), Sent1(ib
+																				  + sb))), stl2::ext::make_range(
+			Iter2(id), Sent2(id + 2))) ==Iter1(ib+1));
 	int ie[] = {1, 2, 3};
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ib), Sent1(ib+sb))), stl2::ext::make_range(Iter2(ie), Sent2(ie+3))) ==Iter1(ib+4));
+	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ib), Sent1(ib
+																				  + sb))), stl2::ext::make_range(
+			Iter2(ie), Sent2(ie + 3))) ==Iter1(ib+4));
 	int ig[] = {1, 2, 3, 4};
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ib), Sent1(ib+sb))), stl2::ext::make_range(Iter2(ig), Sent2(ig+4))) ==Iter1(ib+8));
+	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ib), Sent1(ib
+																				  + sb))), stl2::ext::make_range(
+			Iter2(ig), Sent2(ig + 4))) ==Iter1(ib+8));
 	int ih[] = {0, 1, 1, 1, 1, 2, 3, 0, 1, 2, 3, 4};
-	const unsigned sh = sizeof(ih)/sizeof(ih[0]);
+	const unsigned sh = sizeof(ih) / sizeof(ih[0]);
 	int ii[] = {1, 1, 2};
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ih), Sent1(ih+sh))), stl2::ext::make_range(Iter2(ii), Sent2(ii+3))) ==Iter1(ih+3));
+	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ih), Sent1(ih
+																				  + sh))), stl2::ext::make_range(
+			Iter2(ii), Sent2(ii + 3))) ==Iter1(ih+3));
 	int ij[] = {0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0};
-	const unsigned sj = sizeof(ij)/sizeof(ij[0]);
+	const unsigned sj = sizeof(ij) / sizeof(ij[0]);
 	int ik[] = {0, 0, 0, 0, 1, 1, 1, 1, 0, 0};
-	const unsigned sk = sizeof(ik)/sizeof(ik[0]);
-	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ij), Sent1(ij+sj))), stl2::ext::make_range(Iter2(ik), Sent2(ik+sk))) ==Iter1(ij+6));
+	const unsigned sk = sizeof(ik) / sizeof(ik[0]);
+	CHECK(stl2::search(::as_lvalue(stl2::ext::make_range(Iter1(ij), Sent1(ij
+																				  + sj))), stl2::ext::make_range(
+			Iter2(ik), Sent2(ik + sk))) ==Iter1(ij+6));
 }
 
 template <class Iter1, class Iter2>
@@ -150,17 +211,17 @@ test()
 	test_range<Iter1, Iter2>();
 }
 
-struct S
-{
+struct S {
 	int i;
 };
 
-struct T
-{
+struct T {
 	int i;
 };
 
-int main()
+}
+
+TEST_CASE("alg.search")
 {
 	test<forward_iterator<const int*>, forward_iterator<const int*> >();
 	test<forward_iterator<const int*>, bidirectional_iterator<const int*> >();
@@ -176,11 +237,12 @@ int main()
 	{
 		S const in[] = {{0}, {1}, {2}, {3}, {4}, {5}};
 		T const pat[] = {{2}, {3}};
-
 		S const *p = stl2::search(in, pat, stl2::equal_to<>{}, &S::i, &T::i);
 		CHECK(p == in+2);
 	}
 
+	// FIXME: needs counted_iterator
+#ifdef HAVE_COUNTED_ITERATOR
 	// Test counted ranges
 	{
 		int in[] = {0,1,2,3,4,5};
@@ -196,13 +258,12 @@ int main()
 		CHECK(base(it.base()) == in+6);
 		CHECK(it.count() == 0);
 	}
+#endif
 
 	// Test rvalue ranges
 	{
 		int ib[] = {0, 1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 4};
 		int ie[] = {1, 2, 3};
-		CHECK(stl2::search(stl2::move(ib), ie).get_unsafe() == ib+4);
+		CHECK(stl2::search(std::move(ib), ie).get_unsafe() == ib+4);
 	}
-
-	return ::test_result();
 }

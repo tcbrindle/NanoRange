@@ -59,6 +59,7 @@ iterators and sentinels of different types, and allow the use of projections.
 * count_if
 * mismatch
 * equal
+* search
 
 #### Modifying sequence ops ####
 
@@ -89,7 +90,6 @@ The following algorithms have not yet been implemented in Nanorange:
 #### Non-modifying sequence ops ####
 
 * is_permutation
-* search
 * search_n
 
 #### Modifying sequence ops ####
