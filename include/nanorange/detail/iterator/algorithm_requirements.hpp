@@ -19,11 +19,11 @@ namespace detail {
 
 struct IndirectlySwappable_req {
     template <typename I1, typename I2>
-    auto requires_(I1&& i1, I2&& i2) -> decltype(valid_expr(
+    auto requires_(I1&& i1, I2&& i2) -> decltype(
         ranges::iter_swap(std::forward<I1>(i1), std::forward<I2>(i2)),
         ranges::iter_swap(std::forward<I2>(i2), std::forward<I1>(i1)),
         ranges::iter_swap(std::forward<I1>(i1), std::forward<I1>(i1)),
-        ranges::iter_swap(std::forward<I2>(i2), std::forward<I2>(i2))));
+        ranges::iter_swap(std::forward<I2>(i2), std::forward<I2>(i2)));
 };
 
 } // namespace detail
