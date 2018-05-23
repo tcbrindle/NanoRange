@@ -9,7 +9,7 @@
 //
 // Project home: https://github.com/ericniebler/range-v3
 
-#include <nanorange.hpp>
+#include <nanorange/algorithm/all_of.hpp>
 #include <vector>
 #include "../catch.hpp"
 

@@ -9,7 +9,7 @@
 //
 // Project home: https://github.com/ericniebler/range-v3
 
-#include <nanorange.hpp>
+#include <nanorange/algorithm/adjacent_find.hpp>
 #include "../catch.hpp"
 
 namespace ranges = nano::ranges;

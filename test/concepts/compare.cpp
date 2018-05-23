@@ -11,7 +11,7 @@
 //
 #include "validate.hpp"
 
-#include <nanorange.hpp>
+#include <nanorange/concepts.hpp>
 
 #include <type_traits>
 #include <bitset>

@@ -9,6 +9,7 @@
 //
 // Project home: https://github.com/ericniebler/range-v3
 
+#include <nanorange/algorithm/count.hpp>
 #include <nanorange_extras.hpp>
 #include "../catch.hpp"
 

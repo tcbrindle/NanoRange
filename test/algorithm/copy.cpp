@@ -12,7 +12,7 @@
 #include <cstring>
 #include <utility>
 #include <algorithm>
-#include <nanorange.hpp>
+#include <nanorange/algorithm/copy.hpp>
 
 #include "../catch.hpp"
 

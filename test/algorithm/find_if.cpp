@@ -18,7 +18,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <nanorange.hpp>
+#include <nanorange/algorithm/find.hpp>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"
 

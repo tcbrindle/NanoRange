@@ -10,7 +10,7 @@
 //
 // Project home: https://github.com/ericniebler/range-v3
 
-#include <nanorange.hpp>
+#include <nanorange/algorithm/none_of.hpp>
 namespace ranges = nano::ranges;
 #include <vector>
 #include "../catch.hpp"

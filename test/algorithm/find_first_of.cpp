@@ -18,6 +18,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include <nanorange/algorithm/find_first_of.hpp>
 #include <nanorange_extras.hpp>
 namespace rng = nano::ranges;
 

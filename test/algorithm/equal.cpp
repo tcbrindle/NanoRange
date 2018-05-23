@@ -18,7 +18,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <nanorange.hpp>
+#include <nanorange/algorithm/equal.hpp>
 #include <nanorange_extras.hpp>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"

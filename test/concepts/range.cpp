@@ -12,7 +12,7 @@
 //
 #include "validate.hpp"
 
-#include <nanorange.hpp>
+#include <nanorange/range.hpp>
 
 #include <iostream>
 

@@ -18,6 +18,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include <nanorange/algorithm/mismatch.hpp>
 #include <nanorange_extras.hpp>
 #include <memory>
 #include <algorithm>

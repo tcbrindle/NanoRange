@@ -1,7 +1,7 @@
 
 #include "catch.hpp"
 
-#include <nanorange.hpp>
+#include <nanorange/algorithm.hpp>
 
 #include <array>
 #include <vector>
@@ -131,8 +131,6 @@ TEST_CASE("four-legged mismatch() with predicate")
     }
 }
 
-#if 0
-
 TEST_CASE("three-legged equal() (deprecated)")
 {
     constexpr std::array<int, 3> arr = {{1, 2, 3}};
@@ -185,8 +183,6 @@ TEST_CASE("four-legged equal() with predicate")
         REQUIRE(b);
     }
 }
-#endif
-
 
 TEST_CASE("find()")
 {

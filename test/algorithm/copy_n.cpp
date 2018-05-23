@@ -9,7 +9,7 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <nanorange.hpp>
+#include <nanorange/algorithm/copy.hpp>
 #include <algorithm>
 #include "../catch.hpp"
 

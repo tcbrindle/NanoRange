@@ -11,7 +11,7 @@
 //
 #include "validate.hpp"
 
-#include <nanorange.hpp>
+#include <nanorange/concepts.hpp>
 
 namespace models = nano::ranges;
 namespace ns = nano::ranges;
