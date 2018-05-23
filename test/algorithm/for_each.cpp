@@ -10,7 +10,7 @@
 // Project home: https://github.com/ericniebler/range-v3
 
 #include <nanorange/algorithm/for_each.hpp>
-#include <nanorange_extras.hpp>
+#include <nanorange/view/subrange.hpp>
 #include <vector>
 #include "../catch.hpp"
 
@@ -49,7 +49,7 @@ TEST_CASE("[alg.for_each]")
 	CHECK(sum == 24);
 
 	sum = 0;
-	CHECK(stl2::for_each(stl2::ext::make_range(v1.begin(), v1.end()), fun).first.get_unsafe() == v1.end());
+	CHECK(stl2::for_each(stl2::make_subrange(v1.begin(), v1.end()), fun).first.get_unsafe() == v1.end());
 	CHECK(sum == 12);
 
 	{

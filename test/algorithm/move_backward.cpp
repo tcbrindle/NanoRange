@@ -19,7 +19,7 @@
 //===----------------------------------------------------------------------===//
 
 #include <nanorange/algorithm/move.hpp>
-#include <nanorange_extras.hpp>
+#include <nanorange/view/subrange.hpp>
 #include <memory>
 #include <algorithm>
 #include "../catch.hpp"
@@ -59,7 +59,7 @@ test() {
 			ia[i] = i;
 		int ib[N] = {0};
 
-		std::pair<InIter, OutIter> r = stl2::move_backward(as_lvalue(stl2::ext::make_range(InIter(ia), InIter(ia + N))),
+		std::pair<InIter, OutIter> r = stl2::move_backward(as_lvalue(stl2::make_subrange(InIter(ia), InIter(ia + N))),
 														   OutIter(ib + N));
 		CHECK(base(r.first) == ia + N);
 		CHECK(base(r.second) == ib);
@@ -98,7 +98,7 @@ test1() {
 			ia[i].reset(new int(i));
 		std::unique_ptr<int> ib[N];
 
-		std::pair<InIter, OutIter> r = stl2::move_backward(as_lvalue(stl2::ext::make_range(InIter(ia), InIter(ia + N))),
+		std::pair<InIter, OutIter> r = stl2::move_backward(as_lvalue(stl2::make_subrange(InIter(ia), InIter(ia + N))),
 														   OutIter(ib + N));
 		CHECK(base(r.first) == ia + N);
 		CHECK(base(r.second) == ib);
@@ -109,7 +109,7 @@ test1() {
 
 		stl2::move_backward(ib, ib + N, ia + N);
 
-		auto r2 = stl2::move_backward(stl2::ext::make_range(InIter(ia), InIter(ia + N)), OutIter(ib + N));
+		auto r2 = stl2::move_backward(stl2::make_subrange(InIter(ia), InIter(ia + N)), OutIter(ib + N));
 		CHECK(base(r2.first.get_unsafe()) == ia + N);
 		CHECK(base(r2.second) == ib);
 		for (int i = 0; i < N; ++i) {

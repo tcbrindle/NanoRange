@@ -19,7 +19,7 @@
 //===----------------------------------------------------------------------===//
 
 #include <nanorange/algorithm/equal.hpp>
-#include <nanorange_extras.hpp>
+#include <nanorange/view/subrange.hpp>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"
 
@@ -83,52 +83,52 @@ void test()
 void test_rng()
 {
 	using namespace ranges;
-	using nano::ranges::ext::make_range;
+	using nano::ranges::make_subrange;
 
 	int ia[] = {0, 1, 2, 3, 4, 5};
 	constexpr unsigned s = size(ia);
 	int ib[s] = {0, 1, 2, 5, 4, 5};
-	/*CHECK(equal(make_range(input_iterator<const int*>(ia),
+	/*CHECK(equal(make_subrange(input_iterator<const int*>(ia),
 												 sentinel<const int*>(ia+s)),
 							input_iterator<const int*>(ia)));
-	CHECK(equal(make_range(input_iterator<const int*>(ia),
+	CHECK(equal(make_subrange(input_iterator<const int*>(ia),
 												 sentinel<const int*>(ia+s)),
-							make_range(input_iterator<const int*>(ia),
+							make_subrange(input_iterator<const int*>(ia),
 												 sentinel<const int*>(ia+s))));*/
-	CHECK(equal(make_range(random_access_iterator<const int*>(ia),
+	CHECK(equal(make_subrange(random_access_iterator<const int*>(ia),
 												 random_access_iterator<const int*>(ia+s)),
-							make_range(random_access_iterator<const int*>(ia),
+							make_subrange(random_access_iterator<const int*>(ia),
 												 random_access_iterator<const int*>(ia + s))));
-	/*CHECK(equal(make_range(random_access_iterator<const int*>(ia),
+	/*CHECK(equal(make_subrange(random_access_iterator<const int*>(ia),
 												 sentinel<const int*>(ia+s)),
-							make_range(random_access_iterator<const int*>(ia),
+							make_subrange(random_access_iterator<const int*>(ia),
 												 sentinel<const int*>(ia + s))));*/
-	CHECK(!equal(make_range(input_iterator<const int*>(ia),
+	CHECK(!equal(make_subrange(input_iterator<const int*>(ia),
 													input_iterator<const int*>(ia+s)),
 							 input_iterator<const int*>(ib)));
-	CHECK(!equal(make_range(input_iterator<const int*>(ia),
+	CHECK(!equal(make_subrange(input_iterator<const int*>(ia),
 							  input_iterator<const int*>(ia+s)),
-							 make_range(input_iterator<const int*>(ib),
+							 make_subrange(input_iterator<const int*>(ib),
 													input_iterator<const int*>(ib + s))));
-	CHECK(!equal(make_range(random_access_iterator<const int*>(ia),
+	CHECK(!equal(make_subrange(random_access_iterator<const int*>(ia),
 													random_access_iterator<const int*>(ia+s)),
-							 make_range(random_access_iterator<const int*>(ib),
+							 make_subrange(random_access_iterator<const int*>(ib),
 													random_access_iterator<const int*>(ib+s))));
-	CHECK(!equal(make_range(random_access_iterator<const int*>(ia),
+	CHECK(!equal(make_subrange(random_access_iterator<const int*>(ia),
 													sentinel<const int*>(ia+s)),
-							 make_range(random_access_iterator<const int*>(ib),
+							 make_subrange(random_access_iterator<const int*>(ib),
 													sentinel<const int*>(ib + s))));
-	CHECK(!equal(make_range(input_iterator<const int*>(ia),
+	CHECK(!equal(make_subrange(input_iterator<const int*>(ia),
 													sentinel<const int*>(ia+s)),
-							 make_range(input_iterator<const int*>(ia),
+							 make_subrange(input_iterator<const int*>(ia),
 													sentinel<const int*>(ia + s - 1))));
-	CHECK(!equal(make_range(random_access_iterator<const int*>(ia),
+	CHECK(!equal(make_subrange(random_access_iterator<const int*>(ia),
 													random_access_iterator<const int*>(ia+s)),
-							 make_range(random_access_iterator<const int*>(ia),
+							 make_subrange(random_access_iterator<const int*>(ia),
 													random_access_iterator<const int*>(ia+s-1))));
-	CHECK(!equal(make_range(random_access_iterator<const int*>(ia),
+	CHECK(!equal(make_subrange(random_access_iterator<const int*>(ia),
 													sentinel<const int*>(ia+s)),
-							 make_range(random_access_iterator<const int*>(ia),
+							 make_subrange(random_access_iterator<const int*>(ia),
 													sentinel<const int*>(ia + s - 1))));
 }
 
@@ -213,69 +213,69 @@ void test_pred()
 void test_rng_pred()
 {
 	using namespace nano::ranges;
-	using nano::ranges::ext::make_range;
+	using nano::ranges::make_subrange;
 
 	int ia[] = {0, 1, 2, 3, 4, 5};
 	constexpr unsigned s = size(ia);
 	int ib[s] = {0, 1, 2, 5, 4, 5};
-	CHECK(ranges::equal(make_range(input_iterator<const int*>(ia),
+	CHECK(ranges::equal(make_subrange(input_iterator<const int*>(ia),
 																 sentinel<const int*>(ia+s)),
 											input_iterator<const int*>(ia),
 											std::equal_to<int>()));
-	CHECK(ranges::equal(make_range(input_iterator<const int*>(ia),
+	CHECK(ranges::equal(make_subrange(input_iterator<const int*>(ia),
 																 sentinel<const int*>(ia+s)),
-											make_range(input_iterator<const int*>(ia),
+											make_subrange(input_iterator<const int*>(ia),
 																 sentinel<const int*>(ia + s)),
 											std::equal_to<int>()));
-	CHECK(ranges::equal(make_range(random_access_iterator<const int*>(ia),
+	CHECK(ranges::equal(make_subrange(random_access_iterator<const int*>(ia),
 																 random_access_iterator<const int*>(ia+s)),
-											make_range(random_access_iterator<const int*>(ia),
+											make_subrange(random_access_iterator<const int*>(ia),
 																 random_access_iterator<const int*>(ia+s)),
 											std::equal_to<int>()));
-	CHECK(ranges::equal(make_range(random_access_iterator<const int*>(ia),
+	CHECK(ranges::equal(make_subrange(random_access_iterator<const int*>(ia),
 																 sentinel<const int*>(ia+s)),
-											make_range(random_access_iterator<const int*>(ia),
+											make_subrange(random_access_iterator<const int*>(ia),
 																 sentinel<const int*>(ia + s)),
 											std::equal_to<int>()));
 
 	comparison_count = 0;
-	CHECK(!ranges::equal(make_range(input_iterator<const int*>(ia),
+	CHECK(!ranges::equal(make_subrange(input_iterator<const int*>(ia),
 																	sentinel<const int*>(ia+s)),
-											 make_range(input_iterator<const int*>(ia),
+											 make_subrange(input_iterator<const int*>(ia),
 																	sentinel<const int*>(ia + s - 1)),
 											 counting_equals<int>));
 	CHECK(comparison_count > 0);
 	comparison_count = 0;
-	CHECK(!ranges::equal(make_range(random_access_iterator<const int*>(ia),
+	CHECK(!ranges::equal(make_subrange(random_access_iterator<const int*>(ia),
 																	random_access_iterator<const int*>(ia+s)),
-											 make_range(random_access_iterator<const int*>(ia),
+											 make_subrange(random_access_iterator<const int*>(ia),
 																	random_access_iterator<const int*>(ia+s-1)),
 											 counting_equals<int>));
 	CHECK(comparison_count == 0);
 	comparison_count = 0;
-	CHECK(!ranges::equal(make_range(random_access_iterator<const int*>(ia),
+	CHECK(!ranges::equal(make_subrange(random_access_iterator<const int*>(ia),
 																	sentinel<const int*>(ia+s)),
-											 make_range(random_access_iterator<const int*>(ia),
+											 make_subrange(random_access_iterator<const int*>(ia),
 																	sentinel<const int*>(ia + s - 1)),
 											 counting_equals<int>));
 	CHECK(comparison_count > 0);
-	CHECK(!ranges::equal(make_range(input_iterator<const int*>(ia),
+	CHECK(!ranges::equal(make_subrange(input_iterator<const int*>(ia),
 																	sentinel<const int*>(ia+s)),
 											 input_iterator<const int*>(ib),
 											 std::equal_to<int>()));
-	CHECK(!ranges::equal(make_range(input_iterator<const int*>(ia),
+	CHECK(!ranges::equal(make_subrange(input_iterator<const int*>(ia),
 																	sentinel<const int*>(ia+s)),
-											 make_range(input_iterator<const int*>(ib),
+											 make_subrange(input_iterator<const int*>(ib),
 																	sentinel<const int*>(ib + s)),
 											 std::equal_to<int>()));
-	CHECK(!ranges::equal(make_range(random_access_iterator<const int*>(ia),
+	CHECK(!ranges::equal(make_subrange(random_access_iterator<const int*>(ia),
 																	random_access_iterator<const int*>(ia+s)),
-											 make_range(random_access_iterator<const int*>(ib),
+											 make_subrange(random_access_iterator<const int*>(ib),
 																	random_access_iterator<const int*>(ib+s)),
 											 std::equal_to<int>()));
-	CHECK(!ranges::equal(make_range(random_access_iterator<const int*>(ia),
+	CHECK(!ranges::equal(make_subrange(random_access_iterator<const int*>(ia),
 																	sentinel<const int*>(ia+s)),
-											 make_range(random_access_iterator<const int*>(ib),
+											 make_subrange(random_access_iterator<const int*>(ib),
 																	sentinel<const int*>(ib + s)),
 											 std::equal_to<int>()));
 }

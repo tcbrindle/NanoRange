@@ -11,7 +11,8 @@
 // Project home: https://github.com/ericniebler/range-v3
 
 #include <nanorange/algorithm/copy.hpp>
-#include <nanorange_extras.hpp>
+#include <nanorange/algorithm/equal.hpp>
+#include <nanorange/view/subrange.hpp>
 #include <cstring>
 #include <utility>
 #include <algorithm>
@@ -54,7 +55,7 @@ namespace {
 		CHECK(result.second == target + 4);
 		CHECK(std::count(target, target + 4, 0) == 4);
 		auto l2 = {1, 2, 3, 4};
-		CHECK(ranges::equal(ranges::ext::make_range(target + 4, target + 8), std::move(l2)));
+		CHECK(ranges::equal(ranges::make_subrange(target + 4, target + 8), std::move(l2)));
 	}
 }
 
