@@ -11,7 +11,7 @@
 #include <nanorange/detail/range/concepts.hpp>
 #include <nanorange/detail/range/dangling.hpp>
 #include <nanorange/detail/range/primitives.hpp>
-#include <nanorange/view/interface.hpp>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/iterator.hpp>
+#include <nanorange/functional.hpp>
 
 #endif
