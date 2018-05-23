@@ -31,7 +31,6 @@ In rough order or priority:
   * istream_iterator
   * istreambuf_iterator
   * ostreambuf_iterator
-* Finish subrange
 * Re-implement the algorithms properly, including projections etc
 * Implement the views from P0789
 
