@@ -18,5 +18,6 @@
 #include <nanorange/iterator/common_iterator.hpp>
 #include <nanorange/iterator/concepts.hpp>
 #include <nanorange/iterator/operations.hpp>
+#include <nanorange/iterator/ostream_iterator.hpp>
 
 #endif

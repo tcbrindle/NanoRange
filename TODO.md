@@ -29,7 +29,6 @@ In rough order or priority:
   * move_iterator
   * counted_iterator
   * istream_iterator
-  * ostream_iterator
   * istreambuf_iterator
   * ostreambuf_iterator
 * Finish subrange

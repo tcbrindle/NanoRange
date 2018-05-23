@@ -137,7 +137,7 @@ add_executable(test_nanorange
     #iterator/iterator.cpp
     #iterator/move_iterator.cpp
     iterator/operations.cpp
-    #iterator/ostream_iterator.cpp
+    iterator/ostream_iterator.cpp
     #iterator/ostreambuf_iterator.cpp
     #iterator/reverse_iterator.cpp
     iterator/unreachable.cpp
