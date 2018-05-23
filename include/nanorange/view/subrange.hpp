@@ -247,7 +247,7 @@ public:
 
     template <typename II = I>
     NANO_NODISCARD constexpr auto prev(difference_type_t<I> n = 1) const
-        -> std::enable_if_t<BidirectionalIterator<I>, subrange>
+        -> std::enable_if_t<BidirectionalIterator<II>, subrange>
     {
         auto tmp = *this;
         tmp.advance(-n);
