@@ -8,6 +8,8 @@ In rough order or priority:
 * Move the rewrite branch to master
 * Implement the remaining algorithms as constrained wrappers around the existing std:: versions
 * Use the new names from P1037 (iter_value_t, iter_difference_t etc)
+* Handle ContiguousIterators and ContiguousRanges
+* Implement the new forwarding-range concept logic from P0970
 * Implement the remaining comparison classes using constraints, namely
   * not_equal_to
   * less
@@ -21,7 +23,7 @@ In rough order or priority:
   * counted_iterator
   * istream_iterator
   * istreambuf_iterator
-* Re-implement the algorithms properly, including projections etc
+* Re-implement the remainging algorithms properly, including projections etc
 * Implement the views from P0789
 * Implement the tagged_tuple machinery
 
@@ -49,6 +51,7 @@ iterators and sentinels of different types, and allow the use of projections.
 * mismatch
 * equal
 * search
+* search_n
 
 #### Modifying sequence ops ####
 
@@ -79,7 +82,6 @@ The following algorithms have not yet been implemented in Nanorange:
 #### Non-modifying sequence ops ####
 
 * is_permutation
-* search_n
 
 #### Modifying sequence ops ####
 
@@ -131,7 +133,7 @@ The following algorithms have not yet been implemented in Nanorange:
 #### merge ####
 
 * merge
-* inplace_mergs
+* inplace_merge
 
 #### set operations ####
 
