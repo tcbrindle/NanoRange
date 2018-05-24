@@ -13,7 +13,7 @@
 #include <cstring>
 #include <iostream>
 
-#include <nanorange.hpp>
+#include <nanorange/iterator.hpp>
 
 #include "../catch.hpp"
 

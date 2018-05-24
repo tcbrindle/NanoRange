@@ -11,7 +11,7 @@
 
 #include <utility>
 #include <type_traits>
-#include <nanorange.hpp>
+#include <nanorange/type_traits.hpp>
 #include "../catch.hpp"
 
 struct B {};

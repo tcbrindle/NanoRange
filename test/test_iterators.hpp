@@ -10,7 +10,7 @@
 #ifndef RANGES_TEST_ITERATORS_HPP
 #define RANGES_TEST_ITERATORS_HPP
 
-#include <nanorange.hpp>
+#include <nanorange/detail/iterator/concepts.hpp>
 
 template <class It, bool Sized = false>
 class sentinel;
