@@ -184,8 +184,6 @@ TEST_CASE("alg.search_n")
 
 	// Test counted ranges
 	{
-		// FIXME: counted_iterator
-#ifdef HAVE_COUNTED_ITERATOR
 		int in[] = {0,1,2,2,4,5};
 		auto rng = stl2::make_subrange(
 					 stl2::make_counted_iterator(bidirectional_iterator<int*>(in), 6),
@@ -197,7 +195,6 @@ TEST_CASE("alg.search_n")
 		auto it2 = stl2::search_n(rng, 3, 2);
 		CHECK(base(it2.base()) == in+6);
 		CHECK(it2.count() == 0);
-#endif
 	}
 
 	// Test rvalue ranges

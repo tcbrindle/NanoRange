@@ -241,8 +241,6 @@ TEST_CASE("alg.search")
 		CHECK(p == in+2);
 	}
 
-	// FIXME: needs counted_iterator
-#ifdef HAVE_COUNTED_ITERATOR
 	// Test counted ranges
 	{
 		int in[] = {0,1,2,3,4,5};
@@ -258,7 +256,6 @@ TEST_CASE("alg.search")
 		CHECK(base(it.base()) == in+6);
 		CHECK(it.count() == 0);
 	}
-#endif
 
 	// Test rvalue ranges
 	{

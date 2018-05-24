@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <numeric>
 #include <nanorange/iterator/common_iterator.hpp>
+#include <nanorange/iterator/counted_iterator.hpp>
 #include <nanorange/iterator/unreachable.hpp>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"
@@ -113,8 +114,6 @@ void test_operator_arrow()
 void test_constexpr()
 {
 	static int i = 42;
-	// TODO: Re-enable when we have counted_iterator
-#ifdef NO_COUNTED_ITERATOR
 	using ranges::common_iterator;
 	using ranges::counted_iterator;
 	using ranges::default_sentinel;
@@ -127,7 +126,6 @@ void test_constexpr()
 	using CCI = common_iterator<counted_iterator<const int*>, default_sentinel>;
 	constexpr CCI baz{foo};
 	constexpr CCI bang{bar};
-#endif
 }
 }
 
