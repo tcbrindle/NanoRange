@@ -18,9 +18,6 @@ In rough order or priority:
 * Fix common_iterator (use variant-like data store)
 * Implement the remaining iterator adaptors, namely:
   * reverse_iterator
-  * back_insert_iterator
-  * front_insert_iterator
-  * insert_iterator
   * move_iterator
   * counted_iterator
   * istream_iterator
