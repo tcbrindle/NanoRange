@@ -114,7 +114,7 @@ add_executable(test_nanorange
     #algorithm/stable_partition.cpp
     #algorithm/stable_sort.cpp
     algorithm/swap_ranges.cpp
-    #algorithm/transform.cpp
+    algorithm/transform.cpp
     #algorithm/unique.cpp
     #algorithm/unique_copy.cpp
     #algorithm/upper_bound.cpp

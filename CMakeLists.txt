@@ -24,6 +24,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/search.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/search_n.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/swap_ranges.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/transform.hpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/algorithm/stl/find_end.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/comparison.hpp

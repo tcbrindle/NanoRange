@@ -9,13 +9,14 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <stl2/detail/algorithm/transform.hpp>
+#include <nanorange/algorithm/transform.hpp>
+#include "../check_equal.hpp"
 
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 
-namespace ranges = __stl2;
+namespace ranges = nano::ranges;
 
-int main() {
+TEST_CASE("alg.transform") {
 	int rgi[]{1,2,3,4,5};
 	ranges::transform(rgi, rgi+5, rgi, [](int i){return i*2;});
 	::check_equal(rgi, {2,4,6,8,10});
@@ -32,9 +33,13 @@ int main() {
 		{
 			int target[4]{};
 			auto result = ranges::transform(source1, ranges::begin(source2), target, sum);
-			CHECK(result.in1() == ranges::end(source1));
-			CHECK(result.in2() == ranges::end(source2));
-			CHECK(result.out() == ranges::end(target));
+			// FIXME: tagged tuple
+			//CHECK(result.in1() == ranges::end(source1));
+			//CHECK(result.in2() == ranges::end(source2));
+			//CHECK(result.out() == ranges::end(target));
+            CHECK(std::get<0>(result) == ranges::end(source1));
+            CHECK(std::get<1>(result) == ranges::end(source2));
+            CHECK(std::get<2>(result) == ranges::end(target));
 			::check_equal(target, control);
 		}
 
@@ -42,12 +47,14 @@ int main() {
 			int target[4]{};
 			auto result = ranges::transform(ranges::begin(source1), ranges::end(source1),
 				ranges::begin(source2), target, sum);
-			CHECK(result.in1() == ranges::end(source1));
-			CHECK(result.in2() == ranges::end(source2));
-			CHECK(result.out() == ranges::end(target));
+			// FIXME: tagged tuple
+			//CHECK(result.in1() == ranges::end(source1));
+			//CHECK(result.in2() == ranges::end(source2));
+			//CHECK(result.out() == ranges::end(target));
+            CHECK(std::get<0>(result) == ranges::end(source1));
+            CHECK(std::get<1>(result) == ranges::end(source2));
+            CHECK(std::get<2>(result) == ranges::end(target));
 			::check_equal(target, control);
 		}
 	}
-
-	return ::test_result();
 }
