@@ -140,12 +140,12 @@ public:
     }
 
     template <typename C, typename R = D,
-              std::enable_if_t<
+              typename = std::enable_if_t<
                   ForwardRange<C> && !View<C> &&
                   ConvertibleTo<reference_t<iterator_t<const R>>,
                                 value_type_t<iterator_t<C>>> &&
                   Constructible<C, detail::range_common_iterator_t<const R>,
-                                detail::range_common_iterator_t<const R>>, int> = 0>
+                                detail::range_common_iterator_t<const R>>>>
     operator C() const
     {
         using I = detail::range_common_iterator_t<D>;
