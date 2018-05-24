@@ -12,7 +12,8 @@
 //
 #include <algorithm>
 #include <numeric>
-#include <nanorange.hpp>
+#include <nanorange/iterator/common_iterator.hpp>
+#include <nanorange/iterator/unreachable.hpp>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"
 

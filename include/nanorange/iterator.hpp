@@ -14,7 +14,6 @@
 #include <nanorange/detail/iterator/iter_move.hpp>
 #include <nanorange/detail/iterator/iter_swap.hpp>
 #include <nanorange/detail/iterator/traits.hpp>
-#include <nanorange/detail/iterator/unreachable.hpp>
 #include <nanorange/iterator/back_insert_iterator.hpp>
 #include <nanorange/iterator/common_iterator.hpp>
 #include <nanorange/iterator/concepts.hpp>
@@ -24,5 +23,6 @@
 #include <nanorange/iterator/operations.hpp>
 #include <nanorange/iterator/ostream_iterator.hpp>
 #include <nanorange/iterator/ostreambuf_iterator.hpp>
+#include <nanorange/iterator/unreachable.hpp>
 
 #endif

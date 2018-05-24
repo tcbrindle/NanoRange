@@ -9,7 +9,9 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <nanorange.hpp>
+#include <nanorange/iterator/unreachable.hpp>
+#include <nanorange/iterator/common_iterator.hpp>
+#include <nanorange/algorithm/find.hpp>
 #include <algorithm>
 #include "../catch.hpp"
 
