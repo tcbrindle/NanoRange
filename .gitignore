@@ -11,6 +11,9 @@ cmake-build*/
 
 # VS Code
 .vscode/
+
+# VS
 .vs/
+CMakeSettings.json
 
 
