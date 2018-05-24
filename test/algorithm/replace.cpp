@@ -22,20 +22,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/replace.hpp>
+#include <nanorange/algorithm/replace.hpp>
+#include <nanorange/view/subrange.hpp>
 #include <utility>
-#include "../simple_test.hpp"
-#include "../test_utils.hpp"
+#include "../catch.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano::ranges;
 
-template <typename Iter, typename Sent = Iter>
-void test_iter()
-{
+namespace {
+
+template<typename Iter, typename Sent = Iter>
+void test_iter() {
 	int ia[] = {0, 1, 2, 3, 4};
-	const unsigned sa = sizeof(ia)/sizeof(ia[0]);
-	Iter i = stl2::replace(Iter(ia), Sent(ia+sa), 2, 5);
+	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
+	Iter i = stl2::replace(Iter(ia), Sent(ia + sa), 2, 5);
 	CHECK(ia[0] == 0);
 	CHECK(ia[1] == 1);
 	CHECK(ia[2] == 5);
@@ -44,12 +45,11 @@ void test_iter()
 	CHECK(base(i) == ia + sa);
 }
 
-template <typename Iter, typename Sent = Iter>
-void test_rng()
-{
+template<typename Iter, typename Sent = Iter>
+void test_rng() {
 	int ia[] = {0, 1, 2, 3, 4};
-	const unsigned sa = sizeof(ia)/sizeof(ia[0]);
-	auto rng = stl2::ext::make_range(Iter(ia), Sent(ia+sa));
+	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
+	auto rng = stl2::make_subrange(Iter(ia), Sent(ia + sa));
 	Iter i = stl2::replace(rng, 2, 5);
 	CHECK(ia[0] == 0);
 	CHECK(ia[1] == 1);
@@ -59,7 +59,9 @@ void test_rng()
 	CHECK(base(i) == ia + sa);
 }
 
-int main()
+}
+
+TEST_CASE("alg.replace")
 {
 	test_iter<input_iterator<int*> >();
 	test_iter<forward_iterator<int*> >();
@@ -88,11 +90,11 @@ int main()
 		using P = std::pair<int,std::string>;
 		P ia[] = {{0,"0"}, {1,"1"}, {2,"2"}, {3,"3"}, {4,"4"}};
 		P *i = stl2::replace(ia, 2, std::make_pair(42,"42"), &std::pair<int,std::string>::first);
-		CHECK(ia[0] == P{0,"0"});
-		CHECK(ia[1] == P{1,"1"});
-		CHECK(ia[2] == P{42,"42"});
-		CHECK(ia[3] == P{3,"3"});
-		CHECK(ia[4] == P{4,"4"});
+		CHECK((ia[0] == P{0,"0"}));
+		CHECK((ia[1] == P{1,"1"}));
+		CHECK((ia[2] == P{42,"42"}));
+		CHECK((ia[3] == P{3,"3"}));
+		CHECK((ia[4] == P{4,"4"}));
 		CHECK(i == stl2::end(ia));
 	}
 
@@ -100,14 +102,17 @@ int main()
 	{
 		using P = std::pair<int,std::string>;
 		P ia[] = {{0,"0"}, {1,"1"}, {2,"2"}, {3,"3"}, {4,"4"}};
-		auto i = stl2::replace(stl2::move(ia), 2, std::make_pair(42,"42"), &std::pair<int,std::string>::first);
-		CHECK(ia[0] == P{0,"0"});
-		CHECK(ia[1] == P{1,"1"});
-		CHECK(ia[2] == P{42,"42"});
-		CHECK(ia[3] == P{3,"3"});
-		CHECK(ia[4] == P{4,"4"});
+		auto i = stl2::replace(std::move(ia), 2, std::make_pair(42,"42"), &std::pair<int,std::string>::first);
+		CHECK((ia[0] == P{0,"0"}));
+		CHECK((ia[1] == P{1,"1"}));
+		CHECK((ia[2] == P{42,"42"}));
+		CHECK((ia[3] == P{3,"3"}));
+		CHECK((ia[4] == P{4,"4"}));
+		// FIXME: MSVC rvalue raw arrays, again
+#ifndef _MSC_VER
 		CHECK(i.get_unsafe() == stl2::end(ia));
+#else
+		CHECK(i == stl2::end(ia));
+#endif
 	}
-
-	return ::test_result();
 }
