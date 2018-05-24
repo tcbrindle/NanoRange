@@ -22,7 +22,6 @@ In rough order or priority:
   * counted_iterator
   * istream_iterator
   * istreambuf_iterator
-  * ostreambuf_iterator
 * Re-implement the algorithms properly, including projections etc
 * Implement the views from P0789
 * Implement the tagged_tuple machinery
