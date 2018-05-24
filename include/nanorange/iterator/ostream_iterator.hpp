@@ -52,6 +52,7 @@ namespace std {
 template <typename T, typename C, typename Tr>
 struct iterator_traits<::nano::ranges::ostream_iterator<T, C, Tr>> {
     using value_type = void;
+    using difference_type = ptrdiff_t;
     using reference = void;
     using pointer = void;
     using iterator_category = std::output_iterator_tag;
