@@ -28,25 +28,21 @@ private:
 
 public:
     template <typename T, typename O, typename S>
-    constexpr std::enable_if_t<
-        OutputIterator<O, const T&> &&
-        Sentinel<S, O>, O>
+    constexpr std::enable_if_t<OutputIterator<O, const T&> && Sentinel<S, O>, O>
     operator()(O first, S last, const T& value) const
     {
         return fill_fn::impl(std::move(first), std::move(last), value);
     }
 
     template <typename T, typename Rng>
-    constexpr std::enable_if_t<
-        OutputRange<Rng, const T&>,
-        safe_iterator_t<Rng>>
+    constexpr std::enable_if_t<OutputRange<Rng, const T&>, safe_iterator_t<Rng>>
     operator()(Rng&& rng, const T& value) const
     {
         return fill_fn::impl(nano::begin(rng), nano::end(rng), value);
     }
 };
 
-}
+} // namespace detail
 
 NANO_INLINE_VAR(detail::fill_fn, fill)
 

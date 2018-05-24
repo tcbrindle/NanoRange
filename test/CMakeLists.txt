@@ -22,7 +22,7 @@ add_executable(test_nanorange
     algorithm/equal.cpp
     #algorithm/equal_range.cpp
     algorithm/fill.cpp
-    #algorithm/fill_n.cpp
+    algorithm/fill_n.cpp
     algorithm/find.cpp
     #algorithm/find_end.cpp
     algorithm/find_first_of.cpp

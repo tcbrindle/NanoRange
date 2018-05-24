@@ -15,6 +15,7 @@
 #include <nanorange/algorithm/count.hpp>
 #include <nanorange/algorithm/equal.hpp>
 #include <nanorange/algorithm/fill.hpp>
+#include <nanorange/algorithm/fill_n.hpp>
 #include <nanorange/algorithm/find.hpp>
 #include <nanorange/algorithm/find_first_of.hpp>
 #include <nanorange/algorithm/for_each.hpp>
