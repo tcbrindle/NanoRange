@@ -16,20 +16,10 @@ NANO_BEGIN_NAMESPACE
 
 // [range.comparisons]
 
-// TODO: Constrained versions of the rest of these
 namespace detail {
 
 template <typename = void, typename = void>
 struct equal_to_helper;
-
-template <typename T>
-struct equal_to_helper<T, std::enable_if_t<EqualityComparable<T>>> {
-    constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(equal_to_helper<>{}(t, u)))
-    {
-        return equal_to_helper<>{}(t, u);
-    }
-};
 
 template <>
 struct equal_to_helper<void> {
@@ -45,17 +35,17 @@ struct equal_to_helper<void> {
     using is_transparent = std::true_type;
 };
 
-template <typename, typename = void>
-struct not_equal_to_helper;
-
 template <typename T>
-struct not_equal_to_helper<T, std::enable_if_t<EqualityComparable<T>>> {
+struct equal_to_helper<T, std::enable_if_t<EqualityComparable<T>>> {
     constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(!equal_to_helper<>{}(t, u)))
+        noexcept(noexcept(equal_to_helper<>{}(t, u)))
     {
-        return !equal_to_helper<>{}(t, u);
+        return equal_to_helper<>{}(t, u);
     }
 };
+
+template <typename, typename = void>
+struct not_equal_to_helper;
 
 template <>
 struct not_equal_to_helper<void> {
@@ -71,17 +61,17 @@ struct not_equal_to_helper<void> {
     using is_transparent = std::true_type;
 };
 
-template <typename = void, typename = void>
-struct less_helper;
-
 template <typename T>
-struct less_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
+struct not_equal_to_helper<T, std::enable_if_t<EqualityComparable<T>>> {
     constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(less_helper<>{}(t, u)))
+        noexcept(noexcept(!equal_to_helper<>{}(t, u)))
     {
-        return less_helper<>{}(t, u);
+        return !equal_to_helper<>{}(t, u);
     }
 };
+
+template <typename = void, typename = void>
+struct less_helper;
 
 template <>
 struct less_helper<void> {
@@ -96,17 +86,17 @@ struct less_helper<void> {
     using is_transparent = std::true_type;
 };
 
-template <typename, typename = void>
-struct greater_helper;
-
 template <typename T>
-struct greater_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
+struct less_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
     constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(less_helper<>{}(u, t)))
+        noexcept(noexcept(less_helper<>{}(t, u)))
     {
-        return less_helper<>{}(u, t);
+        return less_helper<>{}(t, u);
     }
 };
+
+template <typename, typename = void>
+struct greater_helper;
 
 template <>
 struct greater_helper<void> {
@@ -122,17 +112,17 @@ struct greater_helper<void> {
     using is_transparent = std::true_type;
 };
 
-template <typename, typename = void>
-struct less_equal_helper;
-
 template <typename T>
-struct less_equal_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
+struct greater_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
     constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(!less_helper<>{}(u, t)))
+        noexcept(noexcept(less_helper<>{}(u, t)))
     {
-        return !less_helper<>{}(u, t);
+        return less_helper<>{}(u, t);
     }
 };
+
+template <typename, typename = void>
+struct less_equal_helper;
 
 template <>
 struct less_equal_helper<void> {
@@ -148,17 +138,17 @@ struct less_equal_helper<void> {
     using is_transparent = std::true_type;
 };
 
-template <typename, typename = void>
-struct greater_equal_helper;
-
 template <typename T>
-struct greater_equal_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
+struct less_equal_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
     constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(!less_helper<>{}(t, u)))
+        noexcept(noexcept(!less_helper<>{}(u, t)))
     {
-        return !less_helper<>{}(t, u);
+        return !less_helper<>{}(u, t);
     }
 };
+
+template <typename, typename = void>
+struct greater_equal_helper;
 
 template <>
 struct greater_equal_helper<void> {
@@ -172,6 +162,15 @@ struct greater_equal_helper<void> {
     }
 
     using is_transparent = std::true_type;
+};
+
+template <typename T>
+struct greater_equal_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
+    constexpr bool operator()(const T& t, const T& u) const
+        noexcept(noexcept(!less_helper<>{}(t, u)))
+    {
+        return !less_helper<>{}(t, u);
+    }
 };
 
 } // namespace detail
