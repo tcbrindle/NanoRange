@@ -15,10 +15,13 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 namespace iter_swap_ {
 
-#ifndef NANO_MSVC_NO_POISON_PILLS
+// ADL "poison pill"
 template <typename I1, typename I2>
 void iter_swap(I1, I2) = delete;
-#endif
+
+// FIXME MSVC: add a second (redundant) poison pill
+template <typename I>
+void iter_swap(I, I) = delete;
 
 struct fn {
 private:

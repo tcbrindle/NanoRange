@@ -15,11 +15,6 @@
 #define NANO_HAVE_INLINE_VARS
 #endif
 
-// FIXME: Work out how to use the "poison pills" on MSVC
-#ifdef _MSC_VER
-#define NANO_MSVC_NO_POISON_PILLS
-#endif
-
 #ifdef NANORANGE_NO_DEPRECATION_WARNINGS
 #define NANO_DEPRECATED
 #define NANO_DEPRECATED_FOR(x)
