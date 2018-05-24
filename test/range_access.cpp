@@ -10,9 +10,15 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <nanorange.hpp>
+#include <nanorange/range.hpp>
 #include <iostream>
 #include <vector>
+#include <nanorange/view/subrange.hpp>
+
+#ifdef NANO_HAVE_CPP17
+#include <string_view>
+#endif
+
 #include "catch.hpp"
 
 namespace {
@@ -73,16 +79,18 @@ void test_array(std::integer_sequence<T, Is...>) {
 }
 
 namespace begin_testing {
-	template <class R>
-	concept bool CanBegin =
-		requires(R&& r) {
-			ranges::begin((R&&)r);
-		};
+	//template <class R>
+	//concept bool CanBegin =
+	//	requires(R&& r) {
+	//		ranges::begin((R&&)r);
+	//	};
+	struct CanBegin_r {
+		template <class R>
+		auto requires_(R&& r) -> decltype(ranges::begin((R&&)r));
+	};
 
-	template <class>
-	constexpr bool can_begin = false;
-	CanBegin{R}
-	constexpr bool can_begin<R> = true;
+	template <class R>
+	constexpr bool can_begin = ranges::detail::requires_<CanBegin_r, R>;
 
 	struct A {
 		int* begin();
@@ -92,16 +100,18 @@ namespace begin_testing {
 	};
 
 	struct B : A {};
-	void* begin(B&);
+	// FIXME: void* breaks everything
+	//void* begin(B&);
+	std::nullptr_t begin(B&) { return nullptr; }
 
 	struct C : A {};
-	void begin(C&);
+	void begin(C&) {}
 
 	struct D : A {};
-	char* begin(D&);
+	char* begin(D&) { return 0; }
 
 	void test() {
-		namespace models = ranges::models;
+		namespace models = ranges;
 
 		// Valid
 		static_assert(can_begin<int(&)[2]>);
@@ -110,7 +120,10 @@ namespace begin_testing {
 		static_assert(models::Same<decltype(ranges::begin(std::declval<const int(&)[2]>())), const int*>);
 
 		// Ill-formed: array rvalue
+		// FIXME: MSVC
+#ifndef _MSC_VER
 		static_assert(!can_begin<int(&&)[2]>);
+#endif
 
 		// Valid: only member begin
 		static_assert(can_begin<A&>);
@@ -142,14 +155,15 @@ namespace begin_testing {
 			static_assert(models::Same<const int*, decltype(ranges::begin(std::declval<const T&>()))>);
 		}
 
-		static_assert(can_begin<ranges::ext::subrange<int*, int*>&>);
-		static_assert(can_begin<ranges::ext::subrange<int*, int*>&&>);
+		static_assert(can_begin<ranges::subrange<int*, int*>&>);
+		// FIXME: P0970
+		//static_assert(can_begin<ranges::subrange<int*, int*>&&>);
 	}
 } // namespace begin_testing
 
 namespace X {
 	template <class T, std::size_t N>
-		requires N != 0
+//		requires N != 0
 	struct array {
 		T elements_[N];
 
@@ -170,10 +184,12 @@ namespace X {
 
 using I = int*;
 using CI = const int*;
-static_assert(ranges::models::Iterator<I>);
-static_assert(ranges::models::Iterator<CI>);
+static_assert(ranges::Iterator<I>);
+static_assert(ranges::Iterator<CI>);
 
 void test_string_view_p0970() {
+	// FIXME: P0970
+#if 0 && defined(NANO_HAVE_CPP17)
 	// basic_string_views are non-dangling
 	using I = ranges::iterator_t<std::string_view>;
 	static_assert(ranges::Same<I, decltype(ranges::begin(std::declval<std::string_view>()))>);
@@ -187,6 +203,7 @@ void test_string_view_p0970() {
 		static_assert(ranges::Same<I, decltype(result)>);
 		CHECK(result == std::string_view{hw}.begin() + 7);
 	}
+#endif
 }
 
 }
@@ -194,12 +211,14 @@ void test_string_view_p0970() {
 TEST_CASE("range_access") {
 	using namespace ranges;
 
+	test_range_access_ambiguity();
+
 	static constexpr X::array<int, 4> some_ints = {{0,1,2,3}};
 
 	constexpr auto first = begin(some_ints);
 	constexpr auto last = end(some_ints);
-	static_assert(models::Same<const CI, decltype(first)>);
-	static_assert(models::Same<const CI, decltype(last)>);
+	static_assert(Same<const CI, decltype(first)>);
+	static_assert(Same<const CI, decltype(last)>);
 	static_assert(first == cbegin(some_ints));
 	static_assert(last == cend(some_ints));
 

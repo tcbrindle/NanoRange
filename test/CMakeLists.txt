@@ -142,7 +142,7 @@ add_executable(test_nanorange
     #iterator/reverse_iterator.cpp
     iterator/unreachable.cpp
 
-    #range_access.cpp
+    range_access.cpp
 
     utility/common_type.cpp
     utility/concepts.cpp
