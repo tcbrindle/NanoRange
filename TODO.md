@@ -9,11 +9,6 @@ In rough order or priority:
 * Add Cpp98Iterator concept, so we can call std:: algorithms safely
 * Implement the remaining algorithms as constrained wrappers around the existing std:: versions
 * Use the new names from P1037 (iter_value_t, iter_difference_t etc)
-* Implement the remaining range access and primitive CPOs, namely:
-  * [c]rbegin
-  * [c]rend
-  * data
-  * cdata
 * Implement the remaining comparison classes using constraints, namely
   * not_equal_to
   * less
@@ -21,7 +16,7 @@ In rough order or priority:
   * less_equal
   * greater_equal
 * Fix common_iterator (use variant-like data store)
-* Work out which of the iterator adaptors we need to implement:
+* Implement the remaining iterator adaptors, namely:
   * reverse_iterator
   * back_insert_iterator
   * front_insert_iterator
@@ -33,6 +28,7 @@ In rough order or priority:
   * ostreambuf_iterator
 * Re-implement the algorithms properly, including projections etc
 * Implement the views from P0789
+* Implement the tagged_tuple machinery
 
 # Algorithms List #
 
