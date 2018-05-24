@@ -13,7 +13,6 @@ NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
-// FIXME: Use tagged_pair
 struct replace_fn {
 private:
     template <typename I, typename S, typename T1, typename T2, typename Proj>
