@@ -9,6 +9,8 @@
 
 #include <nanorange/detail/macros.hpp>
 
+#include <iterator>
+
 NANO_BEGIN_NAMESPACE
 
 template <typename Container>
