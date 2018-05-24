@@ -74,8 +74,8 @@ add_executable(test_nanorange
     #algorithm/remove_copy_if.cpp
     #algorithm/remove_if.cpp
     algorithm/replace.cpp
-    #algorithm/replace_copy.cpp
-    #algorithm/replace_copy_if.cpp
+    algorithm/replace_copy.cpp
+    algorithm/replace_copy_if.cpp
     algorithm/replace_if.cpp
     #algorithm/reverse.cpp
     #algorithm/reverse_copy.cpp

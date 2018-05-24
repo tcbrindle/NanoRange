@@ -22,21 +22,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/replace_copy.hpp>
+#include <nanorange/algorithm/replace_copy.hpp>
+#include <nanorange/view/subrange.hpp>
 #include <utility>
-#include "../simple_test.hpp"
-#include "../test_utils.hpp"
+#include "../catch.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano::ranges;
 
-template <class InIter, class OutIter, class Sent = InIter>
-void test_iter()
-{
+namespace {
+
+template<class InIter, class OutIter, class Sent = InIter>
+void test_iter() {
 	int ia[] = {0, 1, 2, 3, 4};
-	const unsigned sa = sizeof(ia)/sizeof(ia[0]);
+	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
 	int ib[sa] = {0};
-	std::pair<InIter, OutIter> r = stl2::replace_copy(InIter(ia), Sent(ia+sa), OutIter(ib), 2, 5);
+	std::pair<InIter, OutIter> r = stl2::replace_copy(InIter(ia), Sent(ia + sa), OutIter(ib), 2, 5);
 	CHECK(base(r.first) == ia + sa);
 	CHECK(base(r.second) == ib + sa);
 	CHECK(ib[0] == 0);
@@ -46,13 +47,12 @@ void test_iter()
 	CHECK(ib[4] == 4);
 }
 
-template <class InIter, class OutIter, class Sent = InIter>
-void test_rng()
-{
+template<class InIter, class OutIter, class Sent = InIter>
+void test_rng() {
 	int ia[] = {0, 1, 2, 3, 4};
-	const unsigned sa = sizeof(ia)/sizeof(ia[0]);
+	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
 	int ib[sa] = {0};
-	auto rng = stl2::ext::make_range(InIter(ia), Sent(ia+sa));
+	auto rng = stl2::make_subrange(InIter(ia), Sent(ia + sa));
 	std::pair<InIter, OutIter> r = stl2::replace_copy(rng, OutIter(ib), 2, 5);
 	CHECK(base(r.first) == ia + sa);
 	CHECK(base(r.second) == ib + sa);
@@ -63,9 +63,8 @@ void test_rng()
 	CHECK(ib[4] == 4);
 }
 
-template <class InIter, class OutIter>
-void test()
-{
+template<class InIter, class OutIter>
+void test() {
 	using Sent = typename sentinel_type<InIter>::type;
 	test_iter<InIter, OutIter>();
 	test_iter<InIter, OutIter>();
@@ -73,7 +72,9 @@ void test()
 	test_rng<InIter, OutIter, Sent>();
 }
 
-int main()
+}
+
+TEST_CASE("alg.replace_copy")
 {
 	test<input_iterator<const int*>, output_iterator<int*> >();
 	test<input_iterator<const int*>, forward_iterator<int*> >();
@@ -113,12 +114,10 @@ int main()
 		std::pair<P *, P *> r = stl2::replace_copy(in, out, 2, P{5, "5"}, &std::pair<int, std::string>::first);
 		CHECK(r.first == stl2::end(in));
 		CHECK(r.second == stl2::end(out));
-		CHECK(out[0] == P{0, "0"});
-		CHECK(out[1] == P{1, "1"});
-		CHECK(out[2] == P{5, "5"});
-		CHECK(out[3] == P{3, "3"});
-		CHECK(out[4] == P{4, "4"});
+		CHECK((out[0] == P{0, "0"}));
+		CHECK((out[1] == P{1, "1"}));
+		CHECK((out[2] == P{5, "5"}));
+		CHECK((out[3] == P{3, "3"}));
+		CHECK((out[4] == P{4, "4"}));
 	}
-
-	return ::test_result();
 }
