@@ -10,14 +10,14 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <stl2/iterator.hpp>
-#include <stl2/type_traits.hpp>
-#include <stl2/algorithm.hpp>
+#include <nanorange/iterator.hpp>
+//#include <stl2/type_traits.hpp>
+//#include <stl2/algorithm.hpp>
 #include <list>
 #include "../test_iterators.hpp"
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 
-namespace ranges = std::experimental::ranges;
+namespace ranges = nano::ranges;
 
 constexpr bool test_constexpr() {
 	int some_ints[] = {0,1,2,3};
@@ -83,15 +83,15 @@ constexpr bool test_constexpr() {
 }
 static_assert(test_constexpr());
 
-int main()
+TEST_CASE("iter.counted_iterator")
 {
-	using namespace std::experimental::ranges;
+	using namespace nano::ranges;
 
 	{
 		int rgi[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 		auto i = make_counted_iterator(forward_iterator<int*>{rgi}, size(rgi));
 		static_assert(std::is_same<decltype(i),counted_iterator<forward_iterator<int*>>>());
-		static_assert(models::SizedSentinel<default_sentinel, decltype(i)>);
+		static_assert(SizedSentinel<default_sentinel, decltype(i)>);
 		CHECK(static_cast<std::size_t>(default_sentinel{} - i) == size(rgi));
 		CHECK(&*i.base() == begin(rgi));
 		CHECK(std::size_t(i.count()) == size(rgi));
@@ -116,7 +116,7 @@ int main()
 	{
 		counted_iterator<char*> c{nullptr, 0};
 		counted_iterator<char const*> d{c};
-		static_assert(!models::Assignable<decltype(c)&, decltype(d)>);
+		static_assert(!Assignable<decltype(c)&, decltype(d)>);
 		CHECK((c - c) == 0);
 		CHECK((d - d) == 0);
 		CHECK((c - d) == 0);
@@ -126,7 +126,8 @@ int main()
 	{
 		int rgi[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 		counted_iterator<output_iterator<int*>> e{output_iterator<int*>{rgi}, 10};
-		fill(e, default_sentinel{}, 0);
+//		fill(e, default_sentinel{}, 0);
+		for (auto i = e; i != default_sentinel{}; ++i) { *i = 0; }
 		int expected[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 		CHECK(std::equal(rgi, rgi + size(rgi), expected));
 		// Make sure advance compiles
@@ -134,6 +135,4 @@ int main()
 		CHECK(e.base().base() == rgi + 4);
 		CHECK(e.count() == 10 - 4);
 	}
-
-	return ::test_result();
 }

@@ -20,7 +20,6 @@ In rough order or priority:
 * Implement the remaining iterator adaptors, namely:
   * reverse_iterator
   * move_iterator
-  * counted_iterator
   * istream_iterator
   * istreambuf_iterator
 * Re-implement the remainging algorithms properly, including projections etc

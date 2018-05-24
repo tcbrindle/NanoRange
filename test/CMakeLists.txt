@@ -130,7 +130,7 @@ add_executable(test_nanorange
     functional/invoke.cpp
 
     iterator/common_iterator.cpp
-    #iterator/counted_iterator.cpp
+    iterator/counted_iterator.cpp
     #iterator/incomplete.cpp
     #iterator/istream_iterator.cpp
     #iterator/istreambuf_iterator.cpp

@@ -17,6 +17,7 @@
 #include <nanorange/iterator/back_insert_iterator.hpp>
 #include <nanorange/iterator/common_iterator.hpp>
 #include <nanorange/iterator/concepts.hpp>
+#include <nanorange/iterator/counted_iterator.hpp>
 #include <nanorange/iterator/default_sentinel.hpp>
 #include <nanorange/iterator/front_insert_iterator.hpp>
 #include <nanorange/iterator/insert_iterator.hpp>
