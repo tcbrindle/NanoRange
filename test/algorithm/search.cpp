@@ -264,6 +264,11 @@ TEST_CASE("alg.search")
 	{
 		int ib[] = {0, 1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 4};
 		int ie[] = {1, 2, 3};
+		// FIXME: MSCV says moved raw array is not an rvalue?
+#ifndef _MSC_VER
 		CHECK(stl2::search(std::move(ib), ie).get_unsafe() == ib+4);
+#else
+		CHECK(stl2::search(std::move(ib), ie) == ib+4);
+#endif
 	}
 }

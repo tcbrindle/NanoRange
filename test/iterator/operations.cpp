@@ -9,12 +9,16 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <nanorange.hpp>
+#include <nanorange/iterator/operations.hpp>
 //#include <stl2/view/iota.hpp>
 //#include <stl2/view/take_exactly.hpp>
 //#include <stl2/detail/iterator/basic_iterator.hpp>
 
 namespace ranges = nano::ranges;
+
+// FIXME: This file is too constexpr-y for MSVC currently,
+// and causes nasty ICEs and general confusion
+#ifndef _MSC_VER
 
 namespace {
     template <class T, std::size_t N, bool Bidi = true>
@@ -392,3 +396,5 @@ namespace {
     }
     static_assert(test_distance(), "");
 } // unnamed namespace
+
+#endif // _MSC_VER
