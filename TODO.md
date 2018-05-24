@@ -59,6 +59,8 @@ iterators and sentinels of different types, and allow the use of projections.
 * replace
 * replace_if
 * replace_copy
+* replace_copy_if
+* fill
 
 ## Partially implemented (using STL) ##
 
@@ -82,8 +84,6 @@ The following algorithms have not yet been implemented in Nanorange:
 
 #### Modifying sequence ops ####
 
-* replace_copy_if
-* fill
 * fill_n
 * generate
 * generate_n

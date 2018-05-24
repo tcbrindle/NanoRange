@@ -15,6 +15,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/copy.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/count.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/equal.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/fill.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/find.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/find_first_of.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/for_each.hpp

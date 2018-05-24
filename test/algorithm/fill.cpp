@@ -18,30 +18,31 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/fill.hpp>
+#include <nanorange/algorithm/fill.hpp>
+#include <nanorange/view/subrange.hpp>
 #include <cstring>
 #include <string>
 #include <vector>
-#include "../simple_test.hpp"
-#include "../test_utils.hpp"
+#include "../catch.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano::ranges;
 
-template <class Iter, class Sent = Iter>
+namespace {
+
+template<class Iter, class Sent = Iter>
 void
-test_char()
-{
+test_char() {
 	const unsigned n = 4;
 	char ca[n] = {0};
-	auto i = stl2::fill(Iter(ca), Sent(ca+n), char(1));
+	auto i = stl2::fill(Iter(ca), Sent(ca + n), char(1));
 	CHECK(ca[0] == 1);
 	CHECK(ca[1] == 1);
 	CHECK(ca[2] == 1);
 	CHECK(ca[3] == 1);
 	CHECK(i == Iter(ca + 4));
 
-	auto rng = stl2::ext::make_range(Iter(ca), Sent(ca+n));
+	auto rng = stl2::make_subrange(Iter(ca), Sent(ca + n));
 	i = stl2::fill(rng, char(2));
 	CHECK(ca[0] == 2);
 	CHECK(ca[1] == 2);
@@ -49,7 +50,7 @@ test_char()
 	CHECK(ca[3] == 2);
 	CHECK(i == Iter(ca + 4));
 
-	auto j = stl2::fill(stl2::ext::make_range(Iter(ca), Sent(ca+n)), char(3));
+	auto j = stl2::fill(stl2::make_subrange(Iter(ca), Sent(ca + n)), char(3));
 	CHECK(ca[0] == 3);
 	CHECK(ca[1] == 3);
 	CHECK(ca[2] == 3);
@@ -57,19 +58,18 @@ test_char()
 	CHECK(j.get_unsafe() == Iter(ca + 4));
 }
 
-template <class Iter, class Sent = Iter>
+template<class Iter, class Sent = Iter>
 void
-test_int()
-{
+test_int() {
 	const unsigned n = 4;
 	int ia[n] = {0};
-	stl2::fill(Iter(ia), Sent(ia+n), 1);
+	stl2::fill(Iter(ia), Sent(ia + n), 1);
 	CHECK(ia[0] == 1);
 	CHECK(ia[1] == 1);
 	CHECK(ia[2] == 1);
 	CHECK(ia[3] == 1);
 
-	auto rng = stl2::ext::make_range(Iter(ia), Sent(ia+n));
+	auto rng = stl2::make_subrange(Iter(ia), Sent(ia + n));
 	stl2::fill(rng, 2);
 	CHECK(ia[0] == 2);
 	CHECK(ia[2] == 2);
@@ -77,7 +77,9 @@ test_int()
 	CHECK(ia[3] == 2);
 }
 
-int main()
+}
+
+TEST_CASE("alg.fill")
 {
 	test_char<forward_iterator<char*> >();
 	test_char<bidirectional_iterator<char*> >();
@@ -96,6 +98,4 @@ int main()
 	test_int<forward_iterator<int*>, sentinel<int*> >();
 	test_int<bidirectional_iterator<int*>, sentinel<int*> >();
 	test_int<random_access_iterator<int*>, sentinel<int*> >();
-
-	return ::test_result();
 }
