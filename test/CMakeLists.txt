@@ -83,7 +83,7 @@ add_executable(test_nanorange
     #algorithm/rotate_copy.cpp
     #algorithm/sample.cpp
     algorithm/search.cpp
-    #algorithm/search_n.cpp
+    algorithm/search_n.cpp
     #algorithm/set_difference1.cpp
     #algorithm/set_difference2.cpp
     #algorithm/set_difference3.cpp

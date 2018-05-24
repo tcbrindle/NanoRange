@@ -22,63 +22,69 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/search_n.hpp>
-#include "../simple_test.hpp"
-#include "../test_utils.hpp"
+#include <nanorange/algorithm/search_n.hpp>
+#include <nanorange/view/subrange.hpp>
+#include "../catch.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
 
-template <class Iter, typename Sent = Iter>
-void
-test_iter_impl()
+namespace {
+
+template <typename T>
+T& as_lvalue(T&& t)
 {
-	int ia[] = {0, 1, 2, 3, 4, 5};
-	const unsigned sa = sizeof(ia)/sizeof(ia[0]);
-	CHECK(stl2::search_n(Iter(ia), Sent(ia+sa), 0, 0) == Iter(ia));
-	CHECK(stl2::search_n(Iter(ia), Sent(ia+sa), 1, 0) == Iter(ia+0));
-	CHECK(stl2::search_n(Iter(ia), Sent(ia+sa), 2, 0) == Iter(ia+sa));
-	CHECK(stl2::search_n(Iter(ia), Sent(ia+sa), sa, 0) == Iter(ia+sa));
-	CHECK(stl2::search_n(Iter(ia), Sent(ia+sa), 0, 3) == Iter(ia));
-	CHECK(stl2::search_n(Iter(ia), Sent(ia+sa), 1, 3) == Iter(ia+3));
-	CHECK(stl2::search_n(Iter(ia), Sent(ia+sa), 2, 3) == Iter(ia+sa));
-	CHECK(stl2::search_n(Iter(ia), Sent(ia+sa), sa, 3) == Iter(ia+sa));
-	CHECK(stl2::search_n(Iter(ia), Sent(ia+sa), 0, 5) == Iter(ia));
-	CHECK(stl2::search_n(Iter(ia), Sent(ia+sa), 1, 5) == Iter(ia+5));
-	CHECK(stl2::search_n(Iter(ia), Sent(ia+sa), 2, 5) == Iter(ia+sa));
-	CHECK(stl2::search_n(Iter(ia), Sent(ia+sa), sa, 5) == Iter(ia+sa));
-
-	int ib[] = {0, 0, 1, 1, 2, 2};
-	const unsigned sb = sizeof(ib)/sizeof(ib[0]);
-	CHECK(stl2::search_n(Iter(ib), Sent(ib+sb), 0, 0) == Iter(ib));
-	CHECK(stl2::search_n(Iter(ib), Sent(ib+sb), 1, 0) == Iter(ib+0));
-	CHECK(stl2::search_n(Iter(ib), Sent(ib+sb), 2, 0) == Iter(ib+0));
-	CHECK(stl2::search_n(Iter(ib), Sent(ib+sb), 3, 0) == Iter(ib+sb));
-	CHECK(stl2::search_n(Iter(ib), Sent(ib+sb), sb, 0) == Iter(ib+sb));
-	CHECK(stl2::search_n(Iter(ib), Sent(ib+sb), 0, 1) == Iter(ib));
-	CHECK(stl2::search_n(Iter(ib), Sent(ib+sb), 1, 1) == Iter(ib+2));
-	CHECK(stl2::search_n(Iter(ib), Sent(ib+sb), 2, 1) == Iter(ib+2));
-	CHECK(stl2::search_n(Iter(ib), Sent(ib+sb), 3, 1) == Iter(ib+sb));
-	CHECK(stl2::search_n(Iter(ib), Sent(ib+sb), sb, 1) == Iter(ib+sb));
-	CHECK(stl2::search_n(Iter(ib), Sent(ib+sb), 0, 2) == Iter(ib));
-	CHECK(stl2::search_n(Iter(ib), Sent(ib+sb), 1, 2) == Iter(ib+4));
-	CHECK(stl2::search_n(Iter(ib), Sent(ib+sb), 2, 2) == Iter(ib+4));
-	CHECK(stl2::search_n(Iter(ib), Sent(ib+sb), 3, 2) == Iter(ib+sb));
-	CHECK(stl2::search_n(Iter(ib), Sent(ib+sb), sb, 2) == Iter(ib+sb));
-
-	int ic[] = {0, 0, 0};
-	const unsigned sc = sizeof(ic)/sizeof(ic[0]);
-	CHECK(stl2::search_n(Iter(ic), Sent(ic+sc), 0, 0) == Iter(ic));
-	CHECK(stl2::search_n(Iter(ic), Sent(ic+sc), 1, 0) == Iter(ic));
-	CHECK(stl2::search_n(Iter(ic), Sent(ic+sc), 2, 0) == Iter(ic));
-	CHECK(stl2::search_n(Iter(ic), Sent(ic+sc), 3, 0) == Iter(ic));
-	CHECK(stl2::search_n(Iter(ic), Sent(ic+sc), 4, 0) == Iter(ic+sc));
+	return t;
 }
 
-template <class Iter, class Iter2>
+template<class Iter, typename Sent = Iter>
 void
-test_iter()
-{
+test_iter_impl() {
+	int ia[] = {0, 1, 2, 3, 4, 5};
+	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
+	CHECK(stl2::search_n(Iter(ia), Sent(ia + sa), 0, 0) == Iter(ia));
+	CHECK(stl2::search_n(Iter(ia), Sent(ia + sa), 1, 0) == Iter(ia + 0));
+	CHECK(stl2::search_n(Iter(ia), Sent(ia + sa), 2, 0) == Iter(ia + sa));
+	CHECK(stl2::search_n(Iter(ia), Sent(ia + sa), sa, 0) == Iter(ia + sa));
+	CHECK(stl2::search_n(Iter(ia), Sent(ia + sa), 0, 3) == Iter(ia));
+	CHECK(stl2::search_n(Iter(ia), Sent(ia + sa), 1, 3) == Iter(ia + 3));
+	CHECK(stl2::search_n(Iter(ia), Sent(ia + sa), 2, 3) == Iter(ia + sa));
+	CHECK(stl2::search_n(Iter(ia), Sent(ia + sa), sa, 3) == Iter(ia + sa));
+	CHECK(stl2::search_n(Iter(ia), Sent(ia + sa), 0, 5) == Iter(ia));
+	CHECK(stl2::search_n(Iter(ia), Sent(ia + sa), 1, 5) == Iter(ia + 5));
+	CHECK(stl2::search_n(Iter(ia), Sent(ia + sa), 2, 5) == Iter(ia + sa));
+	CHECK(stl2::search_n(Iter(ia), Sent(ia + sa), sa, 5) == Iter(ia + sa));
+
+	int ib[] = {0, 0, 1, 1, 2, 2};
+	const unsigned sb = sizeof(ib) / sizeof(ib[0]);
+	CHECK(stl2::search_n(Iter(ib), Sent(ib + sb), 0, 0) == Iter(ib));
+	CHECK(stl2::search_n(Iter(ib), Sent(ib + sb), 1, 0) == Iter(ib + 0));
+	CHECK(stl2::search_n(Iter(ib), Sent(ib + sb), 2, 0) == Iter(ib + 0));
+	CHECK(stl2::search_n(Iter(ib), Sent(ib + sb), 3, 0) == Iter(ib + sb));
+	CHECK(stl2::search_n(Iter(ib), Sent(ib + sb), sb, 0) == Iter(ib + sb));
+	CHECK(stl2::search_n(Iter(ib), Sent(ib + sb), 0, 1) == Iter(ib));
+	CHECK(stl2::search_n(Iter(ib), Sent(ib + sb), 1, 1) == Iter(ib + 2));
+	CHECK(stl2::search_n(Iter(ib), Sent(ib + sb), 2, 1) == Iter(ib + 2));
+	CHECK(stl2::search_n(Iter(ib), Sent(ib + sb), 3, 1) == Iter(ib + sb));
+	CHECK(stl2::search_n(Iter(ib), Sent(ib + sb), sb, 1) == Iter(ib + sb));
+	CHECK(stl2::search_n(Iter(ib), Sent(ib + sb), 0, 2) == Iter(ib));
+	CHECK(stl2::search_n(Iter(ib), Sent(ib + sb), 1, 2) == Iter(ib + 4));
+	CHECK(stl2::search_n(Iter(ib), Sent(ib + sb), 2, 2) == Iter(ib + 4));
+	CHECK(stl2::search_n(Iter(ib), Sent(ib + sb), 3, 2) == Iter(ib + sb));
+	CHECK(stl2::search_n(Iter(ib), Sent(ib + sb), sb, 2) == Iter(ib + sb));
+
+	int ic[] = {0, 0, 0};
+	const unsigned sc = sizeof(ic) / sizeof(ic[0]);
+	CHECK(stl2::search_n(Iter(ic), Sent(ic + sc), 0, 0) == Iter(ic));
+	CHECK(stl2::search_n(Iter(ic), Sent(ic + sc), 1, 0) == Iter(ic));
+	CHECK(stl2::search_n(Iter(ic), Sent(ic + sc), 2, 0) == Iter(ic));
+	CHECK(stl2::search_n(Iter(ic), Sent(ic + sc), 3, 0) == Iter(ic));
+	CHECK(stl2::search_n(Iter(ic), Sent(ic + sc), 4, 0) == Iter(ic + sc));
+}
+
+template<class Iter, class Iter2>
+void
+test_iter() {
 	using Sent = typename sentinel_type<Iter>::type;
 	test_iter_impl<Iter>();
 	test_iter_impl<Iter, Sent>();
@@ -87,56 +93,54 @@ test_iter()
 	test_iter_impl<Iter, SizedSent1>();
 }
 
-template <class Iter, typename Sent = Iter>
+template<class Iter, typename Sent = Iter>
 void
-test_range_impl()
-{
+test_range_impl() {
 	int ia[] = {0, 1, 2, 3, 4, 5};
-	const unsigned sa = sizeof(ia)/sizeof(ia[0]);
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), 0, 0) == Iter(ia));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), 1, 0) == Iter(ia+0));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), 2, 0) == Iter(ia+sa));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), sa, 0) == Iter(ia+sa));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), 0, 3) == Iter(ia));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), 1, 3) == Iter(ia+3));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), 2, 3) == Iter(ia+sa));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), sa, 3) == Iter(ia+sa));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), 0, 5) == Iter(ia));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), 1, 5) == Iter(ia+5));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), 2, 5) == Iter(ia+sa));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), sa, 5) == Iter(ia+sa));
+	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))), 0, 0) == Iter(ia));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))), 1, 0) == Iter(ia + 0));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))), 2, 0) == Iter(ia + sa));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))), sa, 0) == Iter(ia + sa));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))), 0, 3) == Iter(ia));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))), 1, 3) == Iter(ia + 3));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))), 2, 3) == Iter(ia + sa));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))), sa, 3) == Iter(ia + sa));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))), 0, 5) == Iter(ia));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))), 1, 5) == Iter(ia + 5));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))), 2, 5) == Iter(ia + sa));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))), sa, 5) == Iter(ia + sa));
 
 	int ib[] = {0, 0, 1, 1, 2, 2};
-	const unsigned sb = sizeof(ib)/sizeof(ib[0]);
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ib), Sent(ib+sb))), 0, 0) == Iter(ib));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ib), Sent(ib+sb))), 1, 0) == Iter(ib+0));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ib), Sent(ib+sb))), 2, 0) == Iter(ib+0));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ib), Sent(ib+sb))), 3, 0) == Iter(ib+sb));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ib), Sent(ib+sb))), sb, 0) == Iter(ib+sb));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ib), Sent(ib+sb))), 0, 1) == Iter(ib));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ib), Sent(ib+sb))), 1, 1) == Iter(ib+2));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ib), Sent(ib+sb))), 2, 1) == Iter(ib+2));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ib), Sent(ib+sb))), 3, 1) == Iter(ib+sb));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ib), Sent(ib+sb))), sb, 1) == Iter(ib+sb));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ib), Sent(ib+sb))), 0, 2) == Iter(ib));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ib), Sent(ib+sb))), 1, 2) == Iter(ib+4));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ib), Sent(ib+sb))), 2, 2) == Iter(ib+4));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ib), Sent(ib+sb))), 3, 2) == Iter(ib+sb));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ib), Sent(ib+sb))), sb, 2) == Iter(ib+sb));
+	const unsigned sb = sizeof(ib) / sizeof(ib[0]);
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ib), Sent(ib + sb))), 0, 0) == Iter(ib));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ib), Sent(ib + sb))), 1, 0) == Iter(ib + 0));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ib), Sent(ib + sb))), 2, 0) == Iter(ib + 0));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ib), Sent(ib + sb))), 3, 0) == Iter(ib + sb));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ib), Sent(ib + sb))), sb, 0) == Iter(ib + sb));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ib), Sent(ib + sb))), 0, 1) == Iter(ib));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ib), Sent(ib + sb))), 1, 1) == Iter(ib + 2));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ib), Sent(ib + sb))), 2, 1) == Iter(ib + 2));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ib), Sent(ib + sb))), 3, 1) == Iter(ib + sb));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ib), Sent(ib + sb))), sb, 1) == Iter(ib + sb));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ib), Sent(ib + sb))), 0, 2) == Iter(ib));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ib), Sent(ib + sb))), 1, 2) == Iter(ib + 4));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ib), Sent(ib + sb))), 2, 2) == Iter(ib + 4));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ib), Sent(ib + sb))), 3, 2) == Iter(ib + sb));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ib), Sent(ib + sb))), sb, 2) == Iter(ib + sb));
 
 	int ic[] = {0, 0, 0};
-	const unsigned sc = sizeof(ic)/sizeof(ic[0]);
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ic), Sent(ic+sc))), 0, 0) == Iter(ic));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ic), Sent(ic+sc))), 1, 0) == Iter(ic));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ic), Sent(ic+sc))), 2, 0) == Iter(ic));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ic), Sent(ic+sc))), 3, 0) == Iter(ic));
-	CHECK(stl2::search_n(::as_lvalue(stl2::ext::make_range(Iter(ic), Sent(ic+sc))), 4, 0) == Iter(ic+sc));
+	const unsigned sc = sizeof(ic) / sizeof(ic[0]);
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ic), Sent(ic + sc))), 0, 0) == Iter(ic));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ic), Sent(ic + sc))), 1, 0) == Iter(ic));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ic), Sent(ic + sc))), 2, 0) == Iter(ic));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ic), Sent(ic + sc))), 3, 0) == Iter(ic));
+	CHECK(stl2::search_n(::as_lvalue(stl2::make_subrange(Iter(ic), Sent(ic + sc))), 4, 0) == Iter(ic + sc));
 }
 
-template <class Iter, class Iter2>
+template<class Iter, class Iter2>
 void
-test_range()
-{
+test_range() {
 	using Sent = typename sentinel_type<Iter>::type;
 	test_range_impl<Iter>();
 	test_range_impl<Iter, Sent>();
@@ -145,20 +149,20 @@ test_range()
 	test_range_impl<Iter, SizedSent1>();
 }
 
-template <class Iter, class Iter2>
+template<class Iter, class Iter2>
 void
-test()
-{
+test() {
 	test_iter<Iter, Iter2>();
 	test_range<Iter, Iter2>();
 }
 
-struct S
-{
+struct S {
 	int i;
 };
 
-int main()
+}
+
+TEST_CASE("alg.search_n")
 {
 	test<forward_iterator<const int*>, forward_iterator<const int*> >();
 	test<forward_iterator<const int*>, bidirectional_iterator<const int*> >();
@@ -180,8 +184,10 @@ int main()
 
 	// Test counted ranges
 	{
+		// FIXME: counted_iterator
+#ifdef HAVE_COUNTED_ITERATOR
 		int in[] = {0,1,2,2,4,5};
-		auto rng = stl2::ext::make_range(
+		auto rng = stl2::make_subrange(
 					 stl2::make_counted_iterator(bidirectional_iterator<int*>(in), 6),
 					 stl2::default_sentinel{});
 		auto it = stl2::search_n(rng, 2, 2);
@@ -191,13 +197,17 @@ int main()
 		auto it2 = stl2::search_n(rng, 3, 2);
 		CHECK(base(it2.base()) == in+6);
 		CHECK(it2.count() == 0);
+#endif
 	}
 
 	// Test rvalue ranges
 	{
 		int ib[] = {0, 0, 1, 1, 2, 2};
-		CHECK(stl2::search_n(stl2::move(ib), 2, 1).get_unsafe() == ib+2);
+		// FIXME: MSVC
+#ifndef _MSC_VER
+		CHECK(stl2::search_n(std::move(ib), 2, 1).get_unsafe() == ib+2);
+#else
+		CHECK(stl2::search_n(std::move(ib), 2, 1) == ib+2);
+#endif
 	}
-
-	return ::test_result();
 }

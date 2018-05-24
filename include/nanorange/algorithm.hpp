@@ -21,6 +21,7 @@
 #include <nanorange/algorithm/move.hpp>
 #include <nanorange/algorithm/none_of.hpp>
 #include <nanorange/algorithm/search.hpp>
+#include <nanorange/algorithm/search_n.hpp>
 #include <nanorange/algorithm/swap_ranges.hpp>
 
 // Algorithms which reuse the STL implementation
