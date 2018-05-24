@@ -128,9 +128,9 @@ private:
 
 public:
     template <typename T>
-    constexpr auto operator()(T&& t) const noexcept(
-        noexcept(fn::impl(std::forward<T>(t), priority_tag<2>{})))
-        -> decltype(fn::impl(std::forward<T>(t), priority_tag<2>{}))
+    constexpr auto operator()(T&& t) const
+        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<2>{})))
+            -> decltype(fn::impl(std::forward<T>(t), priority_tag<2>{}))
     {
         return fn::impl(std::forward<T>(t), priority_tag<2>{});
     }
@@ -140,6 +140,50 @@ public:
 } // namespace detail
 
 NANO_INLINE_VAR(detail::empty_::fn, empty)
+
+namespace detail {
+
+template <typename P>
+constexpr bool is_object_pointer_v =
+    std::is_pointer<P>::value && std::is_object<checked_value_type_t<P>>::value;
+
+namespace data_ {
+
+struct fn {
+private:
+    template <typename T, typename D = decltype(decay_copy(std::declval<T&>().data()))>
+    static constexpr auto
+    impl(T& t, priority_tag<1>) noexcept(noexcept(decay_copy(t.data())))
+        -> std::enable_if_t<is_object_pointer_v<D>, D>
+    {
+        return t.data();
+    }
+
+    template <typename T>
+    static constexpr auto
+    impl(T&& t,
+         priority_tag<0>) noexcept(noexcept(ranges::begin(std::forward<T>(t))))
+        -> std::enable_if_t<
+            is_object_pointer_v<decltype(ranges::begin(std::forward<T>(t)))>,
+            decltype(ranges::begin(std::forward<T>(t)))>
+    {
+        return ranges::begin(std::forward<T>(t));
+    }
+
+public:
+    template <typename T>
+    constexpr auto operator()(T&& t) const
+        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<1>{})))
+            -> decltype(fn::impl(std::forward<T>(t), priority_tag<1>{}))
+    {
+        return fn::impl(std::forward<T>(t), priority_tag<1>{});
+    }
+};
+
+} // namespace data_
+} // namespace detail
+
+NANO_INLINE_VAR(detail::data_::fn, data)
 
 NANO_END_NAMESPACE
 

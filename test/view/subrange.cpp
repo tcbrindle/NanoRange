@@ -38,9 +38,7 @@ TEST_CASE("view.subrange") {
 		CHECK(end(r) == some_ints + n);
 		CHECK(!empty(r));
 		CHECK(std::size_t(size(r)) == n);
-		// FIXME: Range acccessors
-//		CHECK(data(r) == some_ints);
-		CHECK(r.data() == some_ints);
+		CHECK(data(r) == some_ints);
 	}
 
 	{
