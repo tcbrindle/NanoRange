@@ -164,11 +164,14 @@ add_executable(test_nanorange
 target_compile_definitions(test_nanorange PRIVATE "-DNANORANGE_NO_DEPRECATION_WARNINGS")
 target_link_libraries(test_nanorange PRIVATE nanorange)
 
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    target_compile_options(test_nanorange PRIVATE -Wall -Wextra)
+if (CMAKE_COMPILER_IS_GNUCXX)
+    target_compile_options(test_nanorange PRIVATE -Wall -Wextra -pedantic -Wno-noexcept-type)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    target_compile_options(test_nanorange PRIVATE "-Wno-unneeded-internal-declaration")
+    target_compile_options(test_nanorange PRIVATE -Wall -Wextra -pedantic -Wno-unneeded-internal-declaration)
 endif()
 
+if (MSVC)
+    target_compile_options(test_nanorange PRIVATE /wd4180)
+endif()

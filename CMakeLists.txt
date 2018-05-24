@@ -6,15 +6,84 @@ project(nanorange CXX)
 set(CMAKE_CXX_EXTENSIONS Off)
 
 add_library(nanorange INTERFACE)
-target_sources(nanorange INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange.hpp)
-target_include_directories(nanorange INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_sources(nanorange INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange.hpp
 
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    target_compile_features(nanorange INTERFACE cxx_std_14)
-endif()
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/adjacent_find.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/all_of.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/any_of.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/copy.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/count.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/equal.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/find.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/find_first_of.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/for_each.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/mismatch.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/move.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/none_of.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/search.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/search_n.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/swap_ranges.hpp
+
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/algorithm/stl/find_end.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/comparison.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/core.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/movable.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/object.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/swappable.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/functional/comparisons.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/functional/decay_copy.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/functional/identity.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/functional/invoke.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/iterator/algorithm_requirements.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/iterator/associated_types.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/iterator/concepts.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/iterator/dereferenceable.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/iterator/indirect_callable_concepts.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/iterator/iter_move.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/iterator/iter_swap.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/iterator/projected.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/iterator/traits.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/range/access.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/range/concepts.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/range/dangling.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/range/primitives.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/common_reference.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/macros.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/swap.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/type_traits.hpp
+
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/back_insert_iterator.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/common_iterator.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/concepts.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/counted_iterator.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/default_sentinel.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/front_insert_iterator.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/insert_iterator.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/operations.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/ostream_iterator.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/ostreambuf_iterator.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/unreachable.hpp
+
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/interface.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/subrange.hpp
+
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/concepts.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/functional.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/random.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/range.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/type_traits.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/utility.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view.hpp
+)
+target_include_directories(nanorange INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_features(nanorange INTERFACE cxx_std_14)
+
 
 if (MSVC)
-    target_compile_options(nanorange INTERFACE /permissive- /std:c++latest)
+    target_compile_options(nanorange INTERFACE /permissive-)
 endif()
 
 add_subdirectory(test)

@@ -43,7 +43,7 @@ namespace {
 
 TEST_CASE("iter.ostreambuf_iterator") {
 	using I = ostreambuf_iterator<char>;
-	static_assert(OutputIterator<I, const char&>);
+	static_assert(OutputIterator<I, const char&>, "");
 	// FIXME: ostreambuf_iterator isn't EqualityComparableWith default_sentinel?
 	//static_assert(Sentinel<default_sentinel, I>);
 	//static_assert(Common<I, default_sentinel>);

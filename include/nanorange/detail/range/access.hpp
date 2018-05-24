@@ -148,7 +148,7 @@ struct fn {
 } // namespace cbegin_
 } // namespace detail
 
-NANO_INLINE_VAR(detail::cbegin_::fn, cbegin);
+NANO_INLINE_VAR(detail::cbegin_::fn, cbegin)
 
 // [ranges.access.cend]
 

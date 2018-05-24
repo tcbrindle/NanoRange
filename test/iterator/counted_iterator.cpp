@@ -22,7 +22,7 @@ namespace ranges = nano::ranges;
 constexpr bool test_constexpr() {
 	int some_ints[] = {0,1,2,3};
 	constexpr int n = ranges::size(some_ints);
-	static_assert(n >= 4);
+	static_assert(n >= 4, "");
 
 	{ ranges::counted_iterator<int*> unused{}; (void)unused; }
 	auto first = ranges::make_counted_iterator(ranges::begin(some_ints), n);
@@ -81,7 +81,7 @@ constexpr bool test_constexpr() {
 
 	return true;
 }
-static_assert(test_constexpr());
+static_assert(test_constexpr(), "");
 
 TEST_CASE("iter.counted_iterator")
 {
@@ -90,8 +90,8 @@ TEST_CASE("iter.counted_iterator")
 	{
 		int rgi[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 		auto i = make_counted_iterator(forward_iterator<int*>{rgi}, size(rgi));
-		static_assert(std::is_same<decltype(i),counted_iterator<forward_iterator<int*>>>());
-		static_assert(SizedSentinel<default_sentinel, decltype(i)>);
+		static_assert(std::is_same<decltype(i),counted_iterator<forward_iterator<int*>>>(), "");
+		static_assert(SizedSentinel<default_sentinel, decltype(i)>, "");
 		CHECK(static_cast<std::size_t>(default_sentinel{} - i) == size(rgi));
 		CHECK(&*i.base() == begin(rgi));
 		CHECK(std::size_t(i.count()) == size(rgi));
@@ -106,7 +106,7 @@ TEST_CASE("iter.counted_iterator")
 		std::list<int> l;
 		auto a = make_counted_iterator(l.begin(), 0);
 		auto b = make_counted_iterator(l.cbegin(), 0);
-		static_assert(std::is_same<common_type_t<decltype(a), decltype(b)>, decltype(b)>());
+		static_assert(std::is_same<common_type_t<decltype(a), decltype(b)>, decltype(b)>(), "");
 		CHECK((a - a) == 0);
 		CHECK((b - b) == 0);
 		CHECK((a - b) == 0);
@@ -116,7 +116,7 @@ TEST_CASE("iter.counted_iterator")
 	{
 		counted_iterator<char*> c{nullptr, 0};
 		counted_iterator<char const*> d{c};
-		static_assert(!Assignable<decltype(c)&, decltype(d)>);
+		static_assert(!Assignable<decltype(c)&, decltype(d)>, "");
 		CHECK((c - c) == 0);
 		CHECK((d - d) == 0);
 		CHECK((c - d) == 0);

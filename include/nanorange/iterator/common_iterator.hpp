@@ -90,7 +90,7 @@ public:
         iter_ = other.iter_;
         sentinel_ = other.sentinel_;
         return *this;
-    };
+    }
 
     constexpr decltype(auto) operator*() { return *iter_; }
 
@@ -99,7 +99,7 @@ public:
     constexpr decltype(auto) operator*() const
     {
         return *iter_;
-    };
+    }
 
     template <typename II = I>
     constexpr auto operator-> () const
