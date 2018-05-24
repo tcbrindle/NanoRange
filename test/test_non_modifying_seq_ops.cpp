@@ -333,7 +333,6 @@ TEST_CASE("adjacent_find() (with predicate)")
 
 }
 
-#if 0
 TEST_CASE("search()")
 {
     const std::vector<int> vec = {1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -369,6 +368,8 @@ TEST_CASE("search() (with predicate)")
         REQUIRE(it == vec.begin() + 2);
     }
 }
+
+#if 0
 
 TEST_CASE("search_n()")
 {

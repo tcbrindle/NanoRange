@@ -6,7 +6,6 @@ In rough order or priority:
 * Add Travis/Appveyor automatic testing
 * Automatically generate single include header when testing
 * Move the rewrite branch to master
-* Add Cpp98Iterator concept, so we can call std:: algorithms safely
 * Implement the remaining algorithms as constrained wrappers around the existing std:: versions
 * Use the new names from P1037 (iter_value_t, iter_difference_t etc)
 * Implement the remaining comparison classes using constraints, namely

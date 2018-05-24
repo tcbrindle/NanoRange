@@ -204,6 +204,25 @@ NANO_CONCEPT RandomAccessIterator = BidirectionalIterator<I>&& DerivedFrom<
     StrictTotallyOrdered<I>&& SizedSentinel<I, I>&&
         detail::requires_<detail::RandomAccessIterator_req, I>;
 
+
+// Extension: used for constraining iterators for existing STL algos
+
+namespace detail {
+
+template <typename I,
+          typename T = std::iterator_traits<I>,
+          typename = typename T::value_type,
+          typename = typename T::difference_type,
+          typename = typename T::reference,
+          typename = typename T::pointer,
+          typename = typename T::iterator_category>
+using legacy_iterator_traits_t = void;
+
+template <typename I>
+NANO_CONCEPT Cpp98Iterator = Iterator<I> && exists_v<legacy_iterator_traits_t, I>;
+
+}
+
 NANO_END_NAMESPACE
 
 #endif
