@@ -14,10 +14,13 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct search_fn {
+private:
+    friend struct find_end_fn;
+
     template <typename I1, typename S1, typename I2, typename S2,
-              typename Pred, typename Proj1, typename Proj2>
+              typename Pred, typename Proj1, typename Proj2 = identity>
     static constexpr I1 impl(I1 first1, S1 last1, I2 first2, S2 last2,
-                             Pred pred, Proj1 proj1, Proj2 proj2)
+                             Pred pred, Proj1 proj1, Proj2 proj2 = Proj2{})
     {
         while (true) {
             auto it1 = first1;

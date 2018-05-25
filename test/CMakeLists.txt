@@ -24,7 +24,7 @@ add_executable(test_nanorange
     algorithm/fill.cpp
     algorithm/fill_n.cpp
     algorithm/find.cpp
-    #algorithm/find_end.cpp
+    algorithm/find_end.cpp
     algorithm/find_first_of.cpp
     algorithm/find_if.cpp
     algorithm/find_if_not.cpp

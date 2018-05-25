@@ -37,6 +37,7 @@ iterators and sentinels of different types, and allow the use of projections.
 * find
 * find_if
 * find_if_not
+* find_end
 * find_first_of
 * adjacent_find
 * count
@@ -79,7 +80,6 @@ CommonRange. Projections cannot be used.
 
 ### Non-modifying sequence ops ##
 
-* find_end
 
 ## Unimplemented ##
 

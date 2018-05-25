@@ -17,6 +17,7 @@
 #include <nanorange/algorithm/fill.hpp>
 #include <nanorange/algorithm/fill_n.hpp>
 #include <nanorange/algorithm/find.hpp>
+#include <nanorange/algorithm/find_end.hpp>
 #include <nanorange/algorithm/find_first_of.hpp>
 #include <nanorange/algorithm/for_each.hpp>
 #include <nanorange/algorithm/generate.hpp>
@@ -38,6 +39,5 @@
 #include <nanorange/algorithm/transform.hpp>
 
 // Algorithms which reuse the STL implementation
-#include <nanorange/detail/algorithm/stl/find_end.hpp>
 
 #endif
