@@ -41,8 +41,8 @@ struct include_processor {
 
 private:
     struct replacement {
-        int pos;
-        int len;
+        std::ptrdiff_t pos;
+        std::ptrdiff_t len;
         std::string text;
     };
 
