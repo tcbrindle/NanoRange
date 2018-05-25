@@ -22,23 +22,30 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/remove.hpp>
+#include <nanorange/algorithm/remove.hpp>
+#include <nanorange/view/subrange.hpp>
 #include <memory>
 #include <utility>
-#include "../simple_test.hpp"
-#include "../test_utils.hpp"
+#include "../catch.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
 
-template <class Iter, class Sent = Iter>
-void
-test_iter()
+namespace {
+
+template <typename T>
+T& as_lvalue(T&& t)
 {
+	return t;
+}
+
+template<class Iter, class Sent = Iter>
+void
+test_iter() {
 	int ia[] = {0, 1, 2, 3, 4, 2, 3, 4, 2};
 	constexpr unsigned sa = stl2::size(ia);
-	Iter r = stl2::remove(Iter(ia), Sent(ia+sa), 2);
-	CHECK(base(r) == ia + sa-3);
+	Iter r = stl2::remove(Iter(ia), Sent(ia + sa), 2);
+	CHECK(base(r) == ia + sa - 3);
 	CHECK(ia[0] == 0);
 	CHECK(ia[1] == 1);
 	CHECK(ia[2] == 3);
@@ -47,14 +54,13 @@ test_iter()
 	CHECK(ia[5] == 4);
 }
 
-template <class Iter, class Sent = Iter>
+template<class Iter, class Sent = Iter>
 void
-test_range()
-{
+test_range() {
 	int ia[] = {0, 1, 2, 3, 4, 2, 3, 4, 2};
 	constexpr unsigned sa = stl2::size(ia);
-	Iter r = stl2::remove(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), 2);
-	CHECK(base(r) == ia + sa-3);
+	Iter r = stl2::remove(::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))), 2);
+	CHECK(base(r) == ia + sa - 3);
 	CHECK(ia[0] == 0);
 	CHECK(ia[1] == 1);
 	CHECK(ia[2] == 3);
@@ -63,10 +69,9 @@ test_range()
 	CHECK(ia[5] == 4);
 }
 
-template <class Iter, class Sent = Iter>
+template<class Iter, class Sent = Iter>
 void
-test_iter_rvalue()
-{
+test_iter_rvalue() {
 	constexpr unsigned sa = 9;
 	std::unique_ptr<int> ia[sa];
 	ia[0].reset(new int(0));
@@ -76,8 +81,8 @@ test_iter_rvalue()
 	ia[6].reset(new int(3));
 	ia[7].reset(new int(4));
 
-	Iter r = stl2::remove(Iter(ia), Sent(ia+sa), std::unique_ptr<int>());
-	CHECK(base(r) == ia + sa-3);
+	Iter r = stl2::remove(Iter(ia), Sent(ia + sa), std::unique_ptr<int>());
+	CHECK(base(r) == ia + sa - 3);
 	CHECK(*ia[0] == 0);
 	CHECK(*ia[1] == 1);
 	CHECK(*ia[2] == 3);
@@ -86,10 +91,9 @@ test_iter_rvalue()
 	CHECK(*ia[5] == 4);
 }
 
-template <class Iter, class Sent = Iter>
+template<class Iter, class Sent = Iter>
 void
-test_range_rvalue()
-{
+test_range_rvalue() {
 	constexpr unsigned sa = 9;
 	std::unique_ptr<int> ia[sa];
 	ia[0].reset(new int(0));
@@ -98,8 +102,8 @@ test_range_rvalue()
 	ia[4].reset(new int(4));
 	ia[6].reset(new int(3));
 	ia[7].reset(new int(4));
-	Iter r = stl2::remove(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), std::unique_ptr<int>());
-	CHECK(base(r) == ia + sa-3);
+	Iter r = stl2::remove(::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))), std::unique_ptr<int>());
+	CHECK(base(r) == ia + sa - 3);
 	CHECK(*ia[0] == 0);
 	CHECK(*ia[1] == 1);
 	CHECK(*ia[2] == 3);
@@ -108,12 +112,13 @@ test_range_rvalue()
 	CHECK(*ia[5] == 4);
 }
 
-struct S
-{
+struct S {
 	int i;
 };
 
-int main()
+}
+
+TEST_CASE("alg.remove")
 {
 	test_iter<forward_iterator<int*> >();
 	test_iter<bidirectional_iterator<int*> >();
@@ -162,14 +167,17 @@ int main()
 	// Check rvalue range
 	S ia2[] = {S{0}, S{1}, S{2}, S{3}, S{4}, S{2}, S{3}, S{4}, S{2}};
 	constexpr unsigned sa2 = stl2::size(ia2);
-	auto r2 = stl2::remove(stl2::move(ia2), 2, &S::i);
+	auto r2 = stl2::remove(std::move(ia2), 2, &S::i);
+	// FIXME: MSVC rvalue array weirdness
+#ifndef _MSC_VER
 	CHECK(r2.get_unsafe() == ia2 + sa2-3);
+#else
+	CHECK(r2 == ia2 + sa2-3);
+#endif
 	CHECK(ia2[0].i == 0);
 	CHECK(ia2[1].i == 1);
 	CHECK(ia2[2].i == 3);
 	CHECK(ia2[3].i == 4);
 	CHECK(ia2[4].i == 3);
 	CHECK(ia2[5].i == 4);
-
-	return ::test_result();
 }

@@ -69,7 +69,7 @@ add_executable(test_nanorange
     #algorithm/pop_heap.cpp
     #algorithm/prev_permutation.cpp
     #algorithm/push_heap.cpp
-    #algorithm/remove.cpp
+    algorithm/remove.cpp
     #algorithm/remove_copy.cpp
     #algorithm/remove_copy_if.cpp
     #algorithm/remove_if.cpp

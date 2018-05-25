@@ -24,6 +24,7 @@
 #include <nanorange/algorithm/mismatch.hpp>
 #include <nanorange/algorithm/move.hpp>
 #include <nanorange/algorithm/none_of.hpp>
+#include <nanorange/algorithm/remove.hpp>
 #include <nanorange/algorithm/replace.hpp>
 #include <nanorange/algorithm/replace_copy.hpp>
 #include <nanorange/algorithm/replace_copy_if.hpp>

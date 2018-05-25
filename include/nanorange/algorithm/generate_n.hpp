@@ -1,4 +1,4 @@
-// nanorange/algorithm/generate.hpp
+// nanorange/algorithm/generate_n.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
