@@ -80,14 +80,11 @@ CommonRange. Projections cannot be used.
 
 ### Non-modifying sequence ops ##
 
+* is_permutation
 
 ## Unimplemented ##
 
 The following algorithms have not yet been implemented in Nanorange:
-
-#### Non-modifying sequence ops ####
-
-* is_permutation
 
 #### Modifying sequence ops ####
 

@@ -39,5 +39,6 @@
 #include <nanorange/algorithm/transform.hpp>
 
 // Algorithms which reuse the STL implementation
+#include <nanorange/algorithm/is_permutation.hpp>
 
 #endif

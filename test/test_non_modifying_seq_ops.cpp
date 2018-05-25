@@ -369,8 +369,6 @@ TEST_CASE("search() (with predicate)")
     }
 }
 
-#if 0
-
 TEST_CASE("search_n()")
 {
     const std::vector<int> vec{1, 2, 3, 4, 1, 1, 1};
@@ -401,4 +399,53 @@ TEST_CASE("search_n() (with predicate)")
     }
 }
 
-#endif
+TEST_CASE("is_permutation")
+{
+    const std::vector<int> vec{1, 2, 3, 4, 5};
+    const std::vector<int> vec2{5, 4, 3, 2, 1};
+
+    SECTION("with iterators") {
+        REQUIRE(rng::is_permutation(vec.begin(), vec.end(), vec2.begin(), vec2.end()));
+    }
+
+    SECTION("with iterators (three-legged)") {
+        REQUIRE(rng::is_permutation(vec.begin(), vec.end(), vec2.begin()));
+    }
+
+    SECTION("with ranges") {
+        REQUIRE(rng::is_permutation(vec, vec2));
+    }
+
+    SECTION("with range and iterator") {
+        REQUIRE(rng::is_permutation(vec, vec2.begin()));
+    }
+
+}
+
+TEST_CASE("is_permutation (with predicate)")
+{
+    struct foo { foo(int i):i(i){} int i; };
+
+    const std::vector<foo> vec{1, 2, 3, 4, 5};
+    const std::vector<foo> vec2{{5, 4, 3, 2, 1}};
+    const auto pred = [](auto x, auto y) {
+        return x.i == y.i;
+    };
+
+    SECTION("with iterators") {
+        REQUIRE(rng::is_permutation(vec.begin(), vec.end(), vec2.begin(), vec2.end(), pred));
+    }
+
+    SECTION("with iterators (three-legged)") {
+        REQUIRE(rng::is_permutation(vec.begin(), vec.end(), vec2.begin(), pred));
+    }
+
+    SECTION("with ranges") {
+        REQUIRE(rng::is_permutation(vec, vec2, pred));
+    }
+
+    SECTION("with range and iterator") {
+        REQUIRE(rng::is_permutation(vec, vec2.begin(), pred));
+    }
+
+}
