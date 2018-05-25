@@ -80,7 +80,7 @@ struct less_helper<void> {
         noexcept(noexcept(std::less<>{}(std::forward<T>(t), std::forward<U>(u))))
             -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
     {
-        return std::less<>(std::forward<T>(t), std::forward<U>(u));
+        return std::less<>{}(std::forward<T>(t), std::forward<U>(u));
     }
 
     using is_transparent = std::true_type;
