@@ -12,6 +12,8 @@
 
 NANO_BEGIN_NAMESPACE
 
+namespace counted_iterator_ {
+
 template <typename I>
 class counted_iterator {
     static_assert(Iterator<I>, "");
@@ -164,38 +166,6 @@ private:
     difference_type_t<I> cnt_{0};
 };
 
-namespace detail {
-
-template <typename I, typename = void>
-struct counted_iterator_value_type_helper {
-};
-
-template <typename I>
-struct counted_iterator_value_type_helper<I, std::enable_if_t<Readable<I>>> {
-    using type = value_type_t<I>;
-};
-
-template <typename I, typename = void>
-struct counted_iterator_category_helper {
-};
-
-template <typename I>
-struct counted_iterator_category_helper<I, std::enable_if_t<InputIterator<I>>> {
-    using type = iterator_category_t<I>;
-};
-
-} // namespace detail
-
-template <typename I>
-struct value_type<counted_iterator<I>>
-    : detail::counted_iterator_value_type_helper<I> {
-};
-
-template <typename I>
-struct iterator_category<counted_iterator<I>>
-    : detail::counted_iterator_category_helper<I> {
-};
-
 template <typename I1, typename I2>
 constexpr auto operator==(const counted_iterator<I1>& x,
                           const counted_iterator<I2>& y)
@@ -296,6 +266,42 @@ constexpr auto operator+(difference_type_t<I> n, const counted_iterator<I>& x)
 {
     return x + n;
 }
+
+}
+
+using counted_iterator_::counted_iterator;
+
+namespace detail {
+
+template <typename I, typename = void>
+struct counted_iterator_value_type_helper {
+};
+
+template <typename I>
+struct counted_iterator_value_type_helper<I, std::enable_if_t<Readable<I>>> {
+    using type = value_type_t<I>;
+};
+
+template <typename I, typename = void>
+struct counted_iterator_category_helper {
+};
+
+template <typename I>
+struct counted_iterator_category_helper<I, std::enable_if_t<InputIterator<I>>> {
+    using type = iterator_category_t<I>;
+};
+
+} // namespace detail
+
+template <typename I>
+struct value_type<counted_iterator<I>>
+        : detail::counted_iterator_value_type_helper<I> {
+};
+
+template <typename I>
+struct iterator_category<counted_iterator<I>>
+        : detail::counted_iterator_category_helper<I> {
+};
 
 template <typename I>
 constexpr auto make_counted_iterator(I i, difference_type_t<I> n)
