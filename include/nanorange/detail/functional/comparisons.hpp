@@ -77,7 +77,7 @@ template <>
 struct less_helper<void> {
     template <typename T, typename U>
     constexpr auto operator()(T&& t, U&& u) const
-        noexcept(noexcept(std::less<>(std::forward<T>(t), std::forward<U>(u))))
+        noexcept(noexcept(std::less<>{}(std::forward<T>(t), std::forward<U>(u))))
             -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
     {
         return std::less<>(std::forward<T>(t), std::forward<U>(u));
