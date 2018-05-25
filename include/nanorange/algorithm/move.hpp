@@ -24,7 +24,7 @@ private:
         const auto dist = last - first;
 
         for (difference_type_t<I> i{0}; i < dist; i++) {
-            *result = std::move(*first);
+            *result = nano::iter_move(first);
             ++first;
             ++result;
         }
@@ -37,7 +37,7 @@ private:
                                           priority_tag<0>)
     {
         while (first != last) {
-            *result = std::move(*first);
+            *result = nano::iter_move(first);
             ++first;
             ++result;
         }
@@ -83,7 +83,7 @@ private:
         auto it = last;
 
         while (it != first) {
-            *--result = std::move(*--it);
+            *--result = nano::iter_move(--it);
         }
 
         return {std::move(last), std::move(result)};
