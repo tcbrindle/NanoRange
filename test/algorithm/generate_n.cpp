@@ -18,26 +18,28 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/generate_n.hpp>
+#include <nanorange/algorithm/generate_n.hpp>
 #include <vector>
-#include "../simple_test.hpp"
-#include "../test_utils.hpp"
+#include "../catch.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
 
-struct gen_test
-{
+namespace {
+
+struct gen_test {
 	int i_;
+
 	gen_test() = default;
+
 	gen_test(int i) : i_(i) {}
-	int operator()() {return i_++;}
+
+	int operator()() { return i_++; }
 };
 
-template <class Iter, class Sent = Iter>
+template<class Iter, class Sent = Iter>
 void
-test()
-{
+test() {
 	const unsigned n = 4;
 	int ia[n] = {0};
 	Iter res = stl2::generate_n(Iter(ia), n, gen_test(1));
@@ -48,8 +50,7 @@ test()
 	CHECK(res == Iter(ia + n));
 }
 
-void test2()
-{
+void test2() {
 	// Test stl2::generate with a genuine output range
 	std::vector<int> v;
 	stl2::generate_n(stl2::back_inserter(v), 5, gen_test(1));
@@ -61,7 +62,9 @@ void test2()
 	CHECK(v[4] == 5);
 }
 
-int main()
+}
+
+TEST_CASE("alg.generate_n")
 {
 	test<forward_iterator<int*> >();
 	test<bidirectional_iterator<int*> >();
@@ -73,6 +76,4 @@ int main()
 	test<random_access_iterator<int*>, sentinel<int*> >();
 
 	test2();
-
-	return ::test_result();
 }

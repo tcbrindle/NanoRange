@@ -19,6 +19,8 @@
 #include <nanorange/algorithm/find.hpp>
 #include <nanorange/algorithm/find_first_of.hpp>
 #include <nanorange/algorithm/for_each.hpp>
+#include <nanorange/algorithm/generate.hpp>
+#include <nanorange/algorithm/generate_n.hpp>
 #include <nanorange/algorithm/mismatch.hpp>
 #include <nanorange/algorithm/move.hpp>
 #include <nanorange/algorithm/none_of.hpp>
