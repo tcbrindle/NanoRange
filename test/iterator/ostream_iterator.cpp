@@ -32,7 +32,7 @@ namespace {
 
 TEST_CASE("iter.output_iterator") {
 	std::stringstream ss;
-	static constexpr int some_ints[] = {0, 7, 1, 6, 2, 5, 3, 4};
+//	static constexpr int some_ints[] = {0, 7, 1, 6, 2, 5, 3, 4};
 
 	namespace models = ::nano;
 
