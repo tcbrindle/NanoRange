@@ -488,12 +488,6 @@ struct common_reference<T1, T2, Rest...>
     : detail::multiple_common_reference<void, T1, T2, Rest...> {
 };
 
-namespace detail {
-
-template <typename... T>
-using checked_common_ref_t = test_t<common_reference_t, T...>;
-}
-
 NANO_END_NAMESPACE
 
 #endif
@@ -502,12 +496,6 @@ NANO_BEGIN_NAMESPACE
 
 using std::common_type;
 using std::common_type_t;
-
-namespace detail {
-
-template <typename... T>
-using checked_common_type_t = test_t<common_type_t, T...>;
-}
 
 NANO_END_NAMESPACE
 
@@ -546,24 +534,49 @@ NANO_CONCEPT ConvertibleTo = std::is_convertible<From, To>::value&&
     detail::requires_<detail::ConvertibleTo_req, From, To>;
 
 // [concepts.lib.corelang.commonref]
+namespace detail {
+
 template <typename T, typename U>
-NANO_CONCEPT CommonReference = Same<detail::checked_common_ref_t<T, U>,
-                                    detail::checked_common_ref_t<U, T>>&&
-    ConvertibleTo<T, detail::checked_common_ref_t<T, U>>&&
-        ConvertibleTo<U, detail::checked_common_ref_t<T, U>>;
+auto CommonReference_fn(long) -> std::false_type;
+
+template <typename T, typename U>
+auto CommonReference_fn(int) -> std::enable_if_t<
+        Same<common_reference_t<T, U>, common_reference_t<U, T>> &&
+        ConvertibleTo<T, common_reference_t<T, U>> &&
+        ConvertibleTo<U, common_reference_t<T, U>>,
+                std::true_type>;
+}
+
+
+template <typename T, typename U>
+NANO_CONCEPT CommonReference = decltype(detail::CommonReference_fn<T, U>(0))::value;
 
 // [concepts.lib.corelang.common]
+namespace detail {
+
 template <typename T, typename U>
-NANO_CONCEPT Common = Same<detail::checked_common_type_t<T, U>,
-                           detail::checked_common_type_t<U, T>>&&
-    ConvertibleTo<T, detail::checked_common_type_t<T, U>>&& ConvertibleTo<
-        U, detail::checked_common_type_t<
-               T, U>>&& CommonReference<std::add_lvalue_reference_t<const T>,
-                                        std::add_lvalue_reference_t<const U>>&&
-        CommonReference<
-            std::add_lvalue_reference_t<detail::checked_common_type_t<T, U>>,
-            detail::checked_common_ref_t<std::add_lvalue_reference_t<const T>,
-                                         std::add_lvalue_reference_t<const U>>>;
+auto Common_fn(long) -> std::false_type;
+
+template <typename T, typename U>
+auto Common_fn(int) -> std::enable_if_t<
+    Same<common_type_t<T, U>, common_type_t<U, T>> &&
+    ConvertibleTo<T, common_type_t<T, U>> &&
+    ConvertibleTo<U, common_type_t<T, U>> &&
+    CommonReference<
+        std::add_lvalue_reference_t<const T>,
+        std::add_lvalue_reference_t<const U>> &&
+    CommonReference<
+        std::add_lvalue_reference_t<common_type_t<T, U>>,
+        common_reference_t<
+            std::add_lvalue_reference_t<const T>,
+            std::add_lvalue_reference_t<const U>>>,
+    std::true_type>;
+
+}
+
+
+template <typename T, typename U>
+NANO_CONCEPT Common = decltype(detail::Common_fn<T, U>(0))::value;
 
 // [concepts.lib.corelang.integral]
 template <typename T>
@@ -588,13 +601,21 @@ struct Assignable_req {
         requires_expr<Same<decltype(lhs = std::forward<RHS>(rhs)), LHS>>{}));
 };
 
+template <typename LHS, typename RHS>
+auto Assignable_fn(long) -> std::false_type;
+
+template <typename LHS, typename RHS>
+auto Assignable_fn(int) -> std::enable_if_t<
+        std::is_lvalue_reference<LHS>::value &&
+        CommonReference<const std::remove_reference_t<LHS>&,
+                        const std::remove_reference_t<RHS>&> &&
+        requires_<Assignable_req, LHS, RHS>,
+                std::true_type>;
+
 } // namespace detail
 
 template <typename LHS, typename RHS>
-NANO_CONCEPT Assignable = std::is_lvalue_reference<LHS>::value&&
-    CommonReference<detail::clref_t<std::remove_reference_t<LHS>>,
-                    detail::clref_t<std::remove_reference_t<RHS>>>&&
-        detail::requires_<detail::Assignable_req, LHS, RHS>;
+NANO_CONCEPT Assignable = decltype(detail::Assignable_fn<LHS, RHS>(0))::value;
 
 // [concepts.lib.corelang.destructible]
 template <typename T>
@@ -614,11 +635,24 @@ template <typename T>
 NANO_CONCEPT MoveConstructible = Constructible<T, T>&& ConvertibleTo<T, T>;
 
 // [concepts.lib.corelang.copyconstructible]
+namespace detail {
+
 template <typename T>
-NANO_CONCEPT CopyConstructible = MoveConstructible<T>&& Constructible<
-    T, detail::lref_t<T>>&& ConvertibleTo<detail::lref_t<T>, T>&&
-    Constructible<T, detail::lref_t<T>>&& ConvertibleTo<detail::clref_t<T>, T>&&
-        Constructible<T, const T>&& ConvertibleTo<const T, T>;
+auto CopyConstructible_fn(long) -> std::false_type;
+
+template <typename T>
+auto CopyConstructible_fn(int) -> std::enable_if_t<
+        MoveConstructible<T> &&
+        Constructible<T, T&> && ConvertibleTo<T&, T> &&
+        Constructible<T, const T&> && ConvertibleTo<const T&, T> &&
+        Constructible<T, const T> && ConvertibleTo<const T, T>,
+                std::true_type>;
+
+
+}
+
+template <typename T>
+NANO_CONCEPT CopyConstructible = decltype(detail::CopyConstructible_fn<T>(0))::value;
 
 NANO_END_NAMESPACE
 
@@ -764,9 +798,23 @@ NANO_END_NAMESPACE
 
 NANO_BEGIN_NAMESPACE
 
+namespace detail {
+
 template <typename T>
-NANO_CONCEPT Movable = std::is_object<T>::value&& MoveConstructible<T>&&
-    Assignable<detail::lref_t<T>, T>&& Swappable<T>;
+auto Movable_fn(long) -> std::false_type;
+
+template <typename T>
+auto Movable_fn(int) -> std::enable_if_t<
+        std::is_object<T>::value &&
+        MoveConstructible<T> &&
+        Assignable<T&, T> &&
+        Swappable<T>,
+                std::true_type>;
+
+}
+
+template <typename T>
+NANO_CONCEPT Movable = decltype(detail::Movable_fn<T>(0))::value;
 
 NANO_END_NAMESPACE
 
@@ -832,15 +880,28 @@ NANO_CONCEPT WeaklyEqualityComparableWith =
 template <typename T>
 NANO_CONCEPT EqualityComparable = detail::WeaklyEqualityComparableWith<T, T>;
 
+namespace detail {
+
+template <typename, typename>
+auto EqualityComparableWith_fn(long) -> std::false_type;
+
+template <typename T, typename U>
+auto EqualityComparableWith_fn(int) -> std::enable_if_t<
+    EqualityComparable<T> && EqualityComparable<U> &&
+    CommonReference<const std::remove_reference_t<T>&,
+                    const std::remove_reference_t<U>&> &&
+    EqualityComparable<
+       common_reference_t<
+               const std::remove_reference_t<T>&,
+               const std::remove_reference_t<U>&>> &&
+    WeaklyEqualityComparableWith<T, U>,
+            std::true_type>;
+
+}
+
 template <typename T, typename U>
 NANO_CONCEPT EqualityComparableWith =
-    EqualityComparable<T>&& EqualityComparable<U>&&
-        CommonReference<detail::clref_t<std::remove_reference_t<T>>,
-                        detail::clref_t<std::remove_reference_t<U>>>&&
-            EqualityComparable<detail::checked_common_ref_t<
-                detail::clref_t<std::remove_reference_t<T>>,
-                detail::clref_t<std::remove_reference_t<U>>>>&&
-                detail::WeaklyEqualityComparableWith<T, U>;
+    decltype(detail::EqualityComparableWith_fn<T, U>(0))::value;
 
 // [concepts.lib.compare.stricttotallyordered]
 
@@ -880,18 +941,27 @@ struct StrictTotallyOrderedWith_req {
                        requires_expr<Boolean<decltype(u >= t)>>{}));
 };
 
+template <typename, typename>
+auto StrictTotallyOrderedWith_fn(long) -> std::false_type;
+
+template <typename T, typename U>
+auto StrictTotallyOrderedWith_fn(int) -> std::enable_if_t<
+        StrictTotallyOrdered<T> && StrictTotallyOrdered<U> &&
+        CommonReference<const std::remove_reference_t<T>&,
+                        const std::remove_reference_t<U>&> &&
+        StrictTotallyOrdered<
+                common_reference_t<
+                        const std::remove_reference_t<T>&,
+                        const std::remove_reference_t<U>&>> &&
+        EqualityComparableWith<T, U> &&
+        requires_<StrictTotallyOrderedWith_req, T, U>,
+                std::true_type>;
+
 } // namespace detail
 
 template <typename T, typename U>
 NANO_CONCEPT StrictTotallyOrderedWith =
-    StrictTotallyOrdered<T>&& StrictTotallyOrdered<U>&&
-        CommonReference<detail::clref_t<std::remove_reference_t<T>>,
-                        detail::clref_t<std::remove_reference_t<U>>>&&
-            StrictTotallyOrdered<detail::checked_common_ref_t<
-                detail::clref_t<std::remove_reference_t<T>>,
-                detail::clref_t<std::remove_reference_t<T>>>>&&
-                EqualityComparableWith<T, U>&& detail::requires_<
-                    detail::StrictTotallyOrderedWith_req, T, U>;
+    decltype(detail::StrictTotallyOrderedWith_fn<T, U>(0))::value;
 
 NANO_END_NAMESPACE
 
@@ -1054,12 +1124,6 @@ struct invoke_result : detail::invoke_result_helper<void, F, Args...> {
 template <typename F, typename... Args>
 using invoke_result_t = typename invoke_result<F, Args...>::type;
 
-namespace detail {
-
-template <typename F, typename... Args>
-using checked_invoke_result_t = test_t<invoke_result_t, F, Args...>;
-}
-
 NANO_END_NAMESPACE
 
 #endif
@@ -1068,9 +1132,22 @@ NANO_END_NAMESPACE
 NANO_BEGIN_NAMESPACE
 
 // [concepts.lib.object.copyable]
+namespace detail {
+
+template <typename>
+auto Copyable_fn(long) -> std::false_type;
+
 template <typename T>
-NANO_CONCEPT Copyable = CopyConstructible<T>&& Movable<T>&&
-    Assignable<detail::lref_t<T>, detail::clref_t<T>>;
+auto Copyable_fn(int) -> std::enable_if_t<
+        CopyConstructible<T> &&
+        Movable<T> &&
+        Assignable<T&, const T&>,
+        std::true_type>;
+
+}
+
+template <typename T>
+NANO_CONCEPT Copyable = decltype(detail::Copyable_fn<T>(0))::value;
 
 // [concepts.lib.object.semiregular]
 template <typename T>
@@ -1100,22 +1177,44 @@ NANO_CONCEPT Invocable = detail::requires_<detail::Invocable_req, F, Args...>;
 template <typename F, typename... Args>
 NANO_CONCEPT RegularInvocable = Invocable<F, Args...>;
 
+namespace detail {
+
+template <typename, typename...>
+auto Predicate_fn(long) -> std::false_type;
+
 template <typename F, typename... Args>
-NANO_CONCEPT Predicate = RegularInvocable<F, Args...>&&
-    Boolean<detail::checked_invoke_result_t<F, Args...>>;
+auto Predicate_fn(int) -> std::enable_if_t<
+        RegularInvocable<F, Args...> &&
+        Boolean<invoke_result_t<F, Args...>>,
+        std::true_type>;
+
+}
+
+template <typename F, typename... Args>
+NANO_CONCEPT Predicate = decltype(detail::Predicate_fn<F, Args...>(0))::value;
+
+namespace detail {
+
+template <typename, typename, typename>
+auto Relation_fn(long) -> std::false_type;
 
 template <typename R, typename T, typename U>
-NANO_CONCEPT Relation = Predicate<R, T, T>&& Predicate<R, U, U>&&
-    CommonReference<detail::clref_t<std::remove_reference_t<T>>,
-                    detail::clref_t<std::remove_reference_t<U>>>&&
+auto Relation_fn(int) -> std::enable_if_t<
+        Predicate<R, T, T> && Predicate<R, U, U> &&
+        CommonReference<const std::remove_reference_t<T>&,
+                        const std::remove_reference_t<U>&> &&
         Predicate<R,
-                  detail::checked_common_ref_t<
-                      detail::clref_t<std::remove_reference_t<T>>,
-                      detail::clref_t<std::remove_reference_t<U>>>,
-                  detail::checked_common_ref_t<
-                      detail::clref_t<std::remove_reference_t<T>>,
-                      detail::clref_t<std::remove_reference_t<U>>>>&&
-            Predicate<R, T, U>&& Predicate<R, U, T>;
+                  common_reference_t<const std::remove_reference_t<T>&,
+                                     const std::remove_reference_t<U>&>,
+                  common_reference_t<const std::remove_reference_t<T>&,
+                                     const std::remove_reference_t<U>&>> &&
+        Predicate<R, T, U> && Predicate<R, U, T>,
+                std::true_type>;
+
+}
+
+template <typename R, typename T, typename U>
+NANO_CONCEPT Relation = decltype(detail::Relation_fn<R, T, U>(0))::value;
 
 template <typename R, typename T, typename U>
 NANO_CONCEPT StrictWeakOrder = Relation<R, T, U>;
@@ -1425,25 +1524,6 @@ using reference_t = typename detail::reference_helper<T>::type;
 template <typename T>
 using rvalue_reference_t = decltype(ranges::iter_move(std::declval<T&>()));
 
-namespace detail {
-
-template <typename T>
-using checked_difference_type_t = test_t<difference_type_t, T>;
-
-template <typename T>
-using checked_value_type_t = test_t<value_type_t, T>;
-
-template <typename T>
-using checked_iterator_category_t = test_t<iterator_category_t, T>;
-
-template <typename T>
-using checked_reference_t = test_t<reference_t, T>;
-
-template <typename T>
-using checked_rvalue_ref_t = test_t<rvalue_reference_t, T>;
-
-} // namespace detail
-
 NANO_END_NAMESPACE
 
 #endif
@@ -1462,16 +1542,21 @@ struct Readable_req {
                                std::declval<rvalue_reference_t<In>>()));
 };
 
+template <typename>
+auto Readable_fn(long) -> std::false_type;
+
+template <typename In>
+auto Readable_fn(int) -> std::enable_if_t<
+     requires_<Readable_req, In> &&
+     CommonReference<reference_t<In>&&, value_type_t<In>&> &&
+     CommonReference<reference_t<In>&&, rvalue_reference_t<In>&&> &&
+     CommonReference<rvalue_reference_t<In>&&, const value_type_t<In>&>,
+             std::true_type>;
+
 } // namespace detail
 
 template <typename In>
-NANO_CONCEPT Readable =
-    detail::requires_<detail::Readable_req, In>&& CommonReference<
-        detail::checked_reference_t<In>&&, detail::checked_value_type_t<In>&>&&
-        CommonReference<detail::checked_reference_t<In>&&,
-                        detail::checked_rvalue_ref_t<In>&>&&
-            CommonReference<detail::checked_rvalue_ref_t<In>&&,
-                            const detail::checked_value_type_t<In>&>;
+NANO_CONCEPT Readable = decltype(detail::Readable_fn<In>(0))::value;
 
 // [range.iterators.writable]
 namespace detail {
@@ -1535,14 +1620,14 @@ namespace detail {
 
 struct Iterator_req {
     template <typename I>
-    auto requires_(I i) -> decltype(valid_expr(not_void(*i)));
+    auto requires_(I i) -> decltype(not_void(*i));
 };
 
 } // namespace detail
 
 template <typename I>
 NANO_CONCEPT Iterator =
-    detail::requires_<detail::Iterator_req, I>&& WeaklyIncrementable<I>;
+    detail::requires_<detail::Iterator_req, I> && WeaklyIncrementable<I>;
 
 // [range.iterators.sentinel]
 
@@ -1574,10 +1659,23 @@ NANO_CONCEPT SizedSentinel =
 
 // [range.iterators.input]
 
+namespace detail {
+
+template <typename>
+auto InputIterator_fn(long) -> std::false_type;
+
 template <typename I>
-NANO_CONCEPT InputIterator =
-    Iterator<I>&& Readable<I>&& detail::exists_v<iterator_category_t, I>&&
-        DerivedFrom<detail::checked_iterator_category_t<I>, input_iterator_tag>;
+auto InputIterator_fn(int) -> std::enable_if_t<
+    Iterator<I> && Readable<I> &&
+    exists_v<iterator_category_t, I> &&
+    DerivedFrom<iterator_category_t<I>, input_iterator_tag>,
+            std::true_type>;
+
+
+}
+
+template <typename I>
+NANO_CONCEPT InputIterator = decltype(detail::InputIterator_fn<I>(0))::value;
 
 // [ranges.iterator.output]
 
@@ -1597,10 +1695,23 @@ NANO_CONCEPT OutputIterator = Iterator<I>&& Writable<I, T>&&
 
 // [ranges.iterators.forward]
 
+namespace detail {
+
+template <typename>
+auto ForwardIterator_fn(long) -> std::false_type;
+
 template <typename I>
-NANO_CONCEPT ForwardIterator = InputIterator<I>&&
-    DerivedFrom<detail::checked_iterator_category_t<I>, forward_iterator_tag>&&
-        Incrementable<I>&& Sentinel<I, I>;
+auto ForwardIterator_fn(int) -> std::enable_if_t<
+        InputIterator<I> &&
+        DerivedFrom<iterator_category_t<I>, forward_iterator_tag> &&
+        Incrementable<I> &&
+        Sentinel<I, I>,
+                std::true_type>;
+
+}
+
+template <typename I>
+NANO_CONCEPT ForwardIterator = decltype(detail::ForwardIterator_fn<I>(0))::value;
 
 // [ranges.iterators.bidirectional]
 
@@ -1612,13 +1723,21 @@ struct BidirectionalIterator_req {
         -> decltype(valid_expr(same_lv<I>(--i), same_rv<I>(i--)));
 };
 
+template <typename>
+auto BidirectionalIterator_fn(long) -> std::false_type;
+
+template <typename I>
+auto BidirectionalIterator_fn(int) -> std::enable_if_t<
+        ForwardIterator<I> &&
+        DerivedFrom<iterator_category_t<I>, bidirectional_iterator_tag> &&
+        requires_<BidirectionalIterator_req, I>,
+                std::true_type>;
+
 } // namespace detail
 
 template <typename I>
 NANO_CONCEPT BidirectionalIterator =
-    ForwardIterator<I>&& DerivedFrom<detail::checked_iterator_category_t<I>,
-                                     bidirectional_iterator_tag>&&
-        detail::requires_<detail::BidirectionalIterator_req, I>;
+    decltype(detail::BidirectionalIterator_fn<I>(0))::value;
 
 // [ranges.iterators.random.access]
 
@@ -1634,13 +1753,23 @@ struct RandomAccessIterator_req {
                    requires_expr<Same<decltype(j[n]), reference_t<I>>>{}));
 };
 
+template <typename>
+auto RandomAccessIterator_fn(long) -> std::false_type;
+
+template <typename I>
+auto RandomAccessIterator_fn(int) -> std::enable_if_t<
+     BidirectionalIterator<I> &&
+     DerivedFrom<iterator_category_t<I>, random_access_iterator_tag> &&
+     StrictTotallyOrdered<I> &&
+     SizedSentinel<I, I> &&
+     requires_<RandomAccessIterator_req, I>,
+             std::true_type>;
+
 } // namespace detail
 
 template <typename I>
-NANO_CONCEPT RandomAccessIterator = BidirectionalIterator<I>&& DerivedFrom<
-    detail::checked_iterator_category_t<I>, random_access_iterator_tag>&&
-    StrictTotallyOrdered<I>&& SizedSentinel<I, I>&&
-        detail::requires_<detail::RandomAccessIterator_req, I>;
+NANO_CONCEPT RandomAccessIterator = 
+        decltype(detail::RandomAccessIterator_fn<I>(0))::value;
 
 
 // Extension: used for constraining iterators for existing STL algos
@@ -1657,7 +1786,8 @@ template <typename I,
 using legacy_iterator_traits_t = void;
 
 template <typename I>
-NANO_CONCEPT Cpp98Iterator = Iterator<I> && exists_v<legacy_iterator_traits_t, I>;
+NANO_CONCEPT Cpp98Iterator =
+        Iterator<I> && Sentinel<I, I> && exists_v<legacy_iterator_traits_t, I>;
 
 }
 
@@ -2160,7 +2290,7 @@ namespace detail {
 
 template <typename P>
 constexpr bool is_object_pointer_v =
-    std::is_pointer<P>::value && std::is_object<checked_value_type_t<P>>::value;
+    std::is_pointer<P>::value && std::is_object<test_t<value_type_t, P>>::value;
 
 namespace data_ {
 
@@ -2218,16 +2348,6 @@ using iterator_t = decltype(ranges::begin(std::declval<T&>()));
 
 template <typename T>
 using sentinel_t = decltype(ranges::end(std::declval<T&>()));
-
-namespace detail {
-
-template <typename T>
-using checked_iterator_t = test_t<iterator_t, T>;
-
-template <typename T>
-using checked_sentinel_t = test_t<sentinel_t, T>;
-
-} // namespace detail
 
 template <typename T>
 struct enable_view {
@@ -2311,12 +2431,21 @@ constexpr bool view_predicate<std::unordered_set<K, H, E, A>> = false;
 template <typename K, typename H, typename E, typename A>
 constexpr bool view_predicate<std::unordered_multiset<K, H, E, A>> = false;
 
+template <typename>
+auto view_predicate_helper_fn(long) -> std::false_type;
+
+template <typename T>
+auto view_predicate_helper_fn(int) -> std::enable_if_t<
+        !has_enable_view_v<T> &&
+        !DerivedFrom<T, view_base> &&
+        Range<T> &&
+        Range<const T> &&
+        !Same<reference_t<iterator_t<T>>, reference_t<iterator_t<const T>>>,
+    std::true_type>;
+
 template <typename T>
 constexpr bool view_predicate_helper =
-    !has_enable_view_v<T> && !DerivedFrom<T, view_base> && Range<T> &&
-    Range<const T> &&
-    !Same<checked_reference_t<checked_iterator_t<T>>,
-          checked_reference_t<checked_iterator_t<const T>>>;
+    decltype(view_predicate_helper_fn<T>(0))::value;
 
 template <typename T>
 constexpr bool view_predicate<T, std::enable_if_t<view_predicate_helper<T>>> =
@@ -2328,10 +2457,21 @@ template <typename T>
 NANO_CONCEPT View = Range<T>&& Semiregular<T>&& detail::view_predicate<T>;
 
 // [range.common]
+namespace detail {
+
+template <typename>
+auto CommonRange_fn(long) -> std::false_type;
 
 template <typename T>
-NANO_CONCEPT CommonRange = Range<T>&&
-    Same<detail::checked_iterator_t<T>, detail::checked_sentinel_t<T>>;
+auto CommonRange_fn(int) -> std::enable_if_t<
+    Range<T> &&
+    Same<iterator_t<T>, sentinel_t<T>>,
+        std::true_type>;
+
+}
+
+template <typename T>
+NANO_CONCEPT CommonRange = decltype(detail::CommonRange_fn<T>(0))::value;
 
 // [ranges.viewable]
 
@@ -2341,25 +2481,86 @@ NANO_CONCEPT ViewableRange = Range<T> && (std::is_lvalue_reference<T>::value ||
 
 // [range.input]
 
+namespace detail {
+
+template <typename>
+auto InputRange_fn(long) -> std::false_type;
+
+template <typename T>
+auto InputRange_fn(int) -> std::enable_if_t<
+        Range<T> &&
+        InputIterator<iterator_t<T>>,
+    std::true_type>;
+
+}
+
 template <typename T>
 NANO_CONCEPT InputRange =
-    Range<T>&& InputIterator<detail::checked_iterator_t<T>>;
+    decltype(detail::InputRange_fn<T>(0))::value;
+
+namespace detail {
+
+template <typename, typename >
+auto OutputRange_fn(long) -> std::false_type;
+
+template <typename R, typename T>
+auto OutputRange_fn(int) -> std::enable_if_t<
+        Range<R> && OutputIterator<iterator_t<R>, T>,
+        std::true_type>;
+
+}
 
 template <typename R, typename T>
 NANO_CONCEPT OutputRange =
-    Range<R>&& OutputIterator<detail::checked_iterator_t<R>, T>;
+    decltype(detail::OutputRange_fn<R, T>(0))::value;
+
+namespace detail {
+
+template <typename>
+auto ForwardRange_fn(long) -> std::false_type;
+
+template <typename T>
+auto ForwardRange_fn(int) -> std::enable_if_t<
+        InputRange<T> && ForwardIterator<iterator_t<T>>,
+        std::true_type>;
+
+}
 
 template <typename T>
 NANO_CONCEPT ForwardRange =
-    InputRange<T>&& ForwardIterator<detail::checked_iterator_t<T>>;
+    decltype(detail::ForwardRange_fn<T>(0))::value;
+
+namespace detail {
+
+template <typename>
+auto BidirectionalRange_fn(long) -> std::false_type;
+
+template <typename T>
+auto BidirectionalRange_fn(int) -> std::enable_if_t<
+        ForwardRange<T> && BidirectionalIterator<iterator_t<T>>,
+        std::true_type>;
+
+}
 
 template <typename T>
 NANO_CONCEPT BidirectionalRange =
-    ForwardRange<T>&& BidirectionalIterator<detail::checked_iterator_t<T>>;
+    decltype(detail::BidirectionalRange_fn<T>(0))::value;
+
+namespace detail {
+
+template <typename>
+auto RandomAccessRange_fn(long) -> std::false_type;
+
+template <typename T>
+auto RandomAccessRange_fn(int) -> std::enable_if_t<
+        BidirectionalRange<T> && RandomAccessIterator<iterator_t<T>>,
+        std::true_type>;
+
+}
 
 template <typename T>
 NANO_CONCEPT RandomAccessRange =
-    BidirectionalRange<T>&& RandomAccessIterator<detail::checked_iterator_t<T>>;
+    decltype(detail::RandomAccessRange_fn<T>(0))::value;
 
 NANO_END_NAMESPACE
 
@@ -2517,10 +2718,10 @@ template <>
 struct less_helper<void> {
     template <typename T, typename U>
     constexpr auto operator()(T&& t, U&& u) const
-        noexcept(noexcept(std::less<>(std::forward<T>(t), std::forward<U>(u))))
+        noexcept(noexcept(std::less<>{}(std::forward<T>(t), std::forward<U>(u))))
             -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
     {
-        return std::less<>(std::forward<T>(t), std::forward<U>(u));
+        return std::less<>{}(std::forward<T>(t), std::forward<U>(u));
     }
 
     using is_transparent = std::true_type;
@@ -2706,69 +2907,117 @@ using iter_common_reference_t =
 
 namespace detail {
 
-template <typename I>
-using checked_iter_common_ref_t = test_t<iter_common_reference_t, I>;
+template <typename, typename>
+auto IndirectUnaryInvocable_fn(long) -> std::false_type;
+
+template <typename F, typename I>
+auto IndirectUnaryInvocable_fn(int) -> std::enable_if_t<
+        Readable<I> &&
+        CopyConstructible<F> &&
+        Invocable<F&, value_type_t<I>&> &&
+        Invocable<F&, reference_t<I>> &&
+        Invocable<F&, iter_common_reference_t<I>> &&
+        CommonReference<
+                invoke_result_t<F&, value_type_t<I>&>,
+                invoke_result_t<F&, reference_t<I>&>>,
+            std::true_type>;
+
 }
 
 template <typename F, typename I>
-NANO_CONCEPT IndirectUnaryInvocable = Readable<I>&& CopyConstructible<F>&&
-    Invocable<detail::lref_t<F>, detail::checked_value_type_t<I>&>&&
-        Invocable<detail::lref_t<F>, detail::checked_reference_t<I>&>&&
-            Invocable<detail::lref_t<F>, detail::checked_iter_common_ref_t<I>>&&
-                CommonReference<
-                    detail::checked_invoke_result_t<
-                        detail::lref_t<F>, detail::checked_value_type_t<I>&>,
-                    detail::checked_invoke_result_t<
-                        detail::lref_t<F>, detail::checked_reference_t<I>>>;
+NANO_CONCEPT IndirectUnaryInvocable =
+        decltype(detail::IndirectUnaryInvocable_fn<F, I>(0))::value;
+
+namespace detail {
+
+template <typename, typename>
+auto IndirectRegularUnaryInvocable_fn(long) -> std::false_type;
 
 template <typename F, typename I>
-NANO_CONCEPT IndirectRegularUnaryInvocable = Readable<I>&& CopyConstructible<
-    F>&& RegularInvocable<detail::lref_t<F>, detail::checked_value_type_t<I>&>&&
-    RegularInvocable<detail::lref_t<F>, detail::checked_reference_t<I>&>&&
-        RegularInvocable<detail::lref_t<F>,
-                         detail::checked_iter_common_ref_t<I>>&&
-            CommonReference<
-                detail::checked_invoke_result_t<
-                    detail::lref_t<F>, detail::checked_value_type_t<I>&>,
-                detail::checked_invoke_result_t<
-                    detail::lref_t<F>, detail::checked_reference_t<I>>>;
+auto IndirectRegularUnaryInvocable_fn(int) -> std::enable_if_t<
+        Readable<I> &&
+        CopyConstructible<F> &&
+        RegularInvocable<F&, value_type_t<I>&> &&
+        RegularInvocable<F&, reference_t<I>> &&
+        RegularInvocable<F&, iter_common_reference_t<I>> &&
+        CommonReference<
+            invoke_result_t<F&, value_type_t<I>&>,
+            invoke_result_t<F&, reference_t<I>&>>,
+        std::true_type>;
+
+}
+
 
 template <typename F, typename I>
-NANO_CONCEPT IndirectUnaryPredicate = Readable<I>&& CopyConstructible<F>&&
-    Predicate<detail::lref_t<F>, detail::checked_value_type_t<I>&>&&
-        Predicate<detail::lref_t<F>, detail::checked_reference_t<I>>&&
-            Predicate<detail::lref_t<F>, detail::checked_iter_common_ref_t<I>>;
+NANO_CONCEPT IndirectRegularUnaryInvocable =
+        decltype(detail::IndirectRegularUnaryInvocable_fn<F, I>(0))::value;
+
+namespace detail {
+
+template <typename, typename>
+auto IndirectUnaryPredicate_fn(long) -> std::false_type;
+
+template <typename F, typename I>
+auto IndirectUnaryPredicate_fn(int) -> std::enable_if_t<
+        Readable<I> &&
+        CopyConstructible<F> &&
+        Predicate<F&, value_type_t<I>&> &&
+        Predicate<F&, reference_t<I>> &&
+        Predicate<F&, iter_common_reference_t<I>>,
+            std::true_type>;
+
+}
+
+template <typename F, typename I>
+NANO_CONCEPT IndirectUnaryPredicate =
+        decltype(detail::IndirectUnaryPredicate_fn<F, I>(0))::value;
+
+namespace detail {
+
+template <typename F, typename I1, typename I2>
+auto IndirectRelation_fn(long) -> std::false_type;
+
+template <typename F, typename I1, typename I2>
+auto IndirectRelation_fn(int) -> std::enable_if_t<
+        Readable<I1> && Readable<I2> && CopyConstructible<F> &&
+        Relation<F&, value_type_t<I1>&, value_type_t<I2>&>&&
+        Relation<F&, value_type_t<I1>&, reference_t<I2>>&&
+        Relation<F&, reference_t<I1>, value_type_t<I2>&>&&
+        Relation<F&, reference_t<I1>, reference_t<I2>>&&
+        Relation<F&,
+            iter_common_reference_t<I1>,
+            iter_common_reference_t<I2>>,
+    std::true_type>;
+
+}
+
 
 template <typename F, typename I1, typename I2 = I1>
 NANO_CONCEPT IndirectRelation =
-    Readable<I1>&& Readable<I2>&& CopyConstructible<F>&&
-        Relation<detail::lref_t<F>, detail::checked_value_type_t<I1>&,
-                 detail::checked_value_type_t<I2>&>&&
-            Relation<detail::lref_t<F>, detail::checked_value_type_t<I1>&,
-                     detail::checked_reference_t<I2>>&&
-                Relation<detail::lref_t<F>, detail::checked_reference_t<I1>,
-                         detail::checked_value_type_t<I2>&>&&
-                    Relation<detail::lref_t<F>, detail::checked_reference_t<I1>,
-                             detail::checked_reference_t<I2>>&&
-                        Relation<detail::lref_t<F>,
-                                 detail::checked_iter_common_ref_t<I1>,
-                                 detail::checked_iter_common_ref_t<I2>>;
+    decltype(detail::IndirectRelation_fn<F, I1, I2>(0))::value;
+
+
+namespace detail {
+
+template <typename, typename, typename>
+auto IndirectStrictWeakOrder_fn(long) -> std::false_type;
+
+template <typename F, typename I1, typename I2>
+auto IndirectStrictWeakOrder_fn(int) -> std::enable_if_t<
+        Readable<I1> &&
+        Readable<I2> &&
+        StrictWeakOrder<F&, value_type_t<I1>&, value_type_t<I2>&> &&
+        StrictWeakOrder<F&, value_type_t<I1>&, reference_t<I2>> &&
+        StrictWeakOrder<F&, reference_t<I1>, value_type_t<I2>&> &&
+        StrictWeakOrder<F&, reference_t<I1>, reference_t<I2>> &&
+        StrictWeakOrder<F&, iter_common_reference_t<I1>, iter_common_reference_t<I2>>,
+    std::true_type>;
+
+}
 
 template <typename F, typename I1, typename I2 = I1>
 NANO_CONCEPT IndirectStrictWeakOrder =
-    Readable<I1>&& Readable<I2>&& CopyConstructible<F>&& StrictWeakOrder<
-        detail::lref_t<F>, detail::checked_value_type_t<I1>&,
-        detail::checked_value_type_t<I2>&>&&
-        StrictWeakOrder<detail::lref_t<F>, detail::checked_value_type_t<I1>&,
-                        detail::checked_reference_t<I2>>&&
-            StrictWeakOrder<detail::lref_t<F>, detail::checked_reference_t<I1>,
-                            detail::checked_value_type_t<I2>&>&&
-                StrictWeakOrder<detail::lref_t<F>,
-                                detail::checked_reference_t<I1>,
-                                detail::checked_reference_t<I2>>&&
-                    StrictWeakOrder<detail::lref_t<F>,
-                                    detail::checked_iter_common_ref_t<I1>,
-                                    detail::checked_iter_common_ref_t<I2>>;
+        decltype(detail::IndirectStrictWeakOrder_fn<F, I1, I2>(0))::value;
 
 template <typename, typename...>
 struct indirect_result;
@@ -2810,41 +3059,84 @@ struct indirect_result : detail::indirect_result_helper<void, F, Is...> {
 template <typename F, typename... Is>
 using indirect_result_t = typename indirect_result<F, Is...>::type;
 
+// range.commonalgoreq.indirectlymovable]
+
 namespace detail {
 
-template <typename F, typename... Is>
-using checked_indirect_result_t = test_t<indirect_result_t, F, Is...>;
-}
+template <typename, typename>
+auto IndirectlyMovable_fn(long) -> std::false_type;
 
-// range.commonalgoreq.indirectlymovable]
+template <typename In, typename Out>
+auto IndirectlyMovable_fn(int) -> std::enable_if_t<
+        Readable<In> &&
+        Writable<Out, rvalue_reference_t<In>>,
+    std::true_type>;
+
+
+}
 
 template <typename In, typename Out>
 NANO_CONCEPT IndirectlyMovable =
-    Readable<In>&& Writable<Out, detail::checked_rvalue_ref_t<In>>;
+        decltype(detail::IndirectlyMovable_fn<In, Out>(0))::value;
+
+namespace detail {
 
 template <typename In, typename Out>
-NANO_CONCEPT IndirectlyMovableStorable = IndirectlyMovable<In, Out>&&
-    Writable<Out, detail::checked_value_type_t<In>>&&
-        Movable<detail::checked_value_type_t<In>>&&
-            Constructible<detail::checked_value_type_t<In>,
-                          detail::checked_rvalue_ref_t<In>>&&
-                Assignable<detail::checked_value_type_t<In>&,
-                           detail::checked_rvalue_ref_t<In>>;
+auto IndirectlyMovableStorable_fn(long) -> std::false_type;
+
+template <typename In, typename Out>
+auto IndirectlyMovableStorable_fn(int) -> std::enable_if_t<
+        IndirectlyMovable<In, Out> &&
+        Writable<Out, value_type_t<In>> &&
+        Movable<value_type_t<In>> &&
+        Constructible<value_type_t<In>, rvalue_reference_t<In>> &&
+        Assignable<value_type_t<In>&, rvalue_reference_t<In>>,
+    std::true_type>;
+
+}
+
+template <typename In, typename Out>
+NANO_CONCEPT IndirectlyMovableStorable =
+        decltype(detail::IndirectlyMovableStorable_fn<In, Out>(0))::value;
 
 // range.commonalgoreq.indirectlycopyable
 
-template <typename In, typename Out>
-NANO_CONCEPT IndirectlyCopyable =
-    Readable<In>&& Writable<Out, detail::checked_reference_t<Out>>;
+namespace detail {
+
+template <typename, typename>
+auto IndirectlyCopyable_fn(long) -> std::false_type;
 
 template <typename In, typename Out>
-NANO_CONCEPT IndirectlyCopyableStorable = IndirectlyCopyable<In, Out>&&
-    Writable<Out, const detail::checked_value_type_t<In>&>&&
-        Copyable<detail::checked_value_type_t<In>>&&
-            Constructible<detail::checked_value_type_t<In>,
-                          detail::checked_rvalue_ref_t<In>>&&
-                Assignable<detail::checked_value_type_t<In>&,
-                           detail::checked_reference_t<In>>;
+auto IndirectlyCopyable_fn(int) -> std::enable_if_t<
+        Readable<In> &&
+        Writable<Out, reference_t<In>>,
+    std::true_type>;
+
+}
+
+template <typename In, typename Out>
+NANO_CONCEPT IndirectlyCopyable =
+    decltype(detail::IndirectlyCopyable_fn<In, Out>(0))::value;
+
+namespace detail {
+
+template <typename, typename>
+auto IndirectlyCopyableStorable_fn(long) -> std::false_type;
+
+template <typename In, typename Out>
+auto IndirectlyCopyableStorable_fn(int) -> std::enable_if_t<
+        IndirectlyCopyable<In, Out> &&
+        Writable<Out, const value_type_t<In>&> &&
+        Copyable<value_type_t<In>> &&
+        Constructible<value_type_t<In>, reference_t<In>> &&
+        Assignable<value_type_t<In>&, reference_t<In>>,
+    std::true_type>;
+
+}
+
+template <typename In, typename Out>
+NANO_CONCEPT IndirectlyCopyableStorable =
+        decltype(detail::IndirectlyCopyableStorable_fn<In, Out>(0))::value;
 
 NANO_END_NAMESPACE
 
@@ -3396,6 +3688,8 @@ NANO_END_NAMESPACE
 
 NANO_BEGIN_NAMESPACE
 
+namespace counted_iterator_ {
+
 template <typename I>
 class counted_iterator {
     static_assert(Iterator<I>, "");
@@ -3548,38 +3842,6 @@ private:
     difference_type_t<I> cnt_{0};
 };
 
-namespace detail {
-
-template <typename I, typename = void>
-struct counted_iterator_value_type_helper {
-};
-
-template <typename I>
-struct counted_iterator_value_type_helper<I, std::enable_if_t<Readable<I>>> {
-    using type = value_type_t<I>;
-};
-
-template <typename I, typename = void>
-struct counted_iterator_category_helper {
-};
-
-template <typename I>
-struct counted_iterator_category_helper<I, std::enable_if_t<InputIterator<I>>> {
-    using type = iterator_category_t<I>;
-};
-
-} // namespace detail
-
-template <typename I>
-struct value_type<counted_iterator<I>>
-    : detail::counted_iterator_value_type_helper<I> {
-};
-
-template <typename I>
-struct iterator_category<counted_iterator<I>>
-    : detail::counted_iterator_category_helper<I> {
-};
-
 template <typename I1, typename I2>
 constexpr auto operator==(const counted_iterator<I1>& x,
                           const counted_iterator<I2>& y)
@@ -3680,6 +3942,42 @@ constexpr auto operator+(difference_type_t<I> n, const counted_iterator<I>& x)
 {
     return x + n;
 }
+
+}
+
+using counted_iterator_::counted_iterator;
+
+namespace detail {
+
+template <typename I, typename = void>
+struct counted_iterator_value_type_helper {
+};
+
+template <typename I>
+struct counted_iterator_value_type_helper<I, std::enable_if_t<Readable<I>>> {
+    using type = value_type_t<I>;
+};
+
+template <typename I, typename = void>
+struct counted_iterator_category_helper {
+};
+
+template <typename I>
+struct counted_iterator_category_helper<I, std::enable_if_t<InputIterator<I>>> {
+    using type = iterator_category_t<I>;
+};
+
+} // namespace detail
+
+template <typename I>
+struct value_type<counted_iterator<I>>
+        : detail::counted_iterator_value_type_helper<I> {
+};
+
+template <typename I>
+struct iterator_category<counted_iterator<I>>
+        : detail::counted_iterator_category_helper<I> {
+};
 
 template <typename I>
 constexpr auto make_counted_iterator(I i, difference_type_t<I> n)
@@ -5251,6 +5549,212 @@ NANO_END_NAMESPACE
 
 #endif
 
+// nanorange/algorithm/find_end.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_FIND_END_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_FIND_END_HPP_INCLUDED
+
+
+
+// nanorange/algorithm/search.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_SEARCH_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_SEARCH_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct search_fn {
+private:
+    friend struct find_end_fn;
+
+    template <typename I1, typename S1, typename I2, typename S2,
+              typename Pred, typename Proj1, typename Proj2 = identity>
+    static constexpr I1 impl(I1 first1, S1 last1, I2 first2, S2 last2,
+                             Pred pred, Proj1 proj1, Proj2 proj2 = Proj2{})
+    {
+        while (true) {
+            auto it1 = first1;
+            auto it2 = first2;
+
+            while (true) {
+                if (it2 == last2) {
+                    return first1;
+                }
+                if (it1 == last1) {
+                    return it1;
+                }
+                if (!nano::invoke(pred, nano::invoke(proj1, *it1), nano::invoke(proj2, *it2))) {
+                    break;
+                }
+                ++it1; ++it2;
+            }
+
+
+            ++first1;
+        }
+    }
+
+public:
+    template <typename I1, typename S1, typename I2, typename S2,
+              typename Pred = equal_to<>, typename Proj1 = identity,
+              typename Proj2 = identity>
+    constexpr std::enable_if_t<
+         ForwardIterator<I1> &&
+         Sentinel<S1, I1> &&
+         ForwardIterator<I2> &&
+         Sentinel<S2, I2> &&
+         IndirectlyComparable<I1, I2, Pred, Proj1, Proj2>, I1>
+    operator()(I1 first1, S1 last1, I2 first2, S2 last2,
+               Pred pred = Pred{}, Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return search_fn::impl(std::move(first1), std::move(last1),
+                               std::move(first2), std::move(last2),
+                               std::move(pred), std::move(proj1),
+                               std::move(proj2));
+    }
+
+    template <typename Rng1, typename Rng2,
+              typename Pred = equal_to<>, typename Proj1 = identity,
+              typename Proj2 = identity>
+    constexpr std::enable_if_t<
+            ForwardRange<Rng1> &&
+            ForwardRange<Rng2> &&
+            IndirectlyComparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred, Proj1, Proj2>,
+            safe_iterator_t<Rng1>>
+    operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return search_fn::impl(nano::begin(rng1), nano::end(rng1),
+                               nano::begin(rng2), nano::end(rng2),
+                               std::move(pred), std::move(proj1),
+                               std::move(proj2));
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::search_fn, search)
+
+NANO_END_NAMESPACE
+
+#endif
+
+NANO_BEGIN_NAMESPACE
+
+// [ranges.alg.find.end]
+namespace detail {
+
+// TODO: For BiDir iterators, we can be smarter and search backwards
+struct find_end_fn {
+private:
+    template <typename I1, typename S1, typename I2, typename S2,
+              typename Pred, typename Proj>
+    static constexpr I1 impl(I1 first1, S1 last1, I2 first2, S2 last2,
+                             Pred& pred, Proj& proj)
+    {
+        if (first2 == last2) {
+            return next(first1, last1);
+        }
+
+        first1 = search_fn::impl(std::move(first1), last1, first2, last2, pred, proj);
+
+        if (first1 == last1) {
+            return first1;
+        }
+
+        while (true) {
+            auto new_result = search_fn::impl(next(first1), last1, first2, last2, pred, proj);
+            if (new_result == last1) {
+                return first1;
+            } else {
+                first1 = std::move(new_result);
+            }
+        }
+    }
+
+public:
+    template <typename I1, typename S1, typename I2, typename S2,
+            typename Pred = equal_to<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+        ForwardIterator<I1> &&
+        Sentinel<S1, I1> &&
+        ForwardIterator<I2> &&
+        Sentinel<S2, I2> &&
+        IndirectRelation<Pred, I2, projected<I1, Proj>>, I1>
+    operator()(I1 first1, S1 last1, I2 first2, S2 last2,
+                             Pred pred = Pred{}, Proj proj = Proj{}) const
+    {
+        return find_end_fn::impl(std::move(first1), std::move(last1),
+                                 std::move(first2), std::move(last2),
+                                 pred, proj);
+    }
+
+    template <typename Rng1, typename Rng2,
+            typename Pred = equal_to<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+            ForwardRange<Rng1> &&
+            ForwardRange<Rng2> &&
+            IndirectRelation<Pred, iterator_t<Rng2>, projected<iterator_t<Rng1>, Proj>>,
+            safe_iterator_t<Rng1>>
+    operator()(Rng1&& rng1, Rng2&& rng2,
+               Pred pred = Pred{}, Proj proj = Proj{}) const
+    {
+        return find_end_fn::impl(nano::begin(rng1), nano::end(rng1),
+                                 nano::begin(rng2), nano::end(rng2),
+                                 pred, proj);
+    }
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::find_end_fn, find_end)
+
+#if 0
+
+template <typename I1, typename I2, typename Pred = equal_to<>>
+std::enable_if_t<ForwardIterator<I1> && ForwardIterator<I2> &&
+                 detail::Cpp98Iterator<I1> &&
+                 detail::Cpp98Iterator<I2> &&
+                 IndirectRelation<Pred, I2, I1>,
+                 I1>
+find_end(I1 first1, I1 last1, I2 first2, I2 last2, Pred pred = Pred{})
+{
+    return std::find_end(std::move(first1), std::move(last1), std::move(first2),
+                         std::move(last2), std::move(pred));
+}
+
+template <typename Rng1, typename Rng2, typename Pred = equal_to<>>
+std::enable_if_t<ForwardRange<Rng1> && ForwardRange<Rng2> &&
+                 CommonRange<Rng1> && CommonRange<Rng2> &&
+                 detail::Cpp98Iterator<iterator_t<Rng1>> &&
+                 detail::Cpp98Iterator<iterator_t<Rng2>> &&
+                 IndirectRelation<Pred, iterator_t<Rng2>, iterator_t<Rng1>>,
+                 safe_iterator_t<Rng1>>
+find_end(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{})
+{
+    return std::find_end(nano::begin(rng1), nano::end(rng1), nano::begin(rng2),
+                         nano::end(rng2), std::move(pred));
+}
+
+#endif
+
+NANO_END_NAMESPACE
+
+#endif
+
 // nanorange/algorithm/find_first_of.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -6350,93 +6854,7 @@ NANO_END_NAMESPACE
 
 #endif
 
-// nanorange/algorithm/search.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef NANORANGE_ALGORITHM_SEARCH_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_SEARCH_HPP_INCLUDED
-
-
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct search_fn {
-    template <typename I1, typename S1, typename I2, typename S2,
-              typename Pred, typename Proj1, typename Proj2>
-    static constexpr I1 impl(I1 first1, S1 last1, I2 first2, S2 last2,
-                             Pred pred, Proj1 proj1, Proj2 proj2)
-    {
-        while (true) {
-            auto it1 = first1;
-            auto it2 = first2;
-
-            while (true) {
-                if (it2 == last2) {
-                    return first1;
-                }
-                if (it1 == last1) {
-                    return it1;
-                }
-                if (!nano::invoke(pred, nano::invoke(proj1, *it1), nano::invoke(proj2, *it2))) {
-                    break;
-                }
-                ++it1; ++it2;
-            }
-
-
-            ++first1;
-        }
-    }
-
-public:
-    template <typename I1, typename S1, typename I2, typename S2,
-              typename Pred = equal_to<>, typename Proj1 = identity,
-              typename Proj2 = identity>
-    constexpr std::enable_if_t<
-         ForwardIterator<I1> &&
-         Sentinel<S1, I1> &&
-         ForwardIterator<I2> &&
-         Sentinel<S2, I2> &&
-         IndirectlyComparable<I1, I2, Pred, Proj1, Proj2>, I1>
-    operator()(I1 first1, S1 last1, I2 first2, S2 last2,
-               Pred pred = Pred{}, Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
-    {
-        return search_fn::impl(std::move(first1), std::move(last1),
-                               std::move(first2), std::move(last2),
-                               std::move(pred), std::move(proj1),
-                               std::move(proj2));
-    }
-
-    template <typename Rng1, typename Rng2,
-              typename Pred = equal_to<>, typename Proj1 = identity,
-              typename Proj2 = identity>
-    constexpr std::enable_if_t<
-            ForwardRange<Rng1> &&
-            ForwardRange<Rng2> &&
-            IndirectlyComparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred, Proj1, Proj2>,
-            safe_iterator_t<Rng1>>
-    operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
-               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
-    {
-        return search_fn::impl(nano::begin(rng1), nano::end(rng1),
-                               nano::begin(rng2), nano::end(rng2),
-                               std::move(pred), std::move(proj1),
-                               std::move(proj2));
-    }
-};
-
-}
-
-NANO_INLINE_VAR(detail::search_fn, search)
-
-NANO_END_NAMESPACE
-
-#endif
 // nanorange/algorithm/search_n.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -6803,47 +7221,98 @@ NANO_END_NAMESPACE
 
 
 // Algorithms which reuse the STL implementation
-// nanorange/detail/algorithm/stl/find_end.hpp
+// nanorange/algorithm/is_permutation.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef NANORANGE_DETAIL_ALGORITHM_STL_FIND_END_HPP_INCLUDED
-#define NANORANGE_DETAIL_ALGORITHM_STL_FIND_END_HPP_INCLUDED
+#ifndef NANORANGE_ALGORITHM_IS_PERMUTATION_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_IS_PERMUTATION_HPP_INCLUDED
 
 
+
+// TODO: Reimplement
 
 #include <algorithm>
 
 NANO_BEGIN_NAMESPACE
 
-// [ranges.alg.find.end]
+namespace detail {
 
-template <typename I1, typename I2, typename Pred = equal_to<>>
-std::enable_if_t<ForwardIterator<I1> && ForwardIterator<I2> &&
-                 detail::Cpp98Iterator<I1> &&
-                 detail::Cpp98Iterator<I2> &&
-                 IndirectRelation<Pred, I2, I1>,
-                 I1>
-find_end(I1 first1, I1 last1, I2 first2, I2 last2, Pred pred = Pred{})
-{
-    return std::find_end(std::move(first1), std::move(last1), std::move(first2),
-                         std::move(last2), std::move(pred));
+struct is_permutation_fn {
+
+    // Four-legged
+    template <typename I1, typename I2, typename Pred = equal_to<>>
+    std::enable_if_t<
+        ForwardIterator<I1> &&
+        Cpp98Iterator<I1> &&
+        ForwardIterator<I2> &&
+        Cpp98Iterator<I1> &&
+        IndirectlyComparable<I1, I2, Pred>,
+        bool>
+    operator()(I1 first1, I1 last1, I2 first2, I2 last2, Pred pred = Pred{}) const
+    {
+        return std::is_permutation(std::move(first1), std::move(last1),
+                                   std::move(first2), std::move(last2),
+                                   std::ref(pred));
+    }
+
+    // Two ranges
+    template <typename Rng1, typename Rng2, typename Pred = equal_to<>>
+    std::enable_if_t<
+            ForwardRange<Rng1> &&
+            CommonRange<Rng1> &&
+            Cpp98Iterator<iterator_t<Rng1>> &&
+            ForwardRange<Rng2> &&
+            CommonRange<Rng2> &&
+            Cpp98Iterator<iterator_t<Rng2>> &&
+            IndirectlyComparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred>,
+            bool>
+    operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{}) const
+    {
+        return std::is_permutation(nano::begin(rng1), nano::end(rng1),
+                                   nano::begin(rng2), nano::end(rng2),
+                                   std::ref(pred));
+    }
+
+    // Three-legged
+    template <typename I1, typename I2, typename Pred = equal_to<>>
+    NANO_DEPRECATED
+    std::enable_if_t<
+            ForwardIterator<I1> &&
+                    Cpp98Iterator<I1> &&
+                    ForwardIterator<I2> &&
+                    Cpp98Iterator<I1> &&
+                    IndirectlyComparable<I1, I2, Pred>,
+            bool>
+    operator()(I1 first1, I1 last1, I2 first2, Pred pred = Pred{}) const
+    {
+        return std::is_permutation(std::move(first1), std::move(last1),
+                                   std::move(first2), std::ref(pred));
+    }
+
+    // Range and a half
+    template <typename Rng1, typename I2, typename Pred = equal_to<>>
+    NANO_DEPRECATED
+    std::enable_if_t<
+            ForwardRange<Rng1> &&
+            CommonRange<Rng1> &&
+            Cpp98Iterator<iterator_t<Rng1>> &&
+            ForwardIterator<I2> &&
+            Cpp98Iterator<I2> &&
+            IndirectlyComparable<iterator_t<Rng1>, I2, Pred>,
+            bool>
+    operator()(Rng1&& rng1, I2 first2, Pred pred = Pred{}) const
+    {
+        return std::is_permutation(nano::begin(rng1), nano::end(rng1),
+                                   std::move(first2), std::ref(pred));
+    }
+};
+
 }
 
-template <typename Rng1, typename Rng2, typename Pred = equal_to<>>
-std::enable_if_t<ForwardRange<Rng1> && ForwardRange<Rng2> &&
-                 CommonRange<Rng1> && CommonRange<Rng2> &&
-                 detail::Cpp98Iterator<iterator_t<Rng1>> &&
-                 detail::Cpp98Iterator<iterator_t<Rng2>> &&
-                 IndirectRelation<Pred, iterator_t<Rng2>, iterator_t<Rng1>>,
-                 safe_iterator_t<Rng1>>
-find_end(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{})
-{
-    return std::find_end(nano::begin(rng1), nano::end(rng1), nano::begin(rng2),
-                         nano::end(rng2), std::move(pred));
-}
+NANO_INLINE_VAR(detail::is_permutation_fn, is_permutation)
 
 NANO_END_NAMESPACE
 
@@ -6896,12 +7365,21 @@ struct UniformRandomBitGenerator_req {
         requires_expr<Same<decltype(G::max()), invoke_result_t<G&>>>{}));
 };
 
+template <typename>
+auto UniformRandomBitGenerator_fn(long) -> std::false_type;
+
+template <typename G>
+auto UniformRandomBitGenerator_fn(int) -> std::enable_if_t<
+        Invocable<G&> &&
+        UnsignedIntegral<invoke_result_t<G&>> &&
+        requires_<UniformRandomBitGenerator_req, G>,
+    std::true_type>;
+
 } // namespace detail
 
 template <typename G>
 NANO_CONCEPT UniformRandomBitGenerator =
-    Invocable<G&>&& UnsignedIntegral<detail::checked_invoke_result_t<G&>>&&
-        detail::requires_<detail::UniformRandomBitGenerator_req, G>;
+    decltype(detail::UniformRandomBitGenerator_fn<G>(0))::value;
 
 NANO_END_NAMESPACE
 
