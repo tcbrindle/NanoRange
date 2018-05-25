@@ -1312,6 +1312,8 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 namespace iter_move_ {
 
+void iter_move();
+
 struct fn {
 private:
     template <typename T>
@@ -2454,20 +2456,10 @@ NANO_BEGIN_NAMESPACE
 
 // [range.comparisons]
 
-// TODO: Constrained versions of the rest of these
 namespace detail {
 
 template <typename = void, typename = void>
 struct equal_to_helper;
-
-template <typename T>
-struct equal_to_helper<T, std::enable_if_t<EqualityComparable<T>>> {
-    constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(equal_to_helper<>{}(t, u)))
-    {
-        return equal_to_helper<>{}(t, u);
-    }
-};
 
 template <>
 struct equal_to_helper<void> {
@@ -2483,17 +2475,17 @@ struct equal_to_helper<void> {
     using is_transparent = std::true_type;
 };
 
-template <typename, typename = void>
-struct not_equal_to_helper;
-
 template <typename T>
-struct not_equal_to_helper<T, std::enable_if_t<EqualityComparable<T>>> {
+struct equal_to_helper<T, std::enable_if_t<EqualityComparable<T>>> {
     constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(!equal_to_helper<>{}(t, u)))
+        noexcept(noexcept(equal_to_helper<>{}(t, u)))
     {
-        return !equal_to_helper<>{}(t, u);
+        return equal_to_helper<>{}(t, u);
     }
 };
+
+template <typename, typename = void>
+struct not_equal_to_helper;
 
 template <>
 struct not_equal_to_helper<void> {
@@ -2509,17 +2501,17 @@ struct not_equal_to_helper<void> {
     using is_transparent = std::true_type;
 };
 
-template <typename = void, typename = void>
-struct less_helper;
-
 template <typename T>
-struct less_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
+struct not_equal_to_helper<T, std::enable_if_t<EqualityComparable<T>>> {
     constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(less_helper<>{}(t, u)))
+        noexcept(noexcept(!equal_to_helper<>{}(t, u)))
     {
-        return less_helper<>{}(t, u);
+        return !equal_to_helper<>{}(t, u);
     }
 };
+
+template <typename = void, typename = void>
+struct less_helper;
 
 template <>
 struct less_helper<void> {
@@ -2534,17 +2526,17 @@ struct less_helper<void> {
     using is_transparent = std::true_type;
 };
 
-template <typename, typename = void>
-struct greater_helper;
-
 template <typename T>
-struct greater_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
+struct less_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
     constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(less_helper<>{}(u, t)))
+        noexcept(noexcept(less_helper<>{}(t, u)))
     {
-        return less_helper<>{}(u, t);
+        return less_helper<>{}(t, u);
     }
 };
+
+template <typename, typename = void>
+struct greater_helper;
 
 template <>
 struct greater_helper<void> {
@@ -2560,17 +2552,17 @@ struct greater_helper<void> {
     using is_transparent = std::true_type;
 };
 
-template <typename, typename = void>
-struct less_equal_helper;
-
 template <typename T>
-struct less_equal_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
+struct greater_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
     constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(!less_helper<>{}(u, t)))
+        noexcept(noexcept(less_helper<>{}(u, t)))
     {
-        return !less_helper<>{}(u, t);
+        return less_helper<>{}(u, t);
     }
 };
+
+template <typename, typename = void>
+struct less_equal_helper;
 
 template <>
 struct less_equal_helper<void> {
@@ -2586,17 +2578,17 @@ struct less_equal_helper<void> {
     using is_transparent = std::true_type;
 };
 
-template <typename, typename = void>
-struct greater_equal_helper;
-
 template <typename T>
-struct greater_equal_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
+struct less_equal_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
     constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(!less_helper<>{}(t, u)))
+        noexcept(noexcept(!less_helper<>{}(u, t)))
     {
-        return !less_helper<>{}(t, u);
+        return !less_helper<>{}(u, t);
     }
 };
+
+template <typename, typename = void>
+struct greater_equal_helper;
 
 template <>
 struct greater_equal_helper<void> {
@@ -2610,6 +2602,15 @@ struct greater_equal_helper<void> {
     }
 
     using is_transparent = std::true_type;
+};
+
+template <typename T>
+struct greater_equal_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
+    constexpr bool operator()(const T& t, const T& u) const
+        noexcept(noexcept(!less_helper<>{}(t, u)))
+    {
+        return !less_helper<>{}(t, u);
+    }
 };
 
 } // namespace detail
@@ -5013,6 +5014,93 @@ NANO_END_NAMESPACE
 
 #endif
 
+// nanorange/algorithm/fill.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_FILL_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_FILL_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct fill_fn {
+private:
+    template <typename T, typename O, typename S>
+    static constexpr O impl(O first, S last, const T& value)
+    {
+        while (first != last) {
+            *first = value;
+            ++first;
+        }
+
+        return first;
+    }
+
+public:
+    template <typename T, typename O, typename S>
+    constexpr std::enable_if_t<OutputIterator<O, const T&> && Sentinel<S, O>, O>
+    operator()(O first, S last, const T& value) const
+    {
+        return fill_fn::impl(std::move(first), std::move(last), value);
+    }
+
+    template <typename T, typename Rng>
+    constexpr std::enable_if_t<OutputRange<Rng, const T&>, safe_iterator_t<Rng>>
+    operator()(Rng&& rng, const T& value) const
+    {
+        return fill_fn::impl(nano::begin(rng), nano::end(rng), value);
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::fill_fn, fill)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/fill_n.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_FILL_N_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_FILL_N_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct fill_n_fn {
+    template <typename T, typename O>
+    constexpr std::enable_if_t<OutputIterator<O, const T&>, O>
+    operator()(O first, difference_type_t<O> n, const T& value) const
+    {
+        for (difference_type_t<O> i{0}; i < n; ++i, ++first) {
+            *first = value;
+        }
+        return first;
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::fill_n_fn, fill_n)
+
+NANO_END_NAMESPACE
+
+#endif
+
 // nanorange/algorithm/find.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -5302,6 +5390,102 @@ NANO_END_NAMESPACE
 
 #endif
 
+// nanorange/algorithm/generate.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_GENERATE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_GENERATE_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct generate_fn {
+private:
+    template <typename O, typename S, typename F>
+    static constexpr O impl(O first, S last, F& gen)
+    {
+        while (first != last) {
+            *first = gen();
+            ++first;
+        }
+
+        return first;
+    }
+
+public:
+    template <typename O, typename S, typename F>
+    constexpr std::enable_if_t<Iterator<O> && Sentinel<S, O> &&
+                                   CopyConstructible<F> && Invocable<F&> &&
+                                   Writable<O, invoke_result_t<F&>>,
+                               O>
+    operator()(O first, S last, F gen) const
+    {
+        return generate_fn::impl(std::move(first), std::move(last), gen);
+    }
+
+    template <typename Rng, typename F>
+    constexpr std::enable_if_t<Invocable<F&> &&
+                                   OutputRange<Rng, invoke_result_t<F&>>,
+                               safe_iterator_t<Rng>>
+    operator()(Rng&& rng, F gen) const
+    {
+        return generate_fn::impl(nano::begin(rng), nano::end(rng), gen);
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::generate_fn, generate)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/generate_n.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_GENERATE_N_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_GENERATE_N_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct generate_n_fn {
+    template <typename O, typename F>
+    constexpr std::enable_if_t<Iterator<O> && CopyConstructible<F> &&
+                                   Invocable<F&> &&
+                                   Writable<O, invoke_result_t<F&>>,
+                               O>
+    operator()(O first, difference_type_t<O> n, F gen) const
+    {
+        for (difference_type_t<O> i{0}; i < n; ++i, ++first) {
+            *first = gen();
+        }
+
+        return first;
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::generate_n_fn, generate_n)
+
+NANO_END_NAMESPACE
+
+#endif
+
 // nanorange/algorithm/mismatch.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -5451,7 +5635,7 @@ private:
         const auto dist = last - first;
 
         for (difference_type_t<I> i{0}; i < dist; i++) {
-            *result = std::move(*first);
+            *result = nano::iter_move(first);
             ++first;
             ++result;
         }
@@ -5464,7 +5648,7 @@ private:
                                           priority_tag<0>)
     {
         while (first != last) {
-            *result = std::move(*first);
+            *result = nano::iter_move(first);
             ++first;
             ++result;
         }
@@ -5510,7 +5694,7 @@ private:
         auto it = last;
 
         while (it != first) {
-            *--result = std::move(*--it);
+            *--result = nano::iter_move(--it);
         }
 
         return {std::move(last), std::move(result)};
@@ -5596,6 +5780,286 @@ NANO_INLINE_VAR(detail::none_of_fn, none_of)
 NANO_END_NAMESPACE
 
 #endif
+// nanorange/algorithm/remove.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_REMOVE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_REMOVE_HPP_INCLUDED
+
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct remove_fn {
+private:
+    template <typename I, typename S, typename T, typename Proj>
+    static constexpr I impl(I first, S last, const T& value, Proj& proj)
+    {
+        first = nano::find(std::move(first), last, value, proj);
+
+        if (first == last) {
+            return first;
+        }
+
+        for (auto i = next(first); i != last; ++i) {
+            if (!(nano::invoke(proj, *i) == value)) {
+                *first = nano::iter_move(i);
+                ++first;
+            }
+        }
+
+        return first;
+    }
+
+public:
+    template <typename I, typename S, typename T, typename Proj = identity>
+    constexpr std::enable_if_t<
+        ForwardIterator<I> && Sentinel<S, I> && Permutable<I> &&
+            IndirectRelation<equal_to<>, projected<I, Proj>, const T*>,
+        I>
+    operator()(I first, S last, const T& value, Proj proj = Proj{}) const
+    {
+        return remove_fn::impl(std::move(first), std::move(last), value, proj);
+    }
+
+    template <typename Rng, typename T, typename Proj = identity>
+    constexpr std::enable_if_t<
+        ForwardRange<Rng> && Permutable<iterator_t<Rng>> &&
+            IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>,
+                             const T*>,
+        safe_iterator_t<Rng>>
+    operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
+    {
+        return remove_fn::impl(nano::begin(rng), nano::end(rng), value, proj);
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::remove_fn, remove)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/remove_copy.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_REMOVE_COPY_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_REMOVE_COPY_HPP_INCLUDED
+
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+// FIXME: Use tagged_pair
+struct remove_copy_fn {
+private:
+    template <typename I, typename S, typename O, typename T, typename Proj>
+    static constexpr std::pair<I, O> impl(I first, S last, O result,
+                                          const T& value, Proj& proj)
+    {
+        while (first != last) {
+            auto&& ref = *first;
+            if (!(nano::invoke(proj, ref) == value)) {
+                *result = std::forward<decltype(ref)>(ref);
+                ++result;
+            }
+            ++first;
+        }
+        return {std::move(first), std::move(result)};
+    }
+
+public:
+    template <typename I, typename S, typename O, typename T,
+              typename Proj = identity>
+    constexpr std::enable_if_t<
+        InputIterator<I> && Sentinel<S, I> && WeaklyIncrementable<O> &&
+            IndirectlyCopyable<I, O> &&
+            IndirectRelation<equal_to<>, projected<I, Proj>, const T*>,
+        std::pair<I, O>>
+    operator()(I first, S last, O result, const T& value,
+               Proj proj = Proj{}) const
+    {
+        return remove_copy_fn::impl(std::move(first), std::move(last),
+                                    std::move(result), value, proj);
+    }
+
+    template <typename Rng, typename O, typename T, typename Proj = identity>
+    constexpr std::enable_if_t<
+        InputRange<Rng> && WeaklyIncrementable<O> &&
+            IndirectlyCopyable<iterator_t<Rng>, O> &&
+            IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>,
+                             const T*>,
+        std::pair<safe_iterator_t<Rng>, O>>
+    operator()(Rng&& rng, O result, const T& value, Proj proj = Proj{}) const
+    {
+        return remove_copy_fn::impl(nano::begin(rng), nano::end(rng),
+                               std::move(result), value, proj);
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::remove_copy_fn, remove_copy)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/remove_copy_if.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_REMOVE_COPY_IF_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_REMOVE_COPY_IF_HPP_INCLUDED
+
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+// FIXME: Use tagged_pair
+struct remove_copy_if_fn {
+private:
+    template <typename I, typename S, typename O, typename Pred, typename Proj>
+    static constexpr std::pair<I, O> impl(I first, S last, O result,
+                                          Pred& pred, Proj& proj)
+    {
+        while (first != last) {
+            auto&& ref = *first;
+            if (!nano::invoke(pred, nano::invoke(proj, ref))) {
+                *result = std::forward<decltype(ref)>(ref);
+                ++result;
+            }
+            ++first;
+        }
+        return {std::move(first), std::move(result)};
+    }
+
+public:
+    template <typename I, typename S, typename O, typename Pred,
+              typename Proj = identity>
+    constexpr std::enable_if_t<
+        InputIterator<I> && Sentinel<S, I> && WeaklyIncrementable<O> &&
+            IndirectlyCopyable<I, O> &&
+            IndirectUnaryPredicate<Pred, projected<I, Proj>>,
+        std::pair<I, O>>
+    operator()(I first, S last, O result, Pred pred,
+               Proj proj = Proj{}) const
+    {
+        return remove_copy_if_fn::impl(std::move(first), std::move(last),
+                                    std::move(result), pred, proj);
+    }
+
+    template <typename Rng, typename O, typename Pred, typename Proj = identity>
+    constexpr std::enable_if_t<
+        InputRange<Rng> && WeaklyIncrementable<O> &&
+            IndirectlyCopyable<iterator_t<Rng>, O> &&
+            IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
+        std::pair<safe_iterator_t<Rng>, O>>
+    operator()(Rng&& rng, O result, Pred pred, Proj proj = Proj{}) const
+    {
+        return remove_copy_if_fn::impl(nano::begin(rng), nano::end(rng),
+                                       std::move(result), pred, proj);
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::remove_copy_if_fn, remove_copy_if)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/remove_if.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_REMOVE_IF_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_REMOVE_IF_HPP_INCLUDED
+
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct remove_if_fn {
+private:
+    template <typename I, typename S, typename Pred, typename Proj>
+    static constexpr I impl(I first, S last, Pred& pred, Proj& proj)
+    {
+        first = nano::find_if(std::move(first), last, pred, proj);
+
+        if (first == last) {
+            return first;
+        }
+
+        for (auto i = next(first); i != last; ++i) {
+            if (!nano::invoke(pred, nano::invoke(proj, *i))) {
+                *first = nano::iter_move(i);
+                ++first;
+            }
+        }
+
+        return first;
+    }
+
+public:
+    template <typename I, typename S, typename Pred, typename Proj = identity>
+    constexpr std::enable_if_t<
+        ForwardIterator<I> && Sentinel<S, I> && Permutable<I> &&
+            IndirectUnaryPredicate<Pred, projected<I, Proj>>,
+        I>
+    operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
+    {
+        return remove_if_fn::impl(std::move(first), std::move(last), pred, proj);
+    }
+
+    template <typename Rng, typename Pred, typename Proj = identity>
+    constexpr std::enable_if_t<
+        ForwardRange<Rng> && Permutable<iterator_t<Rng>> &&
+            IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
+        safe_iterator_t<Rng>>
+    operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
+    {
+        return remove_if_fn::impl(nano::begin(rng), nano::end(rng), pred, proj);
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::remove_if_fn, remove_if)
+
+NANO_END_NAMESPACE
+
+#endif
+
 // nanorange/algorithm/replace.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
