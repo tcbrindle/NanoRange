@@ -26,6 +26,9 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/move.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/none_of.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/remove.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/remove_copy.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/remove_copy_if.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/remove_if.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/replace.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/replace_copy.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/replace_copy_if.hpp

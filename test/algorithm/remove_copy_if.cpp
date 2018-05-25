@@ -22,26 +22,34 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/remove_copy_if.hpp>
+#include <nanorange/algorithm/remove_copy_if.hpp>
+#include <nanorange/view/subrange.hpp>
 #include <memory>
 #include <utility>
 #include <functional>
-#include "../simple_test.hpp"
-#include "../test_utils.hpp"
+#include "../catch.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
 
-template <class InIter, class OutIter, class Sent = InIter>
-void
-test_iter()
+namespace {
+
+template <class T>
+T& as_lvalue(T&& t)
 {
+	return t;
+}
+
+template<class InIter, class OutIter, class Sent = InIter>
+void
+test_iter() {
 	int ia[] = {0, 1, 2, 3, 4, 2, 3, 4, 2};
 	constexpr unsigned sa = stl2::size(ia);
 	int ib[sa];
-	std::pair<InIter, OutIter> r = stl2::remove_copy_if(InIter(ia), Sent(ia+sa), OutIter(ib), [](int i){return i == 2;});
+	std::pair<InIter, OutIter> r = stl2::remove_copy_if(InIter(ia), Sent(ia + sa), OutIter(ib),
+														[](int i) { return i == 2; });
 	CHECK(base(r.first) == ia + sa);
-	CHECK(base(r.second) == ib + sa-3);
+	CHECK(base(r.second) == ib + sa - 3);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 	CHECK(ib[2] == 3);
@@ -50,16 +58,16 @@ test_iter()
 	CHECK(ib[5] == 4);
 }
 
-template <class InIter, class OutIter, class Sent = InIter>
+template<class InIter, class OutIter, class Sent = InIter>
 void
-test_range()
-{
+test_range() {
 	int ia[] = {0, 1, 2, 3, 4, 2, 3, 4, 2};
 	constexpr unsigned sa = stl2::size(ia);
 	int ib[sa];
-	std::pair<InIter, OutIter> r = stl2::remove_copy_if(::as_lvalue(stl2::ext::make_range(InIter(ia), Sent(ia+sa))), OutIter(ib), [](int i){return i == 2;});
+	std::pair<InIter, OutIter> r = stl2::remove_copy_if(::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + sa))),
+														OutIter(ib), [](int i) { return i == 2; });
 	CHECK(base(r.first) == ia + sa);
-	CHECK(base(r.second) == ib + sa-3);
+	CHECK(base(r.second) == ib + sa - 3);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 	CHECK(ib[2] == 3);
@@ -68,20 +76,20 @@ test_range()
 	CHECK(ib[5] == 4);
 }
 
-template <class InIter, class OutIter, class Sent = InIter>
+template<class InIter, class OutIter, class Sent = InIter>
 void
-test()
-{
+test() {
 	test_iter<InIter, OutIter, Sent>();
 	test_range<InIter, OutIter, Sent>();
 }
 
-struct S
-{
+struct S {
 	int i;
 };
 
-int main()
+}
+
+TEST_CASE("alg.remove_copy_if")
 {
 	test<input_iterator<const int*>, output_iterator<int*>>();
 	test<input_iterator<const int*>, forward_iterator<int*>>();
@@ -158,8 +166,13 @@ int main()
 		S ia[] = {S{0}, S{1}, S{2}, S{3}, S{4}, S{2}, S{3}, S{4}, S{2}};
 		constexpr unsigned sa = stl2::size(ia);
 		S ib[sa];
-		auto r = stl2::remove_copy_if(stl2::move(ia), ib, [](int i){return i == 2;}, &S::i);
+		auto r = stl2::remove_copy_if(std::move(ia), ib, [](int i){return i == 2;}, &S::i);
+		// MSVC rvalue array weirdness
+#ifndef _MSC_VER
 		CHECK(r.first.get_unsafe() == ia + sa);
+#else
+		CHECK(r.first == ia + sa);
+#endif
 		CHECK(r.second == ib + sa-3);
 		CHECK(ib[0].i == 0);
 		CHECK(ib[1].i == 1);
@@ -168,6 +181,4 @@ int main()
 		CHECK(ib[4].i == 3);
 		CHECK(ib[5].i == 4);
 	}
-
-	return ::test_result();
 }

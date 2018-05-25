@@ -22,25 +22,31 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/remove_copy.hpp>
+#include <nanorange/algorithm/remove_copy.hpp>
+#include <nanorange/view/subrange.hpp>
 #include <memory>
 #include <utility>
-#include "../simple_test.hpp"
-#include "../test_utils.hpp"
+#include "../catch.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
 
-template <class InIter, class OutIter, class Sent = InIter>
+namespace {
+
+template <class T>
+T& as_lvalue(T&& t){
+	return t;
+}
+
+template<class InIter, class OutIter, class Sent = InIter>
 void
-test_iter()
-{
+test_iter() {
 	int ia[] = {0, 1, 2, 3, 4, 2, 3, 4, 2};
 	constexpr unsigned sa = stl2::size(ia);
 	int ib[sa];
-	std::pair<InIter, OutIter> r = stl2::remove_copy(InIter(ia), Sent(ia+sa), OutIter(ib), 2);
+	std::pair<InIter, OutIter> r = stl2::remove_copy(InIter(ia), Sent(ia + sa), OutIter(ib), 2);
 	CHECK(base(r.first) == ia + sa);
-	CHECK(base(r.second) == ib + sa-3);
+	CHECK(base(r.second) == ib + sa - 3);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 	CHECK(ib[2] == 3);
@@ -49,16 +55,16 @@ test_iter()
 	CHECK(ib[5] == 4);
 }
 
-template <class InIter, class OutIter, class Sent = InIter>
+template<class InIter, class OutIter, class Sent = InIter>
 void
-test_range()
-{
+test_range() {
 	int ia[] = {0, 1, 2, 3, 4, 2, 3, 4, 2};
 	constexpr unsigned sa = stl2::size(ia);
 	int ib[sa];
-	std::pair<InIter, OutIter> r = stl2::remove_copy(::as_lvalue(stl2::ext::make_range(InIter(ia), Sent(ia+sa))), OutIter(ib), 2);
+	std::pair<InIter, OutIter> r = stl2::remove_copy(::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + sa))),
+													 OutIter(ib), 2);
 	CHECK(base(r.first) == ia + sa);
-	CHECK(base(r.second) == ib + sa-3);
+	CHECK(base(r.second) == ib + sa - 3);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 	CHECK(ib[2] == 3);
@@ -67,20 +73,20 @@ test_range()
 	CHECK(ib[5] == 4);
 }
 
-template <class InIter, class OutIter, class Sent = InIter>
+template<class InIter, class OutIter, class Sent = InIter>
 void
-test()
-{
+test() {
 	test_iter<InIter, OutIter, Sent>();
 	test_range<InIter, OutIter, Sent>();
 }
 
-struct S
-{
+struct S {
 	int i;
 };
 
-int main()
+}
+
+TEST_CASE("alg.remove_copy")
 {
 	test<input_iterator<const int*>, output_iterator<int*>>();
 	test<input_iterator<const int*>, forward_iterator<int*>>();
@@ -157,8 +163,13 @@ int main()
 		S ia[] = {S{0}, S{1}, S{2}, S{3}, S{4}, S{2}, S{3}, S{4}, S{2}};
 		constexpr unsigned sa = stl2::size(ia);
 		S ib[sa];
-		auto r = stl2::remove_copy(stl2::move(ia), ib, 2, &S::i);
+		auto r = stl2::remove_copy(std::move(ia), ib, 2, &S::i);
+		// FIXME: MSVC rvalue arrays
+#ifndef _MSC_VER
 		CHECK(r.first.get_unsafe() == ia + sa);
+#else
+		CHECK(r.first == ia + sa);
+#endif
 		CHECK(r.second == ib + sa-3);
 		CHECK(ib[0].i == 0);
 		CHECK(ib[1].i == 1);
@@ -167,6 +178,4 @@ int main()
 		CHECK(ib[4].i == 3);
 		CHECK(ib[5].i == 4);
 	}
-
-	return ::test_result();
 }
