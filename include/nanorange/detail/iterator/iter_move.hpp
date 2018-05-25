@@ -14,6 +14,8 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 namespace iter_move_ {
 
+void iter_move();
+
 struct fn {
 private:
     template <typename T>
