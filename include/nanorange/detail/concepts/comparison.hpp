@@ -69,15 +69,28 @@ NANO_CONCEPT WeaklyEqualityComparableWith =
 template <typename T>
 NANO_CONCEPT EqualityComparable = detail::WeaklyEqualityComparableWith<T, T>;
 
+namespace detail {
+
+template <typename, typename>
+auto EqualityComparableWith_fn(long) -> std::false_type;
+
+template <typename T, typename U>
+auto EqualityComparableWith_fn(int) -> std::enable_if_t<
+    EqualityComparable<T> && EqualityComparable<U> &&
+    CommonReference<const std::remove_reference_t<T>&,
+                    const std::remove_reference_t<U>&> &&
+    EqualityComparable<
+       common_reference_t<
+               const std::remove_reference_t<T>&,
+               const std::remove_reference_t<U>&>> &&
+    WeaklyEqualityComparableWith<T, U>,
+            std::true_type>;
+
+}
+
 template <typename T, typename U>
 NANO_CONCEPT EqualityComparableWith =
-    EqualityComparable<T>&& EqualityComparable<U>&&
-        CommonReference<detail::clref_t<std::remove_reference_t<T>>,
-                        detail::clref_t<std::remove_reference_t<U>>>&&
-            EqualityComparable<detail::checked_common_ref_t<
-                detail::clref_t<std::remove_reference_t<T>>,
-                detail::clref_t<std::remove_reference_t<U>>>>&&
-                detail::WeaklyEqualityComparableWith<T, U>;
+    decltype(detail::EqualityComparableWith_fn<T, U>(0))::value;
 
 // [concepts.lib.compare.stricttotallyordered]
 
@@ -117,18 +130,27 @@ struct StrictTotallyOrderedWith_req {
                        requires_expr<Boolean<decltype(u >= t)>>{}));
 };
 
+template <typename, typename>
+auto StrictTotallyOrderedWith_fn(long) -> std::false_type;
+
+template <typename T, typename U>
+auto StrictTotallyOrderedWith_fn(int) -> std::enable_if_t<
+        StrictTotallyOrdered<T> && StrictTotallyOrdered<U> &&
+        CommonReference<const std::remove_reference_t<T>&,
+                        const std::remove_reference_t<U>&> &&
+        StrictTotallyOrdered<
+                common_reference_t<
+                        const std::remove_reference_t<T>&,
+                        const std::remove_reference_t<U>&>> &&
+        EqualityComparableWith<T, U> &&
+        requires_<StrictTotallyOrderedWith_req, T, U>,
+                std::true_type>;
+
 } // namespace detail
 
 template <typename T, typename U>
 NANO_CONCEPT StrictTotallyOrderedWith =
-    StrictTotallyOrdered<T>&& StrictTotallyOrdered<U>&&
-        CommonReference<detail::clref_t<std::remove_reference_t<T>>,
-                        detail::clref_t<std::remove_reference_t<U>>>&&
-            StrictTotallyOrdered<detail::checked_common_ref_t<
-                detail::clref_t<std::remove_reference_t<T>>,
-                detail::clref_t<std::remove_reference_t<T>>>>&&
-                EqualityComparableWith<T, U>&& detail::requires_<
-                    detail::StrictTotallyOrderedWith_req, T, U>;
+    decltype(detail::StrictTotallyOrderedWith_fn<T, U>(0))::value;
 
 NANO_END_NAMESPACE
 

@@ -15,9 +15,23 @@
 
 NANO_BEGIN_NAMESPACE
 
+namespace detail {
+
 template <typename T>
-NANO_CONCEPT Movable = std::is_object<T>::value&& MoveConstructible<T>&&
-    Assignable<detail::lref_t<T>, T>&& Swappable<T>;
+auto Movable_fn(long) -> std::false_type;
+
+template <typename T>
+auto Movable_fn(int) -> std::enable_if_t<
+        std::is_object<T>::value &&
+        MoveConstructible<T> &&
+        Assignable<T&, T> &&
+        Swappable<T>,
+                std::true_type>;
+
+}
+
+template <typename T>
+NANO_CONCEPT Movable = decltype(detail::Movable_fn<T>(0))::value;
 
 NANO_END_NAMESPACE
 

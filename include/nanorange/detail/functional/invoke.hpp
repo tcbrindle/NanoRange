@@ -153,12 +153,6 @@ struct invoke_result : detail::invoke_result_helper<void, F, Args...> {
 template <typename F, typename... Args>
 using invoke_result_t = typename invoke_result<F, Args...>::type;
 
-namespace detail {
-
-template <typename F, typename... Args>
-using checked_invoke_result_t = test_t<invoke_result_t, F, Args...>;
-}
-
 NANO_END_NAMESPACE
 
 #endif

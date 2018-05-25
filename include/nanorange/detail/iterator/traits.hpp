@@ -75,25 +75,6 @@ using reference_t = typename detail::reference_helper<T>::type;
 template <typename T>
 using rvalue_reference_t = decltype(ranges::iter_move(std::declval<T&>()));
 
-namespace detail {
-
-template <typename T>
-using checked_difference_type_t = test_t<difference_type_t, T>;
-
-template <typename T>
-using checked_value_type_t = test_t<value_type_t, T>;
-
-template <typename T>
-using checked_iterator_category_t = test_t<iterator_category_t, T>;
-
-template <typename T>
-using checked_reference_t = test_t<reference_t, T>;
-
-template <typename T>
-using checked_rvalue_ref_t = test_t<rvalue_reference_t, T>;
-
-} // namespace detail
-
 NANO_END_NAMESPACE
 
 #endif

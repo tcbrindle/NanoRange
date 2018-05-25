@@ -25,16 +25,6 @@ using iterator_t = decltype(ranges::begin(std::declval<T&>()));
 template <typename T>
 using sentinel_t = decltype(ranges::end(std::declval<T&>()));
 
-namespace detail {
-
-template <typename T>
-using checked_iterator_t = test_t<iterator_t, T>;
-
-template <typename T>
-using checked_sentinel_t = test_t<sentinel_t, T>;
-
-} // namespace detail
-
 template <typename T>
 struct enable_view {
 };
@@ -117,12 +107,21 @@ constexpr bool view_predicate<std::unordered_set<K, H, E, A>> = false;
 template <typename K, typename H, typename E, typename A>
 constexpr bool view_predicate<std::unordered_multiset<K, H, E, A>> = false;
 
+template <typename>
+auto view_predicate_helper_fn(long) -> std::false_type;
+
+template <typename T>
+auto view_predicate_helper_fn(int) -> std::enable_if_t<
+        !has_enable_view_v<T> &&
+        !DerivedFrom<T, view_base> &&
+        Range<T> &&
+        Range<const T> &&
+        !Same<reference_t<iterator_t<T>>, reference_t<iterator_t<const T>>>,
+    std::true_type>;
+
 template <typename T>
 constexpr bool view_predicate_helper =
-    !has_enable_view_v<T> && !DerivedFrom<T, view_base> && Range<T> &&
-    Range<const T> &&
-    !Same<checked_reference_t<checked_iterator_t<T>>,
-          checked_reference_t<checked_iterator_t<const T>>>;
+    decltype(view_predicate_helper_fn<T>(0))::value;
 
 template <typename T>
 constexpr bool view_predicate<T, std::enable_if_t<view_predicate_helper<T>>> =
@@ -134,10 +133,21 @@ template <typename T>
 NANO_CONCEPT View = Range<T>&& Semiregular<T>&& detail::view_predicate<T>;
 
 // [range.common]
+namespace detail {
+
+template <typename>
+auto CommonRange_fn(long) -> std::false_type;
 
 template <typename T>
-NANO_CONCEPT CommonRange = Range<T>&&
-    Same<detail::checked_iterator_t<T>, detail::checked_sentinel_t<T>>;
+auto CommonRange_fn(int) -> std::enable_if_t<
+    Range<T> &&
+    Same<iterator_t<T>, sentinel_t<T>>,
+        std::true_type>;
+
+}
+
+template <typename T>
+NANO_CONCEPT CommonRange = decltype(detail::CommonRange_fn<T>(0))::value;
 
 // [ranges.viewable]
 
@@ -147,25 +157,86 @@ NANO_CONCEPT ViewableRange = Range<T> && (std::is_lvalue_reference<T>::value ||
 
 // [range.input]
 
+namespace detail {
+
+template <typename>
+auto InputRange_fn(long) -> std::false_type;
+
+template <typename T>
+auto InputRange_fn(int) -> std::enable_if_t<
+        Range<T> &&
+        InputIterator<iterator_t<T>>,
+    std::true_type>;
+
+}
+
 template <typename T>
 NANO_CONCEPT InputRange =
-    Range<T>&& InputIterator<detail::checked_iterator_t<T>>;
+    decltype(detail::InputRange_fn<T>(0))::value;
+
+namespace detail {
+
+template <typename, typename >
+auto OutputRange_fn(long) -> std::false_type;
+
+template <typename R, typename T>
+auto OutputRange_fn(int) -> std::enable_if_t<
+        Range<R> && OutputIterator<iterator_t<R>, T>,
+        std::true_type>;
+
+}
 
 template <typename R, typename T>
 NANO_CONCEPT OutputRange =
-    Range<R>&& OutputIterator<detail::checked_iterator_t<R>, T>;
+    decltype(detail::OutputRange_fn<R, T>(0))::value;
+
+namespace detail {
+
+template <typename>
+auto ForwardRange_fn(long) -> std::false_type;
+
+template <typename T>
+auto ForwardRange_fn(int) -> std::enable_if_t<
+        InputRange<T> && ForwardIterator<iterator_t<T>>,
+        std::true_type>;
+
+}
 
 template <typename T>
 NANO_CONCEPT ForwardRange =
-    InputRange<T>&& ForwardIterator<detail::checked_iterator_t<T>>;
+    decltype(detail::ForwardRange_fn<T>(0))::value;
+
+namespace detail {
+
+template <typename>
+auto BidirectionalRange_fn(long) -> std::false_type;
+
+template <typename T>
+auto BidirectionalRange_fn(int) -> std::enable_if_t<
+        ForwardRange<T> && BidirectionalIterator<iterator_t<T>>,
+        std::true_type>;
+
+}
 
 template <typename T>
 NANO_CONCEPT BidirectionalRange =
-    ForwardRange<T>&& BidirectionalIterator<detail::checked_iterator_t<T>>;
+    decltype(detail::BidirectionalRange_fn<T>(0))::value;
+
+namespace detail {
+
+template <typename>
+auto RandomAccessRange_fn(long) -> std::false_type;
+
+template <typename T>
+auto RandomAccessRange_fn(int) -> std::enable_if_t<
+        BidirectionalRange<T> && RandomAccessIterator<iterator_t<T>>,
+        std::true_type>;
+
+}
 
 template <typename T>
 NANO_CONCEPT RandomAccessRange =
-    BidirectionalRange<T>&& RandomAccessIterator<detail::checked_iterator_t<T>>;
+    decltype(detail::RandomAccessRange_fn<T>(0))::value;
 
 NANO_END_NAMESPACE
 

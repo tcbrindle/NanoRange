@@ -24,12 +24,21 @@ struct UniformRandomBitGenerator_req {
         requires_expr<Same<decltype(G::max()), invoke_result_t<G&>>>{}));
 };
 
+template <typename>
+auto UniformRandomBitGenerator_fn(long) -> std::false_type;
+
+template <typename G>
+auto UniformRandomBitGenerator_fn(int) -> std::enable_if_t<
+        Invocable<G&> &&
+        UnsignedIntegral<invoke_result_t<G&>> &&
+        requires_<UniformRandomBitGenerator_req, G>,
+    std::true_type>;
+
 } // namespace detail
 
 template <typename G>
 NANO_CONCEPT UniformRandomBitGenerator =
-    Invocable<G&>&& UnsignedIntegral<detail::checked_invoke_result_t<G&>>&&
-        detail::requires_<detail::UniformRandomBitGenerator_req, G>;
+    decltype(detail::UniformRandomBitGenerator_fn<G>(0))::value;
 
 NANO_END_NAMESPACE
 

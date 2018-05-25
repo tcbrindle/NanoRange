@@ -42,24 +42,49 @@ NANO_CONCEPT ConvertibleTo = std::is_convertible<From, To>::value&&
     detail::requires_<detail::ConvertibleTo_req, From, To>;
 
 // [concepts.lib.corelang.commonref]
+namespace detail {
+
 template <typename T, typename U>
-NANO_CONCEPT CommonReference = Same<detail::checked_common_ref_t<T, U>,
-                                    detail::checked_common_ref_t<U, T>>&&
-    ConvertibleTo<T, detail::checked_common_ref_t<T, U>>&&
-        ConvertibleTo<U, detail::checked_common_ref_t<T, U>>;
+auto CommonReference_fn(long) -> std::false_type;
+
+template <typename T, typename U>
+auto CommonReference_fn(int) -> std::enable_if_t<
+        Same<common_reference_t<T, U>, common_reference_t<U, T>> &&
+        ConvertibleTo<T, common_reference_t<T, U>> &&
+        ConvertibleTo<U, common_reference_t<T, U>>,
+                std::true_type>;
+}
+
+
+template <typename T, typename U>
+NANO_CONCEPT CommonReference = decltype(detail::CommonReference_fn<T, U>(0))::value;
 
 // [concepts.lib.corelang.common]
+namespace detail {
+
 template <typename T, typename U>
-NANO_CONCEPT Common = Same<detail::checked_common_type_t<T, U>,
-                           detail::checked_common_type_t<U, T>>&&
-    ConvertibleTo<T, detail::checked_common_type_t<T, U>>&& ConvertibleTo<
-        U, detail::checked_common_type_t<
-               T, U>>&& CommonReference<std::add_lvalue_reference_t<const T>,
-                                        std::add_lvalue_reference_t<const U>>&&
-        CommonReference<
-            std::add_lvalue_reference_t<detail::checked_common_type_t<T, U>>,
-            detail::checked_common_ref_t<std::add_lvalue_reference_t<const T>,
-                                         std::add_lvalue_reference_t<const U>>>;
+auto Common_fn(long) -> std::false_type;
+
+template <typename T, typename U>
+auto Common_fn(int) -> std::enable_if_t<
+    Same<common_type_t<T, U>, common_type_t<U, T>> &&
+    ConvertibleTo<T, common_type_t<T, U>> &&
+    ConvertibleTo<U, common_type_t<T, U>> &&
+    CommonReference<
+        std::add_lvalue_reference_t<const T>,
+        std::add_lvalue_reference_t<const U>> &&
+    CommonReference<
+        std::add_lvalue_reference_t<common_type_t<T, U>>,
+        common_reference_t<
+            std::add_lvalue_reference_t<const T>,
+            std::add_lvalue_reference_t<const U>>>,
+    std::true_type>;
+
+}
+
+
+template <typename T, typename U>
+NANO_CONCEPT Common = decltype(detail::Common_fn<T, U>(0))::value;
 
 // [concepts.lib.corelang.integral]
 template <typename T>
@@ -84,13 +109,21 @@ struct Assignable_req {
         requires_expr<Same<decltype(lhs = std::forward<RHS>(rhs)), LHS>>{}));
 };
 
+template <typename LHS, typename RHS>
+auto Assignable_fn(long) -> std::false_type;
+
+template <typename LHS, typename RHS>
+auto Assignable_fn(int) -> std::enable_if_t<
+        std::is_lvalue_reference<LHS>::value &&
+        CommonReference<const std::remove_reference_t<LHS>&,
+                        const std::remove_reference_t<RHS>&> &&
+        requires_<Assignable_req, LHS, RHS>,
+                std::true_type>;
+
 } // namespace detail
 
 template <typename LHS, typename RHS>
-NANO_CONCEPT Assignable = std::is_lvalue_reference<LHS>::value&&
-    CommonReference<detail::clref_t<std::remove_reference_t<LHS>>,
-                    detail::clref_t<std::remove_reference_t<RHS>>>&&
-        detail::requires_<detail::Assignable_req, LHS, RHS>;
+NANO_CONCEPT Assignable = decltype(detail::Assignable_fn<LHS, RHS>(0))::value;
 
 // [concepts.lib.corelang.destructible]
 template <typename T>
@@ -110,11 +143,24 @@ template <typename T>
 NANO_CONCEPT MoveConstructible = Constructible<T, T>&& ConvertibleTo<T, T>;
 
 // [concepts.lib.corelang.copyconstructible]
+namespace detail {
+
 template <typename T>
-NANO_CONCEPT CopyConstructible = MoveConstructible<T>&& Constructible<
-    T, detail::lref_t<T>>&& ConvertibleTo<detail::lref_t<T>, T>&&
-    Constructible<T, detail::lref_t<T>>&& ConvertibleTo<detail::clref_t<T>, T>&&
-        Constructible<T, const T>&& ConvertibleTo<const T, T>;
+auto CopyConstructible_fn(long) -> std::false_type;
+
+template <typename T>
+auto CopyConstructible_fn(int) -> std::enable_if_t<
+        MoveConstructible<T> &&
+        Constructible<T, T&> && ConvertibleTo<T&, T> &&
+        Constructible<T, const T&> && ConvertibleTo<const T&, T> &&
+        Constructible<T, const T> && ConvertibleTo<const T, T>,
+                std::true_type>;
+
+
+}
+
+template <typename T>
+NANO_CONCEPT CopyConstructible = decltype(detail::CopyConstructible_fn<T>(0))::value;
 
 NANO_END_NAMESPACE
 

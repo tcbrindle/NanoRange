@@ -194,12 +194,6 @@ struct common_reference<T1, T2, Rest...>
     : detail::multiple_common_reference<void, T1, T2, Rest...> {
 };
 
-namespace detail {
-
-template <typename... T>
-using checked_common_ref_t = test_t<common_reference_t, T...>;
-}
-
 NANO_END_NAMESPACE
 
 #endif
