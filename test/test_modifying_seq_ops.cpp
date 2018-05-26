@@ -475,8 +475,6 @@ TEST_CASE("reverse()")
     }
 }
 
-#if 0
-
 TEST_CASE("reverse_copy()")
 {
     const std::list<int> list{1, 2, 3, 4, 5};
@@ -544,8 +542,6 @@ TEST_CASE("shuffle()")
         REQUIRE(std::is_permutation(vec.begin(), vec.end(), orig.begin(), orig.end()));
     }
 }
-
-#endif
 
 TEST_CASE("unique()")
 {

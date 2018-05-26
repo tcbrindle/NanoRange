@@ -35,7 +35,9 @@
 #include <nanorange/algorithm/replace_copy_if.hpp>
 #include <nanorange/algorithm/replace_if.hpp>
 #include <nanorange/algorithm/reverse.hpp>
+#include <nanorange/algorithm/reverse_copy.hpp>
 #include <nanorange/algorithm/rotate.hpp>
+#include <nanorange/algorithm/rotate_copy.hpp>
 #include <nanorange/algorithm/search.hpp>
 #include <nanorange/algorithm/search_n.hpp>
 #include <nanorange/algorithm/shuffle.hpp>
