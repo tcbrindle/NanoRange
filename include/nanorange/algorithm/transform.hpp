@@ -131,16 +131,17 @@ public:
     template <typename I1, typename S1, typename I2, typename O, typename F,
               typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED constexpr std::enable_if_t<
-        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
+        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<std::decay_t<I2>> &&
+            !InputRange<I2> &&
             WeaklyIncrementable<O> && CopyConstructible<F> &&
             Writable<O, indirect_result_t<F&, projected<I1, Proj1>,
-                                          projected<I2, Proj2>>>,
-        std::tuple<I1, I2, O>>
-    operator()(I1 first1, S1 last1, I2 first2, O result, F op,
+                                          projected<std::decay_t<I2>, Proj2>>>,
+        std::tuple<I1, std::decay_t<I2>, O>>
+    operator()(I1 first1, S1 last1, I2&& first2, O result, F op,
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
         return transform_fn::binary_impl3(std::move(first1), std::move(last1),
-                                          std::move(first2), std::move(result),
+                                          std::forward<I2>(first2), std::move(result),
                                           op, proj1, proj2);
     }
 
@@ -148,17 +149,18 @@ public:
     template <typename Rng1, typename I2, typename O, typename F,
               typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED constexpr std::enable_if_t<
-        InputRange<Rng1> && InputIterator<I2> && WeaklyIncrementable<O> &&
+        InputRange<Rng1> && InputIterator<std::decay_t<I2>> &&
+                !InputRange<I2> && WeaklyIncrementable<O> &&
             CopyConstructible<F> &&
             Writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng1>, Proj1>,
-                                       projected<I2, Proj2>>>,
-        std::tuple<safe_iterator_t<Rng1>, I2, O>>
-    operator()(Rng1&& rng1, I2 first2, O result, F op, Proj1 proj1 = Proj1{},
+                                       projected<std::decay_t<I2>, Proj2>>>,
+        std::tuple<safe_iterator_t<Rng1>, std::decay_t<I2>, O>>
+    operator()(Rng1&& rng1, I2&& first2, O result, F op, Proj1 proj1 = Proj1{},
                Proj2 proj2 = Proj2{}) const
     {
         return transform_fn::binary_impl3(nano::begin(rng1), nano::end(rng1),
-                                          std::move(first2), std::move(result),
+                                          std::forward<I2>(first2), std::move(result),
                                           op, proj1, proj2);
     }
 };

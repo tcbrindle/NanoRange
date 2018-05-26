@@ -50,35 +50,40 @@ private:
     }
 
 public:
+    // three legged
     template <typename I1, typename S1, typename I2, typename Proj1 = identity,
               typename Proj2 = identity, typename Pred = equal_to<>>
     NANO_DEPRECATED constexpr std::enable_if_t<
-        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
-            IndirectRelation<Pred, projected<I1, Proj1>, projected<I2, Proj2>>,
-        std::pair<I1, I2>>
-    operator()(I1 first1, S1 last1, I2 first2, Pred pred = Pred{},
+        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<std::decay_t<I2>> &&
+        !InputRange<I1> &&
+        IndirectRelation<Pred, projected<I1, Proj1>, projected<std::decay_t<I2>, Proj2>>,
+        std::pair<I1, std::decay_t<I2>>>
+    operator()(I1 first1, S1 last1, I2&& first2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
         return mismatch_fn::impl3(std::move(first1), std::move(last1),
-                                  std::move(first2), std::move(pred),
+                                  std::forward<I2>(first2), std::move(pred),
                                   std::move(proj1), std::move(proj2));
     }
 
+    // range and a half
     template <typename Rng1, typename I2, typename Proj1 = identity,
               typename Proj2 = identity, typename Pred = equal_to<>>
     NANO_DEPRECATED constexpr std::enable_if_t<
-        InputRange<Rng1> && InputIterator<I2> &&
+        InputRange<Rng1> && InputIterator<std::decay_t<I2>> &&
+                !InputRange<I2> &&
             IndirectRelation<Pred, projected<iterator_t<Rng1>, Proj1>,
-                             projected<I2, Proj2>>,
-        std::pair<safe_iterator_t<Rng1>, I2>>
-    operator()(Rng1&& rng1, I2 first2, Pred pred = Pred{},
+                             projected<std::decay_t<I2>, Proj2>>,
+        std::pair<safe_iterator_t<Rng1>, std::decay_t<I2>>>
+    operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
         return mismatch_fn::impl3(nano::begin(rng1), nano::end(rng1),
-                                  std::move(first2), std::move(pred),
+                                  std::forward<I2>(first2), std::move(pred),
                                   std::move(proj1), std::move(proj2));
     }
 
+    // four legged
     template <typename I1, typename S1, typename I2, typename S2,
               typename Proj1 = identity, typename Proj2 = identity,
               typename Pred = equal_to<>>
@@ -96,6 +101,7 @@ public:
                                   std::move(proj2));
     }
 
+    // two ranges
     template <typename Rng1, typename Rng2, typename Proj1 = identity,
               typename Proj2 = identity, typename Pred = equal_to<>>
     constexpr std::enable_if_t<

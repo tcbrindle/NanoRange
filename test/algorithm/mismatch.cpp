@@ -130,15 +130,13 @@ TEST_CASE("alg.mismatch")
 	test_range<random_access_iterator<const int*>, sentinel<const int*>>();
 
 	// Works with projections?
-	// FIXME: Ambiguous calls below, i1 satisfies InputRange (when passed by
-	// reference), but also satisfies InputIterator when passed by value
 	S s1[] = {S{1},S{2},S{3},S{4},S{-4},S{5},S{6},S{40},S{7},S{8},S{9}};
 	int const i1[] = {1,2,3,4,5,6,7,8,9};
 	{
-//		std::pair<S const *, int const *> ps1
-//			= ranges::mismatch(s1, i1, std::equal_to<int>(), &S::i);
-//		CHECK(ps1.first->i == -4);
-//		CHECK(*ps1.second == 5);
+		std::pair<S const *, int const *> ps1
+			= ranges::mismatch(s1, i1, std::equal_to<int>(), &S::i);
+		CHECK(ps1.first->i == -4);
+		CHECK(*ps1.second == 5);
 	}
 	{
 		std::pair<S const *, int const *> ps1
@@ -149,10 +147,10 @@ TEST_CASE("alg.mismatch")
 
 	S s2[] = {S{1},S{2},S{3},S{4},S{5},S{6},S{40},S{7},S{8},S{9}};
 	{
-//		std::pair<S const *, S const *> ps2
-//			= ranges::mismatch(s1, s2, std::equal_to<int>(), &S::i, &S::i);
-//		CHECK(ps2.first->i == -4);
-//		CHECK(ps2.second->i == 5);
+		std::pair<S const *, S const *> ps2
+			= ranges::mismatch(s1, s2, std::equal_to<int>(), &S::i, &S::i);
+		CHECK(ps2.first->i == -4);
+		CHECK(ps2.second->i == 5);
 	}
 	{
 		std::pair<S const *, S const *> ps2
