@@ -22,6 +22,7 @@
 #include <nanorange/algorithm/for_each.hpp>
 #include <nanorange/algorithm/generate.hpp>
 #include <nanorange/algorithm/generate_n.hpp>
+#include <nanorange/algorithm/lexicographical_compare.hpp>
 #include <nanorange/algorithm/mismatch.hpp>
 #include <nanorange/algorithm/move.hpp>
 #include <nanorange/algorithm/none_of.hpp>

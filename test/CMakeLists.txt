@@ -45,7 +45,7 @@ add_executable(test_nanorange
     #algorithm/is_permutation.cpp
     #algorithm/is_sorted.cpp
     #algorithm/is_sorted_until.cpp
-    #algorithm/lexicographical_compare.cpp
+    algorithm/lexicographical_compare.cpp
     #algorithm/lower_bound.cpp
     #algorithm/make_heap.cpp
     #algorithm/max.cpp
