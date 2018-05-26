@@ -1,4 +1,4 @@
-// nanorange/concepts.hpp
+// nanorange/algorithm.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -46,6 +46,44 @@
 #include <nanorange/algorithm/unique.hpp>
 
 // Algorithms which reuse the STL implementation
+#include <nanorange/algorithm/stl/binary_search.hpp>
+#include <nanorange/algorithm/stl/equal_range.hpp>
+#include <nanorange/algorithm/stl/includes.hpp>
+#include <nanorange/algorithm/stl/inplace_merge.hpp>
+#include <nanorange/algorithm/stl/is_heap.hpp>
+#include <nanorange/algorithm/stl/is_heap_until.hpp>
+#include <nanorange/algorithm/stl/is_partitioned.hpp>
 #include <nanorange/algorithm/stl/is_permutation.hpp>
+#include <nanorange/algorithm/stl/is_sorted.hpp>
+#include <nanorange/algorithm/stl/is_sorted_until.hpp>
+#include <nanorange/algorithm/stl/lower_bound.hpp>
+#include <nanorange/algorithm/stl/make_heap.hpp>
+#include <nanorange/algorithm/stl/max.hpp>
+#include <nanorange/algorithm/stl/max_element.hpp>
+#include <nanorange/algorithm/stl/merge.hpp>
+#include <nanorange/algorithm/stl/min.hpp>
+#include <nanorange/algorithm/stl/min_element.hpp>
+#include <nanorange/algorithm/stl/minmax.hpp>
+#include <nanorange/algorithm/stl/minmax_element.hpp>
+#include <nanorange/algorithm/stl/next_permutation.hpp>
+#include <nanorange/algorithm/stl/nth_element.hpp>
+#include <nanorange/algorithm/stl/partial_sort.hpp>
+#include <nanorange/algorithm/stl/partial_sort_copy.hpp>
+#include <nanorange/algorithm/stl/partition.hpp>
+#include <nanorange/algorithm/stl/partition_copy.hpp>
+#include <nanorange/algorithm/stl/partition_point.hpp>
+#include <nanorange/algorithm/stl/pop_heap.hpp>
+#include <nanorange/algorithm/stl/prev_permutation.hpp>
+#include <nanorange/algorithm/stl/push_heap.hpp>
+#include <nanorange/algorithm/stl/set_difference.hpp>
+#include <nanorange/algorithm/stl/set_intersection.hpp>
+#include <nanorange/algorithm/stl/set_symmetric_difference.hpp>
+#include <nanorange/algorithm/stl/set_union.hpp>
+#include <nanorange/algorithm/stl/sort.hpp>
+#include <nanorange/algorithm/stl/sort_heap.hpp>
+#include <nanorange/algorithm/stl/stable_partition.hpp>
+#include <nanorange/algorithm/stl/stable_sort.hpp>
+#include <nanorange/algorithm/stl/unique_copy.hpp>
+#include <nanorange/algorithm/stl/upper_bound.hpp>
 
 #endif

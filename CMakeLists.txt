@@ -46,7 +46,45 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/transform.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/unique.hpp
 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/binary_search.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/equal_range.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/includes.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/inplace_merge.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/is_heap.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/is_heap_until.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/is_partitioned.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/is_permutation.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/is_sorted.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/is_sorted_until.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/lower_bound.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/make_heap.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/max.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/max_element.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/merge.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/min.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/min_element.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/minmax.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/minmax_element.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/next_permutation.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/nth_element.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/partial_sort.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/partial_sort_copy.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/partition.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/partition_copy.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/partition_point.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/pop_heap.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/prev_permutation.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/push_heap.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/set_difference.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/set_intersection.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/set_symmetric_difference.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/set_union.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/sort.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/sort_heap.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/stable_partition.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/stable_sort.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/unique_copy.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/upper_bound.hpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/comparison.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/core.hpp
