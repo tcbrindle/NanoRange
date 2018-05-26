@@ -174,5 +174,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 if (MSVC)
-    target_compile_options(test_nanorange PRIVATE /wd4180)
+    target_compile_options(test_nanorange PRIVATE
+            /wd4267 /wd4244 # narrowing conversion warnings
+    )
 endif()
