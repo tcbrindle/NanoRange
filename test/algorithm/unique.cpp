@@ -25,38 +25,39 @@
 // Implementation based on the code in libc++
 //   http://http://libcxx.llvm.org/
 
-#include <stl2/detail/algorithm/unique.hpp>
-#include "../simple_test.hpp"
-#include "../test_utils.hpp"
+#include <nanorange/algorithm/unique.hpp>
+#include <nanorange/view/subrange.hpp>
+#include "../catch.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
+
+namespace {
 
 /// Calls the iterator interface of the algorithm
 template <class Iter>
-struct iter_call
-{
+struct iter_call {
 	using begin_t = Iter;
 	using sentinel_t = typename sentinel_type<Iter>::type;
 
 	template <class B, class E, class... Args>
 	auto operator()(B &&It, E &&e, Args &&... args) const
 	{
-		return stl2::unique(begin_t{It}, sentinel_t{e}, std::forward<Args>(args)...);
+		return stl2::unique(begin_t{It}, sentinel_t{e},
+							std::forward<Args>(args)...);
 	}
 };
 
 /// Calls the range interface of the algorithm
 template <class Iter>
-struct range_call
-{
+struct range_call {
 	using begin_t = Iter;
 	using sentinel_t = typename sentinel_type<Iter>::type;
 
 	template <class B, class E, class... Args>
-	auto operator()(B &&It, E &&e, Args &&... args) const
+	auto operator()(B&& It, E&& e, Args&& ... args) const
 	{
-		auto rng = stl2::ext::make_range(begin_t{It}, sentinel_t{e});
+		auto rng = stl2::make_subrange(begin_t{It}, sentinel_t{e});
 		return stl2::unique(rng, std::forward<Args>(args)...);
 	}
 };
@@ -134,7 +135,9 @@ void test()
 	}
 }
 
-int main()
+}
+
+TEST_CASE("alg.unique")
 {
 	test<forward_iterator<int*>, iter_call>();
 	test<bidirectional_iterator<int*>, iter_call>();
@@ -149,12 +152,10 @@ int main()
 	// Test rvalue range
 	{
 		int a[] = {0, 1, 1, 1, 2, 2, 2};
-		auto r = stl2::unique(stl2::move(a));
+		auto r = stl2::unique(std::move(a));
 		CHECK(r.get_unsafe() == a + 3);
 		CHECK(a[0] == 0);
 		CHECK(a[1] == 1);
 		CHECK(a[2] == 2);
 	}
-
-	return ::test_result();
 }

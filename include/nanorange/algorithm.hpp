@@ -37,6 +37,7 @@
 #include <nanorange/algorithm/search_n.hpp>
 #include <nanorange/algorithm/swap_ranges.hpp>
 #include <nanorange/algorithm/transform.hpp>
+#include <nanorange/algorithm/unique.hpp>
 
 // Algorithms which reuse the STL implementation
 #include <nanorange/algorithm/is_permutation.hpp>

@@ -17,6 +17,8 @@ namespace detail {
 
 struct adjacent_find_fn {
 private:
+    friend struct unique_fn;
+
     template <typename I, typename S, typename Proj, typename Pred>
     static constexpr I impl(I first, S last, Pred pred, Proj proj)
     {

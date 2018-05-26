@@ -545,6 +545,8 @@ TEST_CASE("shuffle()")
     }
 }
 
+#endif
+
 TEST_CASE("unique()")
 {
     std::vector<int> vec{1, 2, 2, 3, 3, 3, 4, 4};
@@ -590,6 +592,8 @@ TEST_CASE("unique() (with predicate)")
         REQUIRE(vec[3] == 4);
     }
 }
+
+#if 0
 
 TEST_CASE("unique_copy()")
 {
