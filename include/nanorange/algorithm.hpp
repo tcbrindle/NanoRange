@@ -37,6 +37,7 @@
 #include <nanorange/algorithm/rotate.hpp>
 #include <nanorange/algorithm/search.hpp>
 #include <nanorange/algorithm/search_n.hpp>
+#include <nanorange/algorithm/shuffle.hpp>
 #include <nanorange/algorithm/swap_ranges.hpp>
 #include <nanorange/algorithm/transform.hpp>
 #include <nanorange/algorithm/unique.hpp>

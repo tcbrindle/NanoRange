@@ -22,13 +22,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <nanorange_extras.hpp>
+#include <nanorange/algorithm/shuffle.hpp>
+#include <nanorange/algorithm/equal.hpp>
 #include <numeric>
 #include <random>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"
+#include "../test_utils.hpp"
 
-namespace stl2 = nanorange;
+namespace stl2 = nano;
 
 TEST_CASE("alg.shuffle")
 {

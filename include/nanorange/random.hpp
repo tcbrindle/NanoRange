@@ -9,6 +9,8 @@
 
 #include <nanorange/concepts.hpp>
 
+#include <random>
+
 NANO_BEGIN_NAMESPACE
 
 //  [rand.req.urng]

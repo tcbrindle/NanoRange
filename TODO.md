@@ -73,6 +73,7 @@ iterators and sentinels of different types, and allow the use of projections.
 * reverse_copy
 * rotate
 * rotate_copy
+* shuffle
 
 ## Partially implemented (using STL) ##
 
@@ -93,7 +94,6 @@ The following algorithms have not yet been implemented in Nanorange:
 #### Modifying sequence ops ####
 
 * unique_copy
-* shuffle
 
 #### partitions ####
 

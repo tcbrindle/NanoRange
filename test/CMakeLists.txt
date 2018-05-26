@@ -108,7 +108,7 @@ add_executable(test_nanorange
     #algorithm/set_union4.cpp
     #algorithm/set_union5.cpp
     #algorithm/set_union6.cpp
-    #algorithm/shuffle.cpp
+    algorithm/shuffle.cpp
     #algorithm/sort.cpp
     #algorithm/sort_heap.cpp
     #algorithm/stable_partition.cpp
