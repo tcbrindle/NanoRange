@@ -1,11 +1,11 @@
-// nanorange/algorithm/is_permutation.hpp
+// nanorange/algorithm/stl/is_permutation.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef NANORANGE_ALGORITHM_IS_PERMUTATION_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_IS_PERMUTATION_HPP_INCLUDED
+#ifndef NANORANGE_ALGORITHM_STL_IS_PERMUTATION_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_IS_PERMUTATION_HPP_INCLUDED
 
 #include <nanorange/range.hpp>
 
@@ -58,15 +58,16 @@ struct is_permutation_fn {
     NANO_DEPRECATED
     std::enable_if_t<
             ForwardIterator<I1> &&
-                    Cpp98Iterator<I1> &&
-                    ForwardIterator<I2> &&
-                    Cpp98Iterator<I1> &&
-                    IndirectlyComparable<I1, I2, Pred>,
+            Cpp98Iterator<I1> &&
+            ForwardIterator<std::decay_t<I2>> &&
+            Cpp98Iterator<std::decay_t<I1>> &&
+            !ForwardRange<I2> &&
+            IndirectlyComparable<I1, std::decay_t<I2>, Pred>,
             bool>
-    operator()(I1 first1, I1 last1, I2 first2, Pred pred = Pred{}) const
+    operator()(I1 first1, I1 last1, I2&& first2, Pred pred = Pred{}) const
     {
         return std::is_permutation(std::move(first1), std::move(last1),
-                                   std::move(first2), std::ref(pred));
+                                   std::forward<I2>(first2), std::ref(pred));
     }
 
     // Range and a half
@@ -76,14 +77,15 @@ struct is_permutation_fn {
             ForwardRange<Rng1> &&
             CommonRange<Rng1> &&
             Cpp98Iterator<iterator_t<Rng1>> &&
-            ForwardIterator<I2> &&
-            Cpp98Iterator<I2> &&
-            IndirectlyComparable<iterator_t<Rng1>, I2, Pred>,
+            ForwardIterator<std::decay_t<I2>> &&
+            Cpp98Iterator<std::decay_t<I2>> &&
+            !ForwardRange<I2> &&
+            IndirectlyComparable<iterator_t<Rng1>, std::decay_t<I2>, Pred>,
             bool>
-    operator()(Rng1&& rng1, I2 first2, Pred pred = Pred{}) const
+    operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{}) const
     {
         return std::is_permutation(nano::begin(rng1), nano::end(rng1),
-                                   std::move(first2), std::ref(pred));
+                                   std::forward<I2>(first2), std::ref(pred));
     }
 };
 

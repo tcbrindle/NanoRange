@@ -43,6 +43,6 @@
 #include <nanorange/algorithm/unique.hpp>
 
 // Algorithms which reuse the STL implementation
-#include <nanorange/algorithm/is_permutation.hpp>
+#include <nanorange/algorithm/stl/is_permutation.hpp>
 
 #endif
