@@ -100,7 +100,7 @@ namespace begin_testing {
 	};
 
 	struct B : A {};
-	void* begin(B&);
+	void* begin(B&) { return nullptr; };
 
 	struct C : A {};
 	void begin(C&) {}

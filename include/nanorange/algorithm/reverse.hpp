@@ -34,7 +34,7 @@ private:
     {
         I last = next(first, bound);
         return reverse_fn::impl(std::move(first), std::move(last));
-    };
+    }
 
 public:
     template <typename I, typename S>
