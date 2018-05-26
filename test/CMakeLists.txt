@@ -80,7 +80,7 @@ add_executable(test_nanorange
     algorithm/reverse.cpp
     algorithm/reverse_copy.cpp
     algorithm/rotate.cpp
-    #algorithm/rotate_copy.cpp
+    algorithm/rotate_copy.cpp
     #algorithm/sample.cpp
     algorithm/search.cpp
     algorithm/search_n.cpp
