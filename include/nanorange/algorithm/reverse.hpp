@@ -33,7 +33,7 @@ private:
     impl(I first, S bound)
     {
         I last = next(first, bound);
-        return reverse_fn::impl(first, last);
+        return reverse_fn::impl(std::move(first), std::move(last));
     };
 
 public:

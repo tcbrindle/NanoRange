@@ -22,14 +22,23 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/reverse_copy.hpp>
+#include <nanorange/algorithm/reverse_copy.hpp>
+#include <nanorange/view/subrange.hpp>
 #include <cstring>
 #include <utility>
-#include "../simple_test.hpp"
-#include "../test_utils.hpp"
+#include "../catch.hpp"
 #include "../test_iterators.hpp"
+#include "../check_equal.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
+
+namespace {
+
+template <typename T>
+T& as_lvalue(T&& t)
+{
+	return t;
+}
 
 template <class Iter, class OutIter, class Sent = Iter>
 void test()
@@ -38,90 +47,103 @@ void test()
 	// iterators
 	{
 		const int ia[] = {0};
-		const unsigned sa = sizeof(ia)/sizeof(ia[0]);
+		const unsigned sa = sizeof(ia) / sizeof(ia[0]);
 		int ja[sa] = {-1};
 		P p0 = stl2::reverse_copy(Iter(ia), Sent(ia), OutIter(ja));
 		::check_equal(ja, {-1});
 		CHECK(p0.first == Iter(ia));
 		CHECK(base(p0.second) == ja);
-		P p1 = stl2::reverse_copy(Iter(ia), Sent(ia+sa), OutIter(ja));
+		P p1 = stl2::reverse_copy(Iter(ia), Sent(ia + sa), OutIter(ja));
 		::check_equal(ja, {0});
-		CHECK(p1.first == Iter(ia+sa));
-		CHECK(base(p1.second) == ja+sa);
+		CHECK(p1.first == Iter(ia + sa));
+		CHECK(base(p1.second) == ja + sa);
 
 		const int ib[] = {0, 1};
-		const unsigned sb = sizeof(ib)/sizeof(ib[0]);
+		const unsigned sb = sizeof(ib) / sizeof(ib[0]);
 		int jb[sb] = {-1};
-		P p2 = stl2::reverse_copy(Iter(ib), Sent(ib+sb), OutIter(jb));
+		P p2 = stl2::reverse_copy(Iter(ib), Sent(ib + sb), OutIter(jb));
 		::check_equal(jb, {1, 0});
-		CHECK(p2.first == Iter(ib+sb));
-		CHECK(base(p2.second) == jb+sb);
+		CHECK(p2.first == Iter(ib + sb));
+		CHECK(base(p2.second) == jb + sb);
 
 		const int ic[] = {0, 1, 2};
-		const unsigned sc = sizeof(ic)/sizeof(ic[0]);
+		const unsigned sc = sizeof(ic) / sizeof(ic[0]);
 		int jc[sc] = {-1};
-		P p3 = stl2::reverse_copy(Iter(ic), Sent(ic+sc), OutIter(jc));
+		P p3 = stl2::reverse_copy(Iter(ic), Sent(ic + sc), OutIter(jc));
 		::check_equal(jc, {2, 1, 0});
-		CHECK(p3.first == Iter(ic+sc));
-		CHECK(base(p3.second) == jc+sc);
+		CHECK(p3.first == Iter(ic + sc));
+		CHECK(base(p3.second) == jc + sc);
 
 		const int id[] = {0, 1, 2, 3};
-		const unsigned sd = sizeof(id)/sizeof(id[0]);
+		const unsigned sd = sizeof(id) / sizeof(id[0]);
 		int jd[sd] = {-1};
-		P p4 = stl2::reverse_copy(Iter(id), Sent(id+sd), OutIter(jd));
+		P p4 = stl2::reverse_copy(Iter(id), Sent(id + sd), OutIter(jd));
 		::check_equal(jd, {3, 2, 1, 0});
-		CHECK(p4.first == Iter(id+sd));
-		CHECK(base(p4.second) == jd+sd);
+		CHECK(p4.first == Iter(id + sd));
+		CHECK(base(p4.second) == jd + sd);
 	}
 
 	// ranges
 	{
 		const int ia[] = {0};
-		const unsigned sa = sizeof(ia)/sizeof(ia[0]);
+		const unsigned sa = sizeof(ia) / sizeof(ia[0]);
 		int ja[sa] = {-1};
-		P p0 = stl2::reverse_copy(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia))), OutIter(ja));
+		P p0 = stl2::reverse_copy(
+				::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia))),
+				OutIter(ja));
 		::check_equal(ja, {-1});
 		CHECK(p0.first == Iter(ia));
 		CHECK(base(p0.second) == ja);
-		P p1 = stl2::reverse_copy(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), OutIter(ja));
+		P p1 = stl2::reverse_copy(
+				::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))),
+				OutIter(ja));
 		::check_equal(ja, {0});
-		CHECK(p1.first == Iter(ia+sa));
-		CHECK(base(p1.second) == ja+sa);
+		CHECK(p1.first == Iter(ia + sa));
+		CHECK(base(p1.second) == ja + sa);
 
 		const int ib[] = {0, 1};
-		const unsigned sb = sizeof(ib)/sizeof(ib[0]);
+		const unsigned sb = sizeof(ib) / sizeof(ib[0]);
 		int jb[sb] = {-1};
-		P p2 = stl2::reverse_copy(::as_lvalue(stl2::ext::make_range(Iter(ib), Sent(ib+sb))), OutIter(jb));
+		P p2 = stl2::reverse_copy(
+				::as_lvalue(stl2::make_subrange(Iter(ib), Sent(ib + sb))),
+				OutIter(jb));
 		::check_equal(jb, {1, 0});
-		CHECK(p2.first == Iter(ib+sb));
-		CHECK(base(p2.second) == jb+sb);
+		CHECK(p2.first == Iter(ib + sb));
+		CHECK(base(p2.second) == jb + sb);
 
 		const int ic[] = {0, 1, 2};
-		const unsigned sc = sizeof(ic)/sizeof(ic[0]);
+		const unsigned sc = sizeof(ic) / sizeof(ic[0]);
 		int jc[sc] = {-1};
-		P p3 = stl2::reverse_copy(::as_lvalue(stl2::ext::make_range(Iter(ic), Sent(ic+sc))), OutIter(jc));
+		P p3 = stl2::reverse_copy(
+				::as_lvalue(stl2::make_subrange(Iter(ic), Sent(ic + sc))),
+				OutIter(jc));
 		::check_equal(jc, {2, 1, 0});
-		CHECK(p3.first == Iter(ic+sc));
-		CHECK(base(p3.second) == jc+sc);
+		CHECK(p3.first == Iter(ic + sc));
+		CHECK(base(p3.second) == jc + sc);
 
 		const int id[] = {0, 1, 2, 3};
-		const unsigned sd = sizeof(id)/sizeof(id[0]);
+		const unsigned sd = sizeof(id) / sizeof(id[0]);
 		int jd[sd] = {-1};
-		P p4 = stl2::reverse_copy(::as_lvalue(stl2::ext::make_range(Iter(id), Sent(id+sd))), OutIter(jd));
+		P p4 = stl2::reverse_copy(
+				::as_lvalue(stl2::make_subrange(Iter(id), Sent(id + sd))),
+				OutIter(jd));
 		::check_equal(jd, {3, 2, 1, 0});
-		CHECK(p4.first == Iter(id+sd));
-		CHECK(base(p4.second) == jd+sd);
+		CHECK(p4.first == Iter(id + sd));
+		CHECK(base(p4.second) == jd + sd);
 
 		// test rvalue ranges
 		std::memset(jd, 0, sizeof(jd));
-		auto p5 = stl2::reverse_copy(stl2::ext::make_range(Iter(id), Sent(id+sd)), OutIter(jd));
+		auto p5 = stl2::reverse_copy(
+				stl2::make_subrange(Iter(id), Sent(id + sd)), OutIter(jd));
 		::check_equal(jd, {3, 2, 1, 0});
-		CHECK(p5.first.get_unsafe() == Iter(id+sd));
-		CHECK(base(p4.second) == jd+sd);
+		CHECK(p5.first.get_unsafe() == Iter(id + sd));
+		CHECK(base(p4.second) == jd + sd);
 	}
 }
 
-int main()
+}
+
+TEST_CASE("alg.reverse_copy")
 {
 	test<bidirectional_iterator<const int*>, output_iterator<int*> >();
 	test<bidirectional_iterator<const int*>, forward_iterator<int*> >();
@@ -158,6 +180,4 @@ int main()
 	test<const int*, bidirectional_iterator<int*>, sentinel<const int *> >();
 	test<const int*, random_access_iterator<int*>, sentinel<const int *> >();
 	test<const int*, int*>();
-
-	return ::test_result();
 }
