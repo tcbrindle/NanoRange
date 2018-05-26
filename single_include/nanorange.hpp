@@ -7,7 +7,7 @@
 #ifndef NANORANGE_HPP_INCLUDED
 #define NANORANGE_HPP_INCLUDED
 
-// nanorange/concepts.hpp
+// nanorange/algorithm.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -1246,6 +1246,12 @@ template <typename, typename = void>
 struct difference_type_ {
 };
 
+// Workaround for GCC silliness: void* has no difference_type
+// FIXME: This is required to stop WeaklyIncrementable<void*> being a hard error
+// Can we formulate the concept differently to avoid the need for this hack?
+template <>
+struct difference_type_<void*> {};
+
 template <typename T>
 struct difference_type_<T*>
     : std::enable_if<std::is_object<T>::value, std::ptrdiff_t> {
@@ -1388,6 +1394,12 @@ struct Dereferenceable_req {
 
 template <typename T>
 NANO_CONCEPT Dereferenceable = requires_<Dereferenceable_req, T>;
+
+// GCC and Clang allow dereferencing void* as an extension.
+// Let's kill that off now.
+
+template <>
+NANO_CONCEPT Dereferenceable<void*> = false;
 
 } // namespace detail
 
@@ -1837,7 +1849,7 @@ private:
             Iterator<decltype(decay_copy(begin(std::forward<T>(t))))>,
             decltype(decay_copy(begin(std::forward<T>(t))))>
     {
-        return decay_copy(begin(t));
+        return decay_copy(begin(std::forward<T>(t)));
     }
 
 public:
@@ -2363,13 +2375,30 @@ namespace detail {
 struct Range_req {
     template <typename T>
     auto requires_(T&& t)
-        -> decltype(valid_expr(ranges::begin(t), ranges::end(t)));
+        -> decltype(valid_expr(ranges::begin(std::forward<T>(t)),
+                               ranges::end(std::forward<T>(t))));
 };
+
+template <typename T>
+NANO_CONCEPT RangeImpl = requires_<Range_req, T>;
+
+template <typename>
+auto Range_fn(long) -> std::false_type;
+
+template <typename T>
+auto Range_fn(int) -> std::enable_if_t<RangeImpl<T&>, std::true_type>;
 
 } // namespace detail
 
 template <typename T>
-NANO_CONCEPT Range = detail::requires_<detail::Range_req, T>;
+NANO_CONCEPT Range = decltype(detail::Range_fn<T>(0))::value;
+
+namespace detail {
+
+template <typename T>
+NANO_CONCEPT ForwardingRange = Range<T> && RangeImpl<T>;
+
+}
 
 // [range.sized]
 
@@ -2476,7 +2505,7 @@ NANO_CONCEPT CommonRange = decltype(detail::CommonRange_fn<T>(0))::value;
 // [ranges.viewable]
 
 template <typename T>
-NANO_CONCEPT ViewableRange = Range<T> && (std::is_lvalue_reference<T>::value ||
+NANO_CONCEPT ViewableRange = Range<T> && (detail::ForwardingRange<T> ||
                                           View<std::decay_t<T>>);
 
 // [range.input]
@@ -4643,6 +4672,8 @@ namespace detail {
 
 struct adjacent_find_fn {
 private:
+    friend struct unique_fn;
+
     template <typename I, typename S, typename Proj, typename Pred>
     static constexpr I impl(I first, S last, Pred pred, Proj proj)
     {
@@ -5238,14 +5269,15 @@ public:
     template <typename I1, typename S1, typename I2, typename Pred = equal_to<>,
               typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED constexpr std::enable_if_t<
-        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
-            IndirectlyComparable<I1, I2, Pred, Proj1, Proj2>,
+        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<std::decay_t<I2>> &&
+                !InputRange<I2> &&
+            IndirectlyComparable<I1, std::decay_t<I2>, Pred, Proj1, Proj2>,
         bool>
     operator()(I1 first1, S1 last1, I2 first2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
         return equal_fn::impl3(std::move(first1), std::move(last1),
-                               std::move(first2), std::move(pred),
+                               std::forward<I2>(first2), std::move(pred),
                                std::move(proj1), std::move(proj2));
     }
 
@@ -5292,14 +5324,15 @@ public:
     template <typename Rng1, typename I2, typename Pred = equal_to<>,
               typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED constexpr std::enable_if_t<
-        InputRange<Rng1> && InputIterator<I2> &&
-            IndirectlyComparable<iterator_t<Rng1>, I2, Pred, Proj1, Proj2>,
+        InputRange<Rng1> && InputIterator<std::decay_t<I2>> &&
+                !InputRange<I2> &&
+            IndirectlyComparable<iterator_t<Rng1>, std::decay_t<I2>, Pred, Proj1, Proj2>,
         bool>
-    operator()(Rng1&& rng1, I2 first2, Pred pred = Pred{},
+    operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
         return equal_fn::impl3(nano::begin(rng1), nano::end(rng1),
-                               std::move(first2), std::move(pred),
+                               std::forward<I2>(first2), std::move(pred),
                                std::move(proj1), std::move(proj2));
     }
 };
@@ -5990,6 +6023,92 @@ NANO_END_NAMESPACE
 
 #endif
 
+// nanorange/algorithm/stl/lexicographical_compare.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_LEXICOGRAPHICAL_COMPARE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_LEXICOGRAPHICAL_COMPARE_HPP_INCLUDED
+
+
+
+
+#include <algorithm>
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct lexicographical_compare_fn {
+private:
+    template <typename I1, typename S1, typename I2, typename S2,
+              typename Comp, typename Proj1, typename Proj2>
+    static constexpr bool impl(I1 first1, S1 last1, I2 first2, S2 last2,
+                                Comp& comp, Proj1& proj1, Proj2& proj2)
+    {
+        while (first1 != last1 && first2 != last2) {
+            if (nano::invoke(comp, nano::invoke(proj1, *first1),
+                              nano::invoke(proj2, *first2))) {
+                return true;
+            }
+            if (nano::invoke(comp, nano::invoke(proj2, *first2),
+                             nano::invoke(proj1, *first1))) {
+                return false;
+            }
+            ++first1; ++first2;
+        }
+
+        return first1 == last1 && first2 != last2;
+    }
+
+public:
+    template <typename I1, typename S1, typename I2, typename S2,
+              typename Comp = less<>, typename Proj1 = identity,
+              typename Proj2 = identity>
+    constexpr std::enable_if_t<
+        InputIterator<I1> &&
+        Sentinel<S1, I1> &&
+        InputIterator<I2> &&
+        Sentinel<S2, I2> &&
+        IndirectStrictWeakOrder<Comp, projected<I1, Proj1>, projected<I2, Proj2>>,
+        bool>
+    operator()(I1 first1, S1 last1, I2 first2, S2 last2, Comp comp = Comp{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return lexicographical_compare_fn::impl(
+                std::move(first1), std::move(last1),
+                std::move(first2), std::move(last2),
+                comp, proj1, proj2);
+    }
+
+    template <typename Rng1, typename Rng2, typename Comp = less<>,
+              typename Proj1 = identity, typename Proj2 = identity>
+    constexpr std::enable_if_t<
+        InputRange<Rng1> &&
+        InputRange<Rng2> &&
+        IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng1>, Proj1>,
+                                      projected<iterator_t<Rng2>, Proj2>>,
+            bool>
+    operator()(Rng1&& rng1, Rng2&& rng2, Comp comp = Comp{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return lexicographical_compare_fn::impl(
+                nano::begin(rng1), nano::end(rng1),
+                nano::begin(rng2), nano::end(rng2),
+                comp, proj1, proj2);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::lexicographical_compare_fn, lexicographical_compare)
+
+NANO_END_NAMESPACE
+
+#endif
+
 // nanorange/algorithm/mismatch.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -6042,35 +6161,40 @@ private:
     }
 
 public:
+    // three legged
     template <typename I1, typename S1, typename I2, typename Proj1 = identity,
               typename Proj2 = identity, typename Pred = equal_to<>>
     NANO_DEPRECATED constexpr std::enable_if_t<
-        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
-            IndirectRelation<Pred, projected<I1, Proj1>, projected<I2, Proj2>>,
-        std::pair<I1, I2>>
-    operator()(I1 first1, S1 last1, I2 first2, Pred pred = Pred{},
+        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<std::decay_t<I2>> &&
+        !InputRange<I1> &&
+        IndirectRelation<Pred, projected<I1, Proj1>, projected<std::decay_t<I2>, Proj2>>,
+        std::pair<I1, std::decay_t<I2>>>
+    operator()(I1 first1, S1 last1, I2&& first2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
         return mismatch_fn::impl3(std::move(first1), std::move(last1),
-                                  std::move(first2), std::move(pred),
+                                  std::forward<I2>(first2), std::move(pred),
                                   std::move(proj1), std::move(proj2));
     }
 
+    // range and a half
     template <typename Rng1, typename I2, typename Proj1 = identity,
               typename Proj2 = identity, typename Pred = equal_to<>>
     NANO_DEPRECATED constexpr std::enable_if_t<
-        InputRange<Rng1> && InputIterator<I2> &&
+        InputRange<Rng1> && InputIterator<std::decay_t<I2>> &&
+                !InputRange<I2> &&
             IndirectRelation<Pred, projected<iterator_t<Rng1>, Proj1>,
-                             projected<I2, Proj2>>,
-        std::pair<safe_iterator_t<Rng1>, I2>>
-    operator()(Rng1&& rng1, I2 first2, Pred pred = Pred{},
+                             projected<std::decay_t<I2>, Proj2>>,
+        std::pair<safe_iterator_t<Rng1>, std::decay_t<I2>>>
+    operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
         return mismatch_fn::impl3(nano::begin(rng1), nano::end(rng1),
-                                  std::move(first2), std::move(pred),
+                                  std::forward<I2>(first2), std::move(pred),
                                   std::move(proj1), std::move(proj2));
     }
 
+    // four legged
     template <typename I1, typename S1, typename I2, typename S2,
               typename Proj1 = identity, typename Proj2 = identity,
               typename Pred = equal_to<>>
@@ -6088,6 +6212,7 @@ public:
                                   std::move(proj2));
     }
 
+    // two ranges
     template <typename Rng1, typename Rng2, typename Proj1 = identity,
               typename Proj2 = identity, typename Pred = equal_to<>>
     constexpr std::enable_if_t<
@@ -6854,6 +6979,848 @@ NANO_END_NAMESPACE
 
 #endif
 
+// nanorange/algorithm/reverse.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_REVERSE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_REVERSE_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct reverse_fn {
+private:
+    template <typename I>
+    static constexpr I impl(I first, I last)
+    {
+        I ret = last;
+        while (first != last && first !=  --last) {
+            nano::iter_swap(first, last);
+            ++first;
+        }
+
+        return ret;
+    }
+
+    template <typename I, typename S>
+    static constexpr std::enable_if_t<
+        !Same<I, S>, I>
+    impl(I first, S bound)
+    {
+        I last = next(first, bound);
+        return reverse_fn::impl(std::move(first), std::move(last));
+    }
+
+public:
+    template <typename I, typename S>
+    constexpr std::enable_if_t<
+        BidirectionalIterator<I> &&
+        Sentinel<S, I>,
+        I>
+    operator()(I first, S last) const
+    {
+        return reverse_fn::impl(std::move(first), std::move(last));
+    }
+
+    template <typename Rng>
+    constexpr std::enable_if_t<
+        BidirectionalRange<Rng>,
+        safe_iterator_t<Rng>>
+    operator()(Rng&& rng) const
+    {
+        return reverse_fn::impl(nano::begin(rng), nano::end(rng));
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::reverse_fn, reverse)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/reverse_copy.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_REVERSE_COPY_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_REVERSE_COPY_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+// FIXME: Use tagged_pair
+struct reverse_copy_fn {
+private:
+    template <typename I, typename O>
+    static constexpr std::pair<I, O> impl(I first, I last, O result)
+    {
+        auto ret = last;
+        while (last != first) {
+            *result = *--last;
+            ++result;
+        }
+
+        return {std::move(ret), std::move(result)};
+    }
+
+    template <typename I, typename S, typename O>
+    static constexpr std::enable_if_t<
+        !Same<I, S>, std::pair<I, O>>
+    impl(I first, S bound, O result)
+    {
+        I last = next(first, bound);
+        return reverse_copy_fn::impl(std::move(first), std::move(last),
+                                     std::move(result));
+    }
+
+public:
+    template <typename I, typename S, typename O>
+    constexpr std::enable_if_t<
+        BidirectionalIterator<I> &&
+        Sentinel<S, I> &&
+        WeaklyIncrementable<O> &&
+        IndirectlyCopyable<I, O>,
+        std::pair<I, O>>
+    operator()(I first, S last, O result) const
+    {
+        return reverse_copy_fn::impl(std::move(first), std::move(last),
+                                     std::move(result));
+    }
+
+    template <typename Rng, typename O>
+    constexpr std::enable_if_t<
+        BidirectionalRange<Rng> &&
+        WeaklyIncrementable<O> &&
+        IndirectlyCopyable<iterator_t<Rng>, O>,
+        std::pair<safe_iterator_t<Rng>, O>>
+    operator()(Rng&& rng, O result) const
+    {
+        return reverse_copy_fn::impl(nano::begin(rng), nano::end(rng),
+                                     std::move(result));
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::reverse_copy_fn, reverse_copy)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/rotate.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_ROTATE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_ROTATE_HPP_INCLUDED
+
+
+// nanorange/view/subrange.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEW_SUBRANGE_HPP_INCLUDED
+#define NANORANGE_VIEW_SUBRANGE_HPP_INCLUDED
+
+
+
+// nanorange/view/interface.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEW_INTERFACE_HPP_INCLUDED
+#define NANORANGE_VIEW_INTERFACE_HPP_INCLUDED
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+// [ranges.view_interface]
+
+namespace detail {
+
+template <typename, typename = void>
+struct range_common_iterator_impl;
+
+template <typename R>
+struct range_common_iterator_impl<
+    R, std::enable_if_t<Range<R> && !CommonRange<R>>> {
+    using type = common_iterator<iterator_t<R>, sentinel_t<R>>;
+};
+
+template <typename R>
+struct range_common_iterator_impl<R, std::enable_if_t<CommonRange<R>>> {
+    using type = iterator_t<R>;
+};
+
+template <typename R>
+using range_common_iterator_t = typename range_common_iterator_impl<R>::type;
+
+} // namespace detail
+
+template <typename D>
+class view_interface {
+
+    static_assert(std::is_class<D>::value, "");
+
+private:
+    constexpr D& derived() noexcept { return static_cast<D&>(*this); }
+
+    constexpr const D& derived() const noexcept
+    {
+        return static_cast<const D&>(*this);
+    }
+
+public:
+    template <typename R = D>
+    NANO_NODISCARD constexpr auto empty() const
+        -> std::enable_if_t<ForwardRange<const R>, bool>
+    {
+        return ranges::begin(derived()) == ranges::end(derived());
+    }
+
+    template <typename R = D, typename = decltype(ranges::empty(std::declval<const R&>()))>
+    constexpr explicit operator bool() const
+    {
+        return !ranges::empty(derived());
+    }
+
+    template <typename R = D, typename = std::enable_if_t<
+            RandomAccessRange<R> &&
+            std::is_pointer<iterator_t<R>>::value>>
+    constexpr auto data() const
+    {
+        return ranges::begin(derived());
+    }
+
+    template <typename R = D, typename = std::enable_if_t<
+            ForwardRange<const R> &&
+            SizedSentinel<sentinel_t<const R>, iterator_t<const R>>
+    >>
+    constexpr auto size() const
+    {
+        return ranges::end(derived()) - ranges::begin(derived());
+    }
+
+    template <typename R = D, typename = std::enable_if_t<ForwardRange<R>>>
+    constexpr decltype(auto) front()
+    {
+        return *ranges::begin(derived());
+    }
+
+    template <typename R = D, typename = std::enable_if_t<ForwardRange<const R>>>
+    constexpr decltype(auto) front() const
+    {
+        return *ranges::begin(derived());
+    }
+
+    template <typename R = D, typename = std::enable_if_t<
+            BidirectionalRange<R> && CommonRange<R>>>
+    constexpr decltype(auto) back()
+    {
+        return *prev(ranges::end(derived()));
+    }
+
+    template <typename R = D, typename = std::enable_if_t<
+            BidirectionalRange<const R> && CommonRange<const R>>>
+    constexpr decltype(auto) back() const
+    {
+        return *prev(ranges::end(derived()));
+    }
+
+    template <typename R = D, typename = std::enable_if_t<RandomAccessRange<R>>>
+    constexpr decltype(auto) operator[](difference_type_t<iterator_t<R>> n)
+    {
+        return ranges::begin(derived())[n];
+    }
+
+    template <typename R = const D,  typename = std::enable_if_t<RandomAccessRange<R>>>
+    constexpr decltype(auto) operator[](difference_type_t<iterator_t<R>> n) const
+    {
+        return ranges::begin(derived())[n];
+    }
+
+    template <typename R = D, typename = std::enable_if_t<
+        RandomAccessRange<R> && SizedRange<R>>>
+    constexpr decltype(auto) at(difference_type_t<iterator_t<R>> n)
+    {
+        if (n < 0 || n >= ranges::size(derived())) {
+            throw std::out_of_range{""};
+        }
+
+        return derived()[n];
+    }
+
+    template <typename R = const D, typename = std::enable_if_t<
+            RandomAccessRange<R> && SizedRange<R>>>
+    constexpr decltype(auto) at(difference_type_t<iterator_t<R>> n) const
+    {
+        if (n < 0 || n >= ranges::size(derived())) {
+            throw std::out_of_range{""};
+        }
+
+        return derived()[n];
+    }
+
+    template <typename C, typename R = D,
+              typename = std::enable_if_t<
+                  ForwardRange<C> && !View<C> &&
+                  ConvertibleTo<reference_t<iterator_t<const R>>,
+                                value_type_t<iterator_t<C>>> &&
+                  Constructible<C, detail::range_common_iterator_t<const R>,
+                                detail::range_common_iterator_t<const R>>>>
+    operator C() const
+    {
+        using I = detail::range_common_iterator_t<D>;
+        return C(I{ranges::begin(derived())}, I{ranges::end(derived())});
+    }
+};
+
+NANO_END_NAMESPACE
+
+#endif
+
+
+NANO_BEGIN_NAMESPACE
+
+// [ranges.subrange]
+
+enum class subrange_kind : bool { unsized, sized };
+
+namespace subrange_ {
+
+template <typename, typename, subrange_kind>
+class subrange;
+
+}
+
+using subrange_::subrange;
+
+namespace detail {
+
+struct PairLike_req {
+    template <std::size_t I, typename T>
+    int test_func(const std::tuple_element_t<I, T>&);
+
+    template <typename T>
+    auto requires_(T t) -> decltype(
+        valid_expr(std::enable_if_t<Integral<std::tuple_size<T>::value>, int>{},
+                   std::enable_if_t<std::tuple_size<T>::value == 2, int>{},
+                   decltype(this->test_func<0, T>(std::get<0>(t))){},
+                   decltype(this->test_func<1, T>(std::get<1>(t))){}));
+};
+
+template <typename T>
+NANO_CONCEPT PairLike = detail::requires_<detail::PairLike_req, T>;
+
+struct PairLikeConvertibleTo_req {
+    template <typename T, typename U, typename V>
+    auto requires_(T&& t) -> decltype(
+        valid_expr(convertible_to_helper<U>(std::get<0>(std::forward<T>(t))),
+                   convertible_to_helper<V>(std::get<1>(std::forward<T>(t)))));
+};
+
+template <typename T, typename U, typename V>
+NANO_CONCEPT PairlikeConvertibleTo =
+    !Range<T> && PairLike<std::decay_t<T>> &&
+    detail::requires_<PairLikeConvertibleTo_req, T, U, V>;
+
+template <typename T, typename U, typename V>
+NANO_CONCEPT PairLikeConvertibleFrom = !Range<T> && Same<T, std::decay_t<T>> &&
+                                       PairLike<T> && Constructible<T, U, V>;
+
+template <typename T>
+NANO_CONCEPT IteratorSentinelPair =
+    !Range<T> && Same<T, std::decay_t<T>> && PairLike<T> &&
+    Sentinel<std::tuple_element_t<1, T>, std::tuple_element_t<0, T>>;
+
+template <typename T, typename U>
+NANO_CONCEPT NotSameAs = !Same<remove_cvref_t<T>, remove_cvref_t<U>>;
+
+template <typename I, typename S, bool = SizedSentinel<S, I>>
+constexpr subrange_kind default_subrange_kind = subrange_kind::unsized;
+
+template <typename I, typename S>
+constexpr subrange_kind default_subrange_kind<I, S, true> =
+    subrange_kind::sized;
+
+template <typename I, typename S, bool StoreSize = false>
+struct subrange_data {
+    I begin_{};
+    S end_{};
+};
+
+template <typename I, typename S>
+struct subrange_data<I, S, true> {
+    I begin_{};
+    S end_{};
+    difference_type_t<I> size_ = 0;
+};
+
+// MSVC gets confused if enable_if conditions in template param lists are too
+// complex, so give it some help by calculating the constraints in a helper
+// variable
+template <typename R, typename I, typename S, subrange_kind K>
+auto subrange_range_constructor_constraint_helper_fn(long) -> std::false_type;
+
+template <typename R, typename I, typename S, subrange_kind K>
+auto subrange_range_constructor_constraint_helper_fn(int) -> std::enable_if_t<
+        detail::NotSameAs<R, subrange<I, S, K>> &&
+                ForwardingRange<R>&&
+                ConvertibleTo<iterator_t<R>, I> &&
+                ConvertibleTo<sentinel_t<R>, S>, std::true_type>;
+
+template <typename R, typename I, typename S, subrange_kind K>
+constexpr bool subrange_range_constructor_constraint_helper =
+    decltype(subrange_range_constructor_constraint_helper_fn<R, I, S, K>(0))::value;
+
+} // namespace detail
+
+namespace subrange_ {
+
+template <typename I, typename S = I,
+        subrange_kind K = detail::default_subrange_kind<I, S>>
+class subrange : public view_interface<subrange<I, S, K>> {
+    static_assert(Iterator<I>, "");
+    static_assert(Sentinel<S, I>, "");
+    static_assert(K == subrange_kind::sized || !SizedSentinel<S, I>, "");
+
+private:
+    static constexpr bool StoreSize =
+            K == subrange_kind::sized && !SizedSentinel<S, I>;
+
+    detail::subrange_data<I, S, StoreSize> data_{};
+
+    using base = view_interface<subrange>;
+
+public:
+    using iterator = I;
+    using sentinel = S;
+
+    subrange() = default;
+
+    template <bool SS = StoreSize, typename = std::enable_if_t<!SS>>
+    constexpr subrange(I i, S s)
+            : data_{std::move(i), std::move(s)} {}
+
+    template <subrange_kind KK = K,
+            typename = std::enable_if_t<KK == subrange_kind::sized>>
+    constexpr subrange(I i, S s, difference_type_t<I> n)
+            : data_{std::move(i), std::move(s), n} {}
+
+    template <typename R, bool SS = StoreSize,
+            std::enable_if_t<
+                    detail::subrange_range_constructor_constraint_helper<R, I, S, K>
+                    && SS && SizedRange<R>, int> = 0>
+    constexpr subrange(R&& r)
+            : subrange(ranges::begin(r), ranges::end(r), ranges::size(r)) {}
+
+    template <typename R, bool SS = StoreSize,
+            std::enable_if_t<
+                    detail::subrange_range_constructor_constraint_helper<R, I, S, K>
+                     && !SS, int> = 0>
+    constexpr subrange(R&& r)
+            : subrange(ranges::begin(r), ranges::end(r)) {}
+
+    template <typename R, subrange_kind KK = K, std::enable_if_t<
+            detail::ForwardingRange<R>&&
+            ConvertibleTo<iterator_t<R>, I>&&
+            ConvertibleTo<sentinel_t<R>, S>&&
+            KK == subrange_kind::sized, int> = 0>
+
+    constexpr subrange(R&& r, difference_type_t<I> n)
+            : subrange(ranges::begin(r), ranges::end(r), n) {}
+
+    template <typename PairLike_, bool SS = StoreSize,
+            std::enable_if_t<
+                    detail::NotSameAs<PairLike_, subrange> &&
+                            detail::PairlikeConvertibleTo<PairLike_, I, S>
+                            && !SS,
+                    int> = 0>
+    constexpr subrange(PairLike_&& r)
+            : subrange{std::get<0>(std::forward<PairLike_>(r)),
+                       std::get<1>(std::forward<PairLike_>(r))} {}
+
+    template <typename PairLike_, subrange_kind KK = K,
+            std::enable_if_t<detail::PairlikeConvertibleTo<PairLike_, I, S> &&
+                    KK == subrange_kind::sized,
+                    int> = 0>
+    constexpr subrange(PairLike_&& r, difference_type_t<I> n)
+            : subrange{std::get<0>(std::forward<PairLike_>(r)),
+                       std::get<1>(std::forward<PairLike_>(r)), n} {}
+
+    template <typename PairLike_,
+            std::enable_if_t<detail::NotSameAs<PairLike_, subrange> &&
+                    detail::PairLikeConvertibleFrom<
+                            PairLike_, const I&, const S&>,
+                    int> = 0>
+    constexpr operator PairLike_() const
+    {
+        return PairLike_(begin(), end());
+    }
+
+    // The above has hidden the conversion operator in view_interface.
+    // There doesn't seem to be any obvious syntax to bring it back into
+    // scope, so we'll just reimplement it here
+
+    template <typename C, typename R = subrange,
+            typename = std::enable_if_t<
+                    ForwardRange<C> && !View<C> &&
+                            ConvertibleTo<reference_t<iterator_t<const R>>,
+                                    value_type_t<iterator_t<C>>> &&
+                            Constructible<C, detail::range_common_iterator_t<const R>,
+                                    detail::range_common_iterator_t<const R>>>>
+    operator C() const
+    {
+        using CI = detail::range_common_iterator_t<R>;
+        return C(CI{ranges::begin(*this)}, CI{ranges::end(*this)});
+    }
+
+    constexpr I begin() const { return data_.begin_; }
+
+    constexpr S end() const { return data_.end_; }
+
+    NANO_NODISCARD constexpr bool empty() const
+    {
+        return data_.begin_ == data_.end_;
+    }
+
+    template <subrange_kind KK = K, bool SS = StoreSize>
+    constexpr auto size() const
+    -> std::enable_if_t<KK == subrange_kind::sized && SS,
+            difference_type_t<I>>
+    {
+        return data_.size_;
+    }
+
+    template <subrange_kind KK = K, bool SS = StoreSize>
+    constexpr auto size() const
+    -> std::enable_if_t<KK == subrange_kind::sized && !SS,
+            difference_type_t<I>>
+    {
+        return data_.end_ - data_.begin_;
+    }
+
+    NANO_NODISCARD constexpr subrange next(difference_type_t<I> n = 1) const
+    {
+        auto tmp = *this;
+        tmp.advance(n);
+        return tmp;
+    }
+
+    template <typename II = I>
+    NANO_NODISCARD constexpr auto prev(difference_type_t<I> n = 1) const
+    -> std::enable_if_t<BidirectionalIterator<II>, subrange>
+    {
+        auto tmp = *this;
+        tmp.advance(-n);
+        return tmp;
+    }
+
+    template <bool SS = StoreSize>
+    constexpr auto advance(difference_type_t<I> n)
+    -> std::enable_if_t<SS, subrange&>
+    {
+        data_.size_ -= n - ranges::advance(data_.begin_, n, data_.end_);
+        return *this;
+    }
+
+    template <bool SS = StoreSize>
+    constexpr auto advance(difference_type_t<I> n)
+    -> std::enable_if_t<!SS, subrange&>
+    {
+        ranges::advance(data_.begin_, n, data_.end_);
+        return *this;
+    }
+};
+
+template <typename I, typename S, subrange_kind K>
+constexpr I begin(subrange<I, S, K>&& r)
+{
+    return r.begin();
+}
+
+template <typename I, typename S, subrange_kind K>
+constexpr S end(subrange<I, S, K>&& r)
+{
+    return r.end();
+}
+
+#ifdef NANO_HAVE_DEDUCTION_GUIDES
+
+template <typename R, std::enable_if_t<detail::ForwardingRange<R> && !SizedRange<R>, int> = 0>
+subrange(R&&)->subrange<iterator_t<R>, sentinel_t<R>>;
+
+template <typename R, std::enable_if_t<detail::ForwardingRange<R> && SizedRange<R>, int> = 0>
+subrange(R&&, std::nullptr_t = nullptr)
+    ->subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>;
+
+template <typename R, std::enable_if_t<detail::ForwardingRange<R>>
+subrange(R&&, difference_type_t<iterator_t<R>>) ->
+    subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>;
+
+#endif
+
+} // namespace subrange_
+
+namespace detail {
+
+template <std::size_t, typename, typename, subrange_kind>
+struct subrange_get_helper;
+
+template <typename I, typename S, subrange_kind K>
+struct subrange_get_helper<0, I, S, K> {
+    constexpr I operator()(const subrange<I, S, K>& s) const
+    {
+        return s.begin();
+    }
+};
+
+template <typename I, typename S, subrange_kind K>
+struct subrange_get_helper<1, I, S, K> {
+    constexpr S operator()(const subrange<I, S, K>& s) const { return s.end(); }
+};
+
+} // namespace detail
+
+template <std::size_t N, typename I, typename S, subrange_kind K>
+constexpr auto get(const subrange<I, S, K>& r)
+    -> decltype(detail::subrange_get_helper<N, I, S, K>{}(r))
+{
+    return detail::subrange_get_helper<N, I, S, K>{}(r);
+}
+
+// Extensions for C++14 compilers without CTAD
+// These basically replicate the subrange constructors above
+
+template <typename I, typename S>
+constexpr auto make_subrange(I i, S s)
+    -> std::enable_if_t<Iterator<I> && Sentinel<S, I>,
+                        decltype(subrange<I, S>{std::move(i), std::move(s)})>
+{
+    return {std::move(i), std::move(s)};
+}
+
+template <typename I, typename S>
+constexpr auto make_subrange(I i, S s, difference_type_t<I> n)
+    -> std::enable_if_t<Iterator<I> && Sentinel<S, I>,
+                        decltype(subrange<I, S>{std::move(i), std::move(s)}, n)>
+{
+    return {std::move(i), std::move(s), n};
+}
+
+template <typename R>
+constexpr auto make_subrange(R&& r)
+    -> std::enable_if_t<detail::ForwardingRange<R> && !SizedRange<R>,
+                        subrange<iterator_t<R>, sentinel_t<R>>>
+{
+    return {std::forward<R>(r)};
+}
+
+template <typename R>
+constexpr auto make_subrange(R&& r)
+    -> std::enable_if_t<detail::ForwardingRange<R> && SizedRange<R>,
+                        subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>>
+{
+    return {std::forward<R>(r)};
+}
+
+template <typename R>
+constexpr auto make_subrange(R&& r, difference_type_t<R> n)
+-> std::enable_if_t<detail::ForwardingRange<R>,
+        subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>>
+{
+    return {std::forward<R>(r), n};
+}
+
+template <typename R>
+using safe_subrange_t =
+    std::conditional_t<detail::ForwardingRange<R>,
+        subrange<iterator_t<R>>,
+        dangling<subrange<iterator_t<R>>>>;
+
+NANO_END_NAMESPACE
+
+namespace std {
+
+template <typename I, typename S, ::nano::subrange_kind K>
+class tuple_size<::nano::subrange<I, S, K>>
+    : public integral_constant<size_t, 2> {
+};
+
+template <typename I, typename S, ::nano::subrange_kind K>
+class tuple_element<0, ::nano::subrange<I, S, K>> {
+public:
+    using type = I;
+};
+
+template <typename I, typename S, ::nano::subrange_kind K>
+class tuple_element<1, ::nano::subrange<I, S, K>> {
+public:
+    using type = S;
+};
+
+} // namespace std
+
+#endif
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct rotate_fn {
+private:
+    template <typename I, typename S>
+    static constexpr subrange<I> impl(I first, I middle, S last)
+    {
+        if (first == middle) {
+            auto ret = next(first, last);
+            return {ret, ret};
+        }
+        if (middle == last) {
+            return {first, middle};
+        }
+
+        I next = middle;
+
+        do {
+            nano::iter_swap(first++, next++);
+            if (first == middle) {
+                middle = next;
+            }
+        } while (next != last);
+
+        I ret = first;
+        next = middle;
+
+        while (next != last) {
+            nano::iter_swap(first++, next++);
+            if (first == middle) {
+                middle = next;
+            } else if (next == last) {
+                next = middle;
+            }
+        }
+
+        return {std::move(ret), std::move(next)};
+    }
+
+public:
+    template <typename I, typename S>
+    constexpr std::enable_if_t<
+        ForwardIterator<I> &&
+        Sentinel<S, I> &&
+        Permutable<I>,
+        subrange<I>>
+    operator()(I first, I middle, S last) const
+    {
+        return rotate_fn::impl(std::move(first), std::move(middle), std::move(last));
+    }
+
+    template <typename Rng>
+    constexpr std::enable_if_t<
+        ForwardRange<Rng> &&
+        Permutable<iterator_t<Rng>>,
+        safe_subrange_t<Rng>>
+    operator()(Rng&& rng, iterator_t<Rng> middle) const
+    {
+        return rotate_fn::impl(nano::begin(rng), std::move(middle), nano::end(rng));
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::rotate_fn, rotate)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/rotate_copy.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_ROTATE_COPY_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_ROTATE_COPY_HPP_INCLUDED
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+// FIXME: Use tagged_pair
+struct rotate_copy_fn {
+private:
+    template <typename I, typename S, typename O>
+    static constexpr std::pair<I, O> impl(I first, I middle, S last, O result)
+    {
+        auto ret = nano::copy(middle, std::move(last), std::move(result));
+        ret.second = nano::copy(std::move(first), std::move(middle),
+                                ret.second).second;
+        return ret;
+    }
+
+public:
+    template <typename I, typename S, typename O>
+    constexpr std::enable_if_t<
+        ForwardIterator<I> &&
+        Sentinel<S, I> &&
+        WeaklyIncrementable<O> &&
+        IndirectlyCopyable<I, O>,
+        std::pair<I, O>>
+    operator()(I first, I middle, S last, O result) const
+    {
+        return rotate_copy_fn::impl(std::move(first), std::move(middle),
+                                    std::move(last), std::move(result));
+    }
+
+    template <typename Rng, typename O>
+    constexpr std::enable_if_t<
+        ForwardRange<Rng> &&
+        WeaklyIncrementable<O> &&
+        IndirectlyCopyable<iterator_t<Rng>, O>,
+        std::pair<safe_iterator_t<Rng>, O>>
+    operator()(Rng&& rng, iterator_t<Rng> middle, O result) const
+    {
+        return rotate_copy_fn::impl(nano::begin(rng), std::move(middle),
+                                    nano::end(rng), std::move(result));
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::rotate_copy_fn, rotate_copy)
+
+NANO_END_NAMESPACE
+
+#endif
+
 
 // nanorange/algorithm/search_n.hpp
 //
@@ -6941,6 +7908,138 @@ public:
 } // namespace detail
 
 NANO_INLINE_VAR(detail::search_n_fn, search_n)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/shuffle.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_SHUFFLE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_SHUFFLE_HPP_INCLUDED
+
+
+// nanorange/random.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_RANDOM_HPP_INCLUDED
+#define NANORANGE_RANDOM_HPP_INCLUDED
+
+// nanorange/concepts.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_CONCEPTS_HPP_INCLUDED
+#define NANORANGE_CONCEPTS_HPP_INCLUDED
+
+
+
+
+
+
+#endif
+
+
+#include <random>
+
+NANO_BEGIN_NAMESPACE
+
+//  [rand.req.urng]
+
+namespace detail {
+
+struct UniformRandomBitGenerator_req {
+    template <typename G>
+    auto requires_() -> decltype(valid_expr(
+        G::min(),
+        requires_expr<Same<decltype(G::min()), invoke_result_t<G&>>>{},
+        G::max(),
+        requires_expr<Same<decltype(G::max()), invoke_result_t<G&>>>{}));
+};
+
+template <typename>
+auto UniformRandomBitGenerator_fn(long) -> std::false_type;
+
+template <typename G>
+auto UniformRandomBitGenerator_fn(int) -> std::enable_if_t<
+        Invocable<G&> &&
+        UnsignedIntegral<invoke_result_t<G&>> &&
+        requires_<UniformRandomBitGenerator_req, G>,
+    std::true_type>;
+
+} // namespace detail
+
+template <typename G>
+NANO_CONCEPT UniformRandomBitGenerator =
+    decltype(detail::UniformRandomBitGenerator_fn<G>(0))::value;
+
+NANO_END_NAMESPACE
+
+#endif
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct shuffle_fn {
+private:
+    template <typename I, typename S, typename Gen>
+    static constexpr I impl(I first, S last, Gen&& g)
+    {
+        using diff_t = difference_type_t<I>;
+        using distr_t = std::uniform_int_distribution<diff_t>;
+        using param_t = typename distr_t::param_type;
+
+        distr_t D;
+        auto n = last - first; // OK, we have SizedSentinel
+
+        for (diff_t i = 0; i < n; i++) {
+            nano::iter_swap(first + i, first + D(g, param_t(0, i)));
+        }
+
+        return next(first, last);
+    }
+
+public:
+    template <typename I, typename S, typename Gen>
+    constexpr std::enable_if_t<
+        RandomAccessIterator<I> &&
+        Sentinel<S, I> &&
+        UniformRandomBitGenerator<std::remove_reference_t<Gen>> &&
+        ConvertibleTo<invoke_result_t<Gen&>, difference_type_t<I>>,
+        I>
+    operator()(I first, S last, Gen&& gen) const
+    {
+        return shuffle_fn::impl(std::move(first), std::move(last),
+                                std::forward<Gen>(gen));
+    }
+
+    template <typename Rng, typename Gen>
+    constexpr std::enable_if_t<
+            RandomAccessRange<Rng> &&
+            UniformRandomBitGenerator<std::remove_reference_t<Gen>> &&
+            ConvertibleTo<invoke_result_t<Gen&>, difference_type_t<iterator_t<Rng>>>,
+    safe_iterator_t<Rng>>
+    operator()(Rng&& rng, Gen&& gen) const
+    {
+        return shuffle_fn::impl(nano::begin(rng), nano::end(rng),
+                                std::forward<Gen>(gen));
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::shuffle_fn, shuffle)
 
 NANO_END_NAMESPACE
 
@@ -7179,16 +8278,17 @@ public:
     template <typename I1, typename S1, typename I2, typename O, typename F,
               typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED constexpr std::enable_if_t<
-        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
+        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<std::decay_t<I2>> &&
+            !InputRange<I2> &&
             WeaklyIncrementable<O> && CopyConstructible<F> &&
             Writable<O, indirect_result_t<F&, projected<I1, Proj1>,
-                                          projected<I2, Proj2>>>,
-        std::tuple<I1, I2, O>>
-    operator()(I1 first1, S1 last1, I2 first2, O result, F op,
+                                          projected<std::decay_t<I2>, Proj2>>>,
+        std::tuple<I1, std::decay_t<I2>, O>>
+    operator()(I1 first1, S1 last1, I2&& first2, O result, F op,
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
         return transform_fn::binary_impl3(std::move(first1), std::move(last1),
-                                          std::move(first2), std::move(result),
+                                          std::forward<I2>(first2), std::move(result),
                                           op, proj1, proj2);
     }
 
@@ -7196,17 +8296,18 @@ public:
     template <typename Rng1, typename I2, typename O, typename F,
               typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED constexpr std::enable_if_t<
-        InputRange<Rng1> && InputIterator<I2> && WeaklyIncrementable<O> &&
+        InputRange<Rng1> && InputIterator<std::decay_t<I2>> &&
+                !InputRange<I2> && WeaklyIncrementable<O> &&
             CopyConstructible<F> &&
             Writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng1>, Proj1>,
-                                       projected<I2, Proj2>>>,
-        std::tuple<safe_iterator_t<Rng1>, I2, O>>
-    operator()(Rng1&& rng1, I2 first2, O result, F op, Proj1 proj1 = Proj1{},
+                                       projected<std::decay_t<I2>, Proj2>>>,
+        std::tuple<safe_iterator_t<Rng1>, std::decay_t<I2>, O>>
+    operator()(Rng1&& rng1, I2&& first2, O result, F op, Proj1 proj1 = Proj1{},
                Proj2 proj2 = Proj2{}) const
     {
         return transform_fn::binary_impl3(nano::begin(rng1), nano::end(rng1),
-                                          std::move(first2), std::move(result),
+                                          std::forward<I2>(first2), std::move(result),
                                           op, proj1, proj2);
     }
 };
@@ -7219,16 +8320,306 @@ NANO_END_NAMESPACE
 
 #endif
 
-
-// Algorithms which reuse the STL implementation
-// nanorange/algorithm/is_permutation.hpp
+// nanorange/algorithm/unique.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef NANORANGE_ALGORITHM_IS_PERMUTATION_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_IS_PERMUTATION_HPP_INCLUDED
+#ifndef NANORANGE_ALGORITHM_UNIQUE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_UNIQUE_HPP_INCLUDED
+
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct unique_fn {
+private:
+    template <typename I, typename S, typename R, typename Proj>
+    static constexpr I impl(I first, S last, R& comp, Proj& proj)
+    {
+        first = adjacent_find_fn::impl(std::move(first), last, comp, proj);
+
+        if (first == last) {
+            return first;
+        }
+
+        for (I n = next(first, 2, last); n != last; ++n) {
+            if (!nano::invoke(comp, nano::invoke(proj, *first),
+                              nano::invoke(proj, *n))) {
+                *++first = iter_move(n);
+            }
+        }
+
+        return ++first;
+    }
+
+public:
+    template <typename I, typename S, typename R = equal_to<>,
+              typename Proj = identity>
+    constexpr std::enable_if_t<
+        ForwardIterator<I> &&
+        Sentinel<S, I> &&
+        IndirectRelation<R, projected<I, Proj>> &&
+        Permutable<I>, I>
+    operator()(I first, S last, R comp = {}, Proj proj = Proj{}) const
+    {
+        return unique_fn::impl(std::move(first), std::move(last),
+                               comp, proj);
+    }
+
+    template <typename Rng, typename R = equal_to<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+            ForwardRange<Rng> &&
+            IndirectRelation<R, projected<iterator_t<Rng>, Proj>> &&
+            Permutable<iterator_t<Rng>>,
+            safe_iterator_t<Rng>>
+    operator()(Rng&& rng, R comp = {}, Proj proj = Proj{}) const
+    {
+        return unique_fn::impl(nano::begin(rng), nano::end(rng),
+                               comp, proj);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::unique_fn, unique)
+
+NANO_END_NAMESPACE
+
+#endif
+
+
+// Algorithms which reuse the STL implementation
+// nanorange/algorithm/stl/binary_search.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_BINARY_SEARCH_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_BINARY_SEARCH_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct binary_search_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::binary_search_fn, binary_search)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/equal_range.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_EQUAL_RANGE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_EQUAL_RANGE_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct equal_range_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::equal_range_fn, equal_range)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/includes.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_INCLUDES_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_INCLUDES_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct includes_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::includes_fn, includes)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/inplace_merge.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_INPLACE_MERGE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_INPLACE_MERGE_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct inplace_merge_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::inplace_merge_fn, inplace_merge)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/is_heap.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_IS_HEAP_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_IS_HEAP_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct is_heap_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::is_heap_fn, is_heap)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/is_heap_until.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_IS_HEAP_UNTIL_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_IS_HEAP_UNTIL_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct is_heap_until_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::is_heap_until_fn, is_heap_until)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/is_partitioned.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_IS_PARTITIONED_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_IS_PARTITIONED_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct is_partitioned_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::is_partitioned_fn, is_partitioned)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/is_permutation.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_IS_PERMUTATION_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_IS_PERMUTATION_HPP_INCLUDED
 
 
 
@@ -7281,15 +8672,16 @@ struct is_permutation_fn {
     NANO_DEPRECATED
     std::enable_if_t<
             ForwardIterator<I1> &&
-                    Cpp98Iterator<I1> &&
-                    ForwardIterator<I2> &&
-                    Cpp98Iterator<I1> &&
-                    IndirectlyComparable<I1, I2, Pred>,
+            Cpp98Iterator<I1> &&
+            ForwardIterator<std::decay_t<I2>> &&
+            Cpp98Iterator<std::decay_t<I1>> &&
+            !ForwardRange<I2> &&
+            IndirectlyComparable<I1, std::decay_t<I2>, Pred>,
             bool>
-    operator()(I1 first1, I1 last1, I2 first2, Pred pred = Pred{}) const
+    operator()(I1 first1, I1 last1, I2&& first2, Pred pred = Pred{}) const
     {
         return std::is_permutation(std::move(first1), std::move(last1),
-                                   std::move(first2), std::ref(pred));
+                                   std::forward<I2>(first2), std::ref(pred));
     }
 
     // Range and a half
@@ -7299,14 +8691,15 @@ struct is_permutation_fn {
             ForwardRange<Rng1> &&
             CommonRange<Rng1> &&
             Cpp98Iterator<iterator_t<Rng1>> &&
-            ForwardIterator<I2> &&
-            Cpp98Iterator<I2> &&
-            IndirectlyComparable<iterator_t<Rng1>, I2, Pred>,
+            ForwardIterator<std::decay_t<I2>> &&
+            Cpp98Iterator<std::decay_t<I2>> &&
+            !ForwardRange<I2> &&
+            IndirectlyComparable<iterator_t<Rng1>, std::decay_t<I2>, Pred>,
             bool>
-    operator()(Rng1&& rng1, I2 first2, Pred pred = Pred{}) const
+    operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{}) const
     {
         return std::is_permutation(nano::begin(rng1), nano::end(rng1),
-                                   std::move(first2), std::ref(pred));
+                                   std::forward<I2>(first2), std::ref(pred));
     }
 };
 
@@ -7318,72 +8711,973 @@ NANO_END_NAMESPACE
 
 #endif
 
-
-#endif
-
-// nanorange/concepts.hpp
+// nanorange/algorithm/stl/is_sorted.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef NANORANGE_CONCEPTS_HPP_INCLUDED
-#define NANORANGE_CONCEPTS_HPP_INCLUDED
+#ifndef NANORANGE_ALGORITHM_STL_IS_SORTED_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_IS_SORTED_HPP_INCLUDED
 
 
 
+#include <algorithm>
 
-
-
-#endif
-
-
-
-// nanorange/random.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_RANDOM_HPP_INCLUDED
-#define NANORANGE_RANDOM_HPP_INCLUDED
-
-
+// TODO: Implement
 
 NANO_BEGIN_NAMESPACE
 
-//  [rand.req.urng]
-
 namespace detail {
 
-struct UniformRandomBitGenerator_req {
-    template <typename G>
-    auto requires_() -> decltype(valid_expr(
-        G::min(),
-        requires_expr<Same<decltype(G::min()), invoke_result_t<G&>>>{},
-        G::max(),
-        requires_expr<Same<decltype(G::max()), invoke_result_t<G&>>>{}));
+struct is_sorted_fn {
+
 };
 
-template <typename>
-auto UniformRandomBitGenerator_fn(long) -> std::false_type;
+}
 
-template <typename G>
-auto UniformRandomBitGenerator_fn(int) -> std::enable_if_t<
-        Invocable<G&> &&
-        UnsignedIntegral<invoke_result_t<G&>> &&
-        requires_<UniformRandomBitGenerator_req, G>,
-    std::true_type>;
-
-} // namespace detail
-
-template <typename G>
-NANO_CONCEPT UniformRandomBitGenerator =
-    decltype(detail::UniformRandomBitGenerator_fn<G>(0))::value;
+NANO_INLINE_VAR(detail::is_sorted_fn, is_sorted)
 
 NANO_END_NAMESPACE
 
 #endif
+
+// nanorange/algorithm/stl/is_sorted_until.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_IS_SORTED_UNTIL_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_IS_SORTED_UNTIL_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct is_sorted_until_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::is_sorted_until_fn, is_sorted_until)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/lower_bound.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_LOWER_BOUND_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_LOWER_BOUND_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct lower_bound_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::lower_bound_fn, lower_bound)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/make_heap.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_MAKE_HEAP_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_MAKE_HEAP_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct make_heap_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::make_heap_fn, make_heap)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/max.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_MAX_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_MAX_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct max_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::max_fn, max)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/max_element.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_MAX_ELEMENT_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_MAX_ELEMENT_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct max_element_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::max_element_fn, max_element)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/merge.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_MERGE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_MERGE_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct merge_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::merge_fn, merge)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/min.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_MIN_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_MIN_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct min_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::min_fn, min)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/min_element.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_MIN_ELEMENT_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_MIN_ELEMENT_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct min_element_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::min_element_fn, min_element)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/minmax.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_MINMAX_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_MINMAX_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct minmax_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::minmax_fn, minmax)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/minmax_element.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_MINMAX_ELEMENT_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_MINMAX_ELEMENT_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct minmax_element_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::minmax_element_fn, minmax_element)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/next_permutation.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_NEXT_PERMUTATION_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_NEXT_PERMUTATION_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct next_permutation_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::next_permutation_fn, next_permutation)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/nth_element.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_NTH_ELEMENT_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_NTH_ELEMENT_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct nth_element_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::nth_element_fn, nth_element)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/partial_sort.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_PARTIAL_SORT_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_PARTIAL_SORT_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct partial_sort_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::partial_sort_fn, partial_sort)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/partial_sort_copy.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_PARTIAL_SORT_COPY_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_PARTIAL_SORT_COPY_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct partial_sort_copy_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::partial_sort_copy_fn, partial_sort_copy)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/partition.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_PARTITION_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_PARTITION_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct partition_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::partition_fn, partition)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/partition_copy.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_PARTITION_COPY_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_PARTITION_COPY_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct partition_copy_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::partition_copy_fn, partition_copy)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/partition_point.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_PARTITION_POINT_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_PARTITION_POINT_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct partition_point_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::partition_point_fn, partition_point)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/pop_heap.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_POP_HEAP_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_POP_HEAP_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct pop_heap_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::pop_heap_fn, pop_heap)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/prev_permutation.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_PREV_PERMUTATION_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_PREV_PERMUTATION_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct prev_permutation_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::prev_permutation_fn, prev_permutation)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/push_heap.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_PUSH_HEAP_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_PUSH_HEAP_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct push_heap_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::push_heap_fn, push_heap)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/set_difference.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_SET_DIFFERENCE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_SET_DIFFERENCE_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct set_difference_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::set_difference_fn, set_difference)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/set_intersection.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_SET_INTERSECTION_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_SET_INTERSECTION_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct set_intersection_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::set_intersection_fn, set_intersection)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/set_symmetric_difference.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_SET_SYMMETRIC_DIFFERENCE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_SET_SYMMETRIC_DIFFERENCE_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct set_symmetric_difference_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::set_symmetric_difference_fn, set_symmetric_difference)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/set_union.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_SET_UNION_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_SET_UNION_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct set_union_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::set_union_fn, set_union)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/sort.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_SORT_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_SORT_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct sort_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::sort_fn, sort)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/sort_heap.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_SORT_HEAP_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_SORT_HEAP_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct sort_heap_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::sort_heap_fn, sort_heap)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/stable_partition.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_STABLE_PARTITION_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_STABLE_PARTITION_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct stable_partition_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::stable_partition_fn, stable_partition)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/stable_sort.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_STABLE_SORT_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_STABLE_SORT_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct stable_sort_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::stable_sort_fn, stable_sort)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/unique_copy.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_UNIQUE_COPY_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_UNIQUE_COPY_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct unique_copy_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::unique_copy_fn, unique_copy)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/stl/upper_bound.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_STL_UPPER_BOUND_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_STL_UPPER_BOUND_HPP_INCLUDED
+
+
+
+#include <algorithm>
+
+// TODO: Implement
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct upper_bound_fn {
+
+};
+
+}
+
+NANO_INLINE_VAR(detail::upper_bound_fn, upper_bound)
+
+NANO_END_NAMESPACE
+
+#endif
+
+
+#endif
+
+
+
+
 
 
 
