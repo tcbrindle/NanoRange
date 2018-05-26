@@ -458,8 +458,6 @@ TEST_CASE("swap_ranges()")
     }
 }
 
-#if 0
-
 TEST_CASE("reverse()")
 {
     std::list<int> list{1, 2, 3, 4, 5};
@@ -476,6 +474,8 @@ TEST_CASE("reverse()")
         REQUIRE(it == list.end());
     }
 }
+
+#if 0
 
 TEST_CASE("reverse_copy()")
 {

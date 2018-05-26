@@ -33,6 +33,7 @@
 #include <nanorange/algorithm/replace_copy.hpp>
 #include <nanorange/algorithm/replace_copy_if.hpp>
 #include <nanorange/algorithm/replace_if.hpp>
+#include <nanorange/algorithm/reverse.hpp>
 #include <nanorange/algorithm/search.hpp>
 #include <nanorange/algorithm/search_n.hpp>
 #include <nanorange/algorithm/swap_ranges.hpp>
