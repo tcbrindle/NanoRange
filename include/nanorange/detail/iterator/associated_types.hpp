@@ -21,6 +21,12 @@ template <typename, typename = void>
 struct difference_type_ {
 };
 
+// Workaround for GCC silliness: void* has no difference_type
+// FIXME: This is required to stop WeaklyIncrementable<void*> being a hard error
+// Can we formulate the concept differently to avoid the need for this hack?
+template <>
+struct difference_type_<void*> {};
+
 template <typename T>
 struct difference_type_<T*>
     : std::enable_if<std::is_object<T>::value, std::ptrdiff_t> {
