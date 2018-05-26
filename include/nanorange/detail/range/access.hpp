@@ -51,7 +51,7 @@ private:
             Iterator<decltype(decay_copy(begin(std::forward<T>(t))))>,
             decltype(decay_copy(begin(std::forward<T>(t))))>
     {
-        return decay_copy(begin(t));
+        return decay_copy(begin(std::forward<T>(t)));
     }
 
 public:

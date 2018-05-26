@@ -9,7 +9,6 @@ In rough order or priority:
 * Implement the remaining algorithms as constrained wrappers around the existing std:: versions
 * Use the new names from P1037 (iter_value_t, iter_difference_t etc)
 * Handle ContiguousIterators and ContiguousRanges
-* Implement the new forwarding-range concept logic from P0970
 * Fix common_iterator (use variant-like data store)
 * Implement the remaining iterator adaptors, namely:
   * reverse_iterator

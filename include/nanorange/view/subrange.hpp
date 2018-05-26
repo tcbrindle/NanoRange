@@ -271,7 +271,7 @@ constexpr I begin(subrange<I, S, K>&& r)
 }
 
 template <typename I, typename S, subrange_kind K>
-constexpr I end(subrange<I, S, K>&& r)
+constexpr S end(subrange<I, S, K>&& r)
 {
     return r.end();
 }
