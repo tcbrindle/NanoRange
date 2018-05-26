@@ -351,8 +351,14 @@ TEST_CASE("alg.rotate_copy")
 		int rgi[] = {0,1,2,3,4,5};
 		int rgo[6] = {0};
 		auto r = stl2::rotate_copy(std::move(rgi), rgi+2, rgo);
+		// FIXME MSVC
+#ifndef _MSC_VER
 		CHECK(r.first.get_unsafe() == stl2::end(rgi));
 		CHECK(r.second == stl2::end(rgo));
+#else
+		CHECK(r.first == stl2::end(rgi));
+		CHECK(r.second == stl2::end(rgo));
+#endif
 		CHECK(rgo[0] == 2);
 		CHECK(rgo[1] == 3);
 		CHECK(rgo[2] == 4);

@@ -271,8 +271,14 @@ TEST_CASE("alg.rotate")
 		// FIXME: Are these correct with P0970?
 		//CHECK(r.begin().get_unsafe() == rgi+4);
 		//CHECK(r.end().get_unsafe() == stl2::end(rgi));
+		// FIXME: MSVC
+#ifndef _MSC_VER
 		CHECK(r.get_unsafe().begin() == rgi+4);
 		CHECK(r.get_unsafe().end() == stl2::end(rgi));
+#else
+		CHECK(r.begin() == rgi+4);
+		CHECK(r.end() == stl2::end(rgi));
+#endif
 		CHECK(rgi[0] == 2);
 		CHECK(rgi[1] == 3);
 		CHECK(rgi[2] == 4);
