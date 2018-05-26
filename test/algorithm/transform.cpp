@@ -10,7 +10,7 @@
 // Project home: https://github.com/caseycarter/cmcstl2
 //
 #include <nanorange/algorithm/transform.hpp>
-#include "../check_equal.hpp"
+#include "../test_utils.hpp"
 
 #include "../catch.hpp"
 

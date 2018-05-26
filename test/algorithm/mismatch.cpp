@@ -19,15 +19,15 @@
 //===----------------------------------------------------------------------===//
 
 #include <nanorange/algorithm/mismatch.hpp>
-#include <nanorange/view/subrange.hpp>
 #include <memory>
 #include <algorithm>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"
+#include "../test_utils.hpp"
 
 namespace ranges {
 	using namespace nano::ranges;
-	using nano::ranges::make_subrange;
+	using nano::ranges::make_range;
 }
 
 namespace {
@@ -64,14 +64,14 @@ void test_range()
 	constexpr unsigned sa = ranges::size(ia);
 	int ib[] = {0, 1, 2, 3, 0, 1, 2, 3};
 	using Pair = std::pair<Iter, Iter>;
-	auto rng1 = ranges::make_subrange(Iter(ia), Sent(ia + sa));
+	auto rng1 = ranges::make_range(Iter(ia), Sent(ia + sa));
 	CHECK((ranges::mismatch(rng1, Iter(ib)) ==
 			Pair{Iter(ia + 3), Iter(ib + 3)}));
 	auto r1 = ranges::mismatch(std::move(rng1), Iter(ib));
 	CHECK(r1.first.get_unsafe() == Iter(ia + 3));
 	CHECK(r1.second == Iter(ib + 3));
-	auto rng2 = ranges::make_subrange(Iter(ia), Sent(ia + sa));
-	auto rng3 = ranges::make_subrange(Iter(ib), Sent(ib + sa));
+	auto rng2 = ranges::make_range(Iter(ia), Sent(ia + sa));
+	auto rng3 = ranges::make_range(Iter(ib), Sent(ib + sa));
 	CHECK((ranges::mismatch(rng2, rng3) ==
 			Pair{Iter(ia + 3), Iter(ib + 3)}));
 	auto r2 = ranges::mismatch(std::move(rng2), std::move(rng3));
@@ -83,20 +83,20 @@ void test_range()
 	auto r4 = ranges::mismatch(std::move(rng2), rng3);
 	CHECK(r4.first.get_unsafe() == Iter(ia + 3));
 	CHECK(r4.second == Iter(ib + 3));
-	auto rng4 = ranges::make_subrange(Iter(ia), Sent(ia + sa));
-	auto rng5 = ranges::make_subrange(Iter(ib), Sent(ib + 2));
+	auto rng4 = ranges::make_range(Iter(ia), Sent(ia + sa));
+	auto rng5 = ranges::make_range(Iter(ib), Sent(ib + 2));
 	CHECK((ranges::mismatch(rng4, rng5) ==
 			Pair{Iter(ia + 2), Iter(ib + 2)}));
 
-	auto rng6 = ranges::make_subrange(Iter(ia), Sent(ia + sa));
+	auto rng6 = ranges::make_range(Iter(ia), Sent(ia + sa));
 	CHECK((ranges::mismatch(rng6, Iter(ib), std::equal_to<int>()) ==
 			Pair{Iter(ia + 3), Iter(ib + 3)}));
-	auto rng7 = ranges::make_subrange(Iter(ia), Sent(ia + sa));
-	auto rng8 = ranges::make_subrange(Iter(ib), Sent(ib + sa));
+	auto rng7 = ranges::make_range(Iter(ia), Sent(ia + sa));
+	auto rng8 = ranges::make_range(Iter(ib), Sent(ib + sa));
 	CHECK((ranges::mismatch(rng7, rng8, std::equal_to<int>()) ==
 			Pair{Iter(ia + 3), Iter(ib + 3)}));
-	auto rng9 = ranges::make_subrange(Iter(ia), Sent(ia + sa));
-	auto rng10 = ranges::make_subrange(Iter(ib), Sent(ib + 2));
+	auto rng9 = ranges::make_range(Iter(ia), Sent(ia + sa));
+	auto rng10 = ranges::make_range(Iter(ib), Sent(ib + 2));
 	CHECK((ranges::mismatch(rng9, rng10, std::equal_to<int>()) ==
 			Pair{Iter(ia + 2), Iter(ib + 2)}));
 }

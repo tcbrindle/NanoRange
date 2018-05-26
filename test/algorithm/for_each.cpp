@@ -13,6 +13,7 @@
 #include <nanorange/view/subrange.hpp>
 #include <vector>
 #include "../catch.hpp"
+#include "../test_utils.hpp"
 
 namespace stl2 = nano;
 
@@ -49,7 +50,7 @@ TEST_CASE("[alg.for_each]")
 	CHECK(sum == 24);
 
 	sum = 0;
-	CHECK(stl2::for_each(stl2::make_subrange(v1.begin(), v1.end()), fun).first.get_unsafe() == v1.end());
+	CHECK(stl2::for_each(stl2::make_range(v1.begin(), v1.end()), fun).first.get_unsafe() == v1.end());
 	CHECK(sum == 12);
 
 	{

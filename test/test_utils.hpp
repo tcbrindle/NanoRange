@@ -3,6 +3,12 @@
 
 #include "catch.hpp"
 
+template <typename T>
+T& as_lvalue(T&& t)
+{
+    return t;
+}
+
 template <typename Rng, typename Rng2>
 void check_equal_(Rng && actual, Rng2&& expected)
 {
@@ -26,4 +32,27 @@ template <typename Rng, typename Rng2>
 void check_equal(Rng && actual, Rng2&& expected)
 {
     check_equal_(actual, expected);
+}
+
+namespace nano {
+inline namespace ranges {
+inline namespace ext {
+
+template <typename I, typename S>
+struct iterator_range {
+    I first;
+    S last;
+
+    I begin() const { return first; }
+    S end() const { return last; }
+};
+
+template <typename I, typename S>
+iterator_range<I, S> make_range(I i, S s)
+{
+    return {std::move(i), std::move(s)};
+}
+
+}
+}
 }
