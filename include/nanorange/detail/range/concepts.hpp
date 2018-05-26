@@ -39,13 +39,30 @@ namespace detail {
 struct Range_req {
     template <typename T>
     auto requires_(T&& t)
-        -> decltype(valid_expr(ranges::begin(t), ranges::end(t)));
+        -> decltype(valid_expr(ranges::begin(std::forward<T>(t)),
+                               ranges::end(std::forward<T>(t))));
 };
+
+template <typename T>
+NANO_CONCEPT RangeImpl = requires_<Range_req, T>;
+
+template <typename>
+auto Range_fn(long) -> std::false_type;
+
+template <typename T>
+auto Range_fn(int) -> std::enable_if_t<RangeImpl<T&>, std::true_type>;
 
 } // namespace detail
 
 template <typename T>
-NANO_CONCEPT Range = detail::requires_<detail::Range_req, T>;
+NANO_CONCEPT Range = decltype(detail::Range_fn<T>(0))::value;
+
+namespace detail {
+
+template <typename T>
+NANO_CONCEPT ForwardingRange = Range<T> && RangeImpl<T>;
+
+}
 
 // [range.sized]
 
@@ -152,7 +169,7 @@ NANO_CONCEPT CommonRange = decltype(detail::CommonRange_fn<T>(0))::value;
 // [ranges.viewable]
 
 template <typename T>
-NANO_CONCEPT ViewableRange = Range<T> && (std::is_lvalue_reference<T>::value ||
+NANO_CONCEPT ViewableRange = Range<T> && (detail::ForwardingRange<T> ||
                                           View<std::decay_t<T>>);
 
 // [range.input]

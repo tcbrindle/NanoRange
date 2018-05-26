@@ -8,6 +8,7 @@
 #define NANORANGE_VIEW_SUBRANGE_HPP_INCLUDED
 
 #include <nanorange/iterator.hpp>
+#include <nanorange/detail/range/dangling.hpp>
 #include <nanorange/view/interface.hpp>
 
 NANO_BEGIN_NAMESPACE
@@ -16,8 +17,14 @@ NANO_BEGIN_NAMESPACE
 
 enum class subrange_kind : bool { unsized, sized };
 
+namespace subrange_ {
+
 template <typename, typename, subrange_kind>
 class subrange;
+
+}
+
+using subrange_::subrange;
 
 namespace detail {
 
@@ -84,14 +91,25 @@ struct subrange_data<I, S, true> {
 // complex, so give it some help by calculating the constraints in a helper
 // variable
 template <typename R, typename I, typename S, subrange_kind K>
+auto subrange_range_constructor_constraint_helper_fn(long) -> std::false_type;
+
+template <typename R, typename I, typename S, subrange_kind K>
+auto subrange_range_constructor_constraint_helper_fn(int) -> std::enable_if_t<
+        detail::NotSameAs<R, subrange<I, S, K>> &&
+                ForwardingRange<R>&&
+                ConvertibleTo<iterator_t<R>, I> &&
+                ConvertibleTo<sentinel_t<R>, S>, std::true_type>;
+
+template <typename R, typename I, typename S, subrange_kind K>
 constexpr bool subrange_range_constructor_constraint_helper =
-    detail::NotSameAs<R, subrange<I, S, K>>&& Range<R>&&
-        ConvertibleTo<iterator_t<R>, I>&& ConvertibleTo<sentinel_t<R>, S>;
+    decltype(subrange_range_constructor_constraint_helper_fn<R, I, S, K>(0))::value;
 
 } // namespace detail
 
-template <typename I, typename S,
-          subrange_kind K = detail::default_subrange_kind<I, S>>
+namespace subrange_ {
+
+template <typename I, typename S = I,
+        subrange_kind K = detail::default_subrange_kind<I, S>>
 class subrange : public view_interface<subrange<I, S, K>> {
     static_assert(Iterator<I>, "");
     static_assert(Sentinel<S, I>, "");
@@ -99,7 +117,7 @@ class subrange : public view_interface<subrange<I, S, K>> {
 
 private:
     static constexpr bool StoreSize =
-        K == subrange_kind::sized && !SizedSentinel<S, I>;
+            K == subrange_kind::sized && !SizedSentinel<S, I>;
 
     detail::subrange_data<I, S, StoreSize> data_{};
 
@@ -112,78 +130,60 @@ public:
     subrange() = default;
 
     template <bool SS = StoreSize, typename = std::enable_if_t<!SS>>
-    constexpr subrange(I i, S s) : data_{std::move(i), std::move(s)}
-    {}
+    constexpr subrange(I i, S s)
+            : data_{std::move(i), std::move(s)} {}
 
     template <subrange_kind KK = K,
-              typename = std::enable_if_t<KK == subrange_kind::sized>>
+            typename = std::enable_if_t<KK == subrange_kind::sized>>
     constexpr subrange(I i, S s, difference_type_t<I> n)
-        : data_{std::move(i), std::move(s), n}
-    {}
+            : data_{std::move(i), std::move(s), n} {}
 
-    template <typename X, typename Y, subrange_kind Z, bool SS = StoreSize,
-              std::enable_if_t<ConvertibleTo<X, I> && ConvertibleTo<Y, S> &&
-                                   Z == subrange_kind::sized && SS,
-                               int> = 0>
-    constexpr subrange(subrange<X, Y, Z> r)
-        : subrange{r.begin(), r.end(), r.size()}
-    {}
+    template <typename R, bool SS = StoreSize,
+            std::enable_if_t<
+                    detail::subrange_range_constructor_constraint_helper<R, I, S, K>
+                    && SS && SizedRange<R>, int> = 0>
+    constexpr subrange(R&& r)
+            : subrange(ranges::begin(r), ranges::end(r), ranges::size(r)) {}
 
-    template <typename X, typename Y, subrange_kind Z, bool SS = StoreSize,
-              std::enable_if_t<
-                  ConvertibleTo<X, I> && ConvertibleTo<Y, S> && !SS, int> = 0>
-    constexpr subrange(subrange<X, Y, Z> r) : subrange{r.begin(), r.end()}
-    {}
+    template <typename R, bool SS = StoreSize,
+            std::enable_if_t<
+                    detail::subrange_range_constructor_constraint_helper<R, I, S, K>
+                     && !SS, int> = 0>
+    constexpr subrange(R&& r)
+            : subrange(ranges::begin(r), ranges::end(r)) {}
 
-    template <typename X, typename Y, subrange_kind Z, subrange_kind KK = K,
-              std::enable_if_t<KK == subrange_kind::sized, int> = 0>
-    constexpr subrange(subrange<X, Y, Z> r, difference_type_t<I> n)
-        : subrange{r.begin(), r.end(), n}
-    {}
+    template <typename R, subrange_kind KK = K, std::enable_if_t<
+            detail::ForwardingRange<R>&&
+            ConvertibleTo<iterator_t<R>, I>&&
+            ConvertibleTo<sentinel_t<R>, S>&&
+            KK == subrange_kind::sized, int> = 0>
+
+    constexpr subrange(R&& r, difference_type_t<I> n)
+            : subrange(ranges::begin(r), ranges::end(r), n) {}
 
     template <typename PairLike_, bool SS = StoreSize,
-              std::enable_if_t<
-                  detail::NotSameAs<PairLike_, subrange> &&
-                      detail::PairlikeConvertibleTo<PairLike_, I, S> && !SS,
-                  int> = 0>
+            std::enable_if_t<
+                    detail::NotSameAs<PairLike_, subrange> &&
+                            detail::PairlikeConvertibleTo<PairLike_, I, S>
+                            && !SS,
+                    int> = 0>
     constexpr subrange(PairLike_&& r)
-        : subrange{std::get<0>(std::forward<PairLike_>(r)),
-                   std::get<1>(std::forward<PairLike_>(r))}
-    {}
+            : subrange{std::get<0>(std::forward<PairLike_>(r)),
+                       std::get<1>(std::forward<PairLike_>(r))} {}
 
     template <typename PairLike_, subrange_kind KK = K,
-              std::enable_if_t<detail::PairlikeConvertibleTo<PairLike_, I, S> &&
-                                   KK == subrange_kind::sized,
-                               int> = 0>
+            std::enable_if_t<detail::PairlikeConvertibleTo<PairLike_, I, S> &&
+                    KK == subrange_kind::sized,
+                    int> = 0>
     constexpr subrange(PairLike_&& r, difference_type_t<I> n)
-        : subrange{std::get<0>(std::forward<PairLike_>(r)),
-                   std::get<1>(std::forward<PairLike_>(r)), n}
-    {}
-
-    template <
-        typename R, bool SS = StoreSize,
-        std::enable_if_t<
-            detail::subrange_range_constructor_constraint_helper<R, I, S, K> &&
-                SS && SizedRange<R>,
-            int> = 0>
-    constexpr subrange(R& r)
-        : subrange{ranges::begin(r), ranges::end(r), distance(r)}
-    {}
-
-    template <
-        typename R, bool SS = StoreSize,
-        std::enable_if_t<
-            detail::subrange_range_constructor_constraint_helper<R, I, S, K> &&
-                !SS,
-            int> = 0>
-    constexpr subrange(R& r) : subrange{ranges::begin(r), ranges::end(r)}
-    {}
+            : subrange{std::get<0>(std::forward<PairLike_>(r)),
+                       std::get<1>(std::forward<PairLike_>(r)), n} {}
 
     template <typename PairLike_,
-              std::enable_if_t<detail::NotSameAs<PairLike_, subrange> &&
-                                   detail::PairLikeConvertibleFrom<
-                                       PairLike_, const I&, const S&>,
-                               int> = 0>
+            std::enable_if_t<detail::NotSameAs<PairLike_, subrange> &&
+                    detail::PairLikeConvertibleFrom<
+                            PairLike_, const I&, const S&>,
+                    int> = 0>
     constexpr operator PairLike_() const
     {
         return PairLike_(begin(), end());
@@ -194,12 +194,12 @@ public:
     // scope, so we'll just reimplement it here
 
     template <typename C, typename R = subrange,
-              typename = std::enable_if_t<
-                  ForwardRange<C> && !View<C> &&
-                  ConvertibleTo<reference_t<iterator_t<const R>>,
-                                value_type_t<iterator_t<C>>> &&
-                  Constructible<C, detail::range_common_iterator_t<const R>,
-                                detail::range_common_iterator_t<const R>>>>
+            typename = std::enable_if_t<
+                    ForwardRange<C> && !View<C> &&
+                            ConvertibleTo<reference_t<iterator_t<const R>>,
+                                    value_type_t<iterator_t<C>>> &&
+                            Constructible<C, detail::range_common_iterator_t<const R>,
+                                    detail::range_common_iterator_t<const R>>>>
     operator C() const
     {
         using CI = detail::range_common_iterator_t<R>;
@@ -217,16 +217,16 @@ public:
 
     template <subrange_kind KK = K, bool SS = StoreSize>
     constexpr auto size() const
-        -> std::enable_if_t<KK == subrange_kind::sized && SS,
-                            difference_type_t<I>>
+    -> std::enable_if_t<KK == subrange_kind::sized && SS,
+            difference_type_t<I>>
     {
         return data_.size_;
     }
 
     template <subrange_kind KK = K, bool SS = StoreSize>
     constexpr auto size() const
-        -> std::enable_if_t<KK == subrange_kind::sized && !SS,
-                            difference_type_t<I>>
+    -> std::enable_if_t<KK == subrange_kind::sized && !SS,
+            difference_type_t<I>>
     {
         return data_.end_ - data_.begin_;
     }
@@ -240,7 +240,7 @@ public:
 
     template <typename II = I>
     NANO_NODISCARD constexpr auto prev(difference_type_t<I> n = 1) const
-        -> std::enable_if_t<BidirectionalIterator<II>, subrange>
+    -> std::enable_if_t<BidirectionalIterator<II>, subrange>
     {
         auto tmp = *this;
         tmp.advance(-n);
@@ -249,7 +249,7 @@ public:
 
     template <bool SS = StoreSize>
     constexpr auto advance(difference_type_t<I> n)
-        -> std::enable_if_t<SS, subrange&>
+    -> std::enable_if_t<SS, subrange&>
     {
         data_.size_ -= n - ranges::advance(data_.begin_, n, data_.end_);
         return *this;
@@ -257,23 +257,41 @@ public:
 
     template <bool SS = StoreSize>
     constexpr auto advance(difference_type_t<I> n)
-        -> std::enable_if_t<!SS, subrange&>
+    -> std::enable_if_t<!SS, subrange&>
     {
         ranges::advance(data_.begin_, n, data_.end_);
         return *this;
     }
 };
 
+template <typename I, typename S, subrange_kind K>
+constexpr I begin(subrange<I, S, K>&& r)
+{
+    return r.begin();
+}
+
+template <typename I, typename S, subrange_kind K>
+constexpr I end(subrange<I, S, K>&& r)
+{
+    return r.end();
+}
+
 #ifdef NANO_HAVE_DEDUCTION_GUIDES
 
-template <typename R, std::enable_if_t<Range<R> && !SizedRange<R>, int> = 0>
-subrange(R&)->subrange<iterator_t<R>, sentinel_t<R>>;
+template <typename R, std::enable_if_t<detail::ForwardingRange<R> && !SizedRange<R>, int> = 0>
+subrange(R&&)->subrange<iterator_t<R>, sentinel_t<R>>;
 
-template <typename R, std::enable_if_t<SizedRange<R>, int> = 0>
-subrange(R&, int = 0)
+template <typename R, std::enable_if_t<detail::ForwardingRange<R> && SizedRange<R>, int> = 0>
+subrange(R&&, std::nullptr_t = nullptr)
     ->subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>;
 
+template <typename R, std::enable_if_t<detail::ForwardingRange<R>>
+subrange(R&&, difference_type_t<iterator_t<R>>) ->
+    subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>;
+
 #endif
+
+} // namespace subrange_
 
 namespace detail {
 
@@ -322,19 +340,34 @@ constexpr auto make_subrange(I i, S s, difference_type_t<I> n)
 }
 
 template <typename R>
-constexpr auto make_subrange(R& r)
-    -> std::enable_if_t<Range<R> && !SizedRange<R>,
+constexpr auto make_subrange(R&& r)
+    -> std::enable_if_t<detail::ForwardingRange<R> && !SizedRange<R>,
                         subrange<iterator_t<R>, sentinel_t<R>>>
 {
-    return {r};
+    return {std::forward<R>(r)};
 }
 
 template <typename R>
-constexpr auto make_subrange(R& r) -> std::enable_if_t<
-    SizedRange<R>, subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>>
+constexpr auto make_subrange(R&& r)
+    -> std::enable_if_t<detail::ForwardingRange<R> && SizedRange<R>,
+                        subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>>
 {
-    return {r};
+    return {std::forward<R>(r)};
 }
+
+template <typename R>
+constexpr auto make_subrange(R&& r, difference_type_t<R> n)
+-> std::enable_if_t<detail::ForwardingRange<R>,
+        subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>>
+{
+    return {std::forward<R>(r), n};
+}
+
+template <typename R>
+using safe_subrange_t =
+    std::conditional_t<detail::ForwardingRange<R>,
+        subrange<iterator_t<R>>,
+        dangling<subrange<iterator_t<R>>>>;
 
 NANO_END_NAMESPACE
 
