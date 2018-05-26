@@ -45,6 +45,7 @@ iterators and sentinels of different types, and allow the use of projections.
 * equal
 * search
 * search_n
+* lexicographical_compare
 
 #### Modifying sequence ops ####
 
@@ -149,7 +150,6 @@ The following algorithms have not yet been implemented in Nanorange:
 * min_element
 * max_element
 * minmax_element
-* lexicographical_compare
 
 #### permutations ####
 
