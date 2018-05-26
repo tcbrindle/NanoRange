@@ -177,8 +177,7 @@ namespace readable_test {
 	};
 
 	CONCEPT_ASSERT(!models::Readable<void>);
-    // FIXME FIXME This breaks everything
-//	CONCEPT_ASSERT(!models::Readable<void*>);
+    CONCEPT_ASSERT(!models::Readable<void*>);
 	CONCEPT_ASSERT(models::Readable<int*>);
 	CONCEPT_ASSERT(models::Readable<const int*>);
 	CONCEPT_ASSERT(models::Readable<A>);
@@ -259,8 +258,7 @@ namespace iterator_sentinel_test {
 
 	CONCEPT_ASSERT(models::Iterator<int*>);
 	CONCEPT_ASSERT(models::Iterator<const int*>);
-    // FIXME: Passes with Clang, fails with GCC
-	//	CONCEPT_ASSERT(!models::Iterator<void*>);
+	CONCEPT_ASSERT(!models::Iterator<void*>);
 	CONCEPT_ASSERT(models::Iterator<A>);
 	CONCEPT_ASSERT(models::InputIterator<A>);
 

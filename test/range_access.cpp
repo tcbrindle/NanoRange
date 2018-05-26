@@ -100,9 +100,7 @@ namespace begin_testing {
 	};
 
 	struct B : A {};
-	// FIXME: void* breaks everything
-	//void* begin(B&);
-	std::nullptr_t begin(B&) { return nullptr; }
+	void* begin(B&);
 
 	struct C : A {};
 	void begin(C&) {}
