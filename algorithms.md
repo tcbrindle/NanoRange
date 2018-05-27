@@ -63,6 +63,7 @@ In addition, they are all available for use in `constexpr` functions.
 * minmax
 * min_element
 * max_element
+* minmax_element
 
 ## Partially implemented (using STL) ##
 
@@ -130,10 +131,6 @@ The following algorithms have not yet been implemented in Nanorange:
 * sort_heap
 * is_heap
 * is_heap_until
-
-#### minimum and maximum ####
-
-* minmax_element
 
 #### permutations ####
 

@@ -28,6 +28,7 @@
 #include <nanorange/algorithm/min.hpp>
 #include <nanorange/algorithm/min_element.hpp>
 #include <nanorange/algorithm/minmax.hpp>
+#include <nanorange/algorithm/minmax_element.hpp>
 #include <nanorange/algorithm/mismatch.hpp>
 #include <nanorange/algorithm/move.hpp>
 #include <nanorange/algorithm/none_of.hpp>
@@ -64,7 +65,6 @@
 #include <nanorange/algorithm/stl/lower_bound.hpp>
 #include <nanorange/algorithm/stl/make_heap.hpp>
 #include <nanorange/algorithm/stl/merge.hpp>
-#include <nanorange/algorithm/stl/minmax_element.hpp>
 #include <nanorange/algorithm/stl/next_permutation.hpp>
 #include <nanorange/algorithm/stl/nth_element.hpp>
 #include <nanorange/algorithm/stl/partial_sort.hpp>
