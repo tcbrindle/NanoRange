@@ -37,8 +37,8 @@ struct partial_sort_fn {
         Sortable<iterator_t<Rng>, Comp>>
     operator()(Rng&& rng, iterator_t<Rng> middle, Comp comp = Comp{})
     {
-        std::partial_sort(nano::begin(rng), nano::end(rng),
-                          std::move(middle), std::ref(comp));
+        std::partial_sort(nano::begin(rng), std::move(middle),
+                          nano::end(rng), std::ref(comp));
     }
 };
 
