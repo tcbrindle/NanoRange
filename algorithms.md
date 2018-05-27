@@ -88,6 +88,10 @@ CommonRange. Projections cannot be used.
 
 * is_permutation
 
+#### Partitioning operations ####
+
+* stable_partition
+
 #### Binary search operations ####
 
 * binary_search
@@ -102,7 +106,6 @@ The following algorithms have not yet been implemented in Nanorange:
 
 #### partitions ####
 
-* stable_partition
 * partition_point
 
 #### sorting ####

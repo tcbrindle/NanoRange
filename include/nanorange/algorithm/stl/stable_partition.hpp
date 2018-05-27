@@ -11,14 +11,36 @@
 
 #include <algorithm>
 
-// TODO: Implement
+// TODO: Reimplement
 
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
 struct stable_partition_fn {
+    template <typename I, typename Pred>
+    std::enable_if_t<
+        BidirectionalIterator<I> &&
+        Cpp98Iterator<I> &&
+        IndirectUnaryPredicate<Pred, I>, I>
+    operator()(I first, I last, Pred pred)
+    {
+        return std::stable_partition(std::move(first), std::move(last),
+                                     std::ref(pred));
+    }
 
+    template <typename Rng, typename Pred>
+    std::enable_if_t<
+        BidirectionalRange<Rng> &&
+        CommonRange<Rng> &&
+        Cpp98Iterator<iterator_t<Rng>> &&
+         IndirectUnaryPredicate<Pred, iterator_t<Rng>>,
+    safe_iterator_t<Rng>>
+    operator()(Rng&& rng, Pred pred)
+    {
+        return std::stable_partition(nano::begin(rng), nano::end(rng),
+                                     std::ref(pred));
+    }
 };
 
 }
