@@ -108,6 +108,10 @@ CommonRange. Projections cannot be used.
 * equal_range
 * binary_search
 
+#### Set operations ####
+
+* merge
+
 ## Unimplemented ##
 
 The following algorithms have not yet been implemented in Nanorange:
@@ -118,7 +122,6 @@ The following algorithms have not yet been implemented in Nanorange:
 
 #### merge ####
 
-* merge
 * inplace_merge
 
 #### set operations ####
