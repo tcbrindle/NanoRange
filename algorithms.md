@@ -84,10 +84,13 @@ on the C++98 specification. This means that the iterator and sentinel types
 must be the same, or for the range-based overloads, the range must model
 CommonRange. Projections cannot be used.
 
-### Non-modifying sequence ops ##
+#### Non-modifying sequence ops ####
 
 * is_permutation
 
+#### Binary search operations ####
+
+* binary_search
 
 ## Unimplemented ##
 
@@ -114,7 +117,6 @@ The following algorithms have not yet been implemented in Nanorange:
 * lower_bound
 * upper_bound
 * equal_range
-* binary_search
 
 #### merge ####
 

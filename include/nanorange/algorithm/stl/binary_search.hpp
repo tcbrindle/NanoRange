@@ -11,14 +11,37 @@
 
 #include <algorithm>
 
-// TODO: Implement
+// TODO: Reimplement
 
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
 struct binary_search_fn {
+    template <typename I, typename T, typename Comp = less<>>
+    std::enable_if_t<
+       ForwardIterator<I> &&
+       detail::Cpp98Iterator<I> &&
+       IndirectStrictWeakOrder<Comp, const T*, I>,
+    bool>
+    operator()(I first, I last, const T& value, Comp comp = Comp{})
+    {
+        return std::binary_search(std::move(first), std::move(last),
+                                  value, std::ref(comp));
+    }
 
+    template <typename Rng, typename T, typename Comp = less<>>
+    std::enable_if_t<
+        ForwardRange<Rng> &&
+        CommonRange<Rng> &&
+        detail::Cpp98Iterator<iterator_t<Rng>> &&
+        IndirectStrictWeakOrder<Comp, const T*, iterator_t<Rng>>,
+    bool>
+    operator()(Rng&& rng, const T& value, Comp comp = Comp{})
+    {
+        return std::binary_search(nano::begin(rng), nano::end(rng),
+                                  value, std::ref(comp));
+    }
 };
 
 }
