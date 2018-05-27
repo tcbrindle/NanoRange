@@ -11,14 +11,35 @@
 
 #include <algorithm>
 
-// TODO: Implement
+// TODO: Reimplement
 
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
 struct inplace_merge_fn {
+    template <typename I, typename Comp = less<>>
+    std::enable_if_t<
+        BidirectionalIterator<I> &&
+        Cpp98Iterator<I> &&
+        Sortable<I, Comp>>
+    operator()(I first, I middle, I last, Comp comp = Comp{})
+    {
+        std::inplace_merge(std::move(first), std::move(middle),
+                           std::move(last), std::ref(comp));
+    }
 
+    template <typename Rng, typename Comp = less<>>
+    std::enable_if_t<
+        BidirectionalRange<Rng> &&
+        CommonRange<Rng> &&
+        Cpp98Iterator<iterator_t<Rng>> &&
+        Sortable<iterator_t<Rng>, Comp>>
+    operator()(Rng&& rng, iterator_t<Rng> middle, Comp comp = Comp{})
+    {
+        std::inplace_merge(nano::begin(rng), std::move(middle),
+                           nano::end(rng), std::ref(comp));
+    }
 };
 
 }
