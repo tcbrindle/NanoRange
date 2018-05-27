@@ -18,7 +18,28 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct next_permutation_fn {
+    template <typename I, typename Comp = less<>>
+    std::enable_if_t<
+        BidirectionalIterator<I> &&
+        Cpp98Iterator<I> &&
+        Sortable<I, Comp>, bool>
+    operator()(I first, I last, Comp comp = Comp{})
+    {
+        return std::next_permutation(std::move(first), std::move(last),
+                                     std::ref(comp));
+    }
 
+    template <typename Rng, typename Comp = less<>>
+    std::enable_if_t<
+        BidirectionalRange<Rng> &&
+        CommonRange<Rng> &&
+        Cpp98Iterator<iterator_t<Rng>> &&
+        Sortable<iterator_t<Rng>, Comp>, bool>
+    operator()(Rng&& rng, Comp comp = Comp{})
+    {
+        return std::next_permutation(nano::begin(rng), nano::end(rng),
+                                     std::ref(comp));
+    }
 };
 
 }

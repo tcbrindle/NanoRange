@@ -7,7 +7,7 @@ meeting the requirements of the Ranges papers. In particular, they accept
 iterators and sentinels of different types, and allow the use of projections.
 In addition, they are all available for use in `constexpr` functions.
 
-#### Non-modifying sequence ops ####
+#### Non-modifying sequence operations ####
 
 * all_of
 * any_of
@@ -27,7 +27,7 @@ In addition, they are all available for use in `constexpr` functions.
 * search_n
 * lexicographical_compare
 
-#### Modifying sequence ops ####
+#### Modifying sequence operations ####
 
 * copy
 * copy_n
@@ -62,12 +62,12 @@ In addition, they are all available for use in `constexpr` functions.
 * partition
 * partition_copy
 
-#### Sorting ####
+#### Sorting operations ####
 
 * is_sorted
 * is_sorted_until
 
-#### Minimum and maximum ####
+#### Minimum and maximum operations ####
 
 * min
 * max
@@ -83,10 +83,6 @@ existing standard library implementation. Constraints and return types are based
 on the C++98 specification. This means that the iterator and sentinel types
 must be the same, or for the range-based overloads, the range must model
 CommonRange. Projections cannot be used.
-
-#### Non-modifying sequence ops ####
-
-* is_permutation
 
 #### Partitioning operations ####
 
@@ -118,6 +114,12 @@ CommonRange. Projections cannot be used.
 * set_difference
 * set_symmetric_difference
 
+#### Permutation operations ####
+
+* is_permutation
+* next_permutation
+* prev_permutation
+
 ## Unimplemented ##
 
 The following algorithms have not yet been implemented in Nanorange:
@@ -134,8 +136,3 @@ The following algorithms have not yet been implemented in Nanorange:
 * sort_heap
 * is_heap
 * is_heap_until
-
-#### permutations ####
-
-* next_permutation
-* prev_permutation
