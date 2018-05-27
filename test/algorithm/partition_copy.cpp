@@ -22,18 +22,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/partition_copy.hpp>
-#include <stl2/iterator.hpp>
+#include <nanorange/algorithm/partition_copy.hpp>
+//#include <stl2/iterator.hpp>
 #include <tuple>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
 
-struct is_odd
-{
-	bool operator()(const int& i) const {return i & 1;}
+namespace {
+
+struct is_odd {
+	bool operator()(const int& i) const { return i & 1; }
 };
 
 template <class Iter, class Sent = Iter>
@@ -43,10 +44,10 @@ test_iter()
 	const int ia[] = {1, 2, 3, 4, 6, 8, 5, 7};
 	int r1[10] = {0};
 	int r2[10] = {0};
-	typedef std::tuple<Iter, output_iterator<int*>,  int*> P;
+	typedef std::tuple<Iter, output_iterator<int*>, int*> P;
 	P p = stl2::partition_copy(Iter(std::begin(ia)),
-								 Sent(std::end(ia)),
-								 output_iterator<int*>(r1), r2, is_odd());
+							   Sent(std::end(ia)),
+							   output_iterator<int*>(r1), r2, is_odd());
 	CHECK(std::get<0>(p) == Iter(std::end(ia)));
 	CHECK(std::get<1>(p).base() == r1 + 4);
 	CHECK(r1[0] == 1);
@@ -67,10 +68,11 @@ test_range()
 	const int ia[] = {1, 2, 3, 4, 6, 8, 5, 7};
 	int r1[10] = {0};
 	int r2[10] = {0};
-	typedef std::tuple<Iter, output_iterator<int*>,  int*> P;
-	P p = stl2::partition_copy(::as_lvalue(stl2::ext::make_range(Iter(std::begin(ia)),
-														   Sent(std::end(ia)))),
-								 output_iterator<int*>(r1), r2, is_odd());
+	typedef std::tuple<Iter, output_iterator<int*>, int*> P;
+	P p = stl2::partition_copy(
+			::as_lvalue(stl2::ext::make_range(Iter(std::begin(ia)),
+											  Sent(std::end(ia)))),
+			output_iterator<int*>(r1), r2, is_odd());
 	CHECK(std::get<0>(p) == Iter(std::end(ia)));
 	CHECK(std::get<1>(p).base() == r1 + 4);
 	CHECK(r1[0] == 1);
@@ -84,8 +86,7 @@ test_range()
 	CHECK(r2[3] == 8);
 }
 
-struct S
-{
+struct S {
 	int i;
 };
 
@@ -95,7 +96,7 @@ void test_proj()
 	const S ia[] = {S{1}, S{2}, S{3}, S{4}, S{6}, S{8}, S{5}, S{7}};
 	S r1[10] = {S{0}};
 	S r2[10] = {S{0}};
-	typedef std::tuple<S const *, S*,  S*> P;
+	typedef std::tuple<S const*, S*, S*> P;
 	P p = stl2::partition_copy(ia, r1, r2, is_odd(), &S::i);
 	CHECK(std::get<0>(p) == std::end(ia));
 	CHECK(std::get<1>(p) == r1 + 4);
@@ -113,10 +114,10 @@ void test_proj()
 void test_rvalue()
 {
 	// Test rvalue ranges
-	const S ia[] = {S{1}, S{2}, S{3}, S{4}, S{6}, S{8}, S{5}, S{7}};
+	S ia[] = {S{1}, S{2}, S{3}, S{4}, S{6}, S{8}, S{5}, S{7}};
 	S r1[10] = {S{0}};
 	S r2[10] = {S{0}};
-	auto p = stl2::partition_copy(stl2::move(ia), r1, r2, is_odd(), &S::i);
+	auto p = stl2::partition_copy(std::move(ia), r1, r2, is_odd(), &S::i);
 	CHECK(std::get<0>(p).get_unsafe() == std::end(ia));
 	CHECK(std::get<1>(p) == r1 + 4);
 	CHECK(r1[0].i == 1);
@@ -130,7 +131,9 @@ void test_rvalue()
 	CHECK(r2[3].i == 8);
 }
 
-int main()
+}
+
+TEST_CASE("alg.partition_copy")
 {
 	test_iter<input_iterator<const int*> >();
 	test_iter<input_iterator<const int*>, sentinel<const int*>>();
@@ -140,6 +143,4 @@ int main()
 
 	test_proj();
 	test_rvalue();
-
-	return ::test_result();
 }
