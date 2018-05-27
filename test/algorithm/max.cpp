@@ -19,19 +19,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/max.hpp>
+#include <nanorange/algorithm/max.hpp>
 #include <cassert>
 #include <memory>
 #include <numeric>
 #include <random>
 #include <algorithm>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
 
-namespace { std::mt19937 gen; }
+namespace {
+
+std::mt19937 gen;
 
 template <class Iter, class Sent = Iter>
 void
@@ -50,9 +52,9 @@ test_iter(unsigned N)
 {
 	assert(N > 0);
 	std::unique_ptr<int[]> a{new int[N]};
-	std::iota(a.get(), a.get()+N, 0);
-	std::shuffle(a.get(), a.get()+N, gen);
-	test_iter(Iter(a.get()), Sent(a.get()+N));
+	std::iota(a.get(), a.get() + N, 0);
+	std::shuffle(a.get(), a.get() + N, gen);
+	test_iter(Iter(a.get()), Sent(a.get() + N));
 }
 
 template <class Iter, class Sent = Iter>
@@ -84,9 +86,9 @@ test_iter_comp(unsigned N)
 {
 	assert(N > 0);
 	std::unique_ptr<int[]> a{new int[N]};
-	std::iota(a.get(), a.get()+N, 0);
-	std::shuffle(a.get(), a.get()+N, gen);
-	test_iter_comp(Iter(a.get()), Sent(a.get()+N));
+	std::iota(a.get(), a.get() + N, 0);
+	std::shuffle(a.get(), a.get() + N, gen);
+	test_iter_comp(Iter(a.get()), Sent(a.get() + N));
 }
 
 template <class Iter, class Sent = Iter>
@@ -100,12 +102,13 @@ test_iter_comp()
 	test_iter_comp<Iter, Sent>(1000);
 }
 
-struct S
-{
+struct S {
 	int i;
 };
 
-int main()
+}
+
+TEST_CASE("alg.max")
 {
 	test_iter<input_iterator<const int*> >();
 	test_iter<forward_iterator<const int*> >();
@@ -131,6 +134,4 @@ int main()
 	S s[] = {S{1},S{2},S{3},S{4},S{40},S{5},S{6},S{7},S{8},S{9}};
 	S v = stl2::max(s, std::less<int>{}, &S::i);
 	CHECK(v.i == 40);
-
-	return test_result();
 }

@@ -48,7 +48,7 @@ add_executable(test_nanorange
     algorithm/lexicographical_compare.cpp
     #algorithm/lower_bound.cpp
     #algorithm/make_heap.cpp
-    #algorithm/max.cpp
+    algorithm/max.cpp
     #algorithm/max_element.cpp
     #algorithm/merge.cpp
     algorithm/min.cpp

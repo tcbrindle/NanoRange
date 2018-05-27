@@ -59,6 +59,7 @@ In addition, they are all available for use in `constexpr` functions.
 #### Minimum and maximum ####
 
 * min
+* max
 
 ## Partially implemented (using STL) ##
 
@@ -129,7 +130,6 @@ The following algorithms have not yet been implemented in Nanorange:
 
 #### minimum and maximum ####
 
-* max
 * minmax
 * min_element
 * max_element

@@ -24,6 +24,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/generate.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/generate_n.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/lexicographical_compare.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/max.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/min.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/mismatch.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/move.hpp
@@ -59,7 +60,6 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/is_sorted_until.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/lower_bound.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/make_heap.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/max.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/max_element.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/merge.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/min_element.hpp
