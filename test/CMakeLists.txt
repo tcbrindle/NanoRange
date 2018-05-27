@@ -52,7 +52,7 @@ add_executable(test_nanorange
     #algorithm/max_element.cpp
     #algorithm/merge.cpp
     algorithm/min.cpp
-    #algorithm/min_element.cpp
+    algorithm/min_element.cpp
     algorithm/minmax.cpp
     #algorithm/minmax_element.cpp
     algorithm/mismatch.cpp
