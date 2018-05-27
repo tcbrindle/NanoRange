@@ -22,18 +22,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/partition.hpp>
+#include <nanorange/algorithm/partition.hpp>
 #include <memory>
 #include <utility>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
 
-struct is_odd
-{
-	bool operator()(const int& i) const {return i & 1;}
+namespace {
+
+struct is_odd {
+	bool operator()(const int& i) const { return i & 1; }
 };
 
 template <class Iter, class Sent = Iter>
@@ -41,66 +42,66 @@ void
 test_iter()
 {
 	// check mixed
-	int ia[] = {1, 2, 3, 4, 5, 6, 7, 8 ,9};
-	const unsigned sa = sizeof(ia)/sizeof(ia[0]);
+	int ia[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
 	Iter r = stl2::partition(Iter(ia), Sent(ia + sa), is_odd());
 	CHECK(base(r) == ia + 5);
 	for (int* i = ia; i < base(r); ++i)
 		CHECK(is_odd()(*i));
-	for (int* i = base(r); i < ia+sa; ++i)
+	for (int* i = base(r); i < ia + sa; ++i)
 		CHECK(!is_odd()(*i));
 	// check empty
 	r = stl2::partition(Iter(ia), Sent(ia), is_odd());
 	CHECK(base(r) == ia);
 	// check all false
 	for (unsigned i = 0; i < sa; ++i)
-		ia[i] = 2*i;
-	r = stl2::partition(Iter(ia), Sent(ia+sa), is_odd());
+		ia[i] = 2 * i;
+	r = stl2::partition(Iter(ia), Sent(ia + sa), is_odd());
 	CHECK(base(r) == ia);
 	// check all true
 	for (unsigned i = 0; i < sa; ++i)
-		ia[i] = 2*i+1;
-	r = stl2::partition(Iter(ia), Sent(ia+sa), is_odd());
-	CHECK(base(r) == ia+sa);
+		ia[i] = 2 * i + 1;
+	r = stl2::partition(Iter(ia), Sent(ia + sa), is_odd());
+	CHECK(base(r) == ia + sa);
 	// check all true but last
 	for (unsigned i = 0; i < sa; ++i)
-		ia[i] = 2*i+1;
-	ia[sa-1] = 10;
-	r = stl2::partition(Iter(ia), Sent(ia+sa), is_odd());
-	CHECK(base(r) == ia+sa-1);
+		ia[i] = 2 * i + 1;
+	ia[sa - 1] = 10;
+	r = stl2::partition(Iter(ia), Sent(ia + sa), is_odd());
+	CHECK(base(r) == ia + sa - 1);
 	for (int* i = ia; i < base(r); ++i)
 		CHECK(is_odd()(*i));
-	for (int* i = base(r); i < ia+sa; ++i)
+	for (int* i = base(r); i < ia + sa; ++i)
 		CHECK(!is_odd()(*i));
 	// check all true but first
 	for (unsigned i = 0; i < sa; ++i)
-		ia[i] = 2*i+1;
+		ia[i] = 2 * i + 1;
 	ia[0] = 10;
-	r = stl2::partition(Iter(ia), Sent(ia+sa), is_odd());
-	CHECK(base(r) == ia+sa-1);
+	r = stl2::partition(Iter(ia), Sent(ia + sa), is_odd());
+	CHECK(base(r) == ia + sa - 1);
 	for (int* i = ia; i < base(r); ++i)
 		CHECK(is_odd()(*i));
-	for (int* i = base(r); i < ia+sa; ++i)
+	for (int* i = base(r); i < ia + sa; ++i)
 		CHECK(!is_odd()(*i));
 	// check all false but last
 	for (unsigned i = 0; i < sa; ++i)
-		ia[i] = 2*i;
-	ia[sa-1] = 11;
-	r = stl2::partition(Iter(ia), Sent(ia+sa), is_odd());
-	CHECK(base(r) == ia+1);
+		ia[i] = 2 * i;
+	ia[sa - 1] = 11;
+	r = stl2::partition(Iter(ia), Sent(ia + sa), is_odd());
+	CHECK(base(r) == ia + 1);
 	for (int* i = ia; i < base(r); ++i)
 		CHECK(is_odd()(*i));
-	for (int* i = base(r); i < ia+sa; ++i)
+	for (int* i = base(r); i < ia + sa; ++i)
 		CHECK(!is_odd()(*i));
 	// check all false but first
 	for (unsigned i = 0; i < sa; ++i)
-		ia[i] = 2*i;
+		ia[i] = 2 * i;
 	ia[0] = 11;
-	r = stl2::partition(Iter(ia), Sent(ia+sa), is_odd());
-	CHECK(base(r) == ia+1);
+	r = stl2::partition(Iter(ia), Sent(ia + sa), is_odd());
+	CHECK(base(r) == ia + 1);
 	for (int* i = ia; i < base(r); ++i)
 		CHECK(is_odd()(*i));
-	for (int* i = base(r); i < ia+sa; ++i)
+	for (int* i = base(r); i < ia + sa; ++i)
 		CHECK(!is_odd()(*i));
 }
 
@@ -109,75 +110,91 @@ void
 test_range()
 {
 	// check mixed
-	int ia[] = {1, 2, 3, 4, 5, 6, 7, 8 ,9};
-	const unsigned sa = sizeof(ia)/sizeof(ia[0]);
-	Iter r = stl2::partition(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia + sa))), is_odd());
+	int ia[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
+	Iter r = stl2::partition(
+			::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia + sa))),
+			is_odd());
 	CHECK(base(r) == ia + 5);
 	for (int* i = ia; i < base(r); ++i)
 		CHECK(is_odd()(*i));
-	for (int* i = base(r); i < ia+sa; ++i)
+	for (int* i = base(r); i < ia + sa; ++i)
 		CHECK(!is_odd()(*i));
 	// check empty
-	r = stl2::partition(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia))), is_odd());
+	r = stl2::partition(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia))),
+						is_odd());
 	CHECK(base(r) == ia);
 	// check all false
 	for (unsigned i = 0; i < sa; ++i)
-		ia[i] = 2*i;
-	r = stl2::partition(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), is_odd());
+		ia[i] = 2 * i;
+	r = stl2::partition(
+			::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia + sa))),
+			is_odd());
 	CHECK(base(r) == ia);
 	// check all true
 	for (unsigned i = 0; i < sa; ++i)
-		ia[i] = 2*i+1;
-	r = stl2::partition(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), is_odd());
-	CHECK(base(r) == ia+sa);
+		ia[i] = 2 * i + 1;
+	r = stl2::partition(
+			::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia + sa))),
+			is_odd());
+	CHECK(base(r) == ia + sa);
 	// check all true but last
 	for (unsigned i = 0; i < sa; ++i)
-		ia[i] = 2*i+1;
-	ia[sa-1] = 10;
-	r = stl2::partition(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), is_odd());
-	CHECK(base(r) == ia+sa-1);
+		ia[i] = 2 * i + 1;
+	ia[sa - 1] = 10;
+	r = stl2::partition(
+			::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia + sa))),
+			is_odd());
+	CHECK(base(r) == ia + sa - 1);
 	for (int* i = ia; i < base(r); ++i)
 		CHECK(is_odd()(*i));
-	for (int* i = base(r); i < ia+sa; ++i)
+	for (int* i = base(r); i < ia + sa; ++i)
 		CHECK(!is_odd()(*i));
 	// check all true but first
 	for (unsigned i = 0; i < sa; ++i)
-		ia[i] = 2*i+1;
+		ia[i] = 2 * i + 1;
 	ia[0] = 10;
-	r = stl2::partition(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), is_odd());
-	CHECK(base(r) == ia+sa-1);
+	r = stl2::partition(
+			::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia + sa))),
+			is_odd());
+	CHECK(base(r) == ia + sa - 1);
 	for (int* i = ia; i < base(r); ++i)
 		CHECK(is_odd()(*i));
-	for (int* i = base(r); i < ia+sa; ++i)
+	for (int* i = base(r); i < ia + sa; ++i)
 		CHECK(!is_odd()(*i));
 	// check all false but last
 	for (unsigned i = 0; i < sa; ++i)
-		ia[i] = 2*i;
-	ia[sa-1] = 11;
-	r = stl2::partition(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), is_odd());
-	CHECK(base(r) == ia+1);
+		ia[i] = 2 * i;
+	ia[sa - 1] = 11;
+	r = stl2::partition(
+			::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia + sa))),
+			is_odd());
+	CHECK(base(r) == ia + 1);
 	for (int* i = ia; i < base(r); ++i)
 		CHECK(is_odd()(*i));
-	for (int* i = base(r); i < ia+sa; ++i)
+	for (int* i = base(r); i < ia + sa; ++i)
 		CHECK(!is_odd()(*i));
 	// check all false but first
 	for (unsigned i = 0; i < sa; ++i)
-		ia[i] = 2*i;
+		ia[i] = 2 * i;
 	ia[0] = 11;
-	r = stl2::partition(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+sa))), is_odd());
-	CHECK(base(r) == ia+1);
+	r = stl2::partition(
+			::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia + sa))),
+			is_odd());
+	CHECK(base(r) == ia + 1);
 	for (int* i = ia; i < base(r); ++i)
 		CHECK(is_odd()(*i));
-	for (int* i = base(r); i < ia+sa; ++i)
+	for (int* i = base(r); i < ia + sa; ++i)
 		CHECK(!is_odd()(*i));
 }
 
-struct S
-{
+struct S {
 	int i;
 };
 
-int main()
+}
+
+TEST_CASE("alg.partition")
 {
 	test_iter<forward_iterator<int*> >();
 	test_iter<bidirectional_iterator<int*> >();
@@ -206,12 +223,10 @@ int main()
 		CHECK(!is_odd()(i->i));
 
 	// Test rvalue range
-	auto r2 = stl2::partition(stl2::move(ia), is_odd(), &S::i);
+	auto r2 = stl2::partition(std::move(ia), is_odd(), &S::i);
 	CHECK(r2.get_unsafe() == ia + 5);
 	for (S* i = ia; i < r2.get_unsafe(); ++i)
 		CHECK(is_odd()(i->i));
 	for (S* i = r2.get_unsafe(); i < ia+sa; ++i)
 		CHECK(!is_odd()(i->i));
-
-	return ::test_result();
 }
