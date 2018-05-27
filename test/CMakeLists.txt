@@ -49,7 +49,7 @@ add_executable(test_nanorange
     #algorithm/lower_bound.cpp
     #algorithm/make_heap.cpp
     algorithm/max.cpp
-    #algorithm/max_element.cpp
+    algorithm/max_element.cpp
     #algorithm/merge.cpp
     algorithm/min.cpp
     algorithm/min_element.cpp

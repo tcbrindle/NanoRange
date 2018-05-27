@@ -18,26 +18,27 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/max_element.hpp>
+#include <nanorange/algorithm/max_element.hpp>
 #include <memory>
 #include <numeric>
 #include <random>
 #include <algorithm>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
 
-namespace { std::mt19937 gen; }
+namespace {
+
+std::mt19937 gen;
 
 template <class Iter, class Sent = Iter>
 void
 test_iter(Iter first, Sent last)
 {
 	Iter i = stl2::max_element(first, last);
-	if (first != last)
-	{
+	if (first != last) {
 		for (Iter j = first; j != last; ++j)
 			CHECK(!(*i < *j));
 	}
@@ -46,8 +47,7 @@ test_iter(Iter first, Sent last)
 
 	auto rng = stl2::ext::make_range(first, last);
 	i = stl2::max_element(rng);
-	if (first != last)
-	{
+	if (first != last) {
 		for (Iter j = first; j != last; ++j)
 			CHECK(!(*i < *j));
 	}
@@ -55,8 +55,7 @@ test_iter(Iter first, Sent last)
 		CHECK(i == last);
 
 	auto j = stl2::max_element(std::move(rng));
-	if (first != last)
-	{
+	if (first != last) {
 		for (Iter k = first; k != last; ++k)
 			CHECK(!(*j.get_unsafe() < *k));
 	}
@@ -69,9 +68,9 @@ void
 test_iter(unsigned N)
 {
 	std::unique_ptr<int[]> a{new int[N]};
-	std::iota(a.get(), a.get()+N, 0);
-	std::shuffle(a.get(), a.get()+N, gen);
-	test_iter(Iter(a.get()), Sent(a.get()+N));
+	std::iota(a.get(), a.get() + N, 0);
+	std::shuffle(a.get(), a.get() + N, gen);
+	test_iter(Iter(a.get()), Sent(a.get() + N));
 }
 
 template <class Iter, class Sent = Iter>
@@ -91,8 +90,7 @@ void
 test_iter_comp(Iter first, Sent last)
 {
 	Iter i = stl2::max_element(first, last, std::greater<int>());
-	if (first != last)
-	{
+	if (first != last) {
 		for (Iter j = first; j != last; ++j)
 			CHECK(!std::greater<int>()(*i, *j));
 	}
@@ -101,8 +99,7 @@ test_iter_comp(Iter first, Sent last)
 
 	auto rng = stl2::ext::make_range(first, last);
 	i = stl2::max_element(rng, std::greater<int>());
-	if (first != last)
-	{
+	if (first != last) {
 		for (Iter j = first; j != last; ++j)
 			CHECK(!std::greater<int>()(*i, *j));
 	}
@@ -110,8 +107,7 @@ test_iter_comp(Iter first, Sent last)
 		CHECK(i == last);
 
 	auto res = stl2::max_element(std::move(rng), std::greater<int>());
-	if (first != last)
-	{
+	if (first != last) {
 		for (Iter j = first; j != last; ++j)
 			CHECK(!std::greater<int>()(*res.get_unsafe(), *j));
 	}
@@ -124,9 +120,9 @@ void
 test_iter_comp(unsigned N)
 {
 	std::unique_ptr<int[]> a{new int[N]};
-	std::iota(a.get(), a.get()+N, 0);
-	std::shuffle(a.get(), a.get()+N, gen);
-	test_iter_comp(Iter(a.get()), Sent(a.get()+N));
+	std::iota(a.get(), a.get() + N, 0);
+	std::shuffle(a.get(), a.get() + N, gen);
+	test_iter_comp(Iter(a.get()), Sent(a.get() + N));
 }
 
 template <class Iter, class Sent = Iter>
@@ -141,12 +137,13 @@ test_iter_comp()
 	test_iter_comp<Iter, Sent>(1000);
 }
 
-struct S
-{
+struct S {
 	int i;
 };
 
-int main()
+}
+
+TEST_CASE("alg.max_element")
 {
 	test_iter<forward_iterator<const int*> >();
 	test_iter<bidirectional_iterator<const int*> >();
@@ -168,6 +165,4 @@ int main()
 	S s[] = {S{1},S{2},S{3},S{4},S{40},S{5},S{6},S{7},S{8},S{9}};
 	S const *ps = stl2::max_element(s, std::less<int>{}, &S::i);
 	CHECK(ps->i == 40);
-
-	return test_result();
 }
