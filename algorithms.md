@@ -56,6 +56,11 @@ In addition, they are all available for use in `constexpr` functions.
 * rotate_copy
 * shuffle
 
+#### Sorting ####
+
+* is_sorted
+* is_sorted_until
+
 #### Minimum and maximum ####
 
 * min
@@ -99,8 +104,6 @@ The following algorithms have not yet been implemented in Nanorange:
 * stable_sort
 * partial_sort
 * partial_sort_copy
-* is_sorted
-* is_sorted_until
 * nth_element
 
 #### binary search ####

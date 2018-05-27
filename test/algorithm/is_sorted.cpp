@@ -26,12 +26,13 @@
 // Implementation based on the code in libc++
 //   http://http://libcxx.llvm.org/
 
-#include <nanorange_extras.hpp>
+#include <nanorange/algorithm/is_sorted.hpp>
+#include <nanorange/view/subrange.hpp>
 #include "../catch.hpp"
-
+#include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
-namespace ranges = nanorange;
+namespace ranges = nano::ranges;
 
 namespace {
 
@@ -42,9 +43,7 @@ struct iter_call {
 	using sentinel_t = typename sentinel_type<Iter>::type;
 
 	template <class B, class E, class... Args>
-	auto operator()(B&& b, E&& e, Args&& ... args)
-	-> decltype(ranges::is_sorted(begin_t{b}, sentinel_t{e},
-								  std::forward<Args>(args)...))
+	bool operator()(B&& b, E&& e, Args&& ... args)
 	{
 		return ranges::is_sorted(begin_t{b}, sentinel_t{e},
 								 std::forward<Args>(args)...);
@@ -58,13 +57,10 @@ struct range_call {
 	using sentinel_t = typename sentinel_type<Iter>::type;
 
 	template <class B, class E, class...  Args>
-	auto operator()(B&& b, E&& e, Args&& ... args)
-	-> decltype(ranges::is_sorted(
-			ranges::ext::make_range(begin_t{b}, sentinel_t{e}),
-			std::forward<Args>(args)...))
+	bool operator()(B&& b, E&& e, Args&& ... args)
 	{
 		return ranges::is_sorted(
-				ranges::ext::make_range(begin_t{b}, sentinel_t{e}),
+				ranges::make_subrange(begin_t{b}, sentinel_t{e}),
 				std::forward<Args>(args)...);
 	}
 };
@@ -390,9 +386,9 @@ TEST_CASE("alg.is_sorted")
 	test<range_call<const int *>>();
 
 	/// Projection test:
-	/*{
+	{
 		A as[] = {{0}, {1}, {2}, {3}, {4}};
 		CHECK(ranges::is_sorted(as, std::less<int>{}, &A::a));
 		CHECK(!ranges::is_sorted(as, std::greater<int>{}, &A::a));
-	}*/
+	}
 }
