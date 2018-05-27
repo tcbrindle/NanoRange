@@ -22,6 +22,7 @@
 #include <nanorange/algorithm/for_each.hpp>
 #include <nanorange/algorithm/generate.hpp>
 #include <nanorange/algorithm/generate_n.hpp>
+#include <nanorange/algorithm/is_partitioned.hpp>
 #include <nanorange/algorithm/is_sorted.hpp>
 #include <nanorange/algorithm/is_sorted_until.hpp>
 #include <nanorange/algorithm/lexicographical_compare.hpp>
@@ -60,7 +61,6 @@
 #include <nanorange/algorithm/stl/inplace_merge.hpp>
 #include <nanorange/algorithm/stl/is_heap.hpp>
 #include <nanorange/algorithm/stl/is_heap_until.hpp>
-#include <nanorange/algorithm/stl/is_partitioned.hpp>
 #include <nanorange/algorithm/stl/is_permutation.hpp>
 #include <nanorange/algorithm/stl/lower_bound.hpp>
 #include <nanorange/algorithm/stl/make_heap.hpp>

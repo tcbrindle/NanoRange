@@ -56,6 +56,10 @@ In addition, they are all available for use in `constexpr` functions.
 * rotate_copy
 * shuffle
 
+#### Partition operations ####
+
+* is_partitioned
+
 #### Sorting ####
 
 * is_sorted
@@ -93,7 +97,6 @@ The following algorithms have not yet been implemented in Nanorange:
 
 #### partitions ####
 
-* is_partitioned
 * partition
 * stable_partition
 * partition_copy
