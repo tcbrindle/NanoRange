@@ -112,6 +112,11 @@ CommonRange. Projections cannot be used.
 
 * merge
 * inplace_merge
+* includes
+* set_union
+* set_intersection
+* set_difference
+* set_symmetric_difference
 
 ## Unimplemented ##
 
@@ -120,14 +125,6 @@ The following algorithms have not yet been implemented in Nanorange:
 #### Modifying sequence ops ####
 
 * unique_copy
-
-#### set operations ####
-
-* includes
-* set_union
-* set_intersection
-* set_difference
-* set_symmetric_difference
 
 #### heap operations ####
 
