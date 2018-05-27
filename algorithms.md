@@ -97,6 +97,7 @@ CommonRange. Projections cannot be used.
 
 * sort
 * stable_sort
+* partial_sort
 
 #### Binary search operations ####
 
@@ -115,7 +116,6 @@ The following algorithms have not yet been implemented in Nanorange:
 
 #### sorting ####
 
-* partial_sort
 * partial_sort_copy
 * nth_element
 
