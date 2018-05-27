@@ -23,6 +23,7 @@
 #include <nanorange/algorithm/generate.hpp>
 #include <nanorange/algorithm/generate_n.hpp>
 #include <nanorange/algorithm/lexicographical_compare.hpp>
+#include <nanorange/algorithm/min.hpp>
 #include <nanorange/algorithm/mismatch.hpp>
 #include <nanorange/algorithm/move.hpp>
 #include <nanorange/algorithm/none_of.hpp>
@@ -61,7 +62,6 @@
 #include <nanorange/algorithm/stl/max.hpp>
 #include <nanorange/algorithm/stl/max_element.hpp>
 #include <nanorange/algorithm/stl/merge.hpp>
-#include <nanorange/algorithm/stl/min.hpp>
 #include <nanorange/algorithm/stl/min_element.hpp>
 #include <nanorange/algorithm/stl/minmax.hpp>
 #include <nanorange/algorithm/stl/minmax_element.hpp>

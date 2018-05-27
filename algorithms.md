@@ -56,6 +56,10 @@ In addition, they are all available for use in `constexpr` functions.
 * rotate_copy
 * shuffle
 
+#### Minimum and maximum ####
+
+* min
+
 ## Partially implemented (using STL) ##
 
 The following algorithms are implemented in Nanorange as wrappers around the
@@ -125,7 +129,6 @@ The following algorithms have not yet been implemented in Nanorange:
 
 #### minimum and maximum ####
 
-* min
 * max
 * minmax
 * min_element
