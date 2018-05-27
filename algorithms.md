@@ -97,6 +97,7 @@ CommonRange. Projections cannot be used.
 
 * lower_bound
 * upper_bound
+* equal_range
 * binary_search
 
 ## Unimplemented ##
@@ -113,10 +114,6 @@ The following algorithms have not yet been implemented in Nanorange:
 * partial_sort
 * partial_sort_copy
 * nth_element
-
-#### binary search ####
-
-* equal_range
 
 #### merge ####
 

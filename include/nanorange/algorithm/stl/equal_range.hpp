@@ -8,17 +8,41 @@
 #define NANORANGE_ALGORITHM_STL_EQUAL_RANGE_HPP_INCLUDED
 
 #include <nanorange/range.hpp>
+#include <nanorange/view/subrange.hpp>
 
 #include <algorithm>
 
-// TODO: Implement
+// TODO: Reimplement
 
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
 struct equal_range_fn {
+    template <typename I, typename T, typename Comp = less<>>
+    std::enable_if_t<
+        ForwardIterator<I> &&
+        detail::Cpp98Iterator<I> &&
+        IndirectStrictWeakOrder<Comp, const T*, I>,
+    subrange<I>>
+    operator()(I first, I last, const T& value, Comp comp = Comp{})
+    {
+        return std::equal_range(std::move(first), std::move(last),
+                                value, std::ref(comp));
+    }
 
+    template <typename Rng, typename T, typename Comp = less<>>
+    std::enable_if_t<
+            ForwardRange<Rng> &&
+            CommonRange<Rng> &&
+    detail::Cpp98Iterator<iterator_t<Rng>> &&
+    IndirectStrictWeakOrder<Comp, const T*, iterator_t<Rng>>,
+    safe_subrange_t<Rng>>
+    operator()(Rng&& rng, const T& value, Comp comp = Comp{})
+    {
+        return std::equal_range(nano::begin(rng), nano::end(rng),
+                                value, std::ref(comp));
+    }
 };
 
 }
