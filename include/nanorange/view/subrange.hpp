@@ -17,9 +17,22 @@ NANO_BEGIN_NAMESPACE
 
 enum class subrange_kind : bool { unsized, sized };
 
+namespace detail {
+
+template <typename I, typename S, bool = SizedSentinel<S, I>>
+constexpr subrange_kind default_subrange_kind = subrange_kind::unsized;
+
+template <typename I, typename S>
+constexpr subrange_kind default_subrange_kind<I, S, true> =
+    subrange_kind::sized;
+
+}
+
+
 namespace subrange_ {
 
-template <typename, typename, subrange_kind>
+template <typename I, typename S = I,
+          subrange_kind = detail::default_subrange_kind<I, S>>
 class subrange;
 
 }
@@ -67,13 +80,6 @@ NANO_CONCEPT IteratorSentinelPair =
 template <typename T, typename U>
 NANO_CONCEPT NotSameAs = !Same<remove_cvref_t<T>, remove_cvref_t<U>>;
 
-template <typename I, typename S, bool = SizedSentinel<S, I>>
-constexpr subrange_kind default_subrange_kind = subrange_kind::unsized;
-
-template <typename I, typename S>
-constexpr subrange_kind default_subrange_kind<I, S, true> =
-    subrange_kind::sized;
-
 template <typename I, typename S, bool StoreSize = false>
 struct subrange_data {
     I begin_{};
@@ -108,8 +114,7 @@ constexpr bool subrange_range_constructor_constraint_helper =
 
 namespace subrange_ {
 
-template <typename I, typename S = I,
-        subrange_kind K = detail::default_subrange_kind<I, S>>
+template <typename I, typename S, subrange_kind K>
 class subrange : public view_interface<subrange<I, S, K>> {
     static_assert(Iterator<I>, "");
     static_assert(Sentinel<S, I>, "");
