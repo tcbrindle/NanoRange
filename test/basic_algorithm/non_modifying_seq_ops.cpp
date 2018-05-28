@@ -8,7 +8,7 @@
 
 namespace rng = nano::ranges;
 
-TEST_CASE("all_of")
+TEST_CASE("alg.basic.all_of")
 {
     const std::array<int, 3> arr{{1, 1, 1}};
     const auto pred = [](int i) { return i == 1; };
@@ -17,7 +17,7 @@ TEST_CASE("all_of")
     REQUIRE(rng::all_of(arr, pred));
 }
 
-TEST_CASE("all_of with projection")
+TEST_CASE("alg.basic.all_of (with projection)")
 {
     const std::array<int, 3> arr{{1, 1, 1}};
     const auto pred = [] (int i) { return i == 7; };
@@ -28,7 +28,7 @@ TEST_CASE("all_of with projection")
 }
 
 
-TEST_CASE("any_of")
+TEST_CASE("alg.basic.any_of")
 {
     constexpr std::array<int, 3> arr{{1, 2, 3}};
     const auto pred = [](int i) { return i == 2; };
@@ -38,7 +38,7 @@ TEST_CASE("any_of")
 }
 
 
-TEST_CASE("none of")
+TEST_CASE("alg.basic.none_of")
 {
     constexpr std::array<int, 3> arr{{1, 2, 3}};
     const auto pred = [](int i) { return i < 0; };
@@ -47,7 +47,7 @@ TEST_CASE("none of")
 }
 
 
-TEST_CASE("for_each")
+TEST_CASE("alg.basic.for_each")
 {
     constexpr std::array<int, 3> arr{{1, 2, 3}};
     int sum = 0;
@@ -59,21 +59,21 @@ TEST_CASE("for_each")
     REQUIRE(sum == 6);
 }
 
-TEST_CASE("count")
+TEST_CASE("alg.basic.count")
 {
     constexpr std::array<int, 3> arr = {{2, 2, 2}};
     const auto n = rng::count(arr, 2);
     REQUIRE(n == 3);
 }
 
-TEST_CASE("count_if")
+TEST_CASE("alg.basic.count_if")
 {
     constexpr std::array<int, 3> arr = {{2, 2, 2}};
     const auto n = rng::count_if(arr, [](int i) { return i == 2; });
     REQUIRE(n == 3);
 }
 
-TEST_CASE("three-legged mismatch() (deprecated)")
+TEST_CASE("alg.basic.mismatch (three-legged)")
 {
     constexpr std::array<int, 3> arr1 = {{1, 2, 3}};
     constexpr std::array<int, 3> arr2 = {{1, 2, 4}};
@@ -84,7 +84,7 @@ TEST_CASE("three-legged mismatch() (deprecated)")
     REQUIRE(p.second == std::prev(arr2.end()));
 }
 
-TEST_CASE("three-legged mismatch() with predicate (deprecated)")
+TEST_CASE("alg.basic.mismatch (three-legged with predicate)")
 {
     constexpr std::array<int, 3> arr1 = {{1, 2, 3}};
     constexpr std::array<int, 3> arr2 = {{1, 2, 4}};
@@ -95,7 +95,7 @@ TEST_CASE("three-legged mismatch() with predicate (deprecated)")
 }
 
 
-TEST_CASE("four-legged mismatch()")
+TEST_CASE("alg.basic.mismatch (four-legged)")
 {
     constexpr std::array<int, 3> arr1 = {{1, 2, 3}};
     constexpr std::array<int, 3> arr2 = {{1, 2, 4}};
@@ -113,7 +113,7 @@ TEST_CASE("four-legged mismatch()")
     }
 }
 
-TEST_CASE("four-legged mismatch() with predicate")
+TEST_CASE("alg.basic.mismatch (four-legged with predicate)")
 {
     constexpr std::array<int, 3> arr1 = {{1, 2, 3}};
     constexpr std::array<int, 3> arr2 = {{1, 2, 4}};
@@ -131,7 +131,7 @@ TEST_CASE("four-legged mismatch() with predicate")
     }
 }
 
-TEST_CASE("three-legged equal() (deprecated)")
+TEST_CASE("alg.basic.equal (three-legged)")
 {
     constexpr std::array<int, 3> arr = {{1, 2, 3}};
     const std::vector<int> vec = {1, 2, 3};
@@ -141,7 +141,7 @@ TEST_CASE("three-legged equal() (deprecated)")
     REQUIRE(b);
 }
 
-TEST_CASE("three-legged equal() with predicate (deprecated)")
+TEST_CASE("alg.basic.equal (three-legged with predicate)")
 {
     constexpr std::array<int, 3> arr{{1, 2, 3}};
     const std::vector<int> vec{2, 3, 4};
@@ -150,7 +150,7 @@ TEST_CASE("three-legged equal() with predicate (deprecated)")
     REQUIRE(b);
 }
 
-TEST_CASE("four-legged equal()")
+TEST_CASE("alg.basic.equal (four-legged)")
 {
     constexpr std::array<int, 3> arr = {{1, 2, 3}};
     const std::vector<int> vec = {1, 2, 3};
@@ -167,7 +167,7 @@ TEST_CASE("four-legged equal()")
     }
 }
 
-TEST_CASE("four-legged equal() with predicate")
+TEST_CASE("alg.basic.equal (four-legged with predicate)")
 {
     constexpr std::array<int, 3> arr = {{1, 2, 3}};
     const std::vector<int> vec = {2, 3, 4};
@@ -184,7 +184,7 @@ TEST_CASE("four-legged equal() with predicate")
     }
 }
 
-TEST_CASE("find()")
+TEST_CASE("alg.basic.find")
 {
     constexpr std::array<int, 3> arr = {{1, 2, 3}};
 
@@ -206,7 +206,7 @@ TEST_CASE("find()")
 }
 
 
-TEST_CASE("find_if()")
+TEST_CASE("alg.basic.find_if")
 {
     constexpr std::array<int, 3> arr = {{1, 2, 3}};
     const auto pred = [] (int i) { return i == 2; };
@@ -222,7 +222,7 @@ TEST_CASE("find_if()")
     }
 }
 
-TEST_CASE("find_if_not()")
+TEST_CASE("alg.basic.find_if_not")
 {
     constexpr std::array<int, 3> arr = {{1, 1, 2}};
     const auto pred = [] (int i) { return i == 1; };
@@ -238,7 +238,7 @@ TEST_CASE("find_if_not()")
     }
 }
 
-TEST_CASE("find_end()")
+TEST_CASE("alg.basic.find_end")
 {
     constexpr std::array<int, 9> arr = {{1, 2, 3, 1, 2, 3, 1, 2, 3}};
     const std::vector<int> vec = {1, 2, 3};
@@ -254,7 +254,7 @@ TEST_CASE("find_end()")
     }
 }
 
-TEST_CASE("find_end() with predicate")
+TEST_CASE("alg.basic.find_end (with predicate)")
 {
     constexpr std::array<int, 9> arr = {{1, 2, 3, 1, 2, 3, 1, 2, 3}};
     const std::vector<int> vec = {1, 2, 3};
@@ -270,7 +270,7 @@ TEST_CASE("find_end() with predicate")
     }
 }
 
-TEST_CASE("find_first_of()")
+TEST_CASE("alg.basic.find_first_of")
 {
     const std::vector<int> vec{1, 2, 3, 4, 5, 6};
     const std::array<int, 3> arr{{-1, 22, 3}};
@@ -286,7 +286,7 @@ TEST_CASE("find_first_of()")
     }
 }
 
-TEST_CASE("find_first_of() (with predicate)")
+TEST_CASE("alg.basic.find_first_of (with predicate)")
 {
     const std::vector<int> vec{1, 2, 3, 4, 5, 6};
     const std::array<int, 3> arr{{-1, 22, 3}};
@@ -302,7 +302,7 @@ TEST_CASE("find_first_of() (with predicate)")
     }
 }
 
-TEST_CASE("adjacent_find()")
+TEST_CASE("alg.basic.adjacent_find")
 {
     const std::vector<int> vec{1, 2, 3, 3, 3, 4};
 
@@ -317,7 +317,7 @@ TEST_CASE("adjacent_find()")
     }
 }
 
-TEST_CASE("adjacent_find() (with predicate)")
+TEST_CASE("alg.basic.adjacent_find (with predicate)")
 {
     const std::vector<int> vec{1, 2, 3, 2, 1};
 
@@ -333,7 +333,7 @@ TEST_CASE("adjacent_find() (with predicate)")
 
 }
 
-TEST_CASE("search()")
+TEST_CASE("alg.basic.search")
 {
     const std::vector<int> vec = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     constexpr std::array<int, 3> arr = {{3, 4, 5}};
@@ -349,7 +349,7 @@ TEST_CASE("search()")
     }
 }
 
-TEST_CASE("search() (with predicate)")
+TEST_CASE("alg.basic.search (with predicate)")
 {
     const std::vector<int> vec = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     constexpr std::array<int, 3> arr = {{3, 4, 5}};
@@ -369,7 +369,7 @@ TEST_CASE("search() (with predicate)")
     }
 }
 
-TEST_CASE("search_n()")
+TEST_CASE("alg.basic.search_n")
 {
     const std::vector<int> vec{1, 2, 3, 4, 1, 1, 1};
 
@@ -384,7 +384,7 @@ TEST_CASE("search_n()")
     }
 }
 
-TEST_CASE("search_n() (with predicate)")
+TEST_CASE("alg.basic.search_n (with predicate)")
 {
     const std::vector<int> vec{1, 2, 3, 4, 1, 1, 1};
 
@@ -399,30 +399,7 @@ TEST_CASE("search_n() (with predicate)")
     }
 }
 
-TEST_CASE("is_permutation")
-{
-    const std::vector<int> vec{1, 2, 3, 4, 5};
-    const std::vector<int> vec2{5, 4, 3, 2, 1};
-
-    SECTION("with iterators") {
-        REQUIRE(rng::is_permutation(vec.begin(), vec.end(), vec2.begin(), vec2.end()));
-    }
-
-    SECTION("with iterators (three-legged)") {
-        REQUIRE(rng::is_permutation(vec.begin(), vec.end(), vec2.begin()));
-    }
-
-    SECTION("with ranges") {
-        REQUIRE(rng::is_permutation(vec, vec2));
-    }
-
-    SECTION("with range and iterator") {
-        REQUIRE(rng::is_permutation(vec, vec2.begin()));
-    }
-
-}
-
-TEST_CASE("is_permutation (with predicate)")
+TEST_CASE("alg.basic.is_permutation (with predicate)")
 {
     struct foo { foo(int i):i(i){} int i; };
 

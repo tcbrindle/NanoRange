@@ -8,17 +8,25 @@
 
 TEST_CASE("alg.basic.is_permutation")
 {
-    const std::vector<int> v1{1, 2, 3, 4, 5};
-    const std::vector<int> v2{1, 2, 3, 5, 4};
+    const std::vector<int> vec{1, 2, 3, 4, 5};
+    const std::vector<int> vec2{5, 4, 3, 2, 1};
 
-    SECTION("with iters") {
-        CHECK(nano::is_permutation(v1.begin(), v1.end(),
-                                   v2.begin(), v2.end()));
+    SECTION("with iterators") {
+        REQUIRE(nano::is_permutation(vec.begin(), vec.end(), vec2.begin(), vec2.end()));
     }
 
-    SECTION("With ranges") {
-        CHECK(nano::is_permutation(v1, v2));
+    SECTION("with iterators (three-legged)") {
+        REQUIRE(nano::is_permutation(vec.begin(), vec.end(), vec2.begin()));
     }
+
+    SECTION("with ranges") {
+        REQUIRE(nano::is_permutation(vec, vec2));
+    }
+
+    SECTION("with range and iterator") {
+        REQUIRE(nano::is_permutation(vec, vec2.begin()));
+    }
+
 }
 
 TEST_CASE("alg.basic.next_permutation")

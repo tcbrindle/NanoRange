@@ -7,7 +7,7 @@
 
 namespace rng = nano;
 
-TEST_CASE("is_partitioned()")
+TEST_CASE("alg.basic.is_partitioned")
 {
     const auto is_even = [](int i) { return i % 2 == 0; };
     const auto vec = [&] {
@@ -25,7 +25,7 @@ TEST_CASE("is_partitioned()")
     }
 }
 
-TEST_CASE("partition()")
+TEST_CASE("alg.basic.partition")
 {
     std::vector<int> vec{1, 2, 3, 4, 5, 6};
     const auto is_even = [](int i) { return i % 2 == 0; };
@@ -41,7 +41,7 @@ TEST_CASE("partition()")
     REQUIRE(std::is_partitioned(vec.begin(), vec.end(), is_even));
 }
 
-TEST_CASE("partition_copy()")
+TEST_CASE("alg.basic.partition_copy")
 {
     const std::vector<int> src{1, 2, 3, 4, 5, 6, 7, 8};
     std::ostringstream evens;
@@ -64,7 +64,7 @@ TEST_CASE("partition_copy()")
     REQUIRE(odds.str() == "1357");
 }
 
-TEST_CASE("stable_partition()")
+TEST_CASE("alg.basic.stable_partition")
 {
     std::vector<int> src{1, 2, 3, 4, 5, 6, 7, 8};
     const auto is_even = [] (int i) { return i % 2 == 0; };
@@ -86,7 +86,7 @@ TEST_CASE("stable_partition()")
     REQUIRE(src == test);
 }
 
-TEST_CASE("partition_point()")
+TEST_CASE("alg.basic.partition_point")
 {
     const auto is_even = [] (int i) { return i % 2 == 0; };
 
@@ -108,5 +108,4 @@ TEST_CASE("partition_point()")
         const auto it = rng::partition_point(src, is_even);
         REQUIRE(it == test_pt);
     }
-
 }

@@ -28,7 +28,7 @@ struct S {
 
 }
 
-TEST_CASE("[alg.for_each]")
+TEST_CASE("alg.for_each")
 {
 	int sum = 0;
 	auto fun = [&](int i){ sum += i; };

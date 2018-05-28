@@ -13,7 +13,7 @@
 
 namespace rng = nano;
 
-TEST_CASE("copy()")
+TEST_CASE("alg.basic.copy")
 {
     const std::vector<int> src{1, 2, 3, 4, 5, 6, 7, 8, 9};
     std::vector<int> dest(src.size());
@@ -35,7 +35,7 @@ TEST_CASE("copy()")
     }
 }
 
-TEST_CASE("copy_if()")
+TEST_CASE("alg.basic.copy_if")
 {
     const std::vector<int> src{1, 2, 2, 2, 2, 2, 3, 4, 5, 6};
     std::vector<int> dest;
@@ -52,7 +52,7 @@ TEST_CASE("copy_if()")
     }
 }
 
-TEST_CASE("copy_n")
+TEST_CASE("alg.basic.copy_n")
 {
     const std::vector<int> src{1, 2, 3, 4, 5, 6, 7, 8, 9};
     std::vector<int> dest;
@@ -61,7 +61,7 @@ TEST_CASE("copy_n")
     REQUIRE(dest == (std::vector<int>{1, 2, 3, 4, 5}));
 }
 
-TEST_CASE("copy_backward")
+TEST_CASE("alg.basic.copy_backward")
 {
     // Let's use a list for a change
     const std::list<int> src{1, 2, 3, 4, 5};
@@ -82,18 +82,18 @@ TEST_CASE("copy_backward")
     }
 }
 
+namespace {
+
 struct mark_move {
     mark_move() = default;
 
-    mark_move(mark_move&& other) noexcept
-            : moved_from(other.moved_from),
-              moved_into(true)
-    {
+    mark_move(mark_move &&other) noexcept
+        : moved_from(other.moved_from),
+          moved_into(true) {
         other.moved_from = true;
     }
 
-    mark_move& operator=(mark_move&& other) noexcept
-    {
+    mark_move &operator=(mark_move &&other) noexcept {
         moved_from = other.moved_from;
         moved_into = true;
         other.moved_from = true;
@@ -104,7 +104,9 @@ struct mark_move {
     bool moved_into = false;
 };
 
-TEST_CASE("move()")
+}
+
+TEST_CASE("alg.basic.move")
 {
     std::vector<mark_move> src(5);
     std::vector<mark_move> dest;
@@ -125,7 +127,7 @@ TEST_CASE("move()")
     }
 }
 
-TEST_CASE("move_backward()")
+TEST_CASE("alg.basic.move_backward")
 {
     std::vector<mark_move> src(5);
     std::vector<mark_move> dest(5);
@@ -145,7 +147,7 @@ TEST_CASE("move_backward()")
     }
 }
 
-TEST_CASE("fill()")
+TEST_CASE("alg.basic.fill")
 {
     std::vector<int> vec(5);
 
@@ -160,14 +162,14 @@ TEST_CASE("fill()")
     }
 }
 
-TEST_CASE("fill_n()")
+TEST_CASE("alg.basic.fill_n")
 {
     std::vector<int> vec(5);
     rng::fill_n(vec.begin(), 3, 2);
     REQUIRE(vec == (std::vector<int>{2, 2, 2, 0, 0}));
 }
 
-TEST_CASE("transform() (single range)")
+TEST_CASE("alg.basic.transform (unary)")
 {
     constexpr std::array<int, 5> src{{1, 2, 3, 4, 5}};
     std::vector<int> dest(src.size());
@@ -188,7 +190,7 @@ TEST_CASE("transform() (single range)")
     }
 }
 
-TEST_CASE("transform() (two ranges)")
+TEST_CASE("alg.basic.transform (binary)")
 {
     // Let's do something interesting
     using namespace std::complex_literals;
@@ -216,7 +218,7 @@ TEST_CASE("transform() (two ranges)")
     }
 }
 
-TEST_CASE("generate()")
+TEST_CASE("alg.basic.generate")
 {
     std::vector<int> vec(5);
     int count = 0;
@@ -233,7 +235,7 @@ TEST_CASE("generate()")
     }
 }
 
-TEST_CASE("generate_n()")
+TEST_CASE("alg.basic.generate_n")
 {
     std::vector<int> vec(5);
     int count = 0;
@@ -243,7 +245,7 @@ TEST_CASE("generate_n()")
     REQUIRE(vec == (std::vector<int>{0, 1, 4, 9, 16}));
 }
 
-TEST_CASE("remove()")
+TEST_CASE("alg.basic.remove")
 {
     std::vector<int> vec{1, 2, 3, 4, 5};
 
@@ -264,7 +266,7 @@ TEST_CASE("remove()")
 
 constexpr bool less_than_four(int i) { return i < 4; }
 
-TEST_CASE("remove_if()")
+TEST_CASE("alg.basic.remove_if")
 {
     std::vector<int> vec{1, 2, 3, 4, 5};
 
@@ -285,7 +287,7 @@ TEST_CASE("remove_if()")
     }
 }
 
-TEST_CASE("remove_copy()")
+TEST_CASE("alg.basic.remove_copy")
 {
     // Something a bit different this time
     const std::string src = "Hello World";
@@ -305,7 +307,7 @@ TEST_CASE("remove_copy()")
     }
 }
 
-TEST_CASE("remove_copy_if()")
+TEST_CASE("alg.basic.remove_copy_if")
 {
     const std::string src = "Hello World";
     std::ostringstream ss;
@@ -324,7 +326,7 @@ TEST_CASE("remove_copy_if()")
     }
 }
 
-TEST_CASE("replace()")
+TEST_CASE("alg.basic.replace")
 {
     std::vector<int> vec{1, 2, 3};
 
@@ -345,7 +347,7 @@ TEST_CASE("replace()")
     }
 }
 
-TEST_CASE("replace_if()")
+TEST_CASE("alg.basic.replace_if")
 {
     std::vector<int> vec{-2, -1, 0, 1, 2};
     const auto is_negative = [] (int i) { return i < 0; };
@@ -363,28 +365,30 @@ TEST_CASE("replace_if()")
     }
 }
 
+namespace {
 namespace inner {
 
-template <typename I>
+template<typename I>
 struct iterator_range {
     I first{}, last{};
 };
 
-template <typename I>
+template<typename I>
 I begin(iterator_range<I> rng) { return rng.first; }
 
-template <typename I>
+template<typename I>
 I end(iterator_range<I> rng) { return rng.last; }
 
 }
 
-template <typename I>
-auto make_range(I first, I last)
-{
+template<typename I>
+auto make_range(I first, I last) {
     return inner::iterator_range<I>{std::move(first), std::move(last)};
 }
 
-TEST_CASE("replace_copy()")
+}
+
+TEST_CASE("alg.basic.replace_copy")
 {
     std::istringstream iss{"1 2 3 4 5"};
     std::ostringstream oss;
@@ -404,7 +408,7 @@ TEST_CASE("replace_copy()")
     }
 }
 
-TEST_CASE("replace_copy_if()")
+TEST_CASE("alg.basic.replace_copy_if")
 {
     std::istringstream iss{"-2 -1 0 1 2"};
     std::ostringstream oss;
@@ -425,7 +429,7 @@ TEST_CASE("replace_copy_if()")
     }
 }
 
-TEST_CASE("swap_ranges()")
+TEST_CASE("alg.basic.swap_ranges")
 {
     std::vector<int> vec{1, 2, 3};
     std::array<int, 3> arr{{4, 5, 6}};
@@ -458,7 +462,7 @@ TEST_CASE("swap_ranges()")
     }
 }
 
-TEST_CASE("reverse()")
+TEST_CASE("alg.basic.reverse")
 {
     std::list<int> list{1, 2, 3, 4, 5};
 
@@ -475,7 +479,7 @@ TEST_CASE("reverse()")
     }
 }
 
-TEST_CASE("reverse_copy()")
+TEST_CASE("alg.basic.reverse_copy")
 {
     const std::list<int> list{1, 2, 3, 4, 5};
     std::ostringstream oss;
@@ -492,7 +496,7 @@ TEST_CASE("reverse_copy()")
     }
 }
 
-TEST_CASE("rotate()")
+TEST_CASE("alg.basic.rotate")
 {
     std::vector<int> vec{1, 2, 3, 4, 5};
 
@@ -509,7 +513,7 @@ TEST_CASE("rotate()")
     }
 }
 
-TEST_CASE("rotate_copy()")
+TEST_CASE("alg.basic.rotate_copy")
 {
     const std::vector<int> src{23451};
     std::ostringstream dest;
@@ -526,7 +530,7 @@ TEST_CASE("rotate_copy()")
     }
 }
 
-TEST_CASE("shuffle()")
+TEST_CASE("alg.basic.shuffle")
 {
     const std::vector<int> orig{1, 2, 3, 4, 5};
     std::vector<int> vec(orig);
@@ -543,7 +547,7 @@ TEST_CASE("shuffle()")
     }
 }
 
-TEST_CASE("unique()")
+TEST_CASE("alg.basic.unique")
 {
     std::vector<int> vec{1, 2, 2, 3, 3, 3, 4, 4};
 
@@ -566,7 +570,7 @@ TEST_CASE("unique()")
     }
 }
 
-TEST_CASE("unique() (with predicate)")
+TEST_CASE("alg.basic.unique (with predicate)")
 {
     std::vector<int> vec{1, 2, 2, 3, 3, 3, 4, 4};
 
@@ -589,7 +593,7 @@ TEST_CASE("unique() (with predicate)")
     }
 }
 
-TEST_CASE("unique_copy()")
+TEST_CASE("alg.basic.unique_copy")
 {
     std::istringstream src{"1 1 1 1 2 2 2 2 3 3 3 3 4 4 4 4 5 5 5 5"};
     std::ostringstream dest;
@@ -607,7 +611,7 @@ TEST_CASE("unique_copy()")
     }
 }
 
-TEST_CASE("unique_copy() (with predicate)")
+TEST_CASE("alg.basic.unique_copy (with predicate)")
 {
     std::istringstream src{"1 1 1 1 2 2 2 2 3 3 3 3 4 4 4 4 5 5 5 5"};
     std::ostringstream dest;

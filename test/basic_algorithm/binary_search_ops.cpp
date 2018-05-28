@@ -5,7 +5,7 @@
 
 #include <vector>
 
-TEST_CASE("alg.stl.lower_bound")
+TEST_CASE("alg.basic.lower_bound")
 {
     std::vector<int> vec{1, 2, 3, 4, 5};
 
@@ -20,7 +20,7 @@ TEST_CASE("alg.stl.lower_bound")
     }
 }
 
-TEST_CASE("alg.stl.upper_bound")
+TEST_CASE("alg.basic.upper_bound")
 {
     std::vector<int> vec{1, 2, 3, 4, 5};
 
@@ -35,7 +35,7 @@ TEST_CASE("alg.stl.upper_bound")
     }
 }
 
-TEST_CASE("alg.stl.equal_range")
+TEST_CASE("alg.basic.equal_range")
 {
     std::vector<int> vec{1, 2, 2, 2, 3};
 
@@ -52,7 +52,7 @@ TEST_CASE("alg.stl.equal_range")
     }
 }
 
-TEST_CASE("alg.stl.binary_search")
+TEST_CASE("alg.basic.binary_search")
 {
     std::vector<int> vec{1, 2, 3, 4, 5};
 
