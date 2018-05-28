@@ -1799,7 +1799,7 @@ using legacy_iterator_traits_t = void;
 
 template <typename I>
 NANO_CONCEPT Cpp98Iterator =
-        Iterator<I> && Sentinel<I, I> && exists_v<legacy_iterator_traits_t, I>;
+        Iterator<I> && exists_v<legacy_iterator_traits_t, I>;
 
 }
 
@@ -6023,6 +6023,182 @@ NANO_END_NAMESPACE
 
 #endif
 
+// nanorange/algorithm/is_partitioned.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_IS_PARTITIONED_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_IS_PARTITIONED_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct is_partitioned_fn {
+private:
+    template <typename I, typename S, typename Pred, typename Proj>
+    static constexpr bool impl(I first, S last, Pred& pred, Proj& proj)
+    {
+        first = nano::find_if_not(std::move(first), last, pred, proj);
+        return nano::find_if(std::move(first), last, pred, proj) == last;
+    }
+
+public:
+    template <typename I, typename S, typename Pred, typename Proj = identity>
+    constexpr std::enable_if_t<
+        InputIterator<I> &&
+        Sentinel<S, I> &&
+        IndirectUnaryPredicate<Pred, projected<I, Proj>>, bool>
+    operator()(I first, S last, Pred pred = Pred{}, Proj proj = Proj{}) const
+    {
+        return is_partitioned_fn::impl(std::move(first), std::move(last),
+                                       pred, proj);
+    }
+
+    template <typename Rng, typename Pred, typename Proj = identity>
+    constexpr std::enable_if_t<
+        InputRange<Rng> &&
+        IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>, bool>
+    operator()(Rng&& rng, Pred pred = Pred{}, Proj proj = Proj{}) const
+    {
+        return is_partitioned_fn::impl(nano::begin(rng), nano::end(rng),
+                                       pred, proj);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::is_partitioned_fn, is_partitioned)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/is_sorted.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_IS_SORTED_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_IS_SORTED_HPP_INCLUDED
+
+// nanorange/algorithm/is_sorted_until.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_IS_SORTED_UNTIL_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_IS_SORTED_UNTIL_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct is_sorted_until_fn {
+private:
+    friend struct is_sorted_fn;
+
+    template <typename I, typename S, typename Comp, typename Proj>
+    static constexpr I impl(I first, S last, Comp& comp, Proj& proj)
+    {
+        if (first == last) {
+            return first;
+        }
+
+        I n = next(first);
+
+        while (n != last) {
+            if (nano::invoke(comp, nano::invoke(proj, *n),
+                              nano::invoke(proj, *first))) {
+                return n;
+            }
+            ++first;
+            ++n;
+        }
+
+        return n;
+    }
+
+public:
+    template <typename I, typename S, typename Comp = less<>,
+              typename Proj = identity>
+    constexpr std::enable_if_t<
+        ForwardIterator<I> &&
+        Sentinel<S, I> &&
+        IndirectStrictWeakOrder<Comp, projected<I, Proj>>, I>
+    operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return is_sorted_until_fn::impl(std::move(first), std::move(last),
+                                        comp, proj);
+    }
+
+    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+        ForwardRange<Rng> &&
+        IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
+        safe_iterator_t<Rng>>
+    operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return is_sorted_until_fn::impl(nano::begin(rng), nano::end(rng),
+                                        comp, proj);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::is_sorted_until_fn, is_sorted_until)
+
+NANO_END_NAMESPACE
+
+#endif
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct is_sorted_fn {
+    template <typename I, typename S, typename Comp = less<>,
+            typename Proj = identity>
+    constexpr std::enable_if_t<
+        ForwardIterator<I> &&
+        Sentinel<S, I> &&
+        IndirectStrictWeakOrder<Comp, projected<I, Proj>>, bool>
+    operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return is_sorted_until_fn::impl(std::move(first), last,
+                                        comp, proj) == last;
+    }
+
+    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+        ForwardRange<Rng> &&
+        IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
+        bool>
+    operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return is_sorted_until_fn::impl(nano::begin(rng), nano::end(rng),
+                                        comp, proj) == nano::end(rng);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::is_sorted_fn, is_sorted)
+
+NANO_END_NAMESPACE
+
+#endif
+
+
 // nanorange/algorithm/stl/lexicographical_compare.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -6104,6 +6280,552 @@ public:
 }
 
 NANO_INLINE_VAR(detail::lexicographical_compare_fn, lexicographical_compare)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/max.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_MAX_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_MAX_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct max_fn {
+private:
+    template <typename Rng, typename Comp, typename Proj>
+    static constexpr value_type_t<iterator_t<Rng>>
+    impl(Rng&& rng, Comp& comp, Proj& proj)
+    {
+        auto first = nano::begin(rng);
+        const auto last = nano::end(rng);
+
+        // Empty ranges not allowed
+        auto result = *first;
+
+        while(++first != last) {
+            auto&& val = *first;
+            if (nano::invoke(comp, nano::invoke(proj, result),
+                              nano::invoke(proj, val))) {
+                result = std::forward<decltype(val)>(val);
+            }
+        }
+
+        return result;
+    }
+
+public:
+    template <typename T, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+            IndirectStrictWeakOrder<Comp, projected<const T*, Proj>>,
+    const T&>
+    operator()(const T& a, const T& b, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        // *sigh*, this should be fixed in STL2
+        return !nano::invoke(comp, nano::invoke(proj, a),
+                            nano::invoke(proj, b)) ? a : b;
+    }
+
+    template <typename T, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+            Copyable<T> &&
+            IndirectStrictWeakOrder<Comp, projected<const T*, Proj>>,
+            T>
+    operator()(std::initializer_list<T> rng, Comp comp = Comp{},
+               Proj proj = Proj{}) const
+    {
+        return max_fn::impl(rng, comp, proj);
+    }
+
+    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+            InputRange<Rng> &&
+            Copyable<value_type_t<iterator_t<Rng>>> &&
+    IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
+    value_type_t<iterator_t<Rng>>>
+    operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return max_fn::impl(std::forward<Rng>(rng), comp, proj);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::max_fn, max)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/max_element.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_MAX_ELEMENT_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_MAX_ELEMENT_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct max_element_fn {
+    template <typename I, typename S, typename Comp, typename Proj>
+    static constexpr I impl(I first, S last, Comp& comp, Proj& proj)
+    {
+        if (first == last) {
+            return first;
+        }
+
+        I i = nano::next(first);
+        while (i != last) {
+            if (!nano::invoke(comp, nano::invoke(proj, *i),
+                              nano::invoke(proj, *first))) {
+                first = i;
+            }
+            ++i;
+        }
+
+        return first;
+    }
+
+public:
+    template <typename I, typename S, typename Comp = less<>,
+            typename Proj = identity>
+    constexpr std::enable_if_t<
+            ForwardIterator<I> &&
+            Sentinel<S, I> &&
+    IndirectStrictWeakOrder<Comp, projected<I, Proj>>, I>
+    operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return max_element_fn::impl(std::move(first), std::move(last),
+                                    comp, proj);
+    }
+
+    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+            ForwardRange<Rng> &&
+            IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
+    safe_iterator_t<Rng>>
+    operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return max_element_fn::impl(nano::begin(rng), nano::end(rng),
+                                    comp, proj);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::max_element_fn, max_element)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/min.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_MIN_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_MIN_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct min_fn {
+private:
+    template <typename Rng, typename Comp, typename Proj>
+    static constexpr value_type_t<iterator_t<Rng>>
+    impl(Rng&& rng, Comp& comp, Proj& proj)
+    {
+        auto first = nano::begin(rng);
+        const auto last = nano::end(rng);
+
+        // Empty ranges not allowed
+        auto result = *first;
+
+        while(++first != last) {
+            auto&& val = *first;
+            if (nano::invoke(comp, nano::invoke(proj, val),
+                             nano::invoke(proj, result))) {
+                result = std::forward<decltype(val)>(val);
+            }
+        }
+
+        return result;
+    }
+
+public:
+    template <typename T, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+        IndirectStrictWeakOrder<Comp, projected<const T*, Proj>>,
+        const T&>
+    operator()(const T& a, const T& b, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return nano::invoke(comp, nano::invoke(proj, b),
+                            nano::invoke(proj, a)) ? b : a;
+    }
+
+    template <typename T, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+        Copyable<T> &&
+        IndirectStrictWeakOrder<Comp, projected<const T*, Proj>>,
+        T>
+    operator()(std::initializer_list<T> rng, Comp comp = Comp{},
+               Proj proj = Proj{}) const
+    {
+        return min_fn::impl(rng, comp, proj);
+    }
+
+    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+        InputRange<Rng> &&
+        Copyable<value_type_t<iterator_t<Rng>>> &&
+        IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
+        value_type_t<iterator_t<Rng>>>
+    operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return min_fn::impl(std::forward<Rng>(rng), comp, proj);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::min_fn, min)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/min_element.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_MIN_ELEMENT_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_MIN_ELEMENT_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct min_element_fn {
+private:
+    template <typename I, typename S, typename Comp, typename Proj>
+    static constexpr I impl(I first, S last, Comp& comp, Proj& proj)
+    {
+        if (first == last) {
+            return first;
+        }
+
+        I i = nano::next(first);
+        while (i != last) {
+            if (nano::invoke(comp, nano::invoke(proj, *i),
+                             nano::invoke(proj, *first))) {
+                first = i;
+            }
+            ++i;
+        }
+
+        return first;
+    }
+
+public:
+    template <typename I, typename S, typename Comp = less<>,
+              typename Proj = identity>
+    constexpr std::enable_if_t<
+        ForwardIterator<I> &&
+        Sentinel<S, I> &&
+        IndirectStrictWeakOrder<Comp, projected<I, Proj>>, I>
+    operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return min_element_fn::impl(std::move(first), std::move(last),
+                                    comp, proj);
+    }
+
+    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+        ForwardRange<Rng> &&
+        IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
+        safe_iterator_t<Rng>>
+    operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return min_element_fn::impl(nano::begin(rng), nano::end(rng),
+                                    comp, proj);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::min_element_fn, min_element)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/minmax.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+// Uses code from CMCSTL2
+// Copyright Casey Carter 2015
+
+#ifndef NANORANGE_ALGORITHM_MINMAX_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_MINMAX_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+// FIXME: Use tagged_pair
+struct minmax_fn {
+private:
+    template <typename Rng, typename Comp, typename Proj,
+              typename T = value_type_t<iterator_t<Rng>>>
+    static constexpr std::pair<T, T>
+    impl(Rng&& rng, Comp& comp, Proj& proj)
+    {
+        auto first = nano::begin(rng);
+        const auto last = nano::end(rng);
+
+        // Empty ranges not allowed
+        auto temp = *first;
+        std::pair<T, T> result{temp, std::move(temp)};
+
+        if (++first != last) {
+            {
+                auto&& val = *first;
+                if (nano::invoke(comp, nano::invoke(proj, val),
+                                 nano::invoke(proj, result.first))) {
+                    result.first = std::forward<decltype(val)>(val);
+                } else if (!nano::invoke(comp, nano::invoke(proj, val),
+                                         nano::invoke(proj, result.second))){
+                    result.second = std::forward<decltype(val)>(val);
+                }
+            }
+
+            while (++first != last) {
+                T val1 = *first;
+
+                // Last iteration
+                if (++first == last) {
+                    if (nano::invoke(comp, nano::invoke(proj, val1),
+                                     nano::invoke(proj, result.first))) {
+                        result.first = std::move(val1);
+                    }
+                    else if (!nano::invoke(comp, nano::invoke(proj, val1),
+                                           nano::invoke(proj, result.second))){
+                        result.second = std::move(val1);
+                    }
+                    break;
+                }
+
+                auto&& val2 = *first;
+                if (nano::invoke(comp, nano::invoke(proj, val2),
+                                 nano::invoke(proj, val1))) {
+                    if (nano::invoke(comp, nano::invoke(proj, val2),
+                                     nano::invoke(proj, result.first))) {
+                        result.first = std::forward<decltype(val2)>(val2);
+                    }
+                    if (!nano::invoke(comp, nano::invoke(proj, val1),
+                                      nano::invoke(proj, result.second))) {
+                        result.second = std::move(val1);
+                    }
+                } else {
+                    if (nano::invoke(comp, nano::invoke(proj, val1),
+                                     nano::invoke(proj, result.first))) {
+                        result.first = std::move(val1);
+                    }
+                    if (!nano::invoke(comp, nano::invoke(proj, val2),
+                                      nano::invoke(proj, result.second))) {
+                        result.second = std::forward<decltype(val2)>(val2);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+public:
+    template <typename T, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+            IndirectStrictWeakOrder<Comp, projected<const T*, Proj>>,
+    std::pair<const T&, const T&>>
+    operator()(const T& a, const T& b, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        if (nano::invoke(comp, nano::invoke(proj, b), nano::invoke(proj, a))) {
+            return {b, a};
+        } else {
+            return {a, b};
+        }
+    }
+
+    template <typename T, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+            Copyable<T> &&
+            IndirectStrictWeakOrder<Comp, projected<const T*, Proj>>,
+            std::pair<T, T>>
+    operator()(std::initializer_list<T> rng, Comp comp = Comp{},
+               Proj proj = Proj{}) const
+    {
+        return minmax_fn::impl(rng, comp, proj);
+    }
+
+    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+        InputRange<Rng> &&
+        Copyable<value_type_t<iterator_t<Rng>>> &&
+        IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
+    std::pair<value_type_t<iterator_t<Rng>>, value_type_t<iterator_t<Rng>>>>
+    operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return minmax_fn::impl(std::forward<Rng>(rng), comp, proj);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::minmax_fn, minmax)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/minmax_element.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+// Uses code from CMCSTL2
+// Copyright Casey Carter 2015
+
+#ifndef NANORANGE_ALGORITHM_MINMAX_ELEMENT_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_MINMAX_ELEMENT_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+// FIXME: Use tagged_pair
+struct minmax_element_fn {
+private:
+    template <typename I, typename S, typename Comp, typename Proj>
+    static constexpr std::pair<I, I> impl(I first, S last, Comp& comp, Proj& proj)
+    {
+        std::pair<I, I> result{first, first};
+
+        if (first == last || ++first == last) {
+            return result;
+        }
+
+       if (nano::invoke(comp, nano::invoke(proj, *first),
+                        nano::invoke(proj, *result.first))) {
+           result.first = first;
+       } else if (!nano::invoke(comp, nano::invoke(proj, *first),
+                                nano::invoke(proj, *result.second))){
+           result.second = first;
+       }
+
+       while (++first != last) {
+           I it = first;
+
+           // Last iteration
+           if (++first == last) {
+               if (nano::invoke(comp, nano::invoke(proj, *it),
+                                nano::invoke(proj, *result.first))) {
+                   result.first = std::move(it);
+               }
+               else if (!nano::invoke(comp, nano::invoke(proj, *it),
+                                      nano::invoke(proj, *result.second))) {
+                   result.second = std::move(it);
+               }
+               break;
+           }
+
+           if (nano::invoke(comp, nano::invoke(proj, *first),
+                            nano::invoke(proj, *it))) {
+               if (nano::invoke(comp, nano::invoke(proj, *first),
+                                nano::invoke(proj, *result.first))) {
+                   result.first = first;
+               }
+               if (!nano::invoke(comp, nano::invoke(proj, *it),
+                                 nano::invoke(proj, *result.second))) {
+                   result.second = it;
+               }
+           }
+           else {
+               if (nano::invoke(comp, nano::invoke(proj, *it),
+                                nano::invoke(proj, *result.first))) {
+                   result.first = it;
+               }
+               if (!nano::invoke(comp, nano::invoke(proj, *first),
+                                 nano::invoke(proj, *result.second))) {
+                   result.second = first;
+               }
+           }
+       }
+
+        return result;
+    }
+
+
+public:
+    template <typename I, typename S, typename Comp = less<>,
+            typename Proj = identity>
+    constexpr std::enable_if_t<
+        ForwardIterator<I> &&
+        Sentinel<S, I> &&
+        IndirectStrictWeakOrder<Comp, projected<I, Proj>>,
+        std::pair<I, I>>
+    operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return minmax_element_fn::impl(std::move(first), std::move(last),
+                                    comp, proj);
+    }
+
+    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+        ForwardRange<Rng> &&
+        IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
+        std::pair<safe_iterator_t<Rng>, safe_iterator_t<Rng>>>
+    operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return minmax_element_fn::impl(nano::begin(rng), nano::end(rng),
+                                       comp, proj);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::minmax_element_fn, minmax_element)
 
 NANO_END_NAMESPACE
 
@@ -6409,6 +7131,163 @@ NANO_INLINE_VAR(detail::none_of_fn, none_of)
 NANO_END_NAMESPACE
 
 #endif
+// nanorange/algorithm/partition.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_PARTITION_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_PARTITION_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct partition_fn {
+private:
+    template <typename I, typename S, typename Pred, typename Proj>
+    static constexpr I impl(I first, S last, Pred& pred, Proj& proj)
+    {
+        first = nano::find_if_not(std::move(first), last, pred, proj);
+
+        if (first == last) {
+            return first;
+        }
+
+        auto n = nano::next(first);
+
+        while (n != last) {
+            if (nano::invoke(pred, nano::invoke(proj, *n))) {
+                nano::iter_swap(n, first);
+                ++first;
+            }
+            ++n;
+        }
+
+        return first;
+    }
+
+public:
+    template <typename I, typename S, typename Pred, typename Proj = identity>
+    constexpr std::enable_if_t<
+        ForwardIterator<I> &&
+        Sentinel<S, I> &&
+        IndirectUnaryPredicate<Pred, projected<I, Proj>>, I>
+    operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
+    {
+        return partition_fn::impl(std::move(first), std::move(last),
+                                  pred, proj);
+    }
+
+    template <typename Rng, typename Pred, typename Proj = identity>
+    constexpr std::enable_if_t<
+        ForwardRange<Rng> &&
+        IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
+        safe_iterator_t<Rng>>
+    operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
+    {
+        return partition_fn::impl(nano::begin(rng), nano::end(rng),
+                                  pred, proj);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::partition_fn, partition)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/partition_copy.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_PARTITION_COPY_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_PARTITION_COPY_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+// FIXME: Use tagged_tuple
+struct partition_copy_fn {
+private:
+    template <typename I, typename S, typename O1, typename O2,
+              typename Pred, typename Proj>
+    static constexpr std::tuple<I, O1, O2> impl(I first, S last,
+                                                O1 out_true, O2 out_false,
+                                                Pred& pred, Proj& proj)
+    {
+        while (first != last) {
+            auto&& val = *first;
+            if (nano::invoke(pred, nano::invoke(proj, val))) {
+                *out_true = std::forward<decltype(val)>(val);
+                ++out_true;
+            } else {
+                *out_false = std::forward<decltype(val)>(val);
+                ++out_false;
+            }
+            ++first;
+        }
+
+        return {first, out_true, out_false};
+    }
+
+public:
+    template <typename I, typename S, typename O1, typename O2,
+              typename Pred, typename Proj = identity>
+    constexpr std::enable_if_t<
+        InputIterator<I> &&
+        Sentinel<S, I> &&
+        WeaklyIncrementable<O1> &&
+        WeaklyIncrementable<O2> &&
+        IndirectUnaryPredicate<Pred, projected<I, Proj>> &&
+        IndirectlyCopyable<I, O1> &&
+        IndirectlyCopyable<I, O2>,
+        std::tuple<I, O1, O2>>
+    operator()(I first, S last, O1 out_true, O2 out_false, Pred pred,
+               Proj proj = Proj{}) const
+    {
+        return partition_copy_fn::impl(std::move(first), std::move(last),
+                                       std::move(out_true), std::move(out_false),
+                                       pred, proj);
+    }
+
+    template <typename Rng, typename O1, typename O2,
+            typename Pred, typename Proj = identity>
+    constexpr std::enable_if_t<
+        InputRange<Rng> &&
+        WeaklyIncrementable<O1> &&
+        WeaklyIncrementable<O2> &&
+        IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>> &&
+        IndirectlyCopyable<iterator_t<Rng>, O1> &&
+        IndirectlyCopyable<iterator_t<Rng>, O2>,
+        std::tuple<safe_iterator_t<Rng>, O1, O2>>
+    operator()(Rng&& rng, O1 out_true, O2 out_false, Pred pred,
+            Proj proj = Proj{}) const
+    {
+        return partition_copy_fn::impl(nano::begin(rng), nano::end(rng),
+                                       std::move(out_true), std::move(out_false),
+                                       pred, proj);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::partition_copy_fn, partition_copy)
+
+NANO_END_NAMESPACE
+
+#endif
+
 // nanorange/algorithm/remove.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -8413,14 +9292,37 @@ NANO_END_NAMESPACE
 
 #include <algorithm>
 
-// TODO: Implement
+// TODO: Reimplement
 
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
 struct binary_search_fn {
+    template <typename I, typename T, typename Comp = less<>>
+    std::enable_if_t<
+       ForwardIterator<I> &&
+       detail::Cpp98Iterator<I> &&
+       IndirectStrictWeakOrder<Comp, const T*, I>,
+    bool>
+    operator()(I first, I last, const T& value, Comp comp = Comp{}) const
+    {
+        return std::binary_search(std::move(first), std::move(last),
+                                  value, std::ref(comp));
+    }
 
+    template <typename Rng, typename T, typename Comp = less<>>
+    std::enable_if_t<
+        ForwardRange<Rng> &&
+        CommonRange<Rng> &&
+        detail::Cpp98Iterator<iterator_t<Rng>> &&
+        IndirectStrictWeakOrder<Comp, const T*, iterator_t<Rng>>,
+    bool>
+    operator()(Rng&& rng, const T& value, Comp comp = Comp{}) const
+    {
+        return std::binary_search(nano::begin(rng), nano::end(rng),
+                                  value, std::ref(comp));
+    }
 };
 
 }
@@ -8442,16 +9344,45 @@ NANO_END_NAMESPACE
 
 
 
+
 #include <algorithm>
 
-// TODO: Implement
+// TODO: Reimplement
 
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
 struct equal_range_fn {
+    template <typename I, typename T, typename Comp = less<>>
+    std::enable_if_t<
+        ForwardIterator<I> &&
+        detail::Cpp98Iterator<I> &&
+        IndirectStrictWeakOrder<Comp, const T*, I>,
+    subrange<I>>
+    operator()(I first, I last, const T& value, Comp comp = Comp{}) const
+    {
+        auto pair =  std::equal_range(std::move(first), std::move(last),
+                                value, std::ref(comp));
 
+        // FIXME: Subrange "PairLike" constructor
+        return {std::move(pair.first), std::move(pair.second)};
+    }
+
+    template <typename Rng, typename T, typename Comp = less<>>
+    std::enable_if_t<
+            ForwardRange<Rng> &&
+            CommonRange<Rng> &&
+    detail::Cpp98Iterator<iterator_t<Rng>> &&
+    IndirectStrictWeakOrder<Comp, const T*, iterator_t<Rng>>,
+    safe_subrange_t<Rng>>
+    operator()(Rng&& rng, const T& value, Comp comp = Comp{}) const
+    {
+        auto pair =  std::equal_range(nano::begin(rng), nano::end(rng),
+                                value, std::ref(comp));
+        // FIXME: Subrange's PairLike constructor is broken
+        return {std::move(pair.first), std::move(pair.second)};
+    }
 };
 
 }
@@ -8475,14 +9406,44 @@ NANO_END_NAMESPACE
 
 #include <algorithm>
 
-// TODO: Implement
+// TODO: Reimplement
 
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
 struct includes_fn {
+    template <typename I1, typename I2, typename Comp>
+    std::enable_if_t<
+        InputIterator<I1> &&
+        Sentinel<I1, I1> &&
+        Cpp98Iterator<I1> &&
+        InputIterator<I2> &&
+        Sentinel<I2, I2> &&
+        Cpp98Iterator<I2> &&
+        IndirectStrictWeakOrder<Comp, I1, I2>, bool>
+    operator()(I1 first1, I1 last1, I2 first2, I2 last2, Comp comp = Comp{}) const
+    {
+        return std::includes(std::move(first1), std::move(last1),
+                             std::move(first2), std::move(last2),
+                             std::ref(comp));
+    }
 
+    template <typename Rng1, typename Rng2, typename Comp>
+    std::enable_if_t<
+        InputRange<Rng1> &&
+        CommonRange<Rng1> &&
+        Cpp98Iterator<iterator_t<Rng1>> &&
+        InputRange<Rng2> &&
+        CommonRange<Rng2> &&
+        Cpp98Iterator<iterator_t<Rng2>> &&
+        IndirectStrictWeakOrder<Comp, iterator_t<Rng1>, iterator_t<Rng2>>, bool>
+    operator()(Rng1&& rng1, Rng2&& rng2, Comp comp = Comp{}) const
+    {
+        return std::includes(nano::begin(rng1), nano::end(rng1),
+                             nano::begin(rng2), nano::end(rng2),
+                             std::ref(comp));
+    }
 };
 
 }
@@ -8506,14 +9467,35 @@ NANO_END_NAMESPACE
 
 #include <algorithm>
 
-// TODO: Implement
+// TODO: Reimplement
 
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
 struct inplace_merge_fn {
+    template <typename I, typename Comp = less<>>
+    std::enable_if_t<
+        BidirectionalIterator<I> &&
+        Cpp98Iterator<I> &&
+        Sortable<I, Comp>>
+    operator()(I first, I middle, I last, Comp comp = Comp{}) const
+    {
+        std::inplace_merge(std::move(first), std::move(middle),
+                           std::move(last), std::ref(comp));
+    }
 
+    template <typename Rng, typename Comp = less<>>
+    std::enable_if_t<
+        BidirectionalRange<Rng> &&
+        CommonRange<Rng> &&
+        Cpp98Iterator<iterator_t<Rng>> &&
+        Sortable<iterator_t<Rng>, Comp>>
+    operator()(Rng&& rng, iterator_t<Rng> middle, Comp comp = Comp{}) const
+    {
+        std::inplace_merge(nano::begin(rng), std::move(middle),
+                           nano::end(rng), std::ref(comp));
+    }
 };
 
 }
@@ -8544,7 +9526,26 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct is_heap_fn {
+    template <typename I, typename Comp = less<>>
+    std::enable_if_t<
+        RandomAccessIterator<I> &&
+        Cpp98Iterator<I> &&
+        IndirectStrictWeakOrder<Comp, I>, bool>
+    operator()(I first, I last, Comp comp = Comp{}) const
+    {
+        std::is_heap(std::move(first), std::move(last), std::ref(comp));
+    }
 
+    template <typename Rng, typename Comp = less<>>
+    std::enable_if_t<
+        RandomAccessRange<Rng> &&
+        CommonRange<Rng> &&
+        Cpp98Iterator<iterator_t<Rng>> &&
+        IndirectStrictWeakOrder<Comp, iterator_t<Rng>>, bool>
+    operator()(Rng&& rng, Comp comp = Comp{}) const
+    {
+        std::is_heap(nano::begin(rng), nano::end(rng), std::ref(comp));
+    }
 };
 
 }
@@ -8575,43 +9576,32 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct is_heap_until_fn {
+    template <typename I, typename Comp = less<>>
+    std::enable_if_t<
+        RandomAccessIterator<I> &&
+        Cpp98Iterator<I> &&
+        IndirectStrictWeakOrder<Comp, I>, I>
+    operator()(I first, I last, Comp comp = Comp{}) const
+    {
+        std::is_heap_until(std::move(first), std::move(last), std::ref(comp));
+    }
 
+    template <typename Rng, typename Comp = less<>>
+    std::enable_if_t<
+        RandomAccessRange<Rng> &&
+        CommonRange<Rng> &&
+        Cpp98Iterator<iterator_t<Rng>> &&
+        IndirectStrictWeakOrder<Comp, iterator_t<Rng>>,
+        safe_iterator_t<Rng>>
+    operator()(Rng&& rng, Comp comp = Comp{}) const
+    {
+        std::is_heap_until(nano::begin(rng), nano::end(rng), std::ref(comp));
+    }
 };
 
 }
 
 NANO_INLINE_VAR(detail::is_heap_until_fn, is_heap_until)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/is_partitioned.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_IS_PARTITIONED_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_IS_PARTITIONED_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct is_partitioned_fn {
-
-};
-
-}
-
-NANO_INLINE_VAR(detail::is_partitioned_fn, is_partitioned)
 
 NANO_END_NAMESPACE
 
@@ -8716,68 +9706,6 @@ NANO_END_NAMESPACE
 
 #endif
 
-// nanorange/algorithm/stl/is_sorted.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_IS_SORTED_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_IS_SORTED_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct is_sorted_fn {
-
-};
-
-}
-
-NANO_INLINE_VAR(detail::is_sorted_fn, is_sorted)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/is_sorted_until.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_IS_SORTED_UNTIL_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_IS_SORTED_UNTIL_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct is_sorted_until_fn {
-
-};
-
-}
-
-NANO_INLINE_VAR(detail::is_sorted_until_fn, is_sorted_until)
-
-NANO_END_NAMESPACE
-
-#endif
-
 // nanorange/algorithm/stl/lower_bound.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -8791,14 +9719,37 @@ NANO_END_NAMESPACE
 
 #include <algorithm>
 
-// TODO: Implement
+// TODO: Reimplement
 
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
 struct lower_bound_fn {
+    template <typename I, typename T, typename Comp = less<>>
+    std::enable_if_t<
+        ForwardIterator<I> &&
+        detail::Cpp98Iterator<I> &&
+        IndirectStrictWeakOrder<Comp, const T*, I>,
+        I>
+    operator()(I first, I last, const T& value, Comp comp = Comp{}) const
+    {
+        return std::lower_bound(std::move(first), std::move(last),
+                                value, std::ref(comp));
+    }
 
+    template <typename Rng, typename T, typename Comp = less<>>
+    std::enable_if_t<
+        ForwardRange<Rng> &&
+        CommonRange<Rng> &&
+        detail::Cpp98Iterator<iterator_t<Rng>> &&
+        IndirectStrictWeakOrder<Comp, const T*, iterator_t<Rng>>,
+        safe_iterator_t<Rng>>
+    operator()(Rng&& rng, const T& value, Comp comp = Comp{}) const
+    {
+        return std::lower_bound(nano::begin(rng), nano::end(rng),
+                                value, std::ref(comp));
+    }
 };
 
 }
@@ -8829,74 +9780,31 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct make_heap_fn {
+    template <typename I, typename Comp = less<>>
+    std::enable_if_t<
+        RandomAccessIterator<I> &&
+        Cpp98Iterator<I> &&
+        Sortable<I, Comp>>
+    operator()(I first, I last, Comp comp = Comp{}) const
+    {
+        std::make_heap(std::move(first), std::move(last), std::ref(comp));
+    }
 
+    template <typename Rng, typename Comp = less<>>
+    std::enable_if_t<
+        RandomAccessRange<Rng> &&
+        CommonRange<Rng> &&
+        Cpp98Iterator<iterator_t<Rng>> &&
+        Sortable<iterator_t<Rng>, Comp>>
+    operator()(Rng&& rng, Comp comp = Comp{}) const
+    {
+        std::make_heap(nano::begin(rng), nano::end(rng), std::ref(comp));
+    }
 };
 
 }
 
 NANO_INLINE_VAR(detail::make_heap_fn, make_heap)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/max.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_MAX_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_MAX_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct max_fn {
-
-};
-
-}
-
-NANO_INLINE_VAR(detail::max_fn, max)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/max_element.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_MAX_ELEMENT_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_MAX_ELEMENT_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct max_element_fn {
-
-};
-
-}
-
-NANO_INLINE_VAR(detail::max_element_fn, max_element)
 
 NANO_END_NAMESPACE
 
@@ -8922,136 +9830,47 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct merge_fn {
+    template <typename I1, typename I2, typename O, typename Comp = less<>>
+    std::enable_if_t<
+        InputIterator<I1> &&
+        Sentinel<I1, I1> &&
+        detail::Cpp98Iterator<I1> &&
+        InputIterator<I2> &&
+        Sentinel<I1, I1> &&
+        detail::Cpp98Iterator<I2> &&
+        WeaklyIncrementable<O> &&
+        detail::Cpp98Iterator<O> &&
+        Mergeable<I1, I2, O, Comp>, O>
+    operator()(I1 first1, I1 last1, I2 first2, I2 last2, O result,
+               Comp comp = Comp{}) const
+    {
+        return std::merge(std::move(first1), std::move(last1),
+                          std::move(first2), std::move(last2),
+                          std::move(result), std::ref(comp));
+    }
 
+    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>>
+    std::enable_if_t<
+        InputRange<Rng1> &&
+        CommonRange<Rng1> &&
+        detail::Cpp98Iterator<iterator_t<Rng1>> &&
+        InputIterator<Rng2> &&
+        CommonRange<Rng2> &&
+        detail::Cpp98Iterator<iterator_t<Rng2>> &&
+        WeaklyIncrementable<O> &&
+        detail::Cpp98Iterator<O> &&
+        Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp>, O>
+    operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{}) const
+    {
+        return std::merge(nano::begin(rng1), nano::end(rng1),
+                          nano::begin(rng2), nano::end(rng2),
+                          std::move(result), std::ref(comp));
+    }
 };
 
 }
 
 NANO_INLINE_VAR(detail::merge_fn, merge)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/min.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_MIN_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_MIN_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct min_fn {
-
-};
-
-}
-
-NANO_INLINE_VAR(detail::min_fn, min)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/min_element.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_MIN_ELEMENT_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_MIN_ELEMENT_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct min_element_fn {
-
-};
-
-}
-
-NANO_INLINE_VAR(detail::min_element_fn, min_element)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/minmax.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_MINMAX_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_MINMAX_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct minmax_fn {
-
-};
-
-}
-
-NANO_INLINE_VAR(detail::minmax_fn, minmax)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/minmax_element.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_MINMAX_ELEMENT_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_MINMAX_ELEMENT_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct minmax_element_fn {
-
-};
-
-}
-
-NANO_INLINE_VAR(detail::minmax_element_fn, minmax_element)
 
 NANO_END_NAMESPACE
 
@@ -9077,7 +9896,28 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct next_permutation_fn {
+    template <typename I, typename Comp = less<>>
+    std::enable_if_t<
+        BidirectionalIterator<I> &&
+        Cpp98Iterator<I> &&
+        Sortable<I, Comp>, bool>
+    operator()(I first, I last, Comp comp = Comp{}) const
+    {
+        return std::next_permutation(std::move(first), std::move(last),
+                                     std::ref(comp));
+    }
 
+    template <typename Rng, typename Comp = less<>>
+    std::enable_if_t<
+        BidirectionalRange<Rng> &&
+        CommonRange<Rng> &&
+        Cpp98Iterator<iterator_t<Rng>> &&
+        Sortable<iterator_t<Rng>, Comp>, bool>
+    operator()(Rng&& rng, Comp comp = Comp{}) const
+    {
+        return std::next_permutation(nano::begin(rng), nano::end(rng),
+                                     std::ref(comp));
+    }
 };
 
 }
@@ -9108,7 +9948,28 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct nth_element_fn {
+    template <typename I, typename Comp = less<>>
+    std::enable_if_t<
+        RandomAccessIterator<I> &&
+        detail::Cpp98Iterator<I> &&
+        Sortable<I, Comp>>
+    operator()(I first, I nth, I last, Comp comp = Comp{}) const
+    {
+        std::nth_element(std::move(first), std::move(nth),
+                         std::move(last), std::ref(comp));
+    }
 
+    template <typename Rng, typename Comp = less<>>
+    std::enable_if_t<
+        RandomAccessRange<Rng> &&
+        CommonRange<Rng> &&
+        detail::Cpp98Iterator<iterator_t<Rng>> &&
+        Sortable<iterator_t<Rng>, Comp>>
+    operator()(Rng&& rng, iterator_t<Rng> nth, Comp comp = Comp{}) const
+    {
+        std::nth_element(nano::begin(rng), std::move(nth),
+                         nano::end(rng), std::ref(comp));
+    }
 };
 
 }
@@ -9139,7 +10000,28 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct partial_sort_fn {
+    template <typename I, typename Comp = less<>>
+    std::enable_if_t<
+        RandomAccessIterator<I> &&
+        detail::Cpp98Iterator<I> &&
+        Sortable<I, Comp>>
+    operator()(I first, I middle, I last, Comp comp = Comp{}) const
+    {
+        std::partial_sort(std::move(first), std::move(middle),
+                          std::move(last), std::ref(comp));
+    }
 
+    template <typename Rng, typename Comp = less<>>
+    std::enable_if_t<
+        RandomAccessRange<Rng> &&
+        CommonRange<Rng> &&
+        detail::Cpp98Iterator<iterator_t<Rng>> &&
+        Sortable<iterator_t<Rng>, Comp>>
+    operator()(Rng&& rng, iterator_t<Rng> middle, Comp comp = Comp{}) const
+    {
+        std::partial_sort(nano::begin(rng), std::move(middle),
+                          nano::end(rng), std::ref(comp));
+    }
 };
 
 }
@@ -9170,74 +10052,46 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct partial_sort_copy_fn {
+    template <typename I1, typename I2, typename Comp = less<>>
+    std::enable_if_t<
+        InputIterator<I1> &&
+        Sentinel<I1, I1> &&
+        detail::Cpp98Iterator<I1> &&
+        RandomAccessIterator<I2> &&
+        detail::Cpp98Iterator<I2> &&
+        IndirectlyCopyable<I1, I2> &&
+        Sortable<I2, Comp> &&
+        IndirectStrictWeakOrder<Comp, I1, I2>, I2>
+    operator()(I1 first, I1 last, I2 result_first, I2 result_last, Comp comp = Comp{}) const
+    {
+        return std::partial_sort_copy(std::move(first), std::move(last),
+                                      std::move(result_first), std::move(result_last),
+                                      std::ref(comp));
+    }
 
+    template <typename Rng1, typename Rng2, typename Comp = less<>>
+    std::enable_if_t<
+        InputRange<Rng1> &&
+        CommonRange<Rng1> &&
+        detail::Cpp98Iterator<iterator_t<Rng1>> &&
+        RandomAccessRange<Rng2> &&
+        CommonRange<Rng2> &&
+        detail::Cpp98Iterator<iterator_t<Rng2>> &&
+        IndirectlyCopyable<iterator_t<Rng1>, iterator_t<Rng2>> &&
+        Sortable<iterator_t<Rng2>, Comp> &&
+        IndirectStrictWeakOrder<Comp, iterator_t<Rng1>, iterator_t<Rng2>>,
+    safe_iterator_t<Rng2>>
+    operator()(Rng1&& rng, Rng2&& result_rng, Comp comp = Comp{}) const
+    {
+        return std::partial_sort_copy(nano::begin(rng), nano::end(rng),
+                                      nano::begin(result_rng), nano::end(result_rng),
+                                      std::ref(comp));
+    }
 };
 
 }
 
 NANO_INLINE_VAR(detail::partial_sort_copy_fn, partial_sort_copy)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/partition.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_PARTITION_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_PARTITION_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct partition_fn {
-
-};
-
-}
-
-NANO_INLINE_VAR(detail::partition_fn, partition)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/partition_copy.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_PARTITION_COPY_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_PARTITION_COPY_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct partition_copy_fn {
-
-};
-
-}
-
-NANO_INLINE_VAR(detail::partition_copy_fn, partition_copy)
 
 NANO_END_NAMESPACE
 
@@ -9256,14 +10110,36 @@ NANO_END_NAMESPACE
 
 #include <algorithm>
 
-// TODO: Implement
+// TODO: Reimplement
 
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
 struct partition_point_fn {
+    template <typename I, typename Pred>
+    std::enable_if_t<
+        ForwardIterator<I> &&
+        Cpp98Iterator<I> &&
+        IndirectUnaryPredicate<Pred, I>, I>
+    operator()(I first, I last, Pred pred) const
+    {
+        return std::partition_point(std::move(first), std::move(last),
+                                    std::ref(pred));
+    }
 
+    template <typename Rng, typename Pred>
+    std::enable_if_t<
+        ForwardRange<Rng> &&
+        CommonRange<Rng> &&
+        Cpp98Iterator<iterator_t<Rng>> &&
+        IndirectUnaryPredicate<Pred, iterator_t<Rng>>,
+        safe_iterator_t<Rng>>
+    operator()(Rng&& rng, Pred pred) const
+    {
+        return std::partition_point(nano::begin(rng), nano::end(rng),
+                                    std::ref(pred));
+    }
 };
 
 }
@@ -9294,7 +10170,26 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct pop_heap_fn {
+    template <typename I, typename Comp = less<>>
+    std::enable_if_t<
+            RandomAccessIterator<I> &&
+            Cpp98Iterator<I> &&
+    Sortable<I, Comp>>
+    operator()(I first, I last, Comp comp = Comp{}) const
+    {
+        std::pop_heap(std::move(first), std::move(last), std::ref(comp));
+    }
 
+    template <typename Rng, typename Comp = less<>>
+    std::enable_if_t<
+            RandomAccessRange<Rng> &&
+            CommonRange<Rng> &&
+    Cpp98Iterator<iterator_t<Rng>> &&
+    Sortable<iterator_t<Rng>, Comp>>
+    operator()(Rng&& rng, Comp comp = Comp{}) const
+    {
+        std::pop_heap(nano::begin(rng), nano::end(rng), std::ref(comp));
+    }
 };
 
 }
@@ -9325,7 +10220,28 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct prev_permutation_fn {
+    template <typename I, typename Comp = less<>>
+    std::enable_if_t<
+        BidirectionalIterator<I> &&
+        Cpp98Iterator<I> &&
+        Sortable<I, Comp>, bool>
+    operator()(I first, I last, Comp comp = Comp{}) const
+    {
+        return std::prev_permutation(std::move(first), std::move(last),
+                                     std::ref(comp));
+    }
 
+    template <typename Rng, typename Comp = less<>>
+    std::enable_if_t<
+        BidirectionalRange<Rng> &&
+        CommonRange<Rng> &&
+        Cpp98Iterator<iterator_t<Rng>> &&
+        Sortable<iterator_t<Rng>, Comp>, bool>
+    operator()(Rng&& rng, Comp comp = Comp{}) const
+    {
+        return std::prev_permutation(nano::begin(rng), nano::end(rng),
+                                     std::ref(comp));
+    }
 };
 
 }
@@ -9356,7 +10272,26 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct push_heap_fn {
+    template <typename I, typename Comp = less<>>
+    std::enable_if_t<
+        RandomAccessIterator<I> &&
+        Cpp98Iterator<I> &&
+        Sortable<I, Comp>>
+    operator()(I first, I last, Comp comp = Comp{}) const
+    {
+        std::push_heap(std::move(first), std::move(last), std::ref(comp));
+    }
 
+    template <typename Rng, typename Comp = less<>>
+    std::enable_if_t<
+        RandomAccessRange<Rng> &&
+        CommonRange<Rng> &&
+        Cpp98Iterator<iterator_t<Rng>> &&
+        Sortable<iterator_t<Rng>, Comp>>
+    operator()(Rng&& rng, Comp comp = Comp{}) const
+    {
+        std::push_heap(nano::begin(rng), nano::end(rng), std::ref(comp));
+    }
 };
 
 }
@@ -9387,7 +10322,41 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct set_difference_fn {
+    template <typename I1, typename I2, typename O, typename Comp>
+    std::enable_if_t<
+            InputIterator<I1> &&
+            Sentinel<I1, I1> &&
+            Cpp98Iterator<I1> &&
+    InputIterator<I2> &&
+            Sentinel<I2, I2> &&
+            Cpp98Iterator<I2> &&
+    WeaklyIncrementable<O> &&
+            Cpp98Iterator<O> &&
+    Mergeable<I1, I2, O, Comp>, O>
+    operator()(I1 first1, I1 last1, I2 first2, I2 last2, O result, Comp comp = Comp{}) const
+    {
+        return std::set_difference(std::move(first1), std::move(last1),
+                                   std::move(first2), std::move(last2),
+                                   std::move(result), std::ref(comp));
+    }
 
+    template <typename Rng1, typename Rng2, typename O, typename Comp>
+    std::enable_if_t<
+            InputRange<Rng1> &&
+            CommonRange<Rng1> &&
+    Cpp98Iterator<iterator_t<Rng1>> &&
+    InputRange<Rng2> &&
+            CommonRange<Rng2> &&
+    Cpp98Iterator<iterator_t<Rng2>> &&
+    WeaklyIncrementable<O> &&
+            Cpp98Iterator<O> &&
+    Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp>, O>
+    operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{}) const
+    {
+        return std::set_difference(nano::begin(rng1), nano::end(rng1),
+                                   nano::begin(rng2), nano::end(rng2),
+                                   std::move(result), std::ref(comp));
+    }
 };
 
 }
@@ -9418,7 +10387,41 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct set_intersection_fn {
+    template <typename I1, typename I2, typename O, typename Comp>
+    std::enable_if_t<
+            InputIterator<I1> &&
+            Cpp98Iterator<I1> &&
+            Sentinel<I1, I1> &&
+    InputIterator<I2> &&
+            Cpp98Iterator<I2> &&
+            Sentinel<I2, I2> &&
+    WeaklyIncrementable<O> &&
+            Cpp98Iterator<O> &&
+    Mergeable<I1, I2, O, Comp>, O>
+    operator()(I1 first1, I1 last1, I2 first2, I2 last2, O result, Comp comp = Comp{}) const
+    {
+        return std::set_intersection(std::move(first1), std::move(last1),
+                                     std::move(first2), std::move(last2),
+                                     std::move(result), std::ref(comp));
+    }
 
+    template <typename Rng1, typename Rng2, typename O, typename Comp>
+    std::enable_if_t<
+            InputRange<Rng1> &&
+            CommonRange<Rng1> &&
+    Cpp98Iterator<iterator_t<Rng1>> &&
+    InputRange<Rng2> &&
+            CommonRange<Rng2> &&
+    Cpp98Iterator<iterator_t<Rng2>> &&
+    WeaklyIncrementable<O> &&
+            Cpp98Iterator<O> &&
+    Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp>, O>
+    operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{}) const
+    {
+        return std::set_intersection(nano::begin(rng1), nano::end(rng1),
+                                     nano::begin(rng2), nano::end(rng2),
+                                     std::move(result), std::ref(comp));
+    }
 };
 
 }
@@ -9449,7 +10452,41 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct set_symmetric_difference_fn {
+    template <typename I1, typename I2, typename O, typename Comp>
+    std::enable_if_t<
+            InputIterator<I1> &&
+            Sentinel<I1, I1> &&
+            Cpp98Iterator<I1> &&
+    InputIterator<I2> &&
+            Sentinel<I2, I2> &&
+            Cpp98Iterator<I2> &&
+    WeaklyIncrementable<O> &&
+            Cpp98Iterator<O> &&
+    Mergeable<I1, I2, O, Comp>, O>
+    operator()(I1 first1, I1 last1, I2 first2, I2 last2, O result, Comp comp = Comp{}) const
+    {
+        return std::set_symmetric_difference(std::move(first1), std::move(last1),
+                                             std::move(first2), std::move(last2),
+                                             std::move(result), std::ref(comp));
+    }
 
+    template <typename Rng1, typename Rng2, typename O, typename Comp>
+    std::enable_if_t<
+            InputRange<Rng1> &&
+            CommonRange<Rng1> &&
+    Cpp98Iterator<iterator_t<Rng1>> &&
+    InputRange<Rng2> &&
+            CommonRange<Rng2> &&
+    Cpp98Iterator<iterator_t<Rng2>> &&
+    WeaklyIncrementable<O> &&
+            Cpp98Iterator<O> &&
+    Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp>, O>
+    operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{}) const
+    {
+        return std::set_symmetric_difference(nano::begin(rng1), nano::end(rng1),
+                                             nano::begin(rng2), nano::end(rng2),
+                                             std::move(result), std::ref(comp));
+    }
 };
 
 }
@@ -9480,7 +10517,41 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct set_union_fn {
+    template <typename I1, typename I2, typename O, typename Comp>
+    std::enable_if_t<
+        InputIterator<I1> &&
+        Sentinel<I1, I1> &&
+        Cpp98Iterator<I1> &&
+        InputIterator<I2> &&
+        Sentinel<I2, I2> &&
+        Cpp98Iterator<I2> &&
+        WeaklyIncrementable<O> &&
+        Cpp98Iterator<O> &&
+        Mergeable<I1, I2, O, Comp>, O>
+    operator()(I1 first1, I1 last1, I2 first2, I2 last2, O result, Comp comp = Comp{}) const
+    {
+        return std::set_union(std::move(first1), std::move(last1),
+                              std::move(first2), std::move(last2),
+                              std::move(result), std::ref(comp));
+    }
 
+    template <typename Rng1, typename Rng2, typename O, typename Comp>
+    std::enable_if_t<
+        InputRange<Rng1> &&
+        CommonRange<Rng1> &&
+        Cpp98Iterator<iterator_t<Rng1>> &&
+        InputRange<Rng2> &&
+        CommonRange<Rng2> &&
+        Cpp98Iterator<iterator_t<Rng2>> &&
+        WeaklyIncrementable<O> &&
+        Cpp98Iterator<O> &&
+        Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp>, O>
+    operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{}) const
+    {
+        return std::set_union(nano::begin(rng1), nano::end(rng1),
+                              nano::begin(rng2), nano::end(rng2),
+                              std::move(result), std::ref(comp));
+    }
 };
 
 }
@@ -9504,14 +10575,33 @@ NANO_END_NAMESPACE
 
 #include <algorithm>
 
-// TODO: Implement
+// TODO: Reimplement
 
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
 struct sort_fn {
+    template <typename I, typename Comp = less<>>
+    std::enable_if_t<
+        RandomAccessIterator<I> &&
+        detail::Cpp98Iterator<I> &&
+        Sortable<I, Comp>>
+    operator()(I first, I last, Comp comp = Comp{}) const
+    {
+        std::sort(std::move(first), std::move(last), std::ref(comp));
+    }
 
+    template <typename Rng, typename Comp = less<>>
+    std::enable_if_t<
+        RandomAccessRange<Rng> &&
+        CommonRange<Rng> &&
+        detail::Cpp98Iterator<iterator_t<Rng>> &&
+        Sortable<iterator_t<Rng>, Comp>>
+    operator()(Rng&& rng, Comp comp = Comp{}) const
+    {
+        std::sort(nano::begin(rng), nano::end(rng), std::ref(comp));
+    }
 };
 
 }
@@ -9542,7 +10632,26 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct sort_heap_fn {
+    template <typename I, typename Comp = less<>>
+    std::enable_if_t<
+            RandomAccessIterator<I> &&
+            Cpp98Iterator<I> &&
+    Sortable<I, Comp>>
+    operator()(I first, I last, Comp comp = Comp{}) const
+    {
+        std::sort_heap(std::move(first), std::move(last), std::ref(comp));
+    }
 
+    template <typename Rng, typename Comp = less<>>
+    std::enable_if_t<
+            RandomAccessRange<Rng> &&
+            CommonRange<Rng> &&
+    Cpp98Iterator<iterator_t<Rng>> &&
+    Sortable<iterator_t<Rng>, Comp>>
+    operator()(Rng&& rng, Comp comp = Comp{}) const
+    {
+        std::sort_heap(nano::begin(rng), nano::end(rng), std::ref(comp));
+    }
 };
 
 }
@@ -9566,14 +10675,36 @@ NANO_END_NAMESPACE
 
 #include <algorithm>
 
-// TODO: Implement
+// TODO: Reimplement
 
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
 struct stable_partition_fn {
+    template <typename I, typename Pred>
+    std::enable_if_t<
+        BidirectionalIterator<I> &&
+        Cpp98Iterator<I> &&
+        IndirectUnaryPredicate<Pred, I>, I>
+    operator()(I first, I last, Pred pred) const
+    {
+        return std::stable_partition(std::move(first), std::move(last),
+                                     std::ref(pred));
+    }
 
+    template <typename Rng, typename Pred>
+    std::enable_if_t<
+        BidirectionalRange<Rng> &&
+        CommonRange<Rng> &&
+        Cpp98Iterator<iterator_t<Rng>> &&
+         IndirectUnaryPredicate<Pred, iterator_t<Rng>>,
+    safe_iterator_t<Rng>>
+    operator()(Rng&& rng, Pred pred) const
+    {
+        return std::stable_partition(nano::begin(rng), nano::end(rng),
+                                     std::ref(pred));
+    }
 };
 
 }
@@ -9604,7 +10735,26 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct stable_sort_fn {
+    template <typename I, typename Comp = less<>>
+    std::enable_if_t<
+            RandomAccessIterator<I> &&
+            detail::Cpp98Iterator<I> &&
+    Sortable<I, Comp>>
+    operator()(I first, I last, Comp comp = Comp{}) const
+    {
+        std::stable_sort(std::move(first), std::move(last), std::ref(comp));
+    }
 
+    template <typename Rng, typename Comp = less<>>
+    std::enable_if_t<
+            RandomAccessRange<Rng> &&
+            CommonRange<Rng> &&
+    detail::Cpp98Iterator<iterator_t<Rng>> &&
+    Sortable<iterator_t<Rng>, Comp>>
+    operator()(Rng&& rng, Comp comp = Comp{}) const
+    {
+        std::stable_sort(nano::begin(rng), nano::end(rng), std::ref(comp));
+    }
 };
 
 }
@@ -9635,7 +10785,69 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct unique_copy_fn {
+private:
+    template <typename I, typename O, typename R>
+    static std::enable_if_t<ForwardIterator<I>, O>
+    dispatch_helper(I first, I last, O result, R& comp, priority_tag<2>)
+    {
+        return std::unique_copy(std::move(first), std::move(last),
+                                std::move(result), std::ref(comp));
+    }
 
+    template <typename I, typename O, typename R>
+    static std::enable_if_t<
+            InputIterator<O> && Same<value_type_t<I>, value_type_t<O>>,
+    O>
+    dispatch_helper(I first, I last, O result, R& comp, priority_tag<1>)
+    {
+        return std::unique_copy(std::move(first), std::move(last),
+                                std::move(result), std::ref(comp));
+    }
+
+    template <typename I, typename O, typename R>
+    static std::enable_if_t<IndirectlyCopyableStorable<I, O>, O>
+    dispatch_helper(I first, I last, O result, R& comp, priority_tag<0>)
+    {
+        return std::unique_copy(std::move(first), std::move(last),
+                                std::move(result), std::ref(comp));
+    }
+
+public:
+    template <typename I, typename O, typename R = equal_to<>>
+    auto operator()(I first, I last, O result, R comp = R{}) const
+        -> std::enable_if_t<
+               InputIterator<I> &&
+               detail::Cpp98Iterator<I> &&
+               WeaklyIncrementable<O> &&
+               detail::Cpp98Iterator<O> &&
+               IndirectRelation<R, I> &&
+               IndirectlyCopyable<I, O>,
+    decltype(
+    unique_copy_fn::dispatch_helper(first, last, result,
+                                    comp, priority_tag<2>{}))>
+    {
+        return std::unique_copy(std::move(first), std::move(last),
+                                std::move(result), std::ref(comp));
+    }
+
+    // Case 1: Input is ForwardIterator
+    template <typename Rng, typename O, typename R = equal_to<>>
+    auto operator()(Rng&& rng, O result, R comp = R{}) const
+    -> std::enable_if_t<
+            InputRange<Rng> &&
+            CommonRange<Rng> &&
+            Cpp98Iterator<iterator_t<Rng>> &&
+            WeaklyIncrementable<O> &&
+            Cpp98Iterator<O> &&
+            IndirectRelation<R, iterator_t<Rng>> &&
+            IndirectlyCopyable<iterator_t<Rng>, O>,
+    decltype(
+    unique_copy_fn::dispatch_helper(nano::begin(rng), nano::end(rng), result,
+                                    comp, priority_tag<2>{}))>
+    {
+        return std::unique_copy(nano::begin(rng), nano::end(rng),
+                                std::move(result), std::ref(comp));
+    }
 };
 
 }
@@ -9666,7 +10878,30 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct upper_bound_fn {
+    template <typename I, typename T, typename Comp = less<>>
+    std::enable_if_t<
+        ForwardIterator<I> &&
+        detail::Cpp98Iterator<I> &&
+        IndirectStrictWeakOrder<Comp, const T*, I>,
+    I>
+    operator()(I first, I last, const T& value, Comp comp = Comp{}) const
+    {
+        return std::upper_bound(std::move(first), std::move(last),
+                                value, std::ref(comp));
+    }
 
+    template <typename Rng, typename T, typename Comp = less<>>
+    std::enable_if_t<
+        ForwardRange<Rng> &&
+        CommonRange<Rng> &&
+        detail::Cpp98Iterator<iterator_t<Rng>> &&
+        IndirectStrictWeakOrder<Comp, const T*, iterator_t<Rng>>,
+    safe_iterator_t<Rng>>
+    operator()(Rng&& rng, const T& value, Comp comp = Comp{}) const
+    {
+        return std::upper_bound(nano::begin(rng), nano::end(rng),
+                                value, std::ref(comp));
+    }
 };
 
 }
