@@ -27,8 +27,11 @@ struct equal_range_fn {
     subrange<I>>
     operator()(I first, I last, const T& value, Comp comp = Comp{}) const
     {
-        return std::equal_range(std::move(first), std::move(last),
+        auto pair =  std::equal_range(std::move(first), std::move(last),
                                 value, std::ref(comp));
+
+        // FIXME: Subrange "PairLike" constructor
+        return {std::move(pair.first), std::move(pair.second)};
     }
 
     template <typename Rng, typename T, typename Comp = less<>>
@@ -40,8 +43,10 @@ struct equal_range_fn {
     safe_subrange_t<Rng>>
     operator()(Rng&& rng, const T& value, Comp comp = Comp{}) const
     {
-        return std::equal_range(nano::begin(rng), nano::end(rng),
+        auto pair =  std::equal_range(nano::begin(rng), nano::end(rng),
                                 value, std::ref(comp));
+        // FIXME: Subrange's PairLike constructor is broken
+        return {std::move(pair.first), std::move(pair.second)};
     }
 };
 
