@@ -21,8 +21,10 @@ struct includes_fn {
     template <typename I1, typename I2, typename Comp>
     std::enable_if_t<
         InputIterator<I1> &&
+        Sentinel<I1, I1> &&
         Cpp98Iterator<I1> &&
         InputIterator<I2> &&
+        Sentinel<I2, I2> &&
         Cpp98Iterator<I2> &&
         IndirectStrictWeakOrder<Comp, I1, I2>, bool>
     operator()(I1 first1, I1 last1, I2 first2, I2 last2, Comp comp = Comp{})

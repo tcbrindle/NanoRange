@@ -21,8 +21,10 @@ struct merge_fn {
     template <typename I1, typename I2, typename O, typename Comp = less<>>
     std::enable_if_t<
         InputIterator<I1> &&
+        Sentinel<I1, I1> &&
         detail::Cpp98Iterator<I1> &&
         InputIterator<I2> &&
+        Sentinel<I1, I1> &&
         detail::Cpp98Iterator<I2> &&
         WeaklyIncrementable<O> &&
         detail::Cpp98Iterator<O> &&

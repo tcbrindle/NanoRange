@@ -22,8 +22,10 @@ struct set_intersection_fn {
     std::enable_if_t<
             InputIterator<I1> &&
             Cpp98Iterator<I1> &&
+            Sentinel<I1, I1> &&
     InputIterator<I2> &&
             Cpp98Iterator<I2> &&
+            Sentinel<I2, I2> &&
     WeaklyIncrementable<O> &&
             Cpp98Iterator<O> &&
     Mergeable<I1, I2, O, Comp>, O>

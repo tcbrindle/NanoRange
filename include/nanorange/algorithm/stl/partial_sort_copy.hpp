@@ -21,6 +21,7 @@ struct partial_sort_copy_fn {
     template <typename I1, typename I2, typename Comp = less<>>
     std::enable_if_t<
         InputIterator<I1> &&
+        Sentinel<I1, I1> &&
         detail::Cpp98Iterator<I1> &&
         RandomAccessIterator<I2> &&
         detail::Cpp98Iterator<I2> &&

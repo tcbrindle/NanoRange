@@ -21,8 +21,10 @@ struct set_symmetric_difference_fn {
     template <typename I1, typename I2, typename O, typename Comp>
     std::enable_if_t<
             InputIterator<I1> &&
+            Sentinel<I1, I1> &&
             Cpp98Iterator<I1> &&
     InputIterator<I2> &&
+            Sentinel<I2, I2> &&
             Cpp98Iterator<I2> &&
     WeaklyIncrementable<O> &&
             Cpp98Iterator<O> &&
