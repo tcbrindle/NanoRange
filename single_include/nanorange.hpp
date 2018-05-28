@@ -1798,8 +1798,7 @@ template <typename I,
 using legacy_iterator_traits_t = void;
 
 template <typename I>
-NANO_CONCEPT Cpp98Iterator =
-        Iterator<I> && exists_v<legacy_iterator_traits_t, I>;
+NANO_CONCEPT Cpp98Iterator = exists_v<legacy_iterator_traits_t, I>;
 
 }
 
@@ -3433,7 +3432,7 @@ NANO_END_NAMESPACE
 namespace std {
 
 template <typename Cont>
-struct pointer_traits<::nano::back_insert_iterator<Cont>> {
+struct iterator_traits<::nano::back_insert_iterator<Cont>> {
     using value_type = void;
     using difference_type = ptrdiff_t;
     using reference = void;
@@ -9413,7 +9412,7 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct includes_fn {
-    template <typename I1, typename I2, typename Comp>
+    template <typename I1, typename I2, typename Comp = less<>>
     std::enable_if_t<
         InputIterator<I1> &&
         Sentinel<I1, I1> &&
@@ -9429,7 +9428,7 @@ struct includes_fn {
                              std::ref(comp));
     }
 
-    template <typename Rng1, typename Rng2, typename Comp>
+    template <typename Rng1, typename Rng2, typename Comp = less<>>
     std::enable_if_t<
         InputRange<Rng1> &&
         CommonRange<Rng1> &&
@@ -9533,7 +9532,7 @@ struct is_heap_fn {
         IndirectStrictWeakOrder<Comp, I>, bool>
     operator()(I first, I last, Comp comp = Comp{}) const
     {
-        std::is_heap(std::move(first), std::move(last), std::ref(comp));
+        return std::is_heap(std::move(first), std::move(last), std::ref(comp));
     }
 
     template <typename Rng, typename Comp = less<>>
@@ -9544,7 +9543,7 @@ struct is_heap_fn {
         IndirectStrictWeakOrder<Comp, iterator_t<Rng>>, bool>
     operator()(Rng&& rng, Comp comp = Comp{}) const
     {
-        std::is_heap(nano::begin(rng), nano::end(rng), std::ref(comp));
+        return std::is_heap(nano::begin(rng), nano::end(rng), std::ref(comp));
     }
 };
 
@@ -9583,7 +9582,7 @@ struct is_heap_until_fn {
         IndirectStrictWeakOrder<Comp, I>, I>
     operator()(I first, I last, Comp comp = Comp{}) const
     {
-        std::is_heap_until(std::move(first), std::move(last), std::ref(comp));
+        return std::is_heap_until(std::move(first), std::move(last), std::ref(comp));
     }
 
     template <typename Rng, typename Comp = less<>>
@@ -9595,7 +9594,7 @@ struct is_heap_until_fn {
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, Comp comp = Comp{}) const
     {
-        std::is_heap_until(nano::begin(rng), nano::end(rng), std::ref(comp));
+        return std::is_heap_until(nano::begin(rng), nano::end(rng), std::ref(comp));
     }
 };
 
@@ -9854,7 +9853,7 @@ struct merge_fn {
         InputRange<Rng1> &&
         CommonRange<Rng1> &&
         detail::Cpp98Iterator<iterator_t<Rng1>> &&
-        InputIterator<Rng2> &&
+        InputRange<Rng2> &&
         CommonRange<Rng2> &&
         detail::Cpp98Iterator<iterator_t<Rng2>> &&
         WeaklyIncrementable<O> &&
@@ -10322,17 +10321,17 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct set_difference_fn {
-    template <typename I1, typename I2, typename O, typename Comp>
+    template <typename I1, typename I2, typename O, typename Comp = less<>>
     std::enable_if_t<
-            InputIterator<I1> &&
-            Sentinel<I1, I1> &&
-            Cpp98Iterator<I1> &&
-    InputIterator<I2> &&
-            Sentinel<I2, I2> &&
-            Cpp98Iterator<I2> &&
-    WeaklyIncrementable<O> &&
-            Cpp98Iterator<O> &&
-    Mergeable<I1, I2, O, Comp>, O>
+        InputIterator<I1> &&
+        Sentinel<I1, I1> &&
+        Cpp98Iterator<I1> &&
+        InputIterator<I2> &&
+        Sentinel<I2, I2> &&
+        Cpp98Iterator<I2> &&
+        WeaklyIncrementable<O> &&
+        Cpp98Iterator<O> &&
+        Mergeable<I1, I2, O, Comp>, O>
     operator()(I1 first1, I1 last1, I2 first2, I2 last2, O result, Comp comp = Comp{}) const
     {
         return std::set_difference(std::move(first1), std::move(last1),
@@ -10340,17 +10339,17 @@ struct set_difference_fn {
                                    std::move(result), std::ref(comp));
     }
 
-    template <typename Rng1, typename Rng2, typename O, typename Comp>
+    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>>
     std::enable_if_t<
-            InputRange<Rng1> &&
-            CommonRange<Rng1> &&
-    Cpp98Iterator<iterator_t<Rng1>> &&
-    InputRange<Rng2> &&
-            CommonRange<Rng2> &&
-    Cpp98Iterator<iterator_t<Rng2>> &&
-    WeaklyIncrementable<O> &&
-            Cpp98Iterator<O> &&
-    Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp>, O>
+        InputRange<Rng1> &&
+        CommonRange<Rng1> &&
+        Cpp98Iterator<iterator_t<Rng1>> &&
+        InputRange<Rng2> &&
+        CommonRange<Rng2> &&
+        Cpp98Iterator<iterator_t<Rng2>> &&
+        WeaklyIncrementable<O> &&
+        Cpp98Iterator<O> &&
+        Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp>, O>
     operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{}) const
     {
         return std::set_difference(nano::begin(rng1), nano::end(rng1),
@@ -10387,7 +10386,7 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct set_intersection_fn {
-    template <typename I1, typename I2, typename O, typename Comp>
+    template <typename I1, typename I2, typename O, typename Comp = less<>>
     std::enable_if_t<
             InputIterator<I1> &&
             Cpp98Iterator<I1> &&
@@ -10405,7 +10404,7 @@ struct set_intersection_fn {
                                      std::move(result), std::ref(comp));
     }
 
-    template <typename Rng1, typename Rng2, typename O, typename Comp>
+    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>>
     std::enable_if_t<
             InputRange<Rng1> &&
             CommonRange<Rng1> &&
@@ -10452,7 +10451,7 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct set_symmetric_difference_fn {
-    template <typename I1, typename I2, typename O, typename Comp>
+    template <typename I1, typename I2, typename O, typename Comp = less<>>
     std::enable_if_t<
             InputIterator<I1> &&
             Sentinel<I1, I1> &&
@@ -10470,7 +10469,7 @@ struct set_symmetric_difference_fn {
                                              std::move(result), std::ref(comp));
     }
 
-    template <typename Rng1, typename Rng2, typename O, typename Comp>
+    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>>
     std::enable_if_t<
             InputRange<Rng1> &&
             CommonRange<Rng1> &&
@@ -10517,7 +10516,7 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct set_union_fn {
-    template <typename I1, typename I2, typename O, typename Comp>
+    template <typename I1, typename I2, typename O, typename Comp = less<>>
     std::enable_if_t<
         InputIterator<I1> &&
         Sentinel<I1, I1> &&
@@ -10535,7 +10534,7 @@ struct set_union_fn {
                               std::move(result), std::ref(comp));
     }
 
-    template <typename Rng1, typename Rng2, typename O, typename Comp>
+    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>>
     std::enable_if_t<
         InputRange<Rng1> &&
         CommonRange<Rng1> &&
