@@ -18,7 +18,7 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct includes_fn {
-    template <typename I1, typename I2, typename Comp>
+    template <typename I1, typename I2, typename Comp = less<>>
     std::enable_if_t<
         InputIterator<I1> &&
         Sentinel<I1, I1> &&
@@ -34,7 +34,7 @@ struct includes_fn {
                              std::ref(comp));
     }
 
-    template <typename Rng1, typename Rng2, typename Comp>
+    template <typename Rng1, typename Rng2, typename Comp = less<>>
     std::enable_if_t<
         InputRange<Rng1> &&
         CommonRange<Rng1> &&

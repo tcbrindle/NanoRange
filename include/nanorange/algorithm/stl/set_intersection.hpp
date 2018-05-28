@@ -18,7 +18,7 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct set_intersection_fn {
-    template <typename I1, typename I2, typename O, typename Comp>
+    template <typename I1, typename I2, typename O, typename Comp = less<>>
     std::enable_if_t<
             InputIterator<I1> &&
             Cpp98Iterator<I1> &&
@@ -36,7 +36,7 @@ struct set_intersection_fn {
                                      std::move(result), std::ref(comp));
     }
 
-    template <typename Rng1, typename Rng2, typename O, typename Comp>
+    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>>
     std::enable_if_t<
             InputRange<Rng1> &&
             CommonRange<Rng1> &&
