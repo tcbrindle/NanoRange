@@ -25,7 +25,7 @@ struct is_heap_fn {
         IndirectStrictWeakOrder<Comp, I>, bool>
     operator()(I first, I last, Comp comp = Comp{}) const
     {
-        std::is_heap(std::move(first), std::move(last), std::ref(comp));
+        return std::is_heap(std::move(first), std::move(last), std::ref(comp));
     }
 
     template <typename Rng, typename Comp = less<>>
@@ -36,7 +36,7 @@ struct is_heap_fn {
         IndirectStrictWeakOrder<Comp, iterator_t<Rng>>, bool>
     operator()(Rng&& rng, Comp comp = Comp{}) const
     {
-        std::is_heap(nano::begin(rng), nano::end(rng), std::ref(comp));
+        return std::is_heap(nano::begin(rng), nano::end(rng), std::ref(comp));
     }
 };
 

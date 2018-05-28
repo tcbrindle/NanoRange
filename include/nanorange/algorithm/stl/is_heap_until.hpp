@@ -25,7 +25,7 @@ struct is_heap_until_fn {
         IndirectStrictWeakOrder<Comp, I>, I>
     operator()(I first, I last, Comp comp = Comp{}) const
     {
-        std::is_heap_until(std::move(first), std::move(last), std::ref(comp));
+        return std::is_heap_until(std::move(first), std::move(last), std::ref(comp));
     }
 
     template <typename Rng, typename Comp = less<>>
@@ -37,7 +37,7 @@ struct is_heap_until_fn {
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, Comp comp = Comp{}) const
     {
-        std::is_heap_until(nano::begin(rng), nano::end(rng), std::ref(comp));
+        return std::is_heap_until(nano::begin(rng), nano::end(rng), std::ref(comp));
     }
 };
 
