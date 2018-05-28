@@ -118,7 +118,12 @@ void test_rvalue()
 	S r1[10] = {S{0}};
 	S r2[10] = {S{0}};
 	auto p = stl2::partition_copy(std::move(ia), r1, r2, is_odd(), &S::i);
+	// FIXME MSVC
+#ifndef _MSC_VER
 	CHECK(std::get<0>(p).get_unsafe() == std::end(ia));
+#else
+	CHECK(std::get<0>(p) == std::end(ia));
+#endif
 	CHECK(std::get<1>(p) == r1 + 4);
 	CHECK(r1[0].i == 1);
 	CHECK(r1[1].i == 3);

@@ -406,7 +406,13 @@ TEST_CASE("alg.is_sorted_until")
 	/// Rvalue range test:
 	{
 		A as[] = {{0}, {1}, {2}, {3}, {4}};
+		// FIXME: Usual MSVC silliness
+#ifndef _MSC_VER
 		CHECK(stl2::is_sorted_until(std::move(as), std::less<int>{}, &A::a).get_unsafe() == stl2::end(as));
 		CHECK(stl2::is_sorted_until(std::move(as), std::greater<int>{}, &A::a).get_unsafe() == stl2::next(stl2::begin(as),1));
+#else
+		CHECK(stl2::is_sorted_until(std::move(as), std::less<int>{}, &A::a) == stl2::end(as));
+		CHECK(stl2::is_sorted_until(std::move(as), std::greater<int>{}, &A::a) == stl2::next(stl2::begin(as),1));
+#endif
 	}
 }
