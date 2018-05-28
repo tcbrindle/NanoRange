@@ -186,3 +186,7 @@ if (MSVC)
     # disable noisy warnings about uncheckable checked iterators in tests
     target_compile_definitions(test_nanorange PRIVATE -D_SCL_SECURE_NO_WARNINGS)
 endif()
+
+enable_testing()
+include(ParseAndAddCatchTests)
+ParseAndAddCatchTests(test_nanorange)

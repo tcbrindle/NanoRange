@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.1)
 
 project(nanorange CXX)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
+
 set(CMAKE_CXX_EXTENSIONS Off)
 
 add_library(nanorange INTERFACE)
