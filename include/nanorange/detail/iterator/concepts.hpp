@@ -268,8 +268,7 @@ template <typename I,
 using legacy_iterator_traits_t = void;
 
 template <typename I>
-NANO_CONCEPT Cpp98Iterator =
-        Iterator<I> && exists_v<legacy_iterator_traits_t, I>;
+NANO_CONCEPT Cpp98Iterator = exists_v<legacy_iterator_traits_t, I>;
 
 }
 
