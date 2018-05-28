@@ -84,6 +84,10 @@ on the C++98 specification. This means that the iterator and sentinel types
 must be the same, or for the range-based overloads, the range must model
 CommonRange. Projections cannot be used.
 
+#### Modifying sequence ops ####
+
+* unique_copy
+
 #### Partitioning operations ####
 
 * stable_partition
@@ -123,10 +127,6 @@ CommonRange. Projections cannot be used.
 ## Unimplemented ##
 
 The following algorithms have not yet been implemented in Nanorange:
-
-#### Modifying sequence ops ####
-
-* unique_copy
 
 #### heap operations ####
 

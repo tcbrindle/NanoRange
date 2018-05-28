@@ -18,7 +18,65 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct unique_copy_fn {
+private:
+    template <typename I, typename O, typename R>
+    static std::enable_if_t<ForwardIterator<I>, O>
+    dispatch_helper(I first, I last, O result, R& comp, priority_tag<2>)
+    {
+        return std::unique_copy(std::move(first), std::move(last),
+                                std::move(result), std::ref(comp));
+    }
 
+    template <typename I, typename O, typename R>
+    static std::enable_if_t<
+            InputIterator<O> && Same<value_type_t<I>, value_type_t<O>>,
+    O>
+    dispatch_helper(I first, I last, O result, R& comp, priority_tag<1>)
+    {
+        return std::unique_copy(std::move(first), std::move(last),
+                                std::move(result), std::ref(comp));
+    }
+
+    template <typename I, typename O, typename R>
+    static std::enable_if_t<IndirectlyCopyableStorable<I, O>, O>
+    dispatch_helper(I first, I last, O result, R& comp, priority_tag<0>)
+    {
+        return std::unique_copy(std::move(first), std::move(last),
+                                std::move(result), std::ref(comp));
+    }
+
+public:
+    // Case 1: Input is ForwardIterator
+    template <typename I, typename O, typename R = equal_to<>>
+    auto operator()(I first, I last, O result, R comp) const
+        -> std::enable_if_t<
+               InputIterator<I> &&
+               WeaklyIncrementable<O> &&
+               IndirectRelation<R, I> &&
+               IndirectlyCopyable<I, O>,
+    decltype(
+    unique_copy_fn::dispatch_helper(first, last, result,
+                                    comp, priority_tag<2>{}))>
+    {
+        return std::unique_copy(std::move(first), std::move(last),
+                                std::move(result), std::ref(comp));
+    }
+
+    // Case 1: Input is ForwardIterator
+    template <typename Rng, typename O, typename R = equal_to<>>
+    auto operator()(Rng&& rng, O result, R comp) const
+    -> std::enable_if_t<
+            InputRange<Rng> &&
+            WeaklyIncrementable<O> &&
+            IndirectRelation<R, iterator_t<Rng>> &&
+            IndirectlyCopyable<iterator_t<Rng>, O>,
+    decltype(
+    unique_copy_fn::dispatch_helper(nano::begin(rng), nano::end(rng), result,
+                                    comp, priority_tag<2>{}))>
+    {
+        return std::unique_copy(nano::begin(rng), nano::end(rng),
+                                std::move(result), std::ref(comp));
+    }
 };
 
 }
