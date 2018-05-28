@@ -183,4 +183,6 @@ if (MSVC)
     target_compile_options(test_nanorange PRIVATE
             /wd4267 /wd4244 # narrowing conversion warnings
     )
+    # disable noisy warnings about uncheckable checked iterators in tests
+    target_compile_definitions(test_nanorange PRIVATE -D_SCL_SECURE_NO_WARNINGS)
 endif()
