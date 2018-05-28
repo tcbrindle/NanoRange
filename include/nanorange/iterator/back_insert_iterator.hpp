@@ -53,7 +53,7 @@ NANO_END_NAMESPACE
 namespace std {
 
 template <typename Cont>
-struct pointer_traits<::nano::back_insert_iterator<Cont>> {
+struct iterator_traits<::nano::back_insert_iterator<Cont>> {
     using value_type = void;
     using difference_type = ptrdiff_t;
     using reference = void;
