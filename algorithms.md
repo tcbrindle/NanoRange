@@ -118,17 +118,7 @@ CommonRange. Projections cannot be used.
 * set_difference
 * set_symmetric_difference
 
-#### Permutation operations ####
-
-* is_permutation
-* next_permutation
-* prev_permutation
-
-## Unimplemented ##
-
-The following algorithms have not yet been implemented in Nanorange:
-
-#### heap operations ####
+#### Heap operations ####
 
 * push_heap
 * pop_heap
@@ -136,3 +126,10 @@ The following algorithms have not yet been implemented in Nanorange:
 * sort_heap
 * is_heap
 * is_heap_until
+
+#### Permutation operations ####
+
+* is_permutation
+* next_permutation
+* prev_permutation
+
