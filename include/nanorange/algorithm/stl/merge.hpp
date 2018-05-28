@@ -42,7 +42,7 @@ struct merge_fn {
         InputRange<Rng1> &&
         CommonRange<Rng1> &&
         detail::Cpp98Iterator<iterator_t<Rng1>> &&
-        InputIterator<Rng2> &&
+        InputRange<Rng2> &&
         CommonRange<Rng2> &&
         detail::Cpp98Iterator<iterator_t<Rng2>> &&
         WeaklyIncrementable<O> &&
