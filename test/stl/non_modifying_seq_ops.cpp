@@ -1,5 +1,5 @@
 
-#include "catch.hpp"
+#include "../catch.hpp"
 
 #include <nanorange/algorithm.hpp>
 

@@ -2,10 +2,6 @@
 add_executable(test_nanorange
     catch_main.cpp
     test_concepts.cpp
-    test_non_modifying_seq_ops.cpp
-    test_modifying_seq_ops.cpp
-    #test_partitioning_ops.cpp
-    #test_sorting_ops.cpp
     #test_type_traits.cpp
 
     # Range-V3/CMCSTL2 tests
@@ -141,6 +137,15 @@ add_executable(test_nanorange
     iterator/ostreambuf_iterator.cpp
     #iterator/reverse_iterator.cpp
     iterator/unreachable.cpp
+
+    stl/binary_search_ops.cpp
+    stl/heap_ops.cpp
+    stl/modifying_seq_ops.cpp
+    stl/non_modifying_seq_ops.cpp
+    stl/partitioning_ops.cpp
+    stl/permutation_ops.cpp
+    stl/set_ops.cpp
+    stl/sorting_ops.cpp
 
     range_access.cpp
 

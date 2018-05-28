@@ -1,9 +1,11 @@
 
-#include "catch.hpp"
+#include "../catch.hpp"
 
-#include <nanorange.hpp>
+#include <nanorange/algorithm.hpp>
 
-namespace rng = nanorange;
+#include <sstream>
+
+namespace rng = nano;
 
 TEST_CASE("is_partitioned()")
 {

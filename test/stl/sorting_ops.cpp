@@ -1,11 +1,11 @@
 
-#include "catch.hpp"
+#include "../catch.hpp"
 
-#include <nanorange.hpp>
+#include <nanorange/algorithm.hpp>
 
 #include <list>
 
-namespace rng = nanorange;
+namespace rng = nano;
 
 TEST_CASE("is_sorted()")
 {
