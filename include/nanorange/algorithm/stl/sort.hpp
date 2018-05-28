@@ -23,7 +23,7 @@ struct sort_fn {
         RandomAccessIterator<I> &&
         detail::Cpp98Iterator<I> &&
         Sortable<I, Comp>>
-    operator()(I first, I last, Comp comp = Comp{})
+    operator()(I first, I last, Comp comp = Comp{}) const
     {
         std::sort(std::move(first), std::move(last), std::ref(comp));
     }
@@ -34,7 +34,7 @@ struct sort_fn {
         CommonRange<Rng> &&
         detail::Cpp98Iterator<iterator_t<Rng>> &&
         Sortable<iterator_t<Rng>, Comp>>
-    operator()(Rng&& rng, Comp comp = Comp{})
+    operator()(Rng&& rng, Comp comp = Comp{}) const
     {
         std::sort(nano::begin(rng), nano::end(rng), std::ref(comp));
     }

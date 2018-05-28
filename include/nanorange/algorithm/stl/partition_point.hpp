@@ -23,7 +23,7 @@ struct partition_point_fn {
         ForwardIterator<I> &&
         Cpp98Iterator<I> &&
         IndirectUnaryPredicate<Pred, I>, I>
-    operator()(I first, I last, Pred pred)
+    operator()(I first, I last, Pred pred) const
     {
         return std::partition_point(std::move(first), std::move(last),
                                     std::ref(pred));
@@ -36,7 +36,7 @@ struct partition_point_fn {
         Cpp98Iterator<iterator_t<Rng>> &&
         IndirectUnaryPredicate<Pred, iterator_t<Rng>>,
         safe_iterator_t<Rng>>
-    operator()(Rng&& rng, Pred pred)
+    operator()(Rng&& rng, Pred pred) const
     {
         return std::partition_point(nano::begin(rng), nano::end(rng),
                                     std::ref(pred));

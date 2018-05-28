@@ -25,7 +25,7 @@ struct equal_range_fn {
         detail::Cpp98Iterator<I> &&
         IndirectStrictWeakOrder<Comp, const T*, I>,
     subrange<I>>
-    operator()(I first, I last, const T& value, Comp comp = Comp{})
+    operator()(I first, I last, const T& value, Comp comp = Comp{}) const
     {
         return std::equal_range(std::move(first), std::move(last),
                                 value, std::ref(comp));
@@ -38,7 +38,7 @@ struct equal_range_fn {
     detail::Cpp98Iterator<iterator_t<Rng>> &&
     IndirectStrictWeakOrder<Comp, const T*, iterator_t<Rng>>,
     safe_subrange_t<Rng>>
-    operator()(Rng&& rng, const T& value, Comp comp = Comp{})
+    operator()(Rng&& rng, const T& value, Comp comp = Comp{}) const
     {
         return std::equal_range(nano::begin(rng), nano::end(rng),
                                 value, std::ref(comp));

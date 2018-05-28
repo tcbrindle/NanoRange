@@ -27,7 +27,7 @@ struct includes_fn {
         Sentinel<I2, I2> &&
         Cpp98Iterator<I2> &&
         IndirectStrictWeakOrder<Comp, I1, I2>, bool>
-    operator()(I1 first1, I1 last1, I2 first2, I2 last2, Comp comp = Comp{})
+    operator()(I1 first1, I1 last1, I2 first2, I2 last2, Comp comp = Comp{}) const
     {
         return std::includes(std::move(first1), std::move(last1),
                              std::move(first2), std::move(last2),
@@ -43,7 +43,7 @@ struct includes_fn {
         CommonRange<Rng2> &&
         Cpp98Iterator<iterator_t<Rng2>> &&
         IndirectStrictWeakOrder<Comp, iterator_t<Rng1>, iterator_t<Rng2>>, bool>
-    operator()(Rng1&& rng1, Rng2&& rng2, Comp comp = Comp{})
+    operator()(Rng1&& rng1, Rng2&& rng2, Comp comp = Comp{}) const
     {
         return std::includes(nano::begin(rng1), nano::end(rng1),
                              nano::begin(rng2), nano::end(rng2),

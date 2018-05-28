@@ -29,7 +29,7 @@ struct set_union_fn {
         WeaklyIncrementable<O> &&
         Cpp98Iterator<O> &&
         Mergeable<I1, I2, O, Comp>, O>
-    operator()(I1 first1, I1 last1, I2 first2, I2 last2, O result, Comp comp = Comp{})
+    operator()(I1 first1, I1 last1, I2 first2, I2 last2, O result, Comp comp = Comp{}) const
     {
         return std::set_union(std::move(first1), std::move(last1),
                               std::move(first2), std::move(last2),
@@ -47,7 +47,7 @@ struct set_union_fn {
         WeaklyIncrementable<O> &&
         Cpp98Iterator<O> &&
         Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp>, O>
-    operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{})
+    operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{}) const
     {
         return std::set_union(nano::begin(rng1), nano::end(rng1),
                               nano::begin(rng2), nano::end(rng2),

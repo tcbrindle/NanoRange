@@ -28,7 +28,7 @@ struct partial_sort_copy_fn {
         IndirectlyCopyable<I1, I2> &&
         Sortable<I2, Comp> &&
         IndirectStrictWeakOrder<Comp, I1, I2>, I2>
-    operator()(I1 first, I1 last, I2 result_first, I2 result_last, Comp comp = Comp{})
+    operator()(I1 first, I1 last, I2 result_first, I2 result_last, Comp comp = Comp{}) const
     {
         return std::partial_sort_copy(std::move(first), std::move(last),
                                       std::move(result_first), std::move(result_last),
@@ -47,7 +47,7 @@ struct partial_sort_copy_fn {
         Sortable<iterator_t<Rng2>, Comp> &&
         IndirectStrictWeakOrder<Comp, iterator_t<Rng1>, iterator_t<Rng2>>,
     safe_iterator_t<Rng2>>
-    operator()(Rng1&& rng, Rng2&& result_rng, Comp comp = Comp{})
+    operator()(Rng1&& rng, Rng2&& result_rng, Comp comp = Comp{}) const
     {
         return std::partial_sort_copy(nano::begin(rng), nano::end(rng),
                                       nano::begin(result_rng), nano::end(result_rng),

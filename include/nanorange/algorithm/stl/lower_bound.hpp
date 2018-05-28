@@ -24,7 +24,7 @@ struct lower_bound_fn {
         detail::Cpp98Iterator<I> &&
         IndirectStrictWeakOrder<Comp, const T*, I>,
         I>
-    operator()(I first, I last, const T& value, Comp comp = Comp{})
+    operator()(I first, I last, const T& value, Comp comp = Comp{}) const
     {
         return std::lower_bound(std::move(first), std::move(last),
                                 value, std::ref(comp));
@@ -37,7 +37,7 @@ struct lower_bound_fn {
         detail::Cpp98Iterator<iterator_t<Rng>> &&
         IndirectStrictWeakOrder<Comp, const T*, iterator_t<Rng>>,
         safe_iterator_t<Rng>>
-    operator()(Rng&& rng, const T& value, Comp comp = Comp{})
+    operator()(Rng&& rng, const T& value, Comp comp = Comp{}) const
     {
         return std::lower_bound(nano::begin(rng), nano::end(rng),
                                 value, std::ref(comp));

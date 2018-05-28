@@ -23,7 +23,7 @@ struct inplace_merge_fn {
         BidirectionalIterator<I> &&
         Cpp98Iterator<I> &&
         Sortable<I, Comp>>
-    operator()(I first, I middle, I last, Comp comp = Comp{})
+    operator()(I first, I middle, I last, Comp comp = Comp{}) const
     {
         std::inplace_merge(std::move(first), std::move(middle),
                            std::move(last), std::ref(comp));
@@ -35,7 +35,7 @@ struct inplace_merge_fn {
         CommonRange<Rng> &&
         Cpp98Iterator<iterator_t<Rng>> &&
         Sortable<iterator_t<Rng>, Comp>>
-    operator()(Rng&& rng, iterator_t<Rng> middle, Comp comp = Comp{})
+    operator()(Rng&& rng, iterator_t<Rng> middle, Comp comp = Comp{}) const
     {
         std::inplace_merge(nano::begin(rng), std::move(middle),
                            nano::end(rng), std::ref(comp));

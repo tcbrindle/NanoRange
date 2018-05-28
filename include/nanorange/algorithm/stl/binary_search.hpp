@@ -24,7 +24,7 @@ struct binary_search_fn {
        detail::Cpp98Iterator<I> &&
        IndirectStrictWeakOrder<Comp, const T*, I>,
     bool>
-    operator()(I first, I last, const T& value, Comp comp = Comp{})
+    operator()(I first, I last, const T& value, Comp comp = Comp{}) const
     {
         return std::binary_search(std::move(first), std::move(last),
                                   value, std::ref(comp));
@@ -37,7 +37,7 @@ struct binary_search_fn {
         detail::Cpp98Iterator<iterator_t<Rng>> &&
         IndirectStrictWeakOrder<Comp, const T*, iterator_t<Rng>>,
     bool>
-    operator()(Rng&& rng, const T& value, Comp comp = Comp{})
+    operator()(Rng&& rng, const T& value, Comp comp = Comp{}) const
     {
         return std::binary_search(nano::begin(rng), nano::end(rng),
                                   value, std::ref(comp));

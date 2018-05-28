@@ -23,7 +23,7 @@ struct nth_element_fn {
         RandomAccessIterator<I> &&
         detail::Cpp98Iterator<I> &&
         Sortable<I, Comp>>
-    operator()(I first, I nth, I last, Comp comp = Comp{})
+    operator()(I first, I nth, I last, Comp comp = Comp{}) const
     {
         std::nth_element(std::move(first), std::move(nth),
                          std::move(last), std::ref(comp));
@@ -35,7 +35,7 @@ struct nth_element_fn {
         CommonRange<Rng> &&
         detail::Cpp98Iterator<iterator_t<Rng>> &&
         Sortable<iterator_t<Rng>, Comp>>
-    operator()(Rng&& rng, iterator_t<Rng> nth, Comp comp = Comp{})
+    operator()(Rng&& rng, iterator_t<Rng> nth, Comp comp = Comp{}) const
     {
         std::nth_element(nano::begin(rng), std::move(nth),
                          nano::end(rng), std::ref(comp));
