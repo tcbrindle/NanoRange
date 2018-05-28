@@ -46,12 +46,13 @@ private:
     }
 
 public:
-    // Case 1: Input is ForwardIterator
     template <typename I, typename O, typename R = equal_to<>>
-    auto operator()(I first, I last, O result, R comp) const
+    auto operator()(I first, I last, O result, R comp = R{}) const
         -> std::enable_if_t<
                InputIterator<I> &&
+               detail::Cpp98Iterator<I> &&
                WeaklyIncrementable<O> &&
+               detail::Cpp98Iterator<O> &&
                IndirectRelation<R, I> &&
                IndirectlyCopyable<I, O>,
     decltype(
@@ -64,10 +65,13 @@ public:
 
     // Case 1: Input is ForwardIterator
     template <typename Rng, typename O, typename R = equal_to<>>
-    auto operator()(Rng&& rng, O result, R comp) const
+    auto operator()(Rng&& rng, O result, R comp = R{}) const
     -> std::enable_if_t<
             InputRange<Rng> &&
+            CommonRange<Rng> &&
+            Cpp98Iterator<iterator_t<Rng>> &&
             WeaklyIncrementable<O> &&
+            Cpp98Iterator<O> &&
             IndirectRelation<R, iterator_t<Rng>> &&
             IndirectlyCopyable<iterator_t<Rng>, O>,
     decltype(

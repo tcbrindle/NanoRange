@@ -589,8 +589,6 @@ TEST_CASE("unique() (with predicate)")
     }
 }
 
-#if 0
-
 TEST_CASE("unique_copy()")
 {
     std::istringstream src{"1 1 1 1 2 2 2 2 3 3 3 3 4 4 4 4 5 5 5 5"};
@@ -626,5 +624,3 @@ TEST_CASE("unique_copy() (with predicate)")
         REQUIRE(dest.str() == "1 2 3 4 5 ");
     }
 }
-
-#endif
