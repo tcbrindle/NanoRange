@@ -9,7 +9,7 @@ install:
 - cmake ..
 
 build_script:
-- cmake --build . --target test_nanorange
+- cmake --build . --target test_nanorange --config Debug
 
 test_script:
-- ctest
+- ctest -C Debug
