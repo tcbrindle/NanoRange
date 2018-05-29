@@ -5,6 +5,8 @@ project(nanorange CXX)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
+enable_testing()
+
 set(CMAKE_CXX_EXTENSIONS Off)
 
 add_library(nanorange INTERFACE)
