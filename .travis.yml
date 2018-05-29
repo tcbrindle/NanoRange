@@ -16,6 +16,34 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
 
+    # GCC 7
+    - env: COMPILER=g++-7
+      addons:
+        apt:
+          packages:
+            - g++-7
+          sources:
+            - ubuntu-toolchain-r-test
+
+    # GCC 6
+    - env: COMPILER=g++-6
+      addons:
+        apt:
+          packages:
+            - g++-6
+          sources:
+            - ubuntu-toolchain-r-test
+
+    # GCC 5
+    - env: COMPILER=g++-5
+      addons:
+        apt:
+          packages:
+            - g++-5
+          sources:
+            - ubuntu-toolchain-r-test
+
+
 
 before_script:
   - cd $TRAVIS_BUILD_DIR
