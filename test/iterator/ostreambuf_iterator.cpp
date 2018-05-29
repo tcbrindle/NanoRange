@@ -13,10 +13,10 @@
 //#include <stl2/iterator.hpp>
 //#include <stl2/type_traits.hpp>
 #include <nanorange/range.hpp>
-#include <nanorange/view/subrange.hpp>
 #include <nanorange/algorithm/equal.hpp>
 #include <sstream>
 #include "../catch.hpp"
+#include "../test_utils.hpp"
 
 namespace __stl2 = nano::ranges;
 using namespace __stl2;
@@ -53,7 +53,7 @@ TEST_CASE("iter.ostreambuf_iterator") {
 
 	{
 		static const char hw[] = "Hello, world!";
-		auto hw_range = make_subrange(__stl2::begin(hw), __stl2::end(hw) - 1);
+		auto hw_range = make_range(__stl2::begin(hw), __stl2::end(hw) - 1);
 		std::ostringstream os;
 		auto r = ::copy(hw_range, I{os});
 		//CHECK(r.out() != default_sentinel{});

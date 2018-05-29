@@ -10,25 +10,28 @@
 // Project home: https://github.com/ericniebler/range-v3
 
 #include <nanorange/algorithm/count.hpp>
-#include <nanorange/view/subrange.hpp>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"
+#include "../test_utils.hpp"
 
-struct S
-{
+namespace {
+
+struct S {
 	int i;
 };
 
-struct T
-{
+struct T {
 	bool b;
+
 	bool m() { return b; }
 };
+
+}
 
 TEST_CASE("alg.count_if")
 {
 	using namespace nano;
-	using nano::make_subrange;
+	using nano::make_range;
 	auto equals = [](auto&& i){
 	  return [i = std::forward<decltype(i)>(i)](const auto& j) {
 		return i == j;
@@ -45,11 +48,11 @@ TEST_CASE("alg.count_if")
 	CHECK(count_if(input_iterator<const int*>(ia),
 				   sentinel<const int*>(ia), equals(2)) == 0);
 
-	CHECK(count_if(make_subrange(input_iterator<const int*>(ia),
+	CHECK(count_if(make_range(input_iterator<const int*>(ia),
 						 sentinel<const int*>(ia + cia)), equals(2)) == 3);
-	CHECK(count_if(make_subrange(input_iterator<const int*>(ia),
+	CHECK(count_if(make_range(input_iterator<const int*>(ia),
 						 sentinel<const int*>(ia + cia)), equals(7)) == 0);
-	CHECK(count_if(make_subrange(input_iterator<const int*>(ia),
+	CHECK(count_if(make_range(input_iterator<const int*>(ia),
 						 sentinel<const int*>(ia)), equals(2)) == 0);
 
 	S sa[] = {{0}, {1}, {2}, {2}, {0}, {1}, {2}, {3}};
@@ -62,11 +65,11 @@ TEST_CASE("alg.count_if")
 	CHECK(count_if(input_iterator<const S*>(sa),
 				   sentinel<const S*>(sa), equals(2), &S::i) == 0);
 
-	CHECK(count_if(make_subrange(input_iterator<const S*>(sa),
+	CHECK(count_if(make_range(input_iterator<const S*>(sa),
 						 sentinel<const S*>(sa + csa)), equals(2), &S::i) == 3);
-	CHECK(count_if(make_subrange(input_iterator<const S*>(sa),
+	CHECK(count_if(make_range(input_iterator<const S*>(sa),
 						 sentinel<const S*>(sa + csa)), equals(7), &S::i) == 0);
-	CHECK(count_if(make_subrange(input_iterator<const S*>(sa),
+	CHECK(count_if(make_range(input_iterator<const S*>(sa),
 						 sentinel<const S*>(sa)), equals(2), &S::i) == 0);
 
 	T ta[] = {{true}, {false}, {true}, {false}, {false}, {true}, {false}, {false}, {true}, {false}};
@@ -74,9 +77,9 @@ TEST_CASE("alg.count_if")
 				   sentinel<T*>(ta + size(ta)), &T::m) == 4);
 	CHECK(count_if(input_iterator<T*>(ta),
 				   sentinel<T*>(ta + size(ta)), &T::b) == 4);
-	CHECK(count_if(make_subrange(input_iterator<T*>(ta),
+	CHECK(count_if(make_range(input_iterator<T*>(ta),
 						 sentinel<T*>(ta + size(ta))), &T::m) == 4);
-	CHECK(count_if(make_subrange(input_iterator<T*>(ta),
+	CHECK(count_if(make_range(input_iterator<T*>(ta),
 						 sentinel<T*>(ta + size(ta))), &T::b) == 4);
 
 	{

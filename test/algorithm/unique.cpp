@@ -26,9 +26,9 @@
 //   http://http://libcxx.llvm.org/
 
 #include <nanorange/algorithm/unique.hpp>
-#include <nanorange/view/subrange.hpp>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"
+#include "../test_utils.hpp"
 
 namespace stl2 = nano;
 
@@ -57,7 +57,7 @@ struct range_call {
 	template <class B, class E, class... Args>
 	auto operator()(B&& It, E&& e, Args&& ... args) const
 	{
-		auto rng = stl2::make_subrange(begin_t{It}, sentinel_t{e});
+		auto rng = stl2::make_range(begin_t{It}, sentinel_t{e});
 		return stl2::unique(rng, std::forward<Args>(args)...);
 	}
 };
