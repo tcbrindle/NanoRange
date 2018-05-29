@@ -1,5 +1,5 @@
 
-language: c++
+language: cpp
 
 os: linux
 dist: trusty
@@ -43,6 +43,14 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
 
+    - env: COMPILER=clang++-6
+      addons:
+        apt:
+          packages:
+            - clang-6.0
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-6.0
 
 
 before_script:
