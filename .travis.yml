@@ -35,13 +35,13 @@ matrix:
             - ubuntu-toolchain-r-test
 
     # GCC 5
-    - env: COMPILER=g++-5
-      addons:
-        apt:
-          packages:
-            - g++-5
-          sources:
-            - ubuntu-toolchain-r-test
+    #- env: COMPILER=g++-5
+    #  addons:
+    #    apt:
+    #      packages:
+    #        - g++-5
+    #      sources:
+    #        - ubuntu-toolchain-r-test
 
     - env: COMPILER=clang++-6.0
       addons:
@@ -51,6 +51,15 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-6.0
+
+    - env: COMPILER=clang++-5.0
+      addons:
+        apt:
+          packages:
+            - clang-5.0
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
 
 
 install:
