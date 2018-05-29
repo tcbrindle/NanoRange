@@ -43,7 +43,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
 
-    - env: COMPILER=clang++-6
+    - env: COMPILER=clang++-6.0
       addons:
         apt:
           packages:
