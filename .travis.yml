@@ -8,7 +8,7 @@ sudo: false
 matrix:
   include:
     # GCC 8
-    - env: COMPILER=g++-8
+    - env: COMPILER=g++-8 BUILD_SINGLE_HEADER=true
       addons:
         apt:
           packages:
@@ -24,5 +24,31 @@ before_script:
   - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=g++-8
 
 script:
-  - cmake --build .
+  - cmake --build . --target test_nanorange
   - ctest
+
+after_success:
+  - |
+    if [[ "${BUILD_SINGLE_HEADER}" == "true" ]]; then
+      if [[ "${TRAVIS_PULL_REQUEST}" == "false" && "${TRAVIS_BRANCH}" == "master" ]]; then
+        cmake --build . --target make_single_header
+        cd ..
+        ./build/tools/make_single_header include/nanorange.hpp single_include/nanorange.hpp
+        # Suppress output to avoid leaking the token when the command fails
+        git clone https://tcbrindle:${GITHUB_TOKEN}@github.com/tcbrindle/nanorange --depth 1 checkout &>/dev/null
+        rm -rf checkout/single_include/nanorange.hpp
+        cp -R single_include/nanorange.hpp checkout/single_include/nanorange.hpp
+        pushd checkout
+            git config --global user.name "Travis Bot"
+            git config --global user.email "travis@travis-ci.org"
+            git add --all .
+            git commit --allow-empty -m "Update single header"
+            # Suppress output to avoid leaking the token
+            travis_retry git push origin master &>/dev/null
+            popd
+          fi
+        fi
+
+
+notifications:
+  email: off
