@@ -290,7 +290,7 @@ template <typename R, std::enable_if_t<detail::ForwardingRange<R> && SizedRange<
 subrange(R&&, std::nullptr_t = nullptr)
     ->subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>;
 
-template <typename R, std::enable_if_t<detail::ForwardingRange<R>>
+template <typename R, std::enable_if_t<detail::ForwardingRange<R>, int> = 0>
 subrange(R&&, difference_type_t<iterator_t<R>>) ->
     subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>;
 
