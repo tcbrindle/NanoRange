@@ -1,0 +1,28 @@
+
+language: c++
+
+os: linux
+dist: trusty
+sudo: false
+
+matrix:
+  include:
+    # GCC 8
+    - env: COMPILER=g++-8
+      addons:
+        apt:
+          packages:
+            - g++-8
+          sources:
+            - ubuntu-toolchain-r-test
+
+
+before_script:
+  - cd $TRAVIS_BUILD_DIR
+  - mkdir -p -v build
+  - cd build
+  - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=g++-8
+
+script:
+  - cmake --build .
+  - ctest
