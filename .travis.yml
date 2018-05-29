@@ -43,7 +43,15 @@ matrix:
     #      sources:
     #        - ubuntu-toolchain-r-test
 
-    - env: COMPILER=clang++-6.0
+    # Clang 6 currently ICEs compiling the test suite
+    #- env: COMPILER=clang++-6.0
+    #  addons:
+    #    apt:
+    #      packages:
+    #        - clang-6.0
+    #      sources:
+    #        - ubuntu-toolchain-r-test
+    #        - llvm-toolchain-trusty-6.0
       addons:
         apt:
           packages:
