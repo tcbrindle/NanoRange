@@ -23,10 +23,10 @@
 //===----------------------------------------------------------------------===//
 
 #include <nanorange/algorithm/replace_copy_if.hpp>
-#include <nanorange/view/subrange.hpp>
 #include <utility>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"
+#include "../test_utils.hpp"
 
 namespace stl2 = nano::ranges;
 
@@ -53,7 +53,7 @@ void test_rng() {
 	int ia[] = {0, 1, 2, 3, 4};
 	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
 	int ib[sa] = {0};
-	auto rng = stl2::make_subrange(InIter(ia), Sent(ia + sa));
+	auto rng = stl2::make_range(InIter(ia), Sent(ia + sa));
 	std::pair<InIter, OutIter> r = stl2::replace_copy_if(rng, OutIter(ib),
 														 [](int i) { return 2 == i; }, 5);
 	CHECK(base(r.first) == ia + sa);

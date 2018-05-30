@@ -43,7 +43,8 @@ private:
             ++result;
         }
 
-        return {std::move(first1), std::move(first2), std::move(result)};
+        return std::tuple<I1, I2, O>{std::move(first1), std::move(first2),
+                                     std::move(result)};
     }
 
     template <typename I1, typename S1, typename I2, typename S2, typename O,
@@ -60,7 +61,8 @@ private:
             ++result;
         }
 
-        return {std::move(first1), std::move(first2), std::move(result)};
+        return std::tuple<I1, I2, O>{std::move(first1), std::move(first2),
+                                     std::move(result)};
     }
 
 public:

@@ -24,9 +24,9 @@
 
 #include <nanorange/algorithm/replace_if.hpp>
 #include <utility>
-#include <nanorange/view/subrange.hpp>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"
+#include "../test_utils.hpp"
 
 namespace stl2 = nano::ranges;
 
@@ -49,7 +49,7 @@ template<typename Iter, typename Sent = Iter>
 void test_rng() {
 	int ia[] = {0, 1, 2, 3, 4};
 	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
-	auto rng = stl2::make_subrange(Iter(ia), Sent(ia + sa));
+	auto rng = stl2::make_range(Iter(ia), Sent(ia + sa));
 	Iter i = stl2::replace_if(rng, [](int i) { return i == 2; }, 5);
 	CHECK(ia[0] == 0);
 	CHECK(ia[1] == 1);

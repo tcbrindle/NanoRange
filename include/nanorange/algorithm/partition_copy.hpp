@@ -34,7 +34,7 @@ private:
             ++first;
         }
 
-        return {first, out_true, out_false};
+        return std::tuple<I, O1, O2>{first, out_true, out_false};
     }
 
 public:

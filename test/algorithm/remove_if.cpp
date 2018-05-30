@@ -23,13 +23,13 @@
 //===----------------------------------------------------------------------===//
 
 #include <nanorange/algorithm/remove_if.hpp>
-#include <nanorange/view/subrange.hpp>
 #include <iostream>
 #include <memory>
 #include <utility>
 #include <functional>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"
+#include "../test_utils.hpp"
 
 namespace stl2 = nano;
 
@@ -63,7 +63,7 @@ test_range() {
 	int ia[] = {0, 1, 2, 3, 4, 2, 3, 4, 2};
 	constexpr unsigned sa = stl2::size(ia);
 	using namespace std::placeholders;
-	Iter r = stl2::remove_if(::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))),
+	Iter r = stl2::remove_if(::as_lvalue(stl2::make_range(Iter(ia), Sent(ia + sa))),
 							 std::bind(std::equal_to<int>(), _1, 2));
 	CHECK(base(r) == ia + sa - 3);
 	CHECK(ia[0] == 0);
@@ -116,7 +116,7 @@ test_range_rvalue() {
 	ia[6].reset(new int(3));
 	ia[7].reset(new int(4));
 	ia[8].reset(new int(2));
-	Iter r = stl2::remove_if(::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))), pred());
+	Iter r = stl2::remove_if(::as_lvalue(stl2::make_range(Iter(ia), Sent(ia + sa))), pred());
 	CHECK(base(r) == ia + sa - 3);
 	CHECK(*ia[0] == 0);
 	CHECK(*ia[1] == 1);

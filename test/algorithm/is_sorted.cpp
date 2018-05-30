@@ -27,7 +27,6 @@
 //   http://http://libcxx.llvm.org/
 
 #include <nanorange/algorithm/is_sorted.hpp>
-#include <nanorange/view/subrange.hpp>
 #include "../catch.hpp"
 #include "../test_utils.hpp"
 #include "../test_iterators.hpp"
@@ -60,7 +59,7 @@ struct range_call {
 	bool operator()(B&& b, E&& e, Args&& ... args)
 	{
 		return ranges::is_sorted(
-				ranges::make_subrange(begin_t{b}, sentinel_t{e}),
+				ranges::make_range(begin_t{b}, sentinel_t{e}),
 				std::forward<Args>(args)...);
 	}
 };

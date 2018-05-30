@@ -92,7 +92,10 @@ NANO_CONCEPT SizedRange =
 namespace detail {
 
 template <typename, typename = void>
-constexpr bool view_predicate = true;
+struct view_predicate : std::true_type {};
+
+template <typename T>
+constexpr bool view_predicate_v = view_predicate<T>::value;
 
 template <typename T>
 using enable_view_t = typename enable_view<T>::type;
@@ -101,28 +104,29 @@ template <typename T>
 constexpr bool has_enable_view_v = exists_v<enable_view_t, T>;
 
 template <typename T>
-constexpr bool view_predicate<T, std::enable_if_t<has_enable_view_v<T>>> =
-    enable_view<T>::type::value;
+struct view_predicate<T, std::enable_if_t<has_enable_view_v<T>>> {
+    static constexpr bool value = enable_view<T>::type::value;
+};
 
 template <typename T>
-constexpr bool view_predicate<
-    T, std::enable_if_t<!has_enable_view_v<T> && DerivedFrom<T, view_base>>> =
-    true;
+struct view_predicate<
+    T, std::enable_if_t<!has_enable_view_v<T> && DerivedFrom<T, view_base>>>
+    : std::true_type {};
 
 template <typename T>
-constexpr bool view_predicate<std::initializer_list<T>> = false;
+struct view_predicate<std::initializer_list<T>> : std::false_type {};
 
 template <typename K, typename C, typename A>
-constexpr bool view_predicate<std::set<K, C, A>> = false;
+struct view_predicate<std::set<K, C, A>> : std::false_type {};
 
 template <typename K, typename C, typename A>
-constexpr bool view_predicate<std::multiset<K, C, A>> = false;
+struct view_predicate<std::multiset<K, C, A>>  : std::false_type {};
 
 template <typename K, typename H, typename E, typename A>
-constexpr bool view_predicate<std::unordered_set<K, H, E, A>> = false;
+struct view_predicate<std::unordered_set<K, H, E, A>> : std::false_type {};
 
 template <typename K, typename H, typename E, typename A>
-constexpr bool view_predicate<std::unordered_multiset<K, H, E, A>> = false;
+struct view_predicate<std::unordered_multiset<K, H, E, A>> : std::false_type {};
 
 template <typename>
 auto view_predicate_helper_fn(long) -> std::false_type;
@@ -141,13 +145,13 @@ constexpr bool view_predicate_helper =
     decltype(view_predicate_helper_fn<T>(0))::value;
 
 template <typename T>
-constexpr bool view_predicate<T, std::enable_if_t<view_predicate_helper<T>>> =
-    false;
+struct view_predicate<T, std::enable_if_t<view_predicate_helper<T>>>
+   : std::false_type {};
 
 } // namespace detail
 
 template <typename T>
-NANO_CONCEPT View = Range<T>&& Semiregular<T>&& detail::view_predicate<T>;
+NANO_CONCEPT View = Range<T>&& Semiregular<T>&& detail::view_predicate_v<T>;
 
 // [range.common]
 namespace detail {

@@ -53,14 +53,16 @@ struct test_<void_t<Trait<Args...>>, Trait, Args...> {
 template <template <class...> class Trait, typename... Args>
 using test_t = typename test_<void, Trait, Args...>::type;
 
+// Work around GCC5 bug that won't let us specialise variable templates
 template <typename Void, template <class...> class AliasT, typename... Args>
-constexpr bool exists_helper_v = false;
+struct exists_helper : std::false_type{};
 
 template <template <class...> class AliasT, typename... Args>
-constexpr bool exists_helper_v<void_t<AliasT<Args...>>, AliasT, Args...> = true;
+struct exists_helper<void_t<AliasT<Args...>>, AliasT, Args...>
+    : std::true_type{};
 
 template <template <class...> class AliasT, typename... Args>
-constexpr bool exists_v = exists_helper_v<void, AliasT, Args...>;
+constexpr bool exists_v = exists_helper<void, AliasT, Args...>::value;
 
 template <typename R, typename... Args,
           typename = decltype(&R::template requires_<Args...>)>

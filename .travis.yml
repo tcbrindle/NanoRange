@@ -1,0 +1,191 @@
+
+language: cpp
+
+os: linux
+dist: trusty
+sudo: false
+
+matrix:
+  include:
+    # GCC 8
+    - env: COMPILER=g++-8 BUILD_SINGLE_HEADER=true
+      addons:
+        apt:
+          packages:
+            - g++-8
+          sources:
+            - ubuntu-toolchain-r-test
+
+    # GCC 7
+    - env: COMPILER=g++-7
+      addons:
+        apt:
+          packages:
+            - g++-7
+          sources:
+            - ubuntu-toolchain-r-test
+
+    # GCC 6
+    - env: COMPILER=g++-6
+      addons:
+        apt:
+          packages:
+            - g++-6
+          sources:
+            - ubuntu-toolchain-r-test
+
+    # GCC 5
+    - env: COMPILER=g++-5
+      addons:
+        apt:
+          packages:
+            - g++-5
+          sources:
+            - ubuntu-toolchain-r-test
+
+    # Clang -- all versions -- currrently ICE
+
+    - env: COMPILER=clang++-6.0
+      addons:
+        apt:
+          packages:
+            - clang-6.0
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-6.0
+
+    - env: COMPILER=clang++-5.0
+      addons:
+        apt:
+          packages:
+            - clang-5.0
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+
+    - env: COMPILER=clang++-4.0
+      addons:
+        apt:
+          packages:
+            - clang-4.0
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-4.0
+
+    - env: COMPILER=clang++-3.9
+      addons:
+        apt:
+          packages:
+            - clang-3.9
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-3.9
+
+    - env: COMPILER=clang++-3.8
+      addons:
+        apt:
+          packages:
+            - clang-3.8
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+
+    #- env: COMPILER=clang++-3.7
+    #  addons:
+    #    apt:
+    #      packages:
+    #        - clang-3.7
+    #      sources:
+    #        - ubuntu-toolchain-r-test
+    #        - llvm-toolchain-precise-3.7
+
+    #- env: COMPILER=clang++-3.6
+    #  addons:
+    #    apt:
+    #      packages:
+    #        - clang-3.6
+    #      sources:
+    #        - ubuntu-toolchain-r-test
+    #        - llvm-toolchain-precise-3.6
+
+    #- env: COMPILER=clang++-3.5
+    #  addons:
+    #    apt:
+    #      packages:
+    #        - clang-3.5
+    #      sources:
+    #        - ubuntu-toolchain-r-test
+    #        - llvm-toolchain-precise-3.5
+
+install:
+  - DEPS_DIR="${HOME}/deps"
+  - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
+
+  - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi
+  - ${CXX} --version
+
+  ############################################################################
+  # Install libc++ and libc++abi if needed
+  # Taken from https://github.com/boostorg/hana/blob/master/.travis.yml
+  ############################################################################
+  - |
+    if [[ "${CXX%%+*}" == "clang" ]]; then
+      if   [[ "${CXX}" == "clang++-3.5" ]]; then LLVM_VERSION="3.5.2";
+      elif [[ "${CXX}" == "clang++-3.6" ]]; then LLVM_VERSION="3.6.2";
+      elif [[ "${CXX}" == "clang++-3.7" ]]; then LLVM_VERSION="3.7.1";
+      elif [[ "${CXX}" == "clang++-3.8" ]]; then LLVM_VERSION="3.8.1";
+      elif [[ "${CXX}" == "clang++-3.9" ]]; then LLVM_VERSION="3.9.1";
+      elif [[ "${CXX}" == "clang++-4.0" ]]; then LLVM_VERSION="4.0.1";
+      elif [[ "${CXX}" == "clang++-5.0" ]]; then LLVM_VERSION="5.0.2";
+      elif [[ "${CXX}" == "clang++-6.0" ]]; then LLVM_VERSION="6.0.0";
+      fi
+      LLVM_URL="http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
+      LIBCXX_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
+      LIBCXXABI_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz"
+      mkdir -p llvm llvm/build llvm/projects/libcxx llvm/projects/libcxxabi
+      travis_retry wget -O - ${LLVM_URL} | tar --strip-components=1 -xJ -C llvm || exit 1
+      travis_retry wget -O - ${LIBCXX_URL} | tar --strip-components=1 -xJ -C llvm/projects/libcxx || exit 1
+      travis_retry wget -O - ${LIBCXXABI_URL} | tar --strip-components=1 -xJ -C llvm/projects/libcxxabi || exit 1
+      (cd llvm/build && cmake .. -DCMAKE_INSTALL_PREFIX=${DEPS_DIR}/llvm/install) || exit 1
+      (cd llvm/build/projects/libcxx && make install -j2) || exit 1
+      (cd llvm/build/projects/libcxxabi && make install -j2) || exit 1
+      export CXXFLAGS="-isystem ${DEPS_DIR}/llvm/install/include/c++/v1"
+      export LDFLAGS="-L ${DEPS_DIR}/llvm/install/lib -l c++ -l c++abi"
+      export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${DEPS_DIR}/llvm/install/lib"
+    fi
+
+before_script:
+  - cd $TRAVIS_BUILD_DIR
+  - mkdir -p -v build
+  - cd build
+  - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=$COMPILER
+
+script:
+  - cmake --build . --target test_nanorange
+  - ctest
+
+after_success:
+  - |
+    if [[ "${BUILD_SINGLE_HEADER}" == "true" ]]; then
+      if [[ "${TRAVIS_PULL_REQUEST}" == "false" && "${TRAVIS_BRANCH}" == "master" ]]; then
+        cmake --build . --target make_single_header
+        cd ..
+        ./build/tools/make_single_header include/nanorange.hpp single_include/nanorange.hpp
+        # Suppress output to avoid leaking the token when the command fails
+        git clone https://tcbrindle:${GITHUB_TOKEN}@github.com/tcbrindle/nanorange --depth 1 checkout &>/dev/null
+        rm -rf checkout/single_include/nanorange.hpp
+        cp -R single_include/nanorange.hpp checkout/single_include/nanorange.hpp
+        pushd checkout
+            git config --global user.name "Travis Bot"
+            git config --global user.email "travis@travis-ci.org"
+            git add --all .
+            git commit --allow-empty -m "Update single header"
+            # Suppress output to avoid leaking the token
+            travis_retry git push origin master &>/dev/null
+            popd
+          fi
+        fi
+
+
+notifications:
+  email: off
