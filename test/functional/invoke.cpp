@@ -20,7 +20,7 @@ constexpr struct {
 	constexpr auto&& operator()(T&& arg) const noexcept {
 		return (decltype(arg)&&)arg;
 	}
-} h;
+} h{};
 
 struct A {
 	int i = 13;
@@ -121,7 +121,7 @@ TEST_CASE("func.invoke") {
 	// is defined; __invoke::impl is constexpr regardless.)
 	{
 		struct B { int i = 42; constexpr int f() const { return i; } };
-		constexpr B b;
+		constexpr B b{};
 		static_assert(b.i == 42, "");
 		static_assert(b.f() == 42, "");
 		static_assert(stl2::invoke(&B::i, b) == 42, "");
