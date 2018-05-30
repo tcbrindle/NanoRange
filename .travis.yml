@@ -178,7 +178,7 @@ before_script:
   - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=$COMPILER
 
 script:
-  - cmake --build . --target test_nanorange
+  - cmake --build . --target test_nanorange -- -j2
   - ctest
 
 after_success:
