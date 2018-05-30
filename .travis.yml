@@ -27,7 +27,6 @@ matrix:
         apt:
           packages:
             - g++-8
-            - ninja-build
           sources:
             - ubuntu-toolchain-r-test
 
@@ -37,7 +36,6 @@ matrix:
         apt:
           packages:
             - g++-7
-            - ninja-build
           sources:
             - ubuntu-toolchain-r-test
 
@@ -47,7 +45,6 @@ matrix:
         apt:
           packages:
             - g++-6
-            - ninja-build
           sources:
             - ubuntu-toolchain-r-test
 
@@ -57,7 +54,6 @@ matrix:
         apt:
           packages:
             - g++-5
-            - ninja-build
           sources:
             - ubuntu-toolchain-r-test
 
@@ -67,7 +63,6 @@ matrix:
         apt:
           packages:
             - clang-6.0
-            - ninja-build
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-6.0
@@ -78,7 +73,6 @@ matrix:
         apt:
           packages:
             - clang-5.0
-            - ninja-build
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-5.0
@@ -89,7 +83,6 @@ matrix:
         apt:
           packages:
             - clang-4.0
-            - ninja-build
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-4.0
@@ -100,7 +93,6 @@ matrix:
         apt:
           packages:
             - clang-3.9
-            - ninja-build
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-3.9
@@ -111,7 +103,6 @@ matrix:
         apt:
           packages:
             - clang-3.8
-            - ninja-build
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.8
@@ -121,7 +112,6 @@ matrix:
     #    apt:
     #      packages:
     #        - clang-3.7
-    #        - ninja-build
     #      sources:
     #        - ubuntu-toolchain-r-test
     #        - llvm-toolchain-precise-3.7
@@ -131,7 +121,6 @@ matrix:
     #    apt:
     #      packages:
     #        - clang-3.6
-    #        - ninja-build
     #      sources:
     #        - ubuntu-toolchain-r-test
     #        - llvm-toolchain-precise-3.6
@@ -141,7 +130,6 @@ matrix:
     #    apt:
     #      packages:
     #        - clang-3.5
-    #        - ninja-build
     #      sources:
     #        - ubuntu-toolchain-r-test
     #        - llvm-toolchain-precise-3.5
@@ -187,7 +175,7 @@ before_script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir -p -v build
   - cd build
-  - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=$COMPILER
+  - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=$COMPILER
 
 script:
   - cmake --build . --target test_nanorange
