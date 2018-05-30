@@ -268,14 +268,16 @@ struct test_<void_t<Trait<Args...>>, Trait, Args...> {
 template <template <class...> class Trait, typename... Args>
 using test_t = typename test_<void, Trait, Args...>::type;
 
+// Work around GCC5 bug that won't let us specialise variable templates
 template <typename Void, template <class...> class AliasT, typename... Args>
-constexpr bool exists_helper_v = false;
+struct exists_helper : std::false_type{};
 
 template <template <class...> class AliasT, typename... Args>
-constexpr bool exists_helper_v<void_t<AliasT<Args...>>, AliasT, Args...> = true;
+struct exists_helper<void_t<AliasT<Args...>>, AliasT, Args...>
+    : std::true_type{};
 
 template <template <class...> class AliasT, typename... Args>
-constexpr bool exists_v = exists_helper_v<void, AliasT, Args...>;
+constexpr bool exists_v = exists_helper<void, AliasT, Args...>::value;
 
 template <typename R, typename... Args,
           typename = decltype(&R::template requires_<Args...>)>
@@ -1262,11 +1264,15 @@ struct difference_type_<const I> : difference_type<std::decay_t<I>> {
 };
 
 template <typename, typename = void>
-constexpr bool has_member_difference_type_v = false;
+struct has_member_difference_type_helper : std::false_type {};
 
 template <typename T>
-constexpr bool
-    has_member_difference_type_v<T, void_t<typename T::difference_type>> = true;
+struct has_member_difference_type_helper<T, void_t<typename T::difference_type>>
+    : std::true_type{};
+
+template <typename T, typename = void>
+constexpr bool has_member_difference_type_v =
+        has_member_difference_type_helper<T>::value;
 
 template <typename T>
 struct difference_type_<T, std::enable_if_t<has_member_difference_type_v<T>>> {
@@ -2427,7 +2433,10 @@ NANO_CONCEPT SizedRange =
 namespace detail {
 
 template <typename, typename = void>
-constexpr bool view_predicate = true;
+struct view_predicate : std::true_type {};
+
+template <typename T>
+constexpr bool view_predicate_v = view_predicate<T>::value;
 
 template <typename T>
 using enable_view_t = typename enable_view<T>::type;
@@ -2436,28 +2445,29 @@ template <typename T>
 constexpr bool has_enable_view_v = exists_v<enable_view_t, T>;
 
 template <typename T>
-constexpr bool view_predicate<T, std::enable_if_t<has_enable_view_v<T>>> =
-    enable_view<T>::type::value;
+struct view_predicate<T, std::enable_if_t<has_enable_view_v<T>>> {
+    static constexpr bool value = enable_view<T>::type::value;
+};
 
 template <typename T>
-constexpr bool view_predicate<
-    T, std::enable_if_t<!has_enable_view_v<T> && DerivedFrom<T, view_base>>> =
-    true;
+struct view_predicate<
+    T, std::enable_if_t<!has_enable_view_v<T> && DerivedFrom<T, view_base>>>
+    : std::true_type {};
 
 template <typename T>
-constexpr bool view_predicate<std::initializer_list<T>> = false;
+struct view_predicate<std::initializer_list<T>> : std::false_type {};
 
 template <typename K, typename C, typename A>
-constexpr bool view_predicate<std::set<K, C, A>> = false;
+struct view_predicate<std::set<K, C, A>> : std::false_type {};
 
 template <typename K, typename C, typename A>
-constexpr bool view_predicate<std::multiset<K, C, A>> = false;
+struct view_predicate<std::multiset<K, C, A>>  : std::false_type {};
 
 template <typename K, typename H, typename E, typename A>
-constexpr bool view_predicate<std::unordered_set<K, H, E, A>> = false;
+struct view_predicate<std::unordered_set<K, H, E, A>> : std::false_type {};
 
 template <typename K, typename H, typename E, typename A>
-constexpr bool view_predicate<std::unordered_multiset<K, H, E, A>> = false;
+struct view_predicate<std::unordered_multiset<K, H, E, A>> : std::false_type {};
 
 template <typename>
 auto view_predicate_helper_fn(long) -> std::false_type;
@@ -2476,13 +2486,13 @@ constexpr bool view_predicate_helper =
     decltype(view_predicate_helper_fn<T>(0))::value;
 
 template <typename T>
-constexpr bool view_predicate<T, std::enable_if_t<view_predicate_helper<T>>> =
-    false;
+struct view_predicate<T, std::enable_if_t<view_predicate_helper<T>>>
+   : std::false_type {};
 
 } // namespace detail
 
 template <typename T>
-NANO_CONCEPT View = Range<T>&& Semiregular<T>&& detail::view_predicate<T>;
+NANO_CONCEPT View = Range<T>&& Semiregular<T>&& detail::view_predicate_v<T>;
 
 // [range.common]
 namespace detail {
@@ -7237,7 +7247,7 @@ private:
             ++first;
         }
 
-        return {first, out_true, out_false};
+        return std::tuple<I, O1, O2>{first, out_true, out_false};
     }
 
 public:
@@ -8189,19 +8199,21 @@ enum class subrange_kind : bool { unsized, sized };
 namespace detail {
 
 template <typename I, typename S, bool = SizedSentinel<S, I>>
-constexpr subrange_kind default_subrange_kind = subrange_kind::unsized;
+struct default_subrange_kind {
+    static constexpr subrange_kind kind = subrange_kind::unsized;
+};
 
 template <typename I, typename S>
-constexpr subrange_kind default_subrange_kind<I, S, true> =
-    subrange_kind::sized;
+struct default_subrange_kind<I, S, true> {
+    static constexpr subrange_kind kind = subrange_kind::sized;
+};
 
 }
-
 
 namespace subrange_ {
 
 template <typename I, typename S = I,
-          subrange_kind = detail::default_subrange_kind<I, S>>
+          subrange_kind = detail::default_subrange_kind<I, S>::kind>
 class subrange;
 
 }
@@ -8367,13 +8379,15 @@ public:
     // There doesn't seem to be any obvious syntax to bring it back into
     // scope, so we'll just reimplement it here
 
+    // FIXME FIXME: The !View<C> condition here causes Clang 6 much unhappiness
+    // in C++17 mode. I'm not sure why just yet.
     template <typename C, typename R = subrange,
-            typename = std::enable_if_t<
-                    ForwardRange<C> && !View<C> &&
-                            ConvertibleTo<reference_t<iterator_t<const R>>,
-                                    value_type_t<iterator_t<C>>> &&
-                            Constructible<C, detail::range_common_iterator_t<const R>,
-                                    detail::range_common_iterator_t<const R>>>>
+              std::enable_if_t<
+                    ForwardRange<C> && /*!View<C> &&*/
+                    ConvertibleTo<reference_t<iterator_t<const R>>,
+                                  value_type_t<iterator_t<C>>> &&
+                    Constructible<C, detail::range_common_iterator_t<const R>,
+                                     detail::range_common_iterator_t<const R>>, int> = 0>
     operator C() const
     {
         using CI = detail::range_common_iterator_t<R>;
@@ -8459,7 +8473,7 @@ template <typename R, std::enable_if_t<detail::ForwardingRange<R> && SizedRange<
 subrange(R&&, std::nullptr_t = nullptr)
     ->subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>;
 
-template <typename R, std::enable_if_t<detail::ForwardingRange<R>>
+template <typename R, std::enable_if_t<detail::ForwardingRange<R>, int> = 0>
 subrange(R&&, difference_type_t<iterator_t<R>>) ->
     subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>;
 
@@ -9073,7 +9087,8 @@ private:
             ++result;
         }
 
-        return {std::move(first1), std::move(first2), std::move(result)};
+        return std::tuple<I1, I2, O>{std::move(first1), std::move(first2),
+                                     std::move(result)};
     }
 
     template <typename I1, typename S1, typename I2, typename S2, typename O,
@@ -9090,7 +9105,8 @@ private:
             ++result;
         }
 
-        return {std::move(first1), std::move(first2), std::move(result)};
+        return std::tuple<I1, I2, O>{std::move(first1), std::move(first2),
+                                     std::move(result)};
     }
 
 public:
