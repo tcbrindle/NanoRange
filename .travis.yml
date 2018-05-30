@@ -1,3 +1,17 @@
+#
+# Travis CI config file
+#
+# Copyright Tristan Brindle 2018
+#
+# Use, modification and distribution is subject to the
+# Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+#
+# Heavily based on travis.yml from Boost.Hana
+#
+# Copyright Louis Dionne 2013-18
+#
 
 language: cpp
 
@@ -43,8 +57,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
 
-    # Clang -- all versions -- currrently ICE
-
+    # Clang 6
     - env: COMPILER=clang++-6.0
       addons:
         apt:
@@ -54,6 +67,7 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-6.0
 
+    # Clang 5
     - env: COMPILER=clang++-5.0
       addons:
         apt:
@@ -63,6 +77,7 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-5.0
 
+    # Clang 4
     - env: COMPILER=clang++-4.0
       addons:
         apt:
@@ -72,6 +87,7 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-4.0
 
+    # Clang 3.9
     - env: COMPILER=clang++-3.9
       addons:
         apt:
@@ -81,6 +97,7 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-3.9
 
+    # Clang 3.8
     - env: COMPILER=clang++-3.8
       addons:
         apt:
@@ -179,7 +196,7 @@ after_success:
             git config --global user.name "Travis Bot"
             git config --global user.email "travis@travis-ci.org"
             git add --all .
-            git commit --allow-empty -m "Update single header"
+            git commit --allow-empty -m "[skip ci] Update single header"
             # Suppress output to avoid leaking the token
             travis_retry git push origin master &>/dev/null
             popd
