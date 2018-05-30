@@ -37,11 +37,15 @@ struct difference_type_<const I> : difference_type<std::decay_t<I>> {
 };
 
 template <typename, typename = void>
-constexpr bool has_member_difference_type_v = false;
+struct has_member_difference_type_helper : std::false_type {};
 
 template <typename T>
-constexpr bool
-    has_member_difference_type_v<T, void_t<typename T::difference_type>> = true;
+struct has_member_difference_type_helper<T, void_t<typename T::difference_type>>
+    : std::true_type{};
+
+template <typename T, typename = void>
+constexpr bool has_member_difference_type_v =
+        has_member_difference_type_helper<T>::value;
 
 template <typename T>
 struct difference_type_<T, std::enable_if_t<has_member_difference_type_v<T>>> {

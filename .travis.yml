@@ -35,15 +35,16 @@ matrix:
             - ubuntu-toolchain-r-test
 
     # GCC 5
-    #- env: COMPILER=g++-5
-    #  addons:
-    #    apt:
-    #      packages:
-    #        - g++-5
-    #      sources:
-    #        - ubuntu-toolchain-r-test
+    - env: COMPILER=g++-5
+      addons:
+        apt:
+          packages:
+            - g++-5
+          sources:
+            - ubuntu-toolchain-r-test
 
-    # Clang 6 currently ICEs compiling the test suite
+    # Clang -- all versions -- currrently ICE
+
     #- env: COMPILER=clang++-6.0
     #  addons:
     #    apt:
