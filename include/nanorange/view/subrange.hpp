@@ -20,19 +20,21 @@ enum class subrange_kind : bool { unsized, sized };
 namespace detail {
 
 template <typename I, typename S, bool = SizedSentinel<S, I>>
-constexpr subrange_kind default_subrange_kind = subrange_kind::unsized;
+struct default_subrange_kind {
+    static constexpr subrange_kind kind = subrange_kind::unsized;
+};
 
 template <typename I, typename S>
-constexpr subrange_kind default_subrange_kind<I, S, true> =
-    subrange_kind::sized;
+struct default_subrange_kind<I, S, true> {
+    static constexpr subrange_kind kind = subrange_kind::sized;
+};
 
 }
-
 
 namespace subrange_ {
 
 template <typename I, typename S = I,
-          subrange_kind = detail::default_subrange_kind<I, S>>
+          subrange_kind = detail::default_subrange_kind<I, S>::kind>
 class subrange;
 
 }
