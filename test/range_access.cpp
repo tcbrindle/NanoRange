@@ -154,8 +154,7 @@ namespace begin_testing {
 		}
 
 		static_assert(can_begin<ranges::subrange<int*, int*>&>, "");
-		// FIXME: P0970
-		//static_assert(can_begin<ranges::subrange<int*, int*>&&>);
+		static_assert(can_begin<ranges::subrange<int*, int*>&&>, "");
 	}
 } // namespace begin_testing
 
@@ -245,7 +244,7 @@ TEST_CASE("range_access") {
 
 	test_initializer_list();
 	test_array(std::make_integer_sequence<int, 3>{});
-	test_array(std::make_integer_sequence<const int, 3>{});
+	test_array<const int, 0, 1, 2>(std::make_integer_sequence<const int, 3>{});
 	begin_testing::test();
 
 	test_string_view_p0970();
