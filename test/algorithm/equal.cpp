@@ -29,7 +29,7 @@ void test()
 {
 	using namespace ranges;
 	int ia[] = {0, 1, 2, 3, 4, 5};
-	constexpr unsigned s = sizeof(ia);
+	constexpr unsigned s = sizeof(ia)/sizeof(int);
 	//int ib[s] = {0, 1, 2, 5, 4, 5};
 	int *ib = new int[s]{0, 1, 2, 5, 4, 5};
 	CHECK(equal(input_iterator<const int*>(ia),
