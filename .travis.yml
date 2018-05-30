@@ -26,7 +26,15 @@ matrix:
     #
 
     # GCC 8
-    - env: COMPILER=g++-8 BUILD_SINGLE_HEADER=true
+    - env: COMPILER=g++-8 CPP=17 BUILD_SINGLE_HEADER=true
+      addons:
+        apt:
+          packages:
+            - g++-8
+          sources:
+            - ubuntu-toolchain-r-test
+
+    - env: COMPILER=g++-8 CPP=14
       addons:
         apt:
           packages:
@@ -35,7 +43,15 @@ matrix:
             - ubuntu-toolchain-r-test
 
     # GCC 7
-    - env: COMPILER=g++-7
+    - env: COMPILER=g++-7 CPP=17
+      addons:
+        apt:
+          packages:
+            - g++-7
+          sources:
+            - ubuntu-toolchain-r-test
+
+    - env: COMPILER=g++-7 CPP=14
       addons:
         apt:
           packages:
@@ -44,7 +60,7 @@ matrix:
             - ubuntu-toolchain-r-test
 
     # GCC 6
-    - env: COMPILER=g++-6
+    - env: COMPILER=g++-6 CPP=14
       addons:
         apt:
           packages:
@@ -53,7 +69,7 @@ matrix:
             - ubuntu-toolchain-r-test
 
     # GCC 5
-    - env: COMPILER=g++-5
+    - env: COMPILER=g++-5 CPP=14
       addons:
         apt:
           packages:
@@ -62,7 +78,7 @@ matrix:
             - ubuntu-toolchain-r-test
 
     # Clang 6
-    - env: COMPILER=clang++-6.0
+    - env: COMPILER=clang++-6.0 CPP=14
       addons:
         apt:
           packages:
@@ -72,7 +88,7 @@ matrix:
             - llvm-toolchain-trusty-6.0
 
     # Clang 5
-    - env: COMPILER=clang++-5.0
+    - env: COMPILER=clang++-5.0 CPP=14
       addons:
         apt:
           packages:
@@ -82,7 +98,7 @@ matrix:
             - llvm-toolchain-trusty-5.0
 
     # Clang 4
-    - env: COMPILER=clang++-4.0
+    - env: COMPILER=clang++-4.0 CPP=14
       addons:
         apt:
           packages:
@@ -92,7 +108,7 @@ matrix:
             - llvm-toolchain-trusty-4.0
 
     # Clang 3.9
-    - env: COMPILER=clang++-3.9
+    - env: COMPILER=clang++-3.9 CPP=14
       addons:
         apt:
           packages:
@@ -102,7 +118,7 @@ matrix:
             - llvm-toolchain-trusty-3.9
 
     # Clang 3.8
-    - env: COMPILER=clang++-3.8
+    - env: COMPILER=clang++-3.8 CPP=14
       addons:
         apt:
           packages:
@@ -144,11 +160,19 @@ matrix:
     #
     - os: osx
       osx_image: xcode9.3
-      env: COMPILER=clang++
+      env: COMPILER=clang++ CPP=17
+
+    - os: osx
+      osx_image: xcode9.3
+      env: COMPILER=clang++ CPP=14
 
     - os: osx
       osx_image: xcode9.2
-      env: COMPILER=clang++
+      env: COMPILER=clang++ CPP=17
+
+    - os: osx
+      osx_image: xcode9.2
+      env: COMPILER=clang++ CPP=14
 
     #- os: osx
     #  osx_image: xcode8.3
@@ -203,7 +227,7 @@ before_script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir -p -v build
   - cd build
-  - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=$COMPILER
+  - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=$COMPILER -DCMAKE_CXX_STANDARD=$CPP
 
 script:
   - cmake --build . --target test_nanorange -- -j2
