@@ -7,14 +7,24 @@ environment:
   matrix:
     - platform: x86
       generator: Visual Studio 15 2017
+      standard: 17
+
+    - platform: x86
+      generator: Visual Studio 15 2017
+      standard: 14
 
     - platform: x64
       generator: Visual Studio 15 2017 Win64
+      standard: 17
+
+    - platform: x64
+      generator: Visual Studio 15 2017 Win64
+      standard: 14
 
 install:
 - mkdir build
 - cd build
-- cmake -G "%generator%" ..
+- cmake .. -G "%generator%" -DCMAKE_CXX_STANDARD=%standard%
 
 build_script:
 - cmake --build . --target test_nanorange --config Debug
