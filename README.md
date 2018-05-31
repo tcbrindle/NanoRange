@@ -9,7 +9,7 @@
 # NanoRange #
 
 NanoRange is a new C++14 implementation of the C++20 Ranges proposals (formerly the
-Ranges TS). It provides SFINAE-based implementations of the Concepts from the TS,
+Ranges TS). It provides SFINAE-based implementations of all the proposed Concepts,
 and constrained and range-based wrappers for the algorithms in the `<algorithm>`
 standard library header.
 
@@ -23,8 +23,8 @@ latest version of Microsoft Visual C++.
 
 ## Usage ##
 
-The easiest way to use NanoRange is to simply download the [latest, automatically-
-generated single-header version](https://github.com/tcbrindle/NanoRange/raw/master/single_include/nanorange.hpp)
+The easiest way to use NanoRange is to simply download the [latest, automatically-generated 
+single-header version](https://github.com/tcbrindle/NanoRange/raw/master/single_include/nanorange.hpp)
 and include it in your own sources like any other header. This is currently
 the recommended way to use the library.
 
@@ -36,7 +36,7 @@ get when you `#include <algorithm>` in C++20).
 
 ## Compatibility ##
 
-NanoRange requires a conforming C++14 compiler. It has been
+NanoRange requires a conforming C++14 compiler, and is
 [tested](https://travis-ci.org/tcbrindle/nanorange) with GCC 5.4 and Clang 3.8.
 Older versions may work in some cases, but this is not guaranteed.
 
@@ -68,7 +68,7 @@ void foo(Range&& rng) {
 
 ### Iterator adaptors ###
 
-NanoRange provides implementations of some of the iterator adaptors from
+NanoRange provides implementations of most of the iterator adaptors from
 [P0896][P0896],
 specifically:
 
@@ -91,6 +91,8 @@ This can be used to turn an iterator/sentinel pair into in range, or as a
 
 ### Algorithms ###
 
+#### Range-based overloads ####
+
 NanoRange implements constrained version of all the algorithms from [P0896][P0896],
 including range-based overloads. This means that you can finally say
 
@@ -101,19 +103,93 @@ nano::sort(vec);
 
 and it will Just Work.
 
+#### Constraint checking ####
+
+In the existing STL, the algorithm calls are *unconstrained*. This means that
+if you pass an argument which doesn't meet the requirements of the function,
+the compiler will go ahead and try to instantiate the template anyway,
+usually resulting in pages of error messages with template backtraces for
+which C++ is infamous.
+
+For example, the following program has an error: a `std::list` iterator
+is not random-access, and so doesn't meet the requirements of `std::sort()`:
+
+```cpp
+int main()
+{
+    std::list<int> list{5, 4, 3, 2, 1};
+    std::sort(list.begin(), list.end());
+}
+```
+
+Compiling this two-line example with Clang 6 results in over [350 lines of error messages](https://gist.github.com/tcbrindle/13c23fc5c1a46db12665ee509bf8265f)!
+
+Calling `nano::sort()` instead of `std::sort()` however means that constraints are
+checked before the template is instantated. This time, the entire error output is:
+
+```
+example.cpp:9:5: error: no matching function for call to object of type 'const nano::ranges::detail::sort_fn'
+    nano::sort(list.begin(), list.end());
+    ^~~~~~~~~~
+include/nanorange/algorithm/stl/sort.hpp:26:5: note: candidate template ignored: requirement 'RandomAccessIterator<std::__1::__list_iterator<int, void *> >' was not satisfied [with I = std::__1::__list_iterator<int, void *>, Comp = nano::ranges::less<void>]
+    operator()(I first, I last, Comp comp = Comp{}) const
+    ^
+include/nanorange/algorithm/stl/sort.hpp:37:5: note: candidate template ignored: substitution failure [with Rng = std::__1::__list_iterator<int, void *>, Comp = std::__1::__list_iterator<int, void *>]: no matching function for call to object of type 'const nano::ranges::detail::begin_::fn'
+    operator()(Rng&& rng, Comp comp = Comp{}) const
+    ^
+1 error generated.
+```
+
+which makes it clear that the first overload was rejected because `list::iterator`
+doesn't meet the requirements of `RandomAccessIterator`, and the second overload
+was rejected because `list::iterator` is not a range (you can't call `nano::begin()`
+on it). Much better.
+
+#### Projections ####
+
+The fully reimplemented algorithms (see below) offer support for *projections*.
+A projection is a unary callable which modifies (*"projects"*) the view of the data
+that the algorithm sees. Because projections are routed through (an implementation
+of) `std::invoke()`, it's possible to use pointers to member functions and pointers
+to member data as projections. For example:
+
+```cpp
+struct S {
+    int i;
+    float f;
+};
+
+std::vector<S> vec = ...
+
+auto iter = nano::find(vec, 10, &S::i);
+// iter points to the first member of vec for which i == 10
+```
+
+#### `constexpr` support ####
+
+In C++20, all of the existing algorithms in `<algorithm>` will be marked
+`constexpr`, and so will be callable at compile time. While the ranges
+proposals do not currently feature `constexpr` support, it seems inevitable
+that this will be added at some point. As an extension therefore, all of
+the fully reimplemented algorithms in NanoRange are marked `constexpr`.
+
+(Note that `constexpr` support has not been well tested for all algorithms.
+You may run into bugs, particularly on MSVC, which tends to bail out if
+a `constexpr` function gets too complicated. More extensive testing is 
+planned for a future version.)
+
 #### Algorithms status ####
 
 Around half of the algorithms have been fully reimplemented in NanoRange and
-provide all of the improvements from the ranges paper, including differing
-iterator/sentinel types and support for projections. As an extension, all of
-the reimplemented algorithms are marked `constexpr` for use at compile time (
-but note that `constexpr` support has not been well tested: if you run into
-problems please file a bug).
+provide all of the improvements from the ranges papers, including differing
+iterator/sentinel types and support for projections.
 
-Most of the more complex algorithms have not yet been reimplemented, 
-and instead are provided as constrained wrappers around a call to the existing
+Most of the more complex algorithms have not yet been fully reimplemented, 
+and instead are implemented as constrained wrappers around a call to the existing
 STL implementation from your `<algorithm>` header. This is the case for
-`nano::sort()`, for example. Because they call into the existing STL, these
+`nano::sort()`, for example.
+
+Because they call into the existing STL, these
 versions have additional constraints above what the Ranges papers require:
 in particular, the iterator and sentinel types must be the same (or for the
 range-based overloads, the range must model `CommonRange`). Iterators must also
@@ -121,7 +197,7 @@ be STL-compatible, that is, a specialisation of `std::iterator_traits` must exis
 which provides all five required typedefs. In addition, projections are not
 supported, and the return types match those of the original STL versions.
 
-The file [algorithms.md](../blob/master/algorithms.md) lists which algorithms have been fully reimplemented,
+The file [algorithms.md](./algorithms.md) lists which algorithms have been fully reimplemented,
 and which are STL wrappers. The long-term goal is to move all the algorithms
 into the former category.
 
@@ -130,9 +206,11 @@ into the former category.
 NanoRange is a new library, and certain features haven't been implemented yet.
 
 In particular, NanoRange doesn't yet provide any of the Views from [P0789][P0789].
-These will be added as the library evolves.
+These will be added as the library evolves. NanoRange is also missing the
+`tagged_tuple`/`tagged_pair` machinery from [P0896][P0896]; instead, `std::pair`
+and `std::tuple` are used as return types from algorithms.
 
-There is a [TODO list](../blob/master/TODO.md) which is gradually being migrated
+There is a [TODO list](TODO.md) which is gradually being migrated
 to Github issues.
 
 ## Differences from Range-V3 ##
@@ -177,7 +255,7 @@ NanoRange wholly or partially implements the following C++20 proposal papers:
 ## Stability ##
 
 NanoRange aims to track the various C++20 ranges proposals, and will be updated
-as new revisions are published. As such, there are no API stability guarantees
+as new papers are published. As such, there are no API stability guarantees
 at this time.
 
 ## Licence ##
@@ -190,8 +268,6 @@ Many thanks to the following:
 
  * Eric Niebler and Casey Carter for the Ranges TS, Range-V3
    and CMCSTL2. You guys are awesome.
-
- * All the contributors to the Palo Alto TR, for laying the foundation upon which the TS is built
 
  * Phil Nash for the fantastic Catch testing framework
 
