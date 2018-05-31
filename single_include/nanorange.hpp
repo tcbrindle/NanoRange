@@ -8379,15 +8379,13 @@ public:
     // There doesn't seem to be any obvious syntax to bring it back into
     // scope, so we'll just reimplement it here
 
-    // FIXME FIXME: The !View<C> condition here causes Clang 6 much unhappiness
-    // in C++17 mode. I'm not sure why just yet.
     template <typename C, typename R = subrange,
-              std::enable_if_t<
-                    ForwardRange<C> && /*!View<C> &&*/
+              typename = std::enable_if_t<
+                    ForwardRange<C> && !View<C> &&
                     ConvertibleTo<reference_t<iterator_t<const R>>,
                                   value_type_t<iterator_t<C>>> &&
                     Constructible<C, detail::range_common_iterator_t<const R>,
-                                     detail::range_common_iterator_t<const R>>, int> = 0>
+                                     detail::range_common_iterator_t<const R>>>>
     operator C() const
     {
         using CI = detail::range_common_iterator_t<R>;
