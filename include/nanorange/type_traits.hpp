@@ -8,12 +8,6 @@
 #define NANORANGE_TYPE_TRAITS_HPP_INCLUDED
 
 #include <nanorange/detail/common_reference.hpp>
-
-NANO_BEGIN_NAMESPACE
-
-using std::common_type;
-using std::common_type_t;
-
-NANO_END_NAMESPACE
+#include <nanorange/detail/common_type.hpp>
 
 #endif

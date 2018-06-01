@@ -12,6 +12,9 @@
 
 NANO_BEGIN_NAMESPACE
 
+template <typename...>
+struct common_type;
+
 namespace detail {
 
 template <typename T, typename U>
@@ -153,7 +156,7 @@ constexpr bool has_function_common_ref_v =
     exists_v<function_common_ref_t, T, U>;
 
 template <typename T, typename U, typename = void>
-struct binary_common_ref : std::common_type<T, U> {
+struct binary_common_ref : common_type<T, U> {
 };
 
 template <typename T, typename U>
