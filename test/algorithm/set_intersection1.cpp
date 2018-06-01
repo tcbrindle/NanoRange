@@ -12,7 +12,7 @@
 
 #include "set_intersection.hpp"
 
-int main()
+TEST_CASE("alg.set_intersection1")
 {
 	test<input_iterator<const int*>, input_iterator<const int*>, output_iterator<int*> >();
 	test<input_iterator<const int*>, input_iterator<const int*>, forward_iterator<int*> >();
@@ -43,6 +43,4 @@ int main()
 	test<input_iterator<const int*>, const int*, bidirectional_iterator<int*> >();
 	test<input_iterator<const int*>, const int*, random_access_iterator<int*> >();
 	test<input_iterator<const int*>, const int*, int*>();
-
-	return ::test_result();
 }

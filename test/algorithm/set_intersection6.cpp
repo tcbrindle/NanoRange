@@ -11,9 +11,9 @@
 //
 
 #include "set_intersection.hpp"
-#include <stl2/detail/algorithm/lexicographical_compare.hpp>
+#include <nanorange/algorithm/lexicographical_compare.hpp>
 
-int main()
+TEST_CASE("alg.set_intersection6")
 {
 	// Test projections
 	{
@@ -27,6 +27,4 @@ int main()
 		CHECK((res - ic) == sr);
 		CHECK(stl2::lexicographical_compare(ic, res, ir, ir+sr, std::less<int>(), &U::k) == 0);
 	}
-
-	return ::test_result();
 }
