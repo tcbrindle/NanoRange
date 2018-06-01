@@ -145,32 +145,32 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.8
 
-    - env: COMPILER=clang++-3.7 CPP=14
-      addons:
-        apt:
-          packages:
-            - clang-3.7
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.7
+    #- env: COMPILER=clang++-3.7 CPP=14
+    #  addons:
+    #    apt:
+    #      packages:
+    #        - clang-3.7
+    #      sources:
+    #        - ubuntu-toolchain-r-test
+    #        - llvm-toolchain-precise-3.7
 
-    - env: COMPILER=clang++-3.6 CPP=14
-      addons:
-        apt:
-          packages:
-            - clang-3.6
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
+    #- env: COMPILER=clang++-3.6 CPP=14
+    #  addons:
+    #    apt:
+    #      packages:
+    #        - clang-3.6
+    #      sources:
+    #        - ubuntu-toolchain-r-test
+    #        - llvm-toolchain-precise-3.6
 
-    - env: COMPILER=clang++-3.5 CPP=14
-      addons:
-        apt:
-          packages:
-            - clang-3.5
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.5
+    #- env: COMPILER=clang++-3.5 CPP=14
+    #  addons:
+    #    apt:
+    #      packages:
+    #        - clang-3.5
+    #      sources:
+    #        - ubuntu-toolchain-r-test
+    #        - llvm-toolchain-precise-3.5
 
 
     #
@@ -196,13 +196,13 @@ matrix:
       osx_image: xcode8.3
       env: COMPILER=clang++ CPP=14
 
-    - os: osx
-      osx_image: xcode7.3
-      env: COMPILER=clang++ CPP=14
+    #- os: osx
+    #  osx_image: xcode7.3
+    #  env: COMPILER=clang++ CPP=14
 
-    - os: osx
-      osx_image: xcode6.4
-      env: COMPILER=clang++ CPP=14
+    #- os: osx
+    #  osx_image: xcode6.4
+    #  env: COMPILER=clang++ CPP=14
 
 install:
   - DEPS_DIR="${HOME}/deps"
