@@ -67,6 +67,10 @@ In addition, they are all available for use in `constexpr` functions.
 * is_sorted
 * is_sorted_until
 
+#### Set operations ####
+
+* merge
+
 #### Minimum and maximum operations ####
 
 * min
@@ -110,7 +114,6 @@ CommonRange. Projections cannot be used.
 
 #### Set operations ####
 
-* merge
 * inplace_merge
 * includes
 * set_union

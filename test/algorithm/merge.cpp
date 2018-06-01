@@ -13,15 +13,16 @@
 //  Distributed under the MIT License(see accompanying file LICENSE_1_0_0.txt
 //  or a copy at http://stlab.adobe.com/licenses.html)
 
-#include <stl2/detail/algorithm/merge.hpp>
+#include <nanorange/algorithm/merge.hpp>
 #include <algorithm>
 #include <memory>
 #include <utility>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
+#include "../test_utils.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
 
-int main()
+TEST_CASE("alg.merge")
 {
 	{
 		unsigned N = 100000;
@@ -82,6 +83,4 @@ int main()
 		CHECK(ic[2 * N - 1] == (int)(2 * N - 1));
 		CHECK(std::is_sorted(ic.get(), ic.get() + 2 * N));
 	}
-
-	return ::test_result();
 }
