@@ -12,7 +12,7 @@
 
 #include "set_symmetric_difference.hpp"
 
-int main()
+TEST_CASE("alg.set_symmetric_difference2")
 {
 	test<forward_iterator<const int*>, input_iterator<const int*>, output_iterator<int*> >();
 	test<forward_iterator<const int*>, input_iterator<const int*>, forward_iterator<int*> >();
@@ -43,6 +43,4 @@ int main()
 	test<forward_iterator<const int*>, const int*, bidirectional_iterator<int*> >();
 	test<forward_iterator<const int*>, const int*, random_access_iterator<int*> >();
 	test<forward_iterator<const int*>, const int*, int*>();
-
-	return ::test_result();
 }

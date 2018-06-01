@@ -102,12 +102,12 @@ add_executable(test_nanorange
     algorithm/set_intersection4.cpp
     algorithm/set_intersection5.cpp
     algorithm/set_intersection6.cpp
-    #algorithm/set_symmetric_difference1.cpp
-    #algorithm/set_symmetric_difference2.cpp
-    #algorithm/set_symmetric_difference3.cpp
-    #algorithm/set_symmetric_difference4.cpp
-    #algorithm/set_symmetric_difference5.cpp
-    #algorithm/set_symmetric_difference6.cpp
+    algorithm/set_symmetric_difference1.cpp
+    algorithm/set_symmetric_difference2.cpp
+    algorithm/set_symmetric_difference3.cpp
+    algorithm/set_symmetric_difference4.cpp
+    algorithm/set_symmetric_difference5.cpp
+    algorithm/set_symmetric_difference6.cpp
     algorithm/set_union1.cpp
     algorithm/set_union2.cpp
     algorithm/set_union3.cpp

@@ -74,6 +74,7 @@ In addition, they are all available for use in `constexpr` functions.
 * set_union
 * set_difference
 * set_intersection
+* set_symmetric_difference
 
 #### Minimum and maximum operations ####
 
@@ -119,7 +120,6 @@ CommonRange. Projections cannot be used.
 #### Set operations ####
 
 * inplace_merge
-* set_symmetric_difference
 
 #### Heap operations ####
 
