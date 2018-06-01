@@ -113,6 +113,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/range/dangling.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/range/primitives.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/common_reference.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/common_type.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/macros.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/swap.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/type_traits.hpp
