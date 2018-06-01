@@ -3,7 +3,6 @@
 
 In rough order or priority:
 
-* Reimplement common_type for compatibility with older libc++ versions
 * Use the new names from P1037 (iter_value_t, iter_difference_t etc)
 * Handle ContiguousIterators and ContiguousRanges
 * Fix common_iterator (use variant-like data store)
