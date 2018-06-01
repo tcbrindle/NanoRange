@@ -11,9 +11,9 @@
 //
 
 #include "set_difference.hpp"
-#include <stl2/detail/algorithm/lexicographical_compare.hpp>
+#include <nanorange/algorithm/lexicographical_compare.hpp>
 
-int main()
+TEST_CASE("alg.set_difference6")
 {
 	// Test projections
 	{
@@ -62,6 +62,4 @@ int main()
 		CHECK((res2.second - ic) == srr);
 		CHECK(stl2::lexicographical_compare(ic, res2.second, ir, irr+srr, std::less<int>(), &U::k) == 0);
 	}
-
-	return ::test_result();
 }

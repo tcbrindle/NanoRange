@@ -18,15 +18,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/set_difference.hpp>
-#include <stl2/detail/algorithm/fill.hpp>
+#include <nanorange/algorithm/set_difference.hpp>
+#include <nanorange/algorithm/fill.hpp>
 #include <algorithm>
 #include <functional>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
+
+namespace {
 
 template <class Iter1, class Iter2, class OutIter>
 void
@@ -41,7 +43,7 @@ test_iter()
 	const int sr = sizeof(ir)/sizeof(ir[0]);
 
 	auto set_difference = ::make_testable_2<false, true>([](auto&&... args) {
-		return stl2::set_difference(stl2::forward<decltype(args)>(args)...);
+		return stl2::set_difference(std::forward<decltype(args)>(args)...);
 	});
 
 	set_difference(Iter1(ia), Iter1(ia+sa), Iter2(ib), Iter2(ib+sb), OutIter(ic)).
@@ -79,7 +81,7 @@ test_comp()
 	const int sr = sizeof(ir)/sizeof(ir[0]);
 
 	auto set_difference = ::make_testable_2<false, true>([](auto&&... args) {
-		return stl2::set_difference(stl2::forward<decltype(args)>(args)...);
+		return stl2::set_difference(std::forward<decltype(args)>(args)...);
 	});
 
 	set_difference(Iter1(ia), Iter1(ia+sa), Iter2(ib), Iter2(ib+sb), OutIter(ic), std::less<int>()).
@@ -127,3 +129,7 @@ struct U
 	U& operator=(S s) { k = s.i; return *this;}
 	U& operator=(T t) { k = t.j; return *this;}
 };
+
+}
+
+

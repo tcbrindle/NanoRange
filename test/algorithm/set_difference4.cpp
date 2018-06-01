@@ -12,7 +12,7 @@
 
 #include "set_difference.hpp"
 
-int main()
+TEST_CASE("alg.set_difference4")
 {
 	test<random_access_iterator<const int*>, input_iterator<const int*>, output_iterator<int*> >();
 	test<random_access_iterator<const int*>, input_iterator<const int*>, forward_iterator<int*> >();
@@ -43,6 +43,4 @@ int main()
 	test<random_access_iterator<const int*>, const int*, bidirectional_iterator<int*> >();
 	test<random_access_iterator<const int*>, const int*, random_access_iterator<int*> >();
 	test<random_access_iterator<const int*>, const int*, int*>();
-
-	return ::test_result();
 }
