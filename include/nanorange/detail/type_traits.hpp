@@ -16,15 +16,6 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 template <typename T>
-using lref_t = std::add_lvalue_reference_t<T>;
-
-template <typename T>
-using clref_t = std::add_lvalue_reference_t<std::add_const_t<T>>;
-
-template <typename T>
-using rref_t = std::add_rvalue_reference_t<T>;
-
-template <typename T>
 using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
 
 template <typename...>
