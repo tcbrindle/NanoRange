@@ -37,7 +37,7 @@ add_executable(test_nanorange
     algorithm/for_each.cpp
     algorithm/generate.cpp
     algorithm/generate_n.cpp
-    #algorithm/includes.cpp
+    algorithm/includes.cpp
     #algorithm/inplace_merge.cpp
     #algorithm/is_heap1.cpp
     #algorithm/is_heap2.cpp

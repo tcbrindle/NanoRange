@@ -27,6 +27,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/for_each.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/generate.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/generate_n.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/includes.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/is_partitioned.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/is_sorted.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/is_sorted_until.hpp
@@ -65,7 +66,6 @@ target_sources(nanorange INTERFACE
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/binary_search.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/equal_range.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/includes.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/inplace_merge.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/is_heap.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/is_heap_until.hpp

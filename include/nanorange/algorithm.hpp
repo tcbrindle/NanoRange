@@ -22,6 +22,7 @@
 #include <nanorange/algorithm/for_each.hpp>
 #include <nanorange/algorithm/generate.hpp>
 #include <nanorange/algorithm/generate_n.hpp>
+#include <nanorange/algorithm/includes.hpp>
 #include <nanorange/algorithm/is_partitioned.hpp>
 #include <nanorange/algorithm/is_sorted.hpp>
 #include <nanorange/algorithm/is_sorted_until.hpp>
@@ -61,7 +62,6 @@
 // Algorithms which reuse the STL implementation
 #include <nanorange/algorithm/stl/binary_search.hpp>
 #include <nanorange/algorithm/stl/equal_range.hpp>
-#include <nanorange/algorithm/stl/includes.hpp>
 #include <nanorange/algorithm/stl/inplace_merge.hpp>
 #include <nanorange/algorithm/stl/is_heap.hpp>
 #include <nanorange/algorithm/stl/is_heap_until.hpp>

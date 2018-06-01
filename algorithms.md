@@ -2,7 +2,7 @@
 
 ## Fully implemented ##
 
-The following algorithms are fully reimplemented in Nanorange,
+The following algorithms are fully reimplemented in NanoRange,
 meeting the requirements of the Ranges papers. In particular, they accept
 iterators and sentinels of different types, and allow the use of projections.
 In addition, they are all available for use in `constexpr` functions.
@@ -70,6 +70,7 @@ In addition, they are all available for use in `constexpr` functions.
 #### Set operations ####
 
 * merge
+* includes
 * set_difference
 
 #### Minimum and maximum operations ####
@@ -116,7 +117,6 @@ CommonRange. Projections cannot be used.
 #### Set operations ####
 
 * inplace_merge
-* includes
 * set_union
 * set_intersection
 * set_symmetric_difference
