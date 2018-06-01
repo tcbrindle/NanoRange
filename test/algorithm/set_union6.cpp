@@ -11,9 +11,9 @@
 //
 
 #include "set_union.hpp"
-#include <stl2/detail/algorithm/lexicographical_compare.hpp>
+#include <nanorange/algorithm/lexicographical_compare.hpp>
 
-int main()
+TEST_CASE("alg.set_union6")
 {
 	// Test projections
 	{
@@ -44,18 +44,27 @@ int main()
 		const int sr = sizeof(ir)/sizeof(ir[0]);
 
 		auto res = stl2::set_union(std::move(ia), std::move(ib), ic, std::less<int>(), &S::i, &T::j);
+		// FIXME: MSVC isn't going to like these
+#ifndef _MSC_VER
 		CHECK(std::get<0>(res).get_unsafe() == stl2::end(ia));
 		CHECK(std::get<1>(res).get_unsafe() == stl2::end(ib));
+#else
+		CHECK(std::get<0>(res) == stl2::end(ia));
+		CHECK(std::get<1>(res) == stl2::end(ib));
+#endif
 		CHECK((std::get<2>(res) - ic) == sr);
-		CHECK(stl2::lexicographical_compare(ic, std::get<2>(res), ir, ir+sr, std::less<int>(), &U::k) == 0);
+		CHECK(stl2::lexicographical_compare(ic, std::get<2>(res), ir, ir+sr, std::less<int>(), &U::k) == false);
 		stl2::fill(ic, U{0});
 
 		auto res2 = stl2::set_union(std::move(ib), std::move(ia), ic, std::less<int>(), &T::j, &S::i);
+#ifndef _MSC_VER
 		CHECK(std::get<0>(res2).get_unsafe() == stl2::end(ib));
 		CHECK(std::get<1>(res2).get_unsafe() == stl2::end(ia));
+#else
+		CHECK(std::get<0>(res2) == stl2::end(ib));
+		CHECK(std::get<1>(res2) == stl2::end(ia));
+#endif
 		CHECK((std::get<2>(res2) - ic) == sr);
-		CHECK(stl2::lexicographical_compare(ic, std::get<2>(res2), ir, ir+sr, std::less<int>(), &U::k) == 0);
+		CHECK(stl2::lexicographical_compare(ic, std::get<2>(res2), ir, ir+sr, std::less<int>(), &U::k) == false);
 	}
-
-	return ::test_result();
 }

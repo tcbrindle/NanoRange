@@ -108,12 +108,12 @@ add_executable(test_nanorange
     #algorithm/set_symmetric_difference4.cpp
     #algorithm/set_symmetric_difference5.cpp
     #algorithm/set_symmetric_difference6.cpp
-    #algorithm/set_union1.cpp
-    #algorithm/set_union2.cpp
-    #algorithm/set_union3.cpp
-    #algorithm/set_union4.cpp
-    #algorithm/set_union5.cpp
-    #algorithm/set_union6.cpp
+    algorithm/set_union1.cpp
+    algorithm/set_union2.cpp
+    algorithm/set_union3.cpp
+    algorithm/set_union4.cpp
+    algorithm/set_union5.cpp
+    algorithm/set_union6.cpp
     algorithm/shuffle.cpp
     #algorithm/sort.cpp
     #algorithm/sort_heap.cpp

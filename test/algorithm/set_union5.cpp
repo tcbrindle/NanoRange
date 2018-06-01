@@ -12,7 +12,7 @@
 
 #include "set_union.hpp"
 
-int main()
+TEST_CASE("alg.set_union5")
 {
 	test<const int*, input_iterator<const int*>, output_iterator<int*> >();
 	test<const int*, input_iterator<const int*>, bidirectional_iterator<int*> >();
@@ -43,6 +43,4 @@ int main()
 	test<const int*, const int*, bidirectional_iterator<int*> >();
 	test<const int*, const int*, random_access_iterator<int*> >();
 	test<const int*, const int*, int*>();
-
-	return ::test_result();
 }

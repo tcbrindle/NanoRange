@@ -59,6 +59,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/search.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/search_n.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/set_difference.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/set_union.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/shuffle.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/swap_ranges.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/transform.hpp
@@ -82,7 +83,6 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/push_heap.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/set_intersection.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/set_symmetric_difference.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/set_union.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/sort.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/sort_heap.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/stable_partition.hpp
