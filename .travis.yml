@@ -78,6 +78,15 @@ matrix:
             - ubuntu-toolchain-r-test
 
     # Clang 6
+    - env: COMPILER=clang++-6.0 CPP=17
+      addons:
+        apt:
+          packages:
+            - clang-6.0
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-6.0
+
     - env: COMPILER=clang++-6.0 CPP=14
       addons:
         apt:
@@ -88,6 +97,15 @@ matrix:
             - llvm-toolchain-trusty-6.0
 
     # Clang 5
+    - env: COMPILER=clang++-5.0 CPP=17
+      addons:
+        apt:
+          packages:
+            - clang-5.0
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+
     - env: COMPILER=clang++-5.0 CPP=14
       addons:
         apt:
