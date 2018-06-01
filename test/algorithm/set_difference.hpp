@@ -51,7 +51,7 @@ test_iter()
 		{
 			CHECK((base(res.first) - ia) == sa);
 			CHECK((base(res.second) - ic) == sr);
-			CHECK(std::lexicographical_compare(ic, base(res.second), ir, ir+sr) == 0);
+			CHECK(std::lexicographical_compare(ic, base(res.second), ir, ir+sr) == false);
 			stl2::fill(ic, 0);
 		}
 	);
@@ -62,7 +62,7 @@ test_iter()
 		{
 			CHECK((base(res.first) - ib) == sb);
 			CHECK((base(res.second) - ic) == srr);
-			CHECK(std::lexicographical_compare(ic, base(res.second), irr, irr+srr) == 0);
+			CHECK(std::lexicographical_compare(ic, base(res.second), irr, irr+srr) == false);
 			stl2::fill(ic, 0);
 		}
 	);
@@ -89,7 +89,7 @@ test_comp()
 		{
 			CHECK((base(res.first) - ia) == sa);
 			CHECK((base(res.second) - ic) == sr);
-			CHECK(std::lexicographical_compare(ic, base(res.second), ir, ir+sr) == 0);
+			CHECK(std::lexicographical_compare(ic, base(res.second), ir, ir+sr) == false);
 			stl2::fill(ic, 0);
 		}
 	);
@@ -100,7 +100,7 @@ test_comp()
 		{
 			CHECK((base(res.first) - ib) == sb);
 			CHECK((base(res.second) - ic) == srr);
-			CHECK(std::lexicographical_compare(ic, base(res.second), irr, irr+srr) == 0);
+			CHECK(std::lexicographical_compare(ic, base(res.second), irr, irr+srr) == false);
 			stl2::fill(ic, 0);
 		}
 	);
