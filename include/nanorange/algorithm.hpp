@@ -52,6 +52,7 @@
 #include <nanorange/algorithm/rotate_copy.hpp>
 #include <nanorange/algorithm/search.hpp>
 #include <nanorange/algorithm/search_n.hpp>
+#include <nanorange/algorithm/set_difference.hpp>
 #include <nanorange/algorithm/shuffle.hpp>
 #include <nanorange/algorithm/swap_ranges.hpp>
 #include <nanorange/algorithm/transform.hpp>
@@ -75,7 +76,6 @@
 #include <nanorange/algorithm/stl/pop_heap.hpp>
 #include <nanorange/algorithm/stl/prev_permutation.hpp>
 #include <nanorange/algorithm/stl/push_heap.hpp>
-#include <nanorange/algorithm/stl/set_difference.hpp>
 #include <nanorange/algorithm/stl/set_intersection.hpp>
 #include <nanorange/algorithm/stl/set_symmetric_difference.hpp>
 #include <nanorange/algorithm/stl/set_union.hpp>

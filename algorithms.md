@@ -70,6 +70,7 @@ In addition, they are all available for use in `constexpr` functions.
 #### Set operations ####
 
 * merge
+* set_difference
 
 #### Minimum and maximum operations ####
 
@@ -118,7 +119,6 @@ CommonRange. Projections cannot be used.
 * includes
 * set_union
 * set_intersection
-* set_difference
 * set_symmetric_difference
 
 #### Heap operations ####
