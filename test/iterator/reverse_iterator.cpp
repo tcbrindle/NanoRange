@@ -24,9 +24,14 @@
 //////
 //////===----------------------------------------------------------------------===//
 //
-#include <stl2/iterator.hpp>
-#include "../simple_test.hpp"
+#include <nanorange/iterator/reverse_iterator.hpp>
+#include <nanorange/range.hpp>
+#include "../catch.hpp"
 #include "../test_iterators.hpp"
+
+namespace {
+
+namespace __stl2 = nano;
 
 template <class It> void test() { __stl2::reverse_iterator<It>{}; }
 
@@ -46,7 +51,7 @@ struct Derived : Base {};
 
 template <class It> void test4(It i) {
 	const auto r = __stl2::make_reverse_iterator(i);
-	static_assert(std::is_same<decltype(r), const __stl2::reverse_iterator<It>>());
+	static_assert(std::is_same<decltype(r), const __stl2::reverse_iterator<It>>(), "");
 	CHECK(r.base() == i);
 }
 
@@ -276,17 +281,19 @@ constexpr bool test_constexpr() {
 
 	return true;
 }
-static_assert(test_constexpr());
+static_assert(test_constexpr(), "");
 
-int main() {
+}
+
+TEST_CASE("iter.reverse_iterator") {
 	{
-		namespace models = __stl2::models;
+		namespace models = __stl2;
 		static_assert(
 				models::BidirectionalIterator<
-					__stl2::reverse_iterator<bidirectional_iterator<const char *>>>);
+					__stl2::reverse_iterator<bidirectional_iterator<const char *>>>, "");
 		static_assert(
 				models::RandomAccessIterator<
-					__stl2::reverse_iterator<random_access_iterator<const char *>>>);
+					__stl2::reverse_iterator<random_access_iterator<const char *>>>, "");
 	}
 	{ // test
 		test<bidirectional_iterator<const char *>>();
@@ -503,9 +510,7 @@ int main() {
 		// Verify that reverse_iterator's constructor that accepts a base iterator
 		// is explicit.
 		using RI = __stl2::reverse_iterator<char*>;
-		static_assert(__stl2::models::Constructible<RI, char*>);
-		static_assert(!__stl2::models::ConvertibleTo<char*, RI>);
+		static_assert(__stl2::Constructible<RI, char*>, "");
+		static_assert(!__stl2::ConvertibleTo<char*, RI>, "");
 	}
-
-	return test_result();
 }

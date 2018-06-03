@@ -128,6 +128,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/operations.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/ostream_iterator.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/ostreambuf_iterator.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/reverse_iterator.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/unreachable.hpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/interface.hpp
