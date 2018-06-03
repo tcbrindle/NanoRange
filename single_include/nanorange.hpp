@@ -6106,6 +6106,100 @@ NANO_END_NAMESPACE
 
 #endif
 
+// nanorange/algorithm/includes.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_INCLUDES_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_INCLUDES_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct includes_fn {
+private:
+    template <typename I1, typename S1, typename I2, typename S2,
+              typename Comp, typename Proj1, typename Proj2>
+     static constexpr bool impl(I1 first1, S1 last1, I2 first2, S2 last2,
+                                Comp& comp, Proj1& proj1, Proj2& proj2)
+    {
+        while (first2 != last2) {
+            // If range1 is done but we still have elements in range2, then
+            // it is not a subset
+            if (first1 == last1)  {
+                return false;
+            }
+
+            // If the current element of r2 is less than the current
+            // element of r1, then it is not in r1 => not a subset
+            if (nano::invoke(comp, nano::invoke(proj2, *first2),
+                             nano::invoke(proj1, *first1))) {
+                return false;
+            }
+
+            // Now we know that that !(r2 < r1). If we also have !(r1 < r2),
+            // then it must be equal, so in range1 -- so move onto the next
+            // element
+            if (!nano::invoke(comp, nano::invoke(proj1, *first1),
+                              nano::invoke(proj2, *first2))) {
+                ++first2;
+            }
+
+            ++first1;
+        }
+
+        return true;
+    }
+
+public:
+    template <typename I1, typename S1, typename I2, typename S2,
+              typename Comp = less<>, typename Proj1 = identity, typename Proj2 = identity>
+    constexpr std::enable_if_t<
+        InputIterator<I1> &&
+        Sentinel<S1, I1> &&
+        InputIterator<I2> &&
+        Sentinel<S2, I2> &&
+        IndirectStrictWeakOrder<Comp, projected<I1, Proj1>, projected<I2, Proj2>>,
+        bool>
+    operator()(I1 first1, S1 last1, I2 first2, S2 last2,
+               Comp comp = Comp{}, Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return includes_fn::impl(std::move(first1), std::move(last1),
+                                 std::move(first2), std::move(last2),
+                                 comp, proj1, proj2);
+    }
+
+    template <typename Rng1, typename Rng2, typename Comp = less<>,
+              typename Proj1 = identity, typename Proj2 = identity>
+    constexpr std::enable_if_t<
+        InputRange<Rng1> &&
+        InputRange<Rng2> &&
+        IndirectStrictWeakOrder<Comp,
+                                projected<iterator_t<Rng1>, Proj1>,
+                                projected<iterator_t<Rng2>, Proj2>>,
+        bool>
+    operator()(Rng1&& rng1, Rng2&& rng2, Comp comp = Comp{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return includes_fn::impl(nano::begin(rng1), nano::end(rng1),
+                                 nano::begin(rng2), nano::end(rng2),
+                                 comp, proj1, proj2);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::includes_fn, includes)
+
+NANO_END_NAMESPACE
+
+#endif
+
 // nanorange/algorithm/is_partitioned.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -6512,6 +6606,111 @@ public:
 }
 
 NANO_INLINE_VAR(detail::max_element_fn, max_element)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/merge.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_MERGE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_MERGE_HPP_INCLUDED
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+// FIXME: Use tagged_tuple
+struct merge_fn {
+private:
+    template <typename I1, typename S1, typename I2, typename S2, typename O,
+              typename Comp, typename Proj1, typename Proj2>
+    static constexpr std::tuple<I1, I2, O>
+    impl(I1 first1, S1 last1, I2 first2, S2 last2, O result, Comp& comp,
+         Proj1& proj1, Proj2& proj2)
+    {
+        while (first1 != last1) {
+            // If we've reached the end of the second range, copy any remaining
+            // elements from the first range directly
+            if (first2 == last2) {
+                std::tie(first1, result) = nano::copy(std::move(first1),
+                                                      std::move(last1),
+                                                      std::move(result));
+                break;
+            }
+
+            // (Only) if the element from range2 compares less than the element
+            // from range1, copy it. Otherwise copy the element from the first
+            if (nano::invoke(comp, nano::invoke(proj2, *first2),
+                             nano::invoke(proj1, *first1))) {
+                *result = *first2;
+                ++first2;
+            } else {
+                *result = *first1;
+                ++first1;
+            }
+            ++result;
+        }
+
+        // We've reached the end of range1, so copy any remaining elements
+        // from range2
+        std::tie(first2, result) = nano::copy(std::move(first2),
+                                              std::move(last2),
+                                              std::move(result));
+
+        return std::tuple<I1, I2, O>(std::move(first1), std::move(first2),
+                                     std::move(result));
+    }
+
+public:
+    template <typename I1, typename S1, typename I2, typename S2, typename O,
+              typename Comp = less<>, typename Proj1 = identity,
+              typename Proj2 = identity>
+    constexpr std::enable_if_t<
+        InputIterator<I1> &&
+        Sentinel<S1, I1> &&
+        InputIterator<I2> &&
+        Sentinel<S2, I2> &&
+        WeaklyIncrementable<O> &&
+        Mergeable<I1, I2, O, Comp, Proj1, Proj1>,
+        std::tuple<I1, I2, O>>
+    operator()(I1 first1, S1 last1, I2 first2, S2 last2, O result,
+               Comp comp = Comp{}, Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return merge_fn::impl(std::move(first1), std::move(last1),
+                              std::move(first2), std::move(last2),
+                              std::move(result), comp,
+                              proj1, proj2);
+    }
+
+    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>,
+              typename Proj1 = identity, typename Proj2 = identity>
+    constexpr std::enable_if_t<
+        InputRange<Rng1> &&
+        InputRange<Rng2> &&
+        WeaklyIncrementable<O> &&
+        Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp, Proj1, Proj2>,
+        std::tuple<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>, O>>
+    operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return merge_fn::impl(nano::begin(rng1), nano::end(rng1),
+                              nano::begin(rng2), nano::end(rng2),
+                              std::move(result), comp,
+                              proj1, proj2);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::merge_fn, merge)
 
 NANO_END_NAMESPACE
 
@@ -8882,6 +9081,419 @@ NANO_END_NAMESPACE
 
 #endif
 
+// nanorange/algorithm/set_difference.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_SET_DIFFERENCE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_SET_DIFFERENCE_HPP_INCLUDED
+
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+// FIXME: Use tagged_pair
+struct set_difference_fn {
+private:
+    template <typename I1, typename S1, typename I2, typename S2, typename O,
+              typename Comp, typename Proj1, typename Proj2>
+    static constexpr std::pair<I1, O>
+    impl(I1 first1, S1 last1, I2 first2, S2 last2, O result,
+         Comp& comp, Proj1& proj1, Proj2& proj2)
+    {
+        while (first1 != last1) {
+            if (first2 == last2) {
+                // We've reached the end of range2, so copy all the remaining
+                // elements from range1 and exit
+                std::tie(first1, result) = nano::copy(std::move(first1),
+                                                      std::move(last1),
+                                                      std::move(result));
+                break;
+            }
+
+            // If the element from r1 compares less than the one from r2, then
+            // copy it
+            if (nano::invoke(comp, nano::invoke(proj1, *first1),
+                             nano::invoke(proj2, *first2))) {
+                *result = *first1;
+                ++first1;
+                ++result;
+            } else{
+                // We now know that !(r1 < r2). If !(r2 < r1) as well, then
+                // elements are equal and we can skip
+                if (!nano::invoke(comp, nano::invoke(proj2, *first2),
+                                  nano::invoke(proj1, *first1))) {
+                    ++first1;
+                }
+                ++first2;
+            }
+        }
+
+        return {std::move(first1), std::move(result)};
+    }
+
+
+public:
+    template <typename I1, typename S1, typename I2, typename S2, typename O,
+              typename Comp = less<>, typename Proj1 = identity,
+              typename Proj2 = identity>
+    constexpr std::enable_if_t<
+        InputIterator<I1> &&
+        Sentinel<S1, I1> &&
+        InputIterator<I2> &&
+        Sentinel<S2, I2> &&
+        WeaklyIncrementable<O> &&
+        Mergeable<I1, I2, O, Comp, Proj1, Proj2>,
+        std::pair<I1, O>>
+    operator()(I1 first1, S1 last1, I2 first2, S2 last2, O result,
+               Comp comp = Comp{}, Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return set_difference_fn::impl(std::move(first1), std::move(last1),
+                                       std::move(first2), std::move(last2),
+                                       std::move(result), comp,
+                                       proj1, proj2);
+    }
+
+    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>,
+              typename Proj1 = identity, typename Proj2 = identity>
+    constexpr std::enable_if_t<
+        InputRange<Rng1> &&
+        InputRange<Rng2> &&
+        WeaklyIncrementable<O> &&
+        Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp, Proj1, Proj2>,
+        std::pair<safe_iterator_t<Rng1>, O>>
+    operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return set_difference_fn::impl(nano::begin(rng1), nano::end(rng1),
+                                       nano::begin(rng2), nano::end(rng2),
+                                       std::move(result), comp,
+                                       proj1, proj2);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::set_difference_fn, set_difference)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/set_intersection.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_SET_INTERSECTION_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_SET_INTERSECTION_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct set_intersection_fn {
+private:
+    template <typename I1, typename S1, typename I2, typename S2, typename O,
+              typename Comp, typename Proj1, typename Proj2>
+    static constexpr O impl(I1 first1, S1 last1, I2 first2, S2 last2,
+                            O result, Comp& comp, Proj1& proj1, Proj2& proj2)
+    {
+        while (first1 != last1 && first2 != last2)
+        {
+            if (nano::invoke(comp, nano::invoke(proj1, *first1),
+                             nano::invoke(proj2, *first2))) {
+                ++first1;
+            } else {
+                if (!nano::invoke(comp, nano::invoke(proj2, *first2),
+                                 nano::invoke(proj1, *first1))) {
+                    *result = *first1;
+                    ++result;
+                    ++first1;
+                }
+                ++first2;
+            }
+        }
+
+        return result;
+    }
+
+public:
+    template <typename I1, typename S1, typename I2, typename S2, typename O,
+              typename Comp = less<>, typename Proj1 = identity,
+              typename Proj2 = identity>
+    constexpr std::enable_if_t<
+        InputIterator<I1> &&
+        Sentinel<S1, I1> &&
+        InputIterator<I2> &&
+        Sentinel<S2, I2> &&
+        WeaklyIncrementable<O> &&
+        Mergeable<I1, I2, O, Comp, Proj1, Proj2>, O>
+    operator()(I1 first1, S1 last1, I2 first2, S2 last2, O result,
+               Comp comp = Comp{}, Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return set_intersection_fn::impl(std::move(first1), std::move(last1),
+                                         std::move(first2), std::move(last2),
+                                         std::move(result), comp, proj1, proj2);
+    }
+
+    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>,
+              typename Proj1 = identity, typename Proj2 = identity>
+    constexpr std::enable_if_t<
+        InputRange<Rng1> &&
+        InputRange<Rng2> &&
+        WeaklyIncrementable<O> &&
+        Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp, Proj1, Proj2>,
+         O>
+    operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return set_intersection_fn::impl(nano::begin(rng1), nano::end(rng1),
+                                         nano::begin(rng2), nano::end(rng2),
+                                         std::move(result), comp, proj1, proj2);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::set_intersection_fn, set_intersection)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/set_symmetric_difference.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_SET_SYMMETRIC_DIFFERENCE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_SET_SYMMETRIC_DIFFERENCE_HPP_INCLUDED
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct set_symmetric_difference_fn {
+private:
+    template <typename I1, typename S1, typename I2, typename S2, typename O,
+            typename Comp, typename Proj1, typename Proj2>
+    static constexpr std::tuple<I1, I2, O>
+    impl(I1 first1, S1 last1, I2 first2, S2 last2, O result,
+         Comp& comp, Proj1& proj1, Proj2& proj2)
+    {
+        while (true) {
+            if (first1 == last1) {
+                std::tie(first2, result) = nano::copy(std::move(first2),
+                                                      std::move(last2),
+                                                      std::move(result));
+                return std::tuple<I1, I2, O>{std::move(first1),
+                                             std::move(first2),
+                                             std::move(result)};
+            }
+
+            if (first2 == last2) {
+                std::tie(first1, result) = nano::copy(std::move(first1),
+                                                      std::move(last1),
+                                                      std::move(result));
+                return std::tuple<I1, I2, O>{std::move(first1),
+                                             std::move(first2),
+                                             std::move(result)};
+            }
+
+            // If r1 is less than r2, copy it to the output
+            if (nano::invoke(comp, nano::invoke(proj1, *first1),
+                             nano::invoke(proj2, *first2))) {
+                *result = *first1;
+                ++result;
+                ++first1;
+            } else {
+                // We now know that !(r1 < r2). If !(r2 < r1) as well then
+                // the elements are equal -- so skip
+                if (!nano::invoke(comp, nano::invoke(proj2, *first2),
+                                  nano::invoke(proj1, *first1))) {
+                    ++first1;
+                } else {
+                    // Otherwise copy first2
+                    *result = *first2;
+                    ++result;
+                }
+                ++first2;
+            }
+        }
+    }
+
+public:
+    template <typename I1, typename S1, typename I2, typename S2, typename O,
+              typename Comp = less<>, typename Proj1 = identity,
+              typename Proj2 = identity>
+    constexpr std::enable_if_t<
+        InputIterator<I1> &&
+        Sentinel<S1, I1> &&
+        InputIterator<I2> &&
+        Sentinel<S2, I2> &&
+        WeaklyIncrementable<O> &&
+        Mergeable<I1, I2, O, Comp, Proj1, Proj2>,
+        std::tuple<I1, I2, O>>
+    operator()(I1 first1, S1 last1, I2 first2, S2 last2, O result, Comp comp = Comp{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return set_symmetric_difference_fn::impl(std::move(first1), std::move(last1),
+                                                 std::move(first2), std::move(last2),
+                                                 std::move(result), comp,
+                                                 proj1, proj2);
+    }
+
+    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>,
+              typename Proj1 = identity, typename Proj2 = identity>
+    std::enable_if_t<
+        InputRange<Rng1> &&
+        InputRange<Rng2> &&
+        WeaklyIncrementable<O> &&
+        Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp, Proj1, Proj2>,
+        std::tuple<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>, O> >
+    operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return set_symmetric_difference_fn::impl(nano::begin(rng1), nano::end(rng1),
+                                                 nano::begin(rng2), nano::end(rng2),
+                                                 std::move(result), comp,
+                                                 proj1, proj2);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::set_symmetric_difference_fn, set_symmetric_difference)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/set_union.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_SET_UNION_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_SET_UNION_HPP_INCLUDED
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+// FIXME: Use tagged_tuple
+struct set_union_fn {
+private:
+    template <typename I1, typename S1, typename I2, typename S2, typename O,
+              typename Comp, typename Proj1, typename Proj2>
+    static constexpr std::tuple<I1, I2, O>
+    impl(I1 first1, S1 last1, I2 first2, S2 last2, O result, Comp& comp,
+         Proj1& proj1, Proj2& proj2)
+    {
+        while (first1 != last1) {
+            // If we've reached the end of the second range, copy any remaining
+            // elements from the first range and quit
+            if (first2 == last2) {
+                std::tie(first1, result) = nano::copy(std::move(first1),
+                                                      std::move(last1),
+                                                      std::move(result));
+                break;
+            }
+
+            // If this element from r1 is less than the current element from r2,
+            // copy it and move on
+            if (nano::invoke(comp, nano::invoke(proj1, *first1),
+                             nano::invoke(proj2, *first2))) {
+                *result = *first1;
+                ++first1;
+            } else {
+                // Now, we know that !(r1 < r2). If we also have !(r2 < r1) then
+                // the elements compare equal, so skip it
+                if (!nano::invoke(comp, nano::invoke(proj2, *first2),
+                                  nano::invoke(proj1, *first1))) {
+                    ++first1;
+                }
+                *result = *first2;
+                ++first2;
+            }
+            ++result;
+        }
+
+        // We've run out of elements of range1, so copy all the remaining
+        // elements of range2
+        std::tie(first2, result) = nano::copy(std::move(first2),
+                                              std::move(last2),
+                                              std::move(result));
+
+        return std::tuple<I1, I2, O>(std::move(first1), std::move(first2),
+                                     std::move(result));
+    }
+
+public:
+    template <typename I1, typename S1, typename I2, typename S2, typename O,
+              typename Comp = less<>, typename Proj1 = identity,
+              typename Proj2 = identity>
+    constexpr std::enable_if_t<
+        InputIterator<I1> &&
+        Sentinel<S1, I1> &&
+        InputIterator<I2> &&
+        Sentinel<S2, I2> &&
+        WeaklyIncrementable<O> &&
+        Mergeable<I1, I2, O, Comp, Proj1, Proj2>,
+        std::tuple<I1, I2, O>>
+    operator()(I1 first1, S1 last1, I2 first2, S2 last2, O result,
+               Comp comp = Comp{}, Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return set_union_fn::impl(std::move(first1), std::move(last1),
+                                  std::move(first2), std::move(last2),
+                                  std::move(result), comp,
+                                  proj1, proj2);
+    }
+
+    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>,
+              typename Proj1 = identity, typename Proj2 = identity>
+    constexpr std::enable_if_t<
+        InputRange<Rng1> &&
+        InputRange<Rng2> &&
+        WeaklyIncrementable<O> &&
+        Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp, Proj1, Proj2>,
+        std::tuple<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>, O>>
+    operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return set_union_fn::impl(nano::begin(rng1), nano::end(rng1),
+                                  nano::begin(rng2), nano::end(rng2),
+                                  std::move(result), comp,
+                                  proj1, proj2);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::set_union_fn, set_union)
+
+NANO_END_NAMESPACE
+
+#endif
+
 // nanorange/algorithm/shuffle.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -9480,67 +10092,6 @@ NANO_END_NAMESPACE
 
 #endif
 
-// nanorange/algorithm/stl/includes.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_INCLUDES_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_INCLUDES_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Reimplement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct includes_fn {
-    template <typename I1, typename I2, typename Comp = less<>>
-    std::enable_if_t<
-        InputIterator<I1> &&
-        Sentinel<I1, I1> &&
-        Cpp98Iterator<I1> &&
-        InputIterator<I2> &&
-        Sentinel<I2, I2> &&
-        Cpp98Iterator<I2> &&
-        IndirectStrictWeakOrder<Comp, I1, I2>, bool>
-    operator()(I1 first1, I1 last1, I2 first2, I2 last2, Comp comp = Comp{}) const
-    {
-        return std::includes(std::move(first1), std::move(last1),
-                             std::move(first2), std::move(last2),
-                             std::ref(comp));
-    }
-
-    template <typename Rng1, typename Rng2, typename Comp = less<>>
-    std::enable_if_t<
-        InputRange<Rng1> &&
-        CommonRange<Rng1> &&
-        Cpp98Iterator<iterator_t<Rng1>> &&
-        InputRange<Rng2> &&
-        CommonRange<Rng2> &&
-        Cpp98Iterator<iterator_t<Rng2>> &&
-        IndirectStrictWeakOrder<Comp, iterator_t<Rng1>, iterator_t<Rng2>>, bool>
-    operator()(Rng1&& rng1, Rng2&& rng2, Comp comp = Comp{}) const
-    {
-        return std::includes(nano::begin(rng1), nano::end(rng1),
-                             nano::begin(rng2), nano::end(rng2),
-                             std::ref(comp));
-    }
-};
-
-}
-
-NANO_INLINE_VAR(detail::includes_fn, includes)
-
-NANO_END_NAMESPACE
-
-#endif
-
 // nanorange/algorithm/stl/inplace_merge.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -9892,72 +10443,6 @@ struct make_heap_fn {
 }
 
 NANO_INLINE_VAR(detail::make_heap_fn, make_heap)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/merge.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_MERGE_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_MERGE_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct merge_fn {
-    template <typename I1, typename I2, typename O, typename Comp = less<>>
-    std::enable_if_t<
-        InputIterator<I1> &&
-        Sentinel<I1, I1> &&
-        detail::Cpp98Iterator<I1> &&
-        InputIterator<I2> &&
-        Sentinel<I1, I1> &&
-        detail::Cpp98Iterator<I2> &&
-        WeaklyIncrementable<O> &&
-        detail::Cpp98Iterator<O> &&
-        Mergeable<I1, I2, O, Comp>, O>
-    operator()(I1 first1, I1 last1, I2 first2, I2 last2, O result,
-               Comp comp = Comp{}) const
-    {
-        return std::merge(std::move(first1), std::move(last1),
-                          std::move(first2), std::move(last2),
-                          std::move(result), std::ref(comp));
-    }
-
-    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>>
-    std::enable_if_t<
-        InputRange<Rng1> &&
-        CommonRange<Rng1> &&
-        detail::Cpp98Iterator<iterator_t<Rng1>> &&
-        InputRange<Rng2> &&
-        CommonRange<Rng2> &&
-        detail::Cpp98Iterator<iterator_t<Rng2>> &&
-        WeaklyIncrementable<O> &&
-        detail::Cpp98Iterator<O> &&
-        Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp>, O>
-    operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{}) const
-    {
-        return std::merge(nano::begin(rng1), nano::end(rng1),
-                          nano::begin(rng2), nano::end(rng2),
-                          std::move(result), std::ref(comp));
-    }
-};
-
-}
-
-NANO_INLINE_VAR(detail::merge_fn, merge)
 
 NANO_END_NAMESPACE
 
@@ -10384,266 +10869,6 @@ struct push_heap_fn {
 }
 
 NANO_INLINE_VAR(detail::push_heap_fn, push_heap)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/set_difference.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_SET_DIFFERENCE_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_SET_DIFFERENCE_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct set_difference_fn {
-    template <typename I1, typename I2, typename O, typename Comp = less<>>
-    std::enable_if_t<
-        InputIterator<I1> &&
-        Sentinel<I1, I1> &&
-        Cpp98Iterator<I1> &&
-        InputIterator<I2> &&
-        Sentinel<I2, I2> &&
-        Cpp98Iterator<I2> &&
-        WeaklyIncrementable<O> &&
-        Cpp98Iterator<O> &&
-        Mergeable<I1, I2, O, Comp>, O>
-    operator()(I1 first1, I1 last1, I2 first2, I2 last2, O result, Comp comp = Comp{}) const
-    {
-        return std::set_difference(std::move(first1), std::move(last1),
-                                   std::move(first2), std::move(last2),
-                                   std::move(result), std::ref(comp));
-    }
-
-    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>>
-    std::enable_if_t<
-        InputRange<Rng1> &&
-        CommonRange<Rng1> &&
-        Cpp98Iterator<iterator_t<Rng1>> &&
-        InputRange<Rng2> &&
-        CommonRange<Rng2> &&
-        Cpp98Iterator<iterator_t<Rng2>> &&
-        WeaklyIncrementable<O> &&
-        Cpp98Iterator<O> &&
-        Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp>, O>
-    operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{}) const
-    {
-        return std::set_difference(nano::begin(rng1), nano::end(rng1),
-                                   nano::begin(rng2), nano::end(rng2),
-                                   std::move(result), std::ref(comp));
-    }
-};
-
-}
-
-NANO_INLINE_VAR(detail::set_difference_fn, set_difference)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/set_intersection.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_SET_INTERSECTION_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_SET_INTERSECTION_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct set_intersection_fn {
-    template <typename I1, typename I2, typename O, typename Comp = less<>>
-    std::enable_if_t<
-            InputIterator<I1> &&
-            Cpp98Iterator<I1> &&
-            Sentinel<I1, I1> &&
-    InputIterator<I2> &&
-            Cpp98Iterator<I2> &&
-            Sentinel<I2, I2> &&
-    WeaklyIncrementable<O> &&
-            Cpp98Iterator<O> &&
-    Mergeable<I1, I2, O, Comp>, O>
-    operator()(I1 first1, I1 last1, I2 first2, I2 last2, O result, Comp comp = Comp{}) const
-    {
-        return std::set_intersection(std::move(first1), std::move(last1),
-                                     std::move(first2), std::move(last2),
-                                     std::move(result), std::ref(comp));
-    }
-
-    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>>
-    std::enable_if_t<
-            InputRange<Rng1> &&
-            CommonRange<Rng1> &&
-    Cpp98Iterator<iterator_t<Rng1>> &&
-    InputRange<Rng2> &&
-            CommonRange<Rng2> &&
-    Cpp98Iterator<iterator_t<Rng2>> &&
-    WeaklyIncrementable<O> &&
-            Cpp98Iterator<O> &&
-    Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp>, O>
-    operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{}) const
-    {
-        return std::set_intersection(nano::begin(rng1), nano::end(rng1),
-                                     nano::begin(rng2), nano::end(rng2),
-                                     std::move(result), std::ref(comp));
-    }
-};
-
-}
-
-NANO_INLINE_VAR(detail::set_intersection_fn, set_intersection)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/set_symmetric_difference.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_SET_SYMMETRIC_DIFFERENCE_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_SET_SYMMETRIC_DIFFERENCE_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct set_symmetric_difference_fn {
-    template <typename I1, typename I2, typename O, typename Comp = less<>>
-    std::enable_if_t<
-            InputIterator<I1> &&
-            Sentinel<I1, I1> &&
-            Cpp98Iterator<I1> &&
-    InputIterator<I2> &&
-            Sentinel<I2, I2> &&
-            Cpp98Iterator<I2> &&
-    WeaklyIncrementable<O> &&
-            Cpp98Iterator<O> &&
-    Mergeable<I1, I2, O, Comp>, O>
-    operator()(I1 first1, I1 last1, I2 first2, I2 last2, O result, Comp comp = Comp{}) const
-    {
-        return std::set_symmetric_difference(std::move(first1), std::move(last1),
-                                             std::move(first2), std::move(last2),
-                                             std::move(result), std::ref(comp));
-    }
-
-    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>>
-    std::enable_if_t<
-            InputRange<Rng1> &&
-            CommonRange<Rng1> &&
-    Cpp98Iterator<iterator_t<Rng1>> &&
-    InputRange<Rng2> &&
-            CommonRange<Rng2> &&
-    Cpp98Iterator<iterator_t<Rng2>> &&
-    WeaklyIncrementable<O> &&
-            Cpp98Iterator<O> &&
-    Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp>, O>
-    operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{}) const
-    {
-        return std::set_symmetric_difference(nano::begin(rng1), nano::end(rng1),
-                                             nano::begin(rng2), nano::end(rng2),
-                                             std::move(result), std::ref(comp));
-    }
-};
-
-}
-
-NANO_INLINE_VAR(detail::set_symmetric_difference_fn, set_symmetric_difference)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/set_union.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_SET_UNION_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_SET_UNION_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct set_union_fn {
-    template <typename I1, typename I2, typename O, typename Comp = less<>>
-    std::enable_if_t<
-        InputIterator<I1> &&
-        Sentinel<I1, I1> &&
-        Cpp98Iterator<I1> &&
-        InputIterator<I2> &&
-        Sentinel<I2, I2> &&
-        Cpp98Iterator<I2> &&
-        WeaklyIncrementable<O> &&
-        Cpp98Iterator<O> &&
-        Mergeable<I1, I2, O, Comp>, O>
-    operator()(I1 first1, I1 last1, I2 first2, I2 last2, O result, Comp comp = Comp{}) const
-    {
-        return std::set_union(std::move(first1), std::move(last1),
-                              std::move(first2), std::move(last2),
-                              std::move(result), std::ref(comp));
-    }
-
-    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>>
-    std::enable_if_t<
-        InputRange<Rng1> &&
-        CommonRange<Rng1> &&
-        Cpp98Iterator<iterator_t<Rng1>> &&
-        InputRange<Rng2> &&
-        CommonRange<Rng2> &&
-        Cpp98Iterator<iterator_t<Rng2>> &&
-        WeaklyIncrementable<O> &&
-        Cpp98Iterator<O> &&
-        Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp>, O>
-    operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{}) const
-    {
-        return std::set_union(nano::begin(rng1), nano::end(rng1),
-                              nano::begin(rng2), nano::end(rng2),
-                              std::move(result), std::ref(comp));
-    }
-};
-
-}
-
-NANO_INLINE_VAR(detail::set_union_fn, set_union)
 
 NANO_END_NAMESPACE
 
