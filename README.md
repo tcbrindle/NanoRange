@@ -74,13 +74,14 @@ specifically:
 
  * `common_iterator`
  * `counted_iterator`
+ * `reverse_iterator`
  * `front_insert_iterator`
  * `back_insert_iterator`
  * `insert_iterator`
  * `ostream_iterator`
  * `ostreambuf_iterator`
  
-The remaining adaptors (namely `reverse_iterator`, `move_iterator`,
+The remaining adaptors (namely `move_iterator`,
 `istream_iterator` and `istreambuf_iterator`) have not yet been implemented,
 but the existing STL versions can be used with NanoRange algorithms.
 

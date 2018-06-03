@@ -7,7 +7,6 @@ In rough order or priority:
 * Handle ContiguousIterators and ContiguousRanges
 * Fix common_iterator (use variant-like data store)
 * Implement the remaining iterator adaptors, namely:
-  * reverse_iterator
   * move_iterator
   * istream_iterator
   * istreambuf_iterator
