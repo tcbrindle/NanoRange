@@ -58,7 +58,7 @@ template <typename Range>
 void foo(Range&& rng) {
     if constexpr (nano::RandomAccessRange<Rng>) {
          // do something
-    } else if constexpr (nano::BidirectionalIterator<Rng>>) {
+    } else if constexpr (nano::BidirectionalRange<Rng>>) {
         // do something else
     } else if constexpr (nano::ForwardRange<Rng>) {
         // do a third thing
@@ -167,11 +167,12 @@ auto iter = nano::find(vec, 10, &S::i);
 
 #### `constexpr` support ####
 
-In C++20, all of the existing algorithms in `<algorithm>` will be marked
+In C++20, most of the existing algorithms in `<algorithm>` will be marked
 `constexpr`, and so will be callable at compile time. While the ranges
 proposals do not currently feature `constexpr` support, it seems inevitable
-that this will be added at some point. As an extension therefore, all of
-the fully reimplemented algorithms in NanoRange are marked `constexpr`.
+that this will be added at some point. As an extension therefore, all of the
+fully reimplemented algorithms in NanoRange (with the exception of those
+which can potentially allocate) are `constexpr`.
 
 (Note that `constexpr` support has not been well tested for all algorithms.
 You may run into bugs, particularly on MSVC, which tends to bail out if
@@ -180,11 +181,11 @@ planned for a future version.)
 
 #### Algorithms status ####
 
-Around half of the algorithms have been fully reimplemented in NanoRange and
+Many of the STL algorithms have been fully reimplemented in NanoRange and
 provide all of the improvements from the ranges papers, including differing
 iterator/sentinel types and support for projections.
 
-Most of the more complex algorithms have not yet been fully reimplemented, 
+Several of the more complex algorithms have not yet been fully reimplemented, 
 and instead are implemented as constrained wrappers around a call to the existing
 STL implementation from your `<algorithm>` header. This is the case for
 `nano::sort()`, for example.
@@ -246,12 +247,6 @@ NanoRange wholly or partially implements the following C++20 proposal papers:
  * [P0970R1][P0970] *Better, safer range access customization points*
  * [P0789R3][P0789] *Range adaptors and utilities* (only `subrange` so far)
 
-[Range-V3]: https://github.com/ericniebler/range-v3/
-[P0898]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0898r2.pdf
-[P0896]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0896r1.pdf
-[P0970]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0970r1.pdf
-[P0789]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0789r3.pdf
-
 ## Stability ##
 
 NanoRange aims to track the various C++20 ranges proposals, and will be updated
@@ -274,3 +269,11 @@ Many thanks to the following:
  * The editors of [cppreference.com](https://cppreference.com) for painstakingly
    detailing the existing requirements of standard library algorithms, and
    more generally for maintaining the C++ programmer's bible.
+
+<!-- References -->
+
+[Range-V3]: https://github.com/ericniebler/range-v3/
+[P0898]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0898r2.pdf
+[P0896]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0896r1.pdf
+[P0970]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0970r1.pdf
+[P0789]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0789r3.pdf
