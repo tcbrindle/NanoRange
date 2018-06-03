@@ -19,11 +19,13 @@ void iter_move();
 struct fn {
 private:
     template <typename T>
-    static constexpr auto impl(T&& t, priority_tag<2>) noexcept(
+    static constexpr auto impl(T&& t, priority_tag<2>) /*noexcept(
         noexcept(static_cast<decltype(iter_move(t))>(iter_move(t))))
-        -> decltype(static_cast<decltype(iter_move(t))>(iter_move(t)))
+        -> decltype(static_cast<decltype(iter_move(t))>(iter_move(t)))*/
+        noexcept(noexcept(iter_move(t)))
+        -> decltype(iter_move(t))
     {
-        return static_cast<decltype(iter_move(t))>(iter_move(t));
+        return iter_move(t);
     }
 
     template <typename T>
@@ -35,11 +37,11 @@ private:
 
     template <typename T>
     static constexpr auto
-    impl(T&& t,
-         priority_tag<0>) noexcept(noexcept(static_cast<decltype(*t)>(*t)))
-        -> decltype(static_cast<decltype(*t)>(*t))
+    impl(T&& t, priority_tag<0>)
+        noexcept(noexcept(*t))
+        -> decltype(*t)
     {
-        return static_cast<decltype(*t)>(*t);
+        return *t;
     }
 
 public:
