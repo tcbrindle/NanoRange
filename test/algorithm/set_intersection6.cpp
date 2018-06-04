@@ -25,6 +25,6 @@ TEST_CASE("alg.set_intersection6")
 
 		U* res = stl2::set_intersection(ia, ib, ic, std::less<int>(), &S::i, &T::j);
 		CHECK((res - ic) == sr);
-		CHECK(stl2::lexicographical_compare(ic, res, ir, ir+sr, std::less<int>(), &U::k) == 0);
+		CHECK_FALSE(stl2::lexicographical_compare(ic, res, ir, ir+sr, std::less<int>(), &U::k));
 	}
 }

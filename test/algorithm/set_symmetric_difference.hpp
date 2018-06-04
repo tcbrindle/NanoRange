@@ -51,8 +51,8 @@ test_iter()
 							 Iter2(ib + sb), OutIter(ic)).
 			check([&](std::tuple<Iter1, Iter2, OutIter> res) {
 					  CHECK((base(std::get<2>(res)) - ic) == sr);
-					  CHECK(std::lexicographical_compare(ic, base(std::get<2>(res)), ir,
-														 ir + sr) == 0);
+					  CHECK_FALSE(std::lexicographical_compare(ic, base(std::get<2>(res)), ir,
+														 ir + sr));
 					  stl2::fill(ic, 0);
 				  }
 	);
@@ -61,8 +61,8 @@ test_iter()
 							 Iter2(ia + sa), OutIter(ic)).
 			check([&](std::tuple<Iter1, Iter2, OutIter> res) {
 					  CHECK((base(std::get<2>(res)) - ic) == sr);
-					  CHECK(std::lexicographical_compare(ic, base(std::get<2>(res)), ir,
-														 ir + sr) == 0);
+					  CHECK_FALSE(std::lexicographical_compare(ic, base(std::get<2>(res)), ir,
+														 ir + sr));
 					  stl2::fill(ic, 0);
 				  }
 	);
@@ -89,8 +89,8 @@ test_comp()
 							 Iter2(ib + sb), OutIter(ic), std::less<int>()).
 			check([&](std::tuple<Iter1, Iter2, OutIter> res) {
 					  CHECK((base(std::get<2>(res)) - ic) == sr);
-					  CHECK(std::lexicographical_compare(ic, base(std::get<2>(res)), ir,
-														 ir + sr) == 0);
+					  CHECK_FALSE(std::lexicographical_compare(ic, base(std::get<2>(res)), ir,
+														 ir + sr));
 					  stl2::fill(ic, 0);
 				  }
 	);
@@ -99,8 +99,8 @@ test_comp()
 							 Iter2(ia + sa), OutIter(ic), std::less<int>()).
 			check([&](std::tuple<Iter1, Iter2, OutIter> res) {
 					  CHECK((base(std::get<2>(res)) - ic) == sr);
-					  CHECK(std::lexicographical_compare(ic, base(std::get<2>(res)), ir,
-														 ir + sr) == 0);
+					  CHECK_FALSE(std::lexicographical_compare(ic, base(std::get<2>(res)), ir,
+														 ir + sr));
 					  stl2::fill(ic, 0);
 				  }
 	);

@@ -26,13 +26,13 @@ TEST_CASE("alg.set_symmetric_difference6")
 		std::tuple<S *, T *, U *> res1 =
 			stl2::set_symmetric_difference(ia, ib, ic, std::less<int>(), &S::i, &T::j);
 		CHECK((std::get<2>(res1) - ic) == sr);
-		CHECK(stl2::lexicographical_compare(ic, std::get<2>(res1), ir, ir+sr, std::less<int>(), &U::k) == 0);
+		CHECK_FALSE(stl2::lexicographical_compare(ic, std::get<2>(res1), ir, ir+sr, std::less<int>(), &U::k));
 		stl2::fill(ic, U{0});
 
 		std::tuple<T *, S *, U *> res2 =
 			stl2::set_symmetric_difference(ib, ia, ic, std::less<int>(), &T::j, &S::i);
 		CHECK((std::get<2>(res2) - ic) == sr);
-		CHECK(stl2::lexicographical_compare(ic, std::get<2>(res2), ir, ir+sr, std::less<int>(), &U::k) == 0);
+		CHECK_FALSE(stl2::lexicographical_compare(ic, std::get<2>(res2), ir, ir+sr, std::less<int>(), &U::k));
 	}
 
 	// Test rvalue ranges
@@ -53,7 +53,7 @@ TEST_CASE("alg.set_symmetric_difference6")
 		CHECK(std::get<1>(res1) == stl2::end(ib));
 #endif
 		CHECK((std::get<2>(res1) - ic) == sr);
-		CHECK(stl2::lexicographical_compare(ic, std::get<2>(res1), ir, ir+sr, std::less<int>(), &U::k) == 0);
+		CHECK_FALSE(stl2::lexicographical_compare(ic, std::get<2>(res1), ir, ir+sr, std::less<int>(), &U::k));
 		stl2::fill(ic, U{0});
 
 		auto res2 =
@@ -67,6 +67,6 @@ TEST_CASE("alg.set_symmetric_difference6")
 		CHECK(std::get<1>(res2) == stl2::end(ia));
 #endif
 		CHECK((std::get<2>(res2) - ic) == sr);
-		CHECK(stl2::lexicographical_compare(ic, std::get<2>(res2), ir, ir+sr, std::less<int>(), &U::k) == 0);
+		CHECK_FALSE(stl2::lexicographical_compare(ic, std::get<2>(res2), ir, ir+sr, std::less<int>(), &U::k));
 	}
 }

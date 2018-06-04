@@ -26,13 +26,13 @@ TEST_CASE("alg.set_union6")
 		using R = std::tuple<S *, T*, U*>;
 		R res = stl2::set_union(ia, ib, ic, std::less<int>(), &S::i, &T::j);
 		CHECK((std::get<2>(res) - ic) == sr);
-		CHECK(stl2::lexicographical_compare(ic, std::get<2>(res), ir, ir+sr, std::less<int>(), &U::k) == 0);
+		CHECK_FALSE(stl2::lexicographical_compare(ic, std::get<2>(res), ir, ir+sr, std::less<int>(), &U::k));
 		stl2::fill(ic, U{0});
 
 		using R2 = std::tuple<T *, S*, U*>;
 		R2 res2 = stl2::set_union(ib, ia, ic, std::less<int>(), &T::j, &S::i);
 		CHECK((std::get<2>(res2) - ic) == sr);
-		CHECK(stl2::lexicographical_compare(ic, std::get<2>(res2), ir, ir+sr, std::less<int>(), &U::k) == 0);
+		CHECK_FALSE(stl2::lexicographical_compare(ic, std::get<2>(res2), ir, ir+sr, std::less<int>(), &U::k));
 	}
 
 	// Test projections

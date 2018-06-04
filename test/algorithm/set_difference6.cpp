@@ -28,7 +28,7 @@ TEST_CASE("alg.set_difference6")
 		std::pair<S *, U *> res = stl2::set_difference(ia, ib, ic, std::less<int>(), &S::i, &T::j);
 		CHECK((res.first - ia) == sa);
 		CHECK((res.second - ic) == sr);
-		CHECK(stl2::lexicographical_compare(ic, res.second, ir, ir+sr, std::less<int>(), &U::k) == 0);
+		CHECK_FALSE(stl2::lexicographical_compare(ic, res.second, ir, ir+sr, std::less<int>(), &U::k));
 		stl2::fill(ic, U{0});
 
 		int irr[] = {6};
@@ -36,7 +36,7 @@ TEST_CASE("alg.set_difference6")
 		std::pair<T *, U *> res2 = stl2::set_difference(ib, ia, ic, std::less<int>(), &T::j, &S::i);
 		CHECK((res2.first - ib) == sb);
 		CHECK((res2.second - ic) == srr);
-		CHECK(stl2::lexicographical_compare(ic, res2.second, ir, irr+srr, std::less<int>(), &U::k) == 0);
+		CHECK_FALSE(stl2::lexicographical_compare(ic, res2.second, ir, irr+srr, std::less<int>(), &U::k));
 	}
 
 	// Test rvalue ranges
@@ -57,7 +57,7 @@ TEST_CASE("alg.set_difference6")
 		CHECK((res.first - ia) == sa);
 #endif
 		CHECK((res.second - ic) == sr);
-		CHECK(stl2::lexicographical_compare(ic, res.second, ir, ir+sr, std::less<int>(), &U::k) == 0);
+		CHECK_FALSE(stl2::lexicographical_compare(ic, res.second, ir, ir+sr, std::less<int>(), &U::k));
 		stl2::fill(ic, U{0});
 
 		int irr[] = {6};
@@ -70,6 +70,6 @@ TEST_CASE("alg.set_difference6")
 		CHECK((res2.first - ib) == sb);
 #endif
 		CHECK((res2.second - ic) == srr);
-		CHECK(stl2::lexicographical_compare(ic, res2.second, ir, irr+srr, std::less<int>(), &U::k) == 0);
+		CHECK_FALSE(stl2::lexicographical_compare(ic, res2.second, ir, irr+srr, std::less<int>(), &U::k));
 	}
 }
