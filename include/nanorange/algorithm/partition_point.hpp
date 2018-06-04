@@ -31,6 +31,8 @@ namespace detail {
 
 struct partition_point_fn {
 private:
+    friend struct lower_bound_fn;
+
     template <typename I, typename Pred, typename Proj>
     static constexpr I impl_n(I first, difference_type_t<I> n, Pred& pred,
                               Proj& proj)

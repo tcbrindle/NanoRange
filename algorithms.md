@@ -68,6 +68,10 @@ In addition, they are all available for use in `constexpr` functions.
 * is_sorted
 * is_sorted_until
 
+#### Binary search operations ####
+
+* lower_bound
+
 #### Set operations ####
 
 * merge
@@ -112,7 +116,6 @@ CommonRange. Projections cannot be used.
 
 #### Binary search operations ####
 
-* lower_bound
 * upper_bound
 * equal_range
 * binary_search
