@@ -84,7 +84,7 @@ TEST_CASE("alg.copy_backward")
 
 	std::fill_n(out, size(out), std::make_pair(0, 0));
 	auto res2 = ranges::copy_backward(std::move(a), end(out));
-	CHECK(res2.first == end(a));
+	CHECK(res2.first.get_unsafe() == end(a));
 	CHECK(res2.second == begin(out));
 	CHECK(std::equal(a, a + size(a), out));
 

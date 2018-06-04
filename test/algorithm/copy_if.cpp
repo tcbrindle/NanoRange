@@ -59,8 +59,7 @@ TEST_CASE("alg.copy_if") {
 		std::fill_n(target, n, -1);
 
 		auto res = ranges::copy_if(std::move(source), target, is_even);
-//		REQUIRE(res.first.get_unsafe() == source + n);
-        REQUIRE(res.first == source + n);
+		REQUIRE(res.first.get_unsafe() == source + n);
 		REQUIRE(res.second == target + n / 2);
 
 		REQUIRE(std::equal(target, target + n / 2, evens));
