@@ -59,7 +59,12 @@ TEST_CASE("alg.copy_if") {
 		std::fill_n(target, n, -1);
 
 		auto res = ranges::copy_if(std::move(source), target, is_even);
+		// FIXME: Usual MSVC rvalue aray weirdness
+#ifndef _MSC_VER
 		REQUIRE(res.first.get_unsafe() == source + n);
+#else
+		REQUIRE(res.first == source + n);
+#endif
 		REQUIRE(res.second == target + n / 2);
 
 		REQUIRE(std::equal(target, target + n / 2, evens));
