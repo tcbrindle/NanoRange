@@ -1,7 +1,7 @@
 
 [![Standard](https://img.shields.io/badge/c%2B%2B-14/17/20-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
 [![License](https://img.shields.io/badge/license-BSL-blue.svg)](http://www.boost.org/LICENSE_1_0.txt)
-[![Build Status](https://travis-ci.org/tcbrindle/NanoRange.svg?branch=master)](https://travis-ci.org/tcbrindle/nanorange)
+[![Build Status](https://travis-ci.org/tcbrindle/NanoRange.svg?branch=master)](https://travis-ci.org/tcbrindle/NanoRange)
 [![Build status](https://ci.appveyor.com/api/projects/status/6vciaaskslg34pux/branch/master?svg=true)](https://ci.appveyor.com/project/tcbrindle/nanorange/branch/master) [![download](https://img.shields.io/badge/latest-download-blue.svg)](https://github.com/tcbrindle/NanoRange/raw/master/single_include/nanorange.hpp) 
 [![Try it on godbolt online](https://img.shields.io/badge/on-godbolt-blue.svg)](https://godbolt.org/g/Dbi77j) 
 
