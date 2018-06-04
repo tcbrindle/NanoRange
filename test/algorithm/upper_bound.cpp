@@ -13,16 +13,16 @@
 //  Distributed under the MIT License(see accompanying file LICENSE_1_0_0.txt
 //  or a copy at http://stlab.adobe.com/licenses.html)
 
-#include <stl2/detail/algorithm/upper_bound.hpp>
-#include <stl2/view/iota.hpp>
+#include <nanorange/algorithm/upper_bound.hpp>
 #include <vector>
 #include <utility>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
 
-struct my_int
-{
+namespace {
+
+struct my_int {
 	int value;
 };
 
@@ -38,19 +38,23 @@ void not_totally_ordered()
 	stl2::upper_bound(vec, my_int{10}, compare);
 }
 
-int main()
+}
+
+TEST_CASE("alg.upper_bound")
 {
 	using stl2::begin;
 	using stl2::end;
 	using stl2::size;
 	using stl2::less;
 
+	not_totally_ordered();
+
 	std::pair<int, int> a[] = {{0, 0}, {0, 1}, {1, 2}, {1, 3}, {3, 4}, {3, 5}};
 	const std::pair<int, int> c[] = {{0, 0}, {0, 1}, {1, 2}, {1, 3}, {3, 4}, {3, 5}};
 
-	CHECK(stl2::ext::upper_bound_n(begin(a), size(a), a[0]) == &a[1]);
-	CHECK(stl2::ext::upper_bound_n(begin(a), size(a), a[1], less<>()) == &a[2]);
-	CHECK(stl2::ext::upper_bound_n(begin(a), size(a), 1, less<>(), &std::pair<int, int>::first) == &a[4]);
+//	CHECK(stl2::ext::upper_bound_n(begin(a), size(a), a[0]) == &a[1]);
+//	CHECK(stl2::ext::upper_bound_n(begin(a), size(a), a[1], less<>()) == &a[2]);
+//	CHECK(stl2::ext::upper_bound_n(begin(a), size(a), 1, less<>(), &std::pair<int, int>::first) == &a[4]);
 
 	CHECK(stl2::upper_bound(begin(a), end(a), a[0]) == &a[1]);
 	CHECK(stl2::upper_bound(begin(a), end(a), a[1], less<>()) == &a[2]);
@@ -65,16 +69,29 @@ int main()
 	CHECK(stl2::upper_bound(a, 1, less<>(), &std::pair<int, int>::first) == &a[4]);
 	CHECK(stl2::upper_bound(c, 1, less<>(), &std::pair<int, int>::first) == &c[4]);
 
-	CHECK(stl2::upper_bound(stl2::move(a), a[2]).get_unsafe() == &a[3]);
-	CHECK(stl2::upper_bound(stl2::move(c), c[3]).get_unsafe() == &c[4]);
+	// FIXME: MSVC
+#ifndef _MSC_VER
+	CHECK(stl2::upper_bound(std::move(a), a[2]).get_unsafe() == &a[3]);
+	CHECK(stl2::upper_bound(std::move(c), c[3]).get_unsafe() == &c[4]);
 
-	CHECK(stl2::upper_bound(stl2::move(a), a[4], less<>()).get_unsafe() == &a[5]);
-	CHECK(stl2::upper_bound(stl2::move(c), c[5], less<>()).get_unsafe() == &c[6]);
+	CHECK(stl2::upper_bound(std::move(a), a[4], less<>()).get_unsafe() == &a[5]);
+	CHECK(stl2::upper_bound(std::move(c), c[5], less<>()).get_unsafe() == &c[6]);
 
-	CHECK(stl2::upper_bound(stl2::move(a), 1, less<>(), &std::pair<int, int>::first).get_unsafe() == &a[4]);
-	CHECK(stl2::upper_bound(stl2::move(c), 1, less<>(), &std::pair<int, int>::first).get_unsafe() == &c[4]);
 
+	CHECK(stl2::upper_bound(std::move(a), 1, less<>(), &std::pair<int, int>::first).get_unsafe() == &a[4]);
+	CHECK(stl2::upper_bound(std::move(c), 1, less<>(), &std::pair<int, int>::first).get_unsafe() == &c[4]);
+#else
+	CHECK(stl2::upper_bound(std::move(a), a[2]) == &a[3]);
+	CHECK(stl2::upper_bound(std::move(c), c[3]) == &c[4]);
+
+	CHECK(stl2::upper_bound(std::move(a), a[4], less<>()) == &a[5]);
+	CHECK(stl2::upper_bound(std::move(c), c[5], less<>()) == &c[6]);
+
+	CHECK(stl2::upper_bound(std::move(a), 1, less<>(), &std::pair<int, int>::first) == &a[4]);
+	CHECK(stl2::upper_bound(std::move(c), 1, less<>(), &std::pair<int, int>::first) == &c[4]);
+#endif
+
+#ifdef HAVE_VIEWS
 	CHECK(*stl2::upper_bound(stl2::ext::iota_view<int>{}, 42).get_unsafe() == 43);
-
-	return test_result();
+#endif
 }

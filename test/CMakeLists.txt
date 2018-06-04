@@ -123,7 +123,7 @@ add_executable(test_nanorange
     algorithm/transform.cpp
     algorithm/unique.cpp
     #algorithm/unique_copy.cpp
-    #algorithm/upper_bound.cpp
+    algorithm/upper_bound.cpp
 
     concepts/compare.cpp
     concepts/core.cpp

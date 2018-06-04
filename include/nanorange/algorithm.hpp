@@ -63,6 +63,7 @@
 #include <nanorange/algorithm/swap_ranges.hpp>
 #include <nanorange/algorithm/transform.hpp>
 #include <nanorange/algorithm/unique.hpp>
+#include <nanorange/algorithm/upper_bound.hpp>
 
 // Algorithms which reuse the STL implementation
 #include <nanorange/algorithm/stl/binary_search.hpp>
@@ -84,6 +85,5 @@
 #include <nanorange/algorithm/stl/stable_partition.hpp>
 #include <nanorange/algorithm/stl/stable_sort.hpp>
 #include <nanorange/algorithm/stl/unique_copy.hpp>
-#include <nanorange/algorithm/stl/upper_bound.hpp>
 
 #endif
