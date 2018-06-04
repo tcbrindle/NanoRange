@@ -18,7 +18,7 @@ add_executable(test_nanorange
     algorithm/adjacent_find.cpp
     algorithm/all_of.cpp
     algorithm/any_of.cpp
-    #algorithm/binary_search.cpp
+    algorithm/binary_search.cpp
     algorithm/copy.cpp
     algorithm/copy_backward.cpp
     algorithm/copy_if.cpp

@@ -73,6 +73,7 @@ In addition, they are all available for use in `constexpr` functions.
 * lower_bound
 * upper_bound
 * equal_range
+* binary_search
 
 #### Set operations ####
 
@@ -100,7 +101,7 @@ on the C++98 specification. This means that the iterator and sentinel types
 must be the same, or for the range-based overloads, the range must model
 CommonRange. Projections cannot be used.
 
-#### Modifying sequence ops ####
+#### Modifying sequence operations ####
 
 * unique_copy
 
@@ -115,10 +116,6 @@ CommonRange. Projections cannot be used.
 * partial_sort
 * partial_sort_copy
 * nth_element
-
-#### Binary search operations ####
-
-* binary_search
 
 #### Set operations ####
 

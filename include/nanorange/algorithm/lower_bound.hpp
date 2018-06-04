@@ -15,6 +15,7 @@ namespace detail {
 
 struct lower_bound_fn {
 private:
+    friend struct binary_search_fn;
     friend struct equal_range_fn;
 
     template <typename Comp, typename T>

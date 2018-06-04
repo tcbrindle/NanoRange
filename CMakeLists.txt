@@ -16,6 +16,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/adjacent_find.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/all_of.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/any_of.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/binary_search.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/copy.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/count.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/equal.hpp
@@ -71,7 +72,6 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/unique.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/upper_bound.hpp
 
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/binary_search.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/inplace_merge.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/is_heap.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/is_heap_until.hpp
