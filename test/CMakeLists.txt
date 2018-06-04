@@ -71,7 +71,7 @@ add_executable(test_nanorange
     #algorithm/partial_sort_copy.cpp
     algorithm/partition.cpp
     algorithm/partition_copy.cpp
-    #algorithm/partition_point.cpp
+    algorithm/partition_point.cpp
     #algorithm/pop_heap.cpp
     #algorithm/prev_permutation.cpp
     #algorithm/push_heap.cpp

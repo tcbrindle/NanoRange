@@ -61,6 +61,7 @@ In addition, they are all available for use in `constexpr` functions.
 * is_partitioned
 * partition
 * partition_copy
+* partition_point
 
 #### Sorting operations ####
 
@@ -100,7 +101,6 @@ CommonRange. Projections cannot be used.
 #### Partitioning operations ####
 
 * stable_partition
-* partition_point
 
 #### Sorting operations ####
 

@@ -22,16 +22,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/partition_point.hpp>
-#include <stl2/iterator.hpp>
-#include <stl2/view/iota.hpp>
-#include <memory>
-#include <utility>
-#include "../simple_test.hpp"
+#include <nanorange/algorithm/partition_point.hpp>
+
+#include "../catch.hpp"
 #include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
+
+namespace {
 
 struct is_odd
 {
@@ -45,8 +44,8 @@ test_iter()
 	{
 		const int ia[] = {2, 4, 6, 8, 10};
 		CHECK(stl2::partition_point(Iter(stl2::begin(ia)),
-									  Sent(stl2::end(ia)),
-									  is_odd()) == Iter(ia));
+									Sent(stl2::end(ia)),
+									is_odd()) == Iter(ia));
 	}
 	{
 		const int ia[] = {1, 2, 4, 6, 8};
@@ -154,10 +153,10 @@ test_range()
 	}
 }
 
-stl2::Iterator{I}
-stl2::ext::range<stl2::counted_iterator<I>, stl2::default_sentinel>
+template <typename I>
+stl2::iterator_range<stl2::counted_iterator<I>, stl2::default_sentinel>
 make_counted_view(I i, stl2::difference_type_t<I> n) {
-  return {stl2::make_counted_iterator(stl2::move(i), n), {}};
+  return {stl2::make_counted_iterator(std::move(i), n), {}};
 }
 
 template <class Iter>
@@ -219,7 +218,9 @@ struct S
 	int i;
 };
 
-int main()
+}
+
+TEST_CASE("alg.partition_point")
 {
 	test_iter<forward_iterator<const int*> >();
 	test_iter<forward_iterator<const int*>, sentinel<const int*>>();
@@ -233,9 +234,9 @@ int main()
 	const S ia[] = {S{1}, S{3}, S{5}, S{2}, S{4}, S{6}};
 	CHECK(stl2::partition_point(ia, is_odd(), &S::i) == ia + 3);
 
+#ifdef HAVE_VIEWS
 	// Test infinite range
 	CHECK(*stl2::partition_point(stl2::ext::iota_view<int>{0},
 								[](int i){ return i < 42; }).get_unsafe() == 42);
-
-	return ::test_result();
+#endif
 }
