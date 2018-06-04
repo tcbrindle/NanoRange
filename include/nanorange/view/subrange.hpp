@@ -200,9 +200,11 @@ public:
     // There doesn't seem to be any obvious syntax to bring it back into
     // scope, so we'll just reimplement it here
 
+    // FIXME: Clang 6 (C++17) doesn't like checking View<C>
     template <typename C, typename R = subrange,
               typename = std::enable_if_t<
-                    ForwardRange<C> && !View<C> &&
+                    ForwardRange<C> && /*!View<C> &&*/
+                    !detail::view_predicate_v<C> &&
                     ConvertibleTo<reference_t<iterator_t<const R>>,
                                   value_type_t<iterator_t<C>>> &&
                     Constructible<C, detail::range_common_iterator_t<const R>,
