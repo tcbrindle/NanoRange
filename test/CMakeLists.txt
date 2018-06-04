@@ -26,7 +26,7 @@ add_executable(test_nanorange
     algorithm/count.cpp
     algorithm/count_if.cpp
     algorithm/equal.cpp
-    #algorithm/equal_range.cpp
+    algorithm/equal_range.cpp
     algorithm/fill.cpp
     algorithm/fill_n.cpp
     algorithm/find.cpp

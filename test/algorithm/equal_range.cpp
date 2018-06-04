@@ -19,16 +19,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/equal_range.hpp>
+#include <nanorange/algorithm/equal_range.hpp>
 #include <vector>
 #include <iterator>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "../test_iterators.hpp"
 
-namespace ranges = __stl2;
+namespace ranges = nano::ranges;
 
-struct my_int
-{
+namespace {
+
+struct my_int {
 	int value;
 };
 
@@ -59,14 +60,14 @@ test(Iter first, Sent last, const T& value, Proj proj = Proj{})
 		CHECK(value < ranges::invoke(proj, *j));
 
 	auto res = ranges::equal_range(
-		ranges::ext::make_range(first, last), value, ranges::less<>{}, proj);
-	for (Iter j = first; j != res.begin().get_unsafe(); ++j)
+			ranges::make_subrange(first, last), value, ranges::less<>{}, proj);
+	for (Iter j = first; j != res.begin(); ++j)
 		CHECK(ranges::invoke(proj, *j) < value);
-	for (Iter j = res.begin().get_unsafe(); j != last; ++j)
+	for (Iter j = res.begin(); j != last; ++j)
 		CHECK(!(ranges::invoke(proj, *j) < value));
-	for (Iter j = first; j != res.end().get_unsafe(); ++j)
+	for (Iter j = first; j != res.end(); ++j)
 		CHECK(!(value < ranges::invoke(proj, *j)));
-	for (Iter j = res.end().get_unsafe(); j != last; ++j)
+	for (Iter j = res.end(); j != last; ++j)
 		CHECK(value < ranges::invoke(proj, *j));
 }
 
@@ -75,18 +76,22 @@ void
 test()
 {
 #if 0
-	using namespace ranges::view;
-	static constexpr unsigned M = 10;
-	std::vector<int> v;
-	auto input = ints | take(100) | transform([](int i){return repeat_n(i,M);}) | join;
-	ranges::copy(input, ranges::back_inserter(v));
-	for (int x = 0; x <= (int)M; ++x)
-		test(Iter(v.data()), Sent(v.data()+v.size()), x);
+    using namespace ranges::view;
+    static constexpr unsigned M = 10;
+    std::vector<int> v;
+    auto input = ints | take(100) | transform([](int i){return repeat_n(i,M);}) | join;
+    ranges::copy(input, ranges::back_inserter(v));
+    for (int x = 0; x <= (int)M; ++x)
+        test(Iter(v.data()), Sent(v.data()+v.size()), x);
 #endif
 }
 
-int main()
+}
+
+TEST_CASE("alg.equal_range")
 {
+    not_totally_ordered();
+
 	int d[] = {0, 1, 2, 3};
 	for (int* e = d; e <= d+4; ++e)
 		for (int x = -1; x <= 4; ++x)
@@ -107,6 +112,4 @@ int main()
 		foo some_foos[] = {{1}, {2}, {4}};
 		test(some_foos, some_foos + 3, 2, &foo::i);
 	}
-
-	return ::test_result();
 }

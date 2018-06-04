@@ -15,6 +15,8 @@ namespace detail {
 
 struct lower_bound_fn {
 private:
+    friend struct equal_range_fn;
+
     template <typename Comp, typename T>
     struct compare {
         Comp& comp;

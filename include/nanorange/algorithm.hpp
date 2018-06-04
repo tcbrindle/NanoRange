@@ -14,6 +14,7 @@
 #include <nanorange/algorithm/copy.hpp>
 #include <nanorange/algorithm/count.hpp>
 #include <nanorange/algorithm/equal.hpp>
+#include <nanorange/algorithm/equal_range.hpp>
 #include <nanorange/algorithm/fill.hpp>
 #include <nanorange/algorithm/fill_n.hpp>
 #include <nanorange/algorithm/find.hpp>
@@ -67,7 +68,6 @@
 
 // Algorithms which reuse the STL implementation
 #include <nanorange/algorithm/stl/binary_search.hpp>
-#include <nanorange/algorithm/stl/equal_range.hpp>
 #include <nanorange/algorithm/stl/inplace_merge.hpp>
 #include <nanorange/algorithm/stl/is_heap.hpp>
 #include <nanorange/algorithm/stl/is_heap_until.hpp>

@@ -72,6 +72,7 @@ In addition, they are all available for use in `constexpr` functions.
 
 * lower_bound
 * upper_bound
+* equal_range
 
 #### Set operations ####
 
@@ -117,7 +118,6 @@ CommonRange. Projections cannot be used.
 
 #### Binary search operations ####
 
-* equal_range
 * binary_search
 
 #### Set operations ####

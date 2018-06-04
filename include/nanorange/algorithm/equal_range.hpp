@@ -1,41 +1,28 @@
-// nanorange/algorithm/upper_bound.hpp
+// nanorange/algorithm/equal_range.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef NANORANGE_ALGORITHM_UPPER_BOUND_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_UPPER_BOUND_HPP_INCLUDED
+#ifndef NANORANGE_ALGORITHM_EQUAL_RANGE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_EQUAL_RANGE_HPP_INCLUDED
 
-#include <nanorange/algorithm/partition_point.hpp>
+#include <nanorange/algorithm/lower_bound.hpp>
+#include <nanorange/algorithm/upper_bound.hpp>
+#include <nanorange/view/subrange.hpp>
 
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
-struct upper_bound_fn {
+struct equal_range_fn {
 private:
-    friend struct equal_range_fn;
-
-    template <typename Comp, typename T>
-    struct compare {
-        Comp& comp;
-        const T& val;
-
-        template <typename U>
-        constexpr bool operator()(U&& u) const
-        {
-            return !nano::invoke(comp, val, std::forward<U>(u));
-        }
-    };
-
-
     template <typename I, typename S, typename T, typename Comp, typename Proj>
-    static constexpr I impl(I first, S last, const T& value, Comp& comp, Proj& proj)
+    static constexpr subrange<I> impl(I first, S last, const T& value,
+                                      Comp& comp, Proj& proj)
     {
-        const auto comparator = compare<Comp, T>{comp, value};
-        return partition_point_fn::impl(std::move(first), std::move(last),
-                                        comparator, proj);
+        return {lower_bound_fn::impl(first, last, value, comp, proj),
+                upper_bound_fn::impl(first, last, value, comp, proj)};
     }
 
 public:
@@ -45,11 +32,11 @@ public:
         ForwardIterator<I> &&
         Sentinel<S, I> &&
         IndirectStrictWeakOrder<Comp, const T*, projected<I, Proj>>,
-    I>
+    subrange<I>>
     constexpr operator()(I first, S last, const T& value, Comp comp = Comp{},
-                         Proj proj = Proj{}) const
+               Proj proj = Proj{}) const
     {
-        return upper_bound_fn::impl(std::move(first), std::move(last),
+        return equal_range_fn::impl(std::move(first), std::move(last),
                                     value, comp, proj);
     }
 
@@ -58,18 +45,18 @@ public:
     std::enable_if_t<
         ForwardRange<Rng> &&
         IndirectStrictWeakOrder<Comp, const T*, projected<iterator_t<Rng>, Proj>>,
-    safe_iterator_t<Rng>>
+    safe_subrange_t<Rng>>
     constexpr operator()(Rng&& rng, const T& value, Comp comp = Comp{},
                          Proj proj = Proj{}) const
     {
-        return upper_bound_fn::impl(nano::begin(rng), nano::end(rng),
+        return equal_range_fn::impl(nano::begin(rng), nano::end(rng),
                                     value, comp, proj);
     }
 };
 
 }
 
-NANO_INLINE_VAR(detail::upper_bound_fn, upper_bound)
+NANO_INLINE_VAR(detail::equal_range_fn, equal_range)
 
 NANO_END_NAMESPACE
 
