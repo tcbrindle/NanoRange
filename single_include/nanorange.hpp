@@ -1908,6 +1908,9 @@ void begin(std::initializer_list<T>&&) = delete;
 struct fn {
 private:
     template <typename T, std::size_t N>
+    static constexpr void impl(T (&&)[N], priority_tag<2>) = delete;
+
+    template <typename T, std::size_t N>
     static constexpr auto impl(T (&t)[N], priority_tag<2>) noexcept
         -> decltype((t) + 0)
     {
@@ -1959,6 +1962,9 @@ void end(std::initializer_list<T>&&) = delete;
 
 struct fn {
 private:
+    template <typename T, std::size_t N>
+    static constexpr void impl(T (&&)[N], priority_tag<2>) = delete;
+
     template <typename T, std::size_t N>
     static constexpr auto impl(T (&t)[N], priority_tag<2>) noexcept
         -> decltype(t + N)
