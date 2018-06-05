@@ -19,13 +19,13 @@ struct for_each_fn {
 private:
     template <typename I, typename S, typename Proj, typename Fun>
     static constexpr std::pair<I, Fun> // FIXME: Used tagged pair
-    impl(I first, S last, Fun fun, Proj proj)
+    impl(I first, S last, Fun& fun, Proj& proj)
     {
         while (first != last) {
             nano::invoke(fun, nano::invoke(proj, *first));
             ++first;
         }
-        return {last, std::move(fun)};
+        return {first, std::move(fun)};
     }
 
 public:
@@ -37,7 +37,7 @@ public:
     operator()(I first, S last, Fun fun, Proj proj = Proj{}) const
     {
         return for_each_fn::impl(std::move(first), std::move(last),
-                                 std::move(fun), std::move(proj));
+                                 fun, proj);
     }
 
     template <typename Rng, typename Proj = identity, typename Fun>
@@ -48,7 +48,7 @@ public:
     operator()(Rng&& rng, Fun fun, Proj proj = Proj{}) const
     {
         return for_each_fn::impl(nano::begin(rng), nano::end(rng),
-                                 std::move(fun), std::move(proj));
+                                 fun, proj);
     }
 };
 } // namespace detail

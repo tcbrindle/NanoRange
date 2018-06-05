@@ -49,13 +49,22 @@ TEST_CASE("alg.basic.none_of")
 
 TEST_CASE("alg.basic.for_each")
 {
+    struct functor {
+        int& sum;
+        int counter = 0;
+        void operator()(int i) /*not-const*/ {
+            sum += i;
+            ++counter;
+        }
+    };
+
     constexpr std::array<int, 3> arr{{1, 2, 3}};
     int sum = 0;
-    const auto func = [&sum] (int i) { sum += i; };
+    const auto func = functor{sum};
 
     const auto func2 = rng::for_each(arr, func);
     REQUIRE(func2.first == arr.end());
-
+    REQUIRE(func2.second.counter == 3);
     REQUIRE(sum == 6);
 }
 
