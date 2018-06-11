@@ -154,7 +154,7 @@ TEST_CASE("alg.mismatch")
 	}
 	{
 		std::pair<S const *, S const *> ps2
-			= ranges::mismatch(ranges::begin(s1), ranges::end(s2), s2, std::equal_to<int>(), &S::i, &S::i);
+			= ranges::mismatch(ranges::begin(s1), ranges::end(s1), s2, std::equal_to<int>(), &S::i, &S::i);
 		CHECK(ps2.first->i == -4);
 		CHECK(ps2.second->i == 5);
 	}
