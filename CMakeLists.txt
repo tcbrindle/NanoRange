@@ -129,6 +129,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/insert_iterator.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/istream_iterator.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/istreambuf_iterator.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/move_iterator.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/operations.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/ostream_iterator.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/ostreambuf_iterator.hpp

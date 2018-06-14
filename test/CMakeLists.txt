@@ -3,6 +3,8 @@ add_executable(test_nanorange
     catch_main.cpp
     test_concepts.cpp
     #test_type_traits.cpp
+    iterator/move_iterator.cpp
+
 
     # Basic tests for algorithms
     basic_algorithm/binary_search_ops.cpp

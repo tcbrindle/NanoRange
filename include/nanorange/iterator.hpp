@@ -23,6 +23,7 @@
 #include <nanorange/iterator/insert_iterator.hpp>
 #include <nanorange/iterator/istream_iterator.hpp>
 #include <nanorange/iterator/istreambuf_iterator.hpp>
+#include <nanorange/iterator/move_iterator.hpp>
 #include <nanorange/iterator/operations.hpp>
 #include <nanorange/iterator/ostream_iterator.hpp>
 #include <nanorange/iterator/ostreambuf_iterator.hpp>

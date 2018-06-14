@@ -19,9 +19,9 @@ namespace detail {
 struct Readable_req {
     template <typename In>
     auto requires_()
-        -> decltype(valid_expr(std::declval<value_type_t<In>>(),
+        -> decltype(std::declval<value_type_t<In>>(),
                                std::declval<reference_t<In>>(),
-                               std::declval<rvalue_reference_t<In>>()));
+                               std::declval<rvalue_reference_t<In>>());
 };
 
 template <typename>
@@ -70,9 +70,9 @@ auto same_rv(Deduced &&) -> std::enable_if_t<Same<T, Deduced>, int>;
 struct WeaklyIncrementable_req {
     template <typename I>
     auto requires_(I i) -> decltype(
-        valid_expr(std::declval<difference_type_t<I>>(),
-                   requires_expr<SignedIntegral<difference_type_t<I>>>{},
-                   same_lv<I>(++i), i++));
+        std::declval<difference_type_t<I>>(),
+        requires_expr<SignedIntegral<difference_type_t<I>>>{},
+        same_lv<I>(++i), i++);
 };
 
 } // namespace detail

@@ -14,16 +14,17 @@
 #include <memory>
 #include <utility>
 #include <vector>
-#include <stl2/iterator.hpp>
-#include <stl2/functional.hpp>
-#include <stl2/detail/algorithm/copy.hpp>
-#include <stl2/detail/algorithm/equal.hpp>
-#include <stl2/view/iota.hpp>
-#include <stl2/view/take.hpp>
-#include <stl2/view/repeat_n.hpp>
-#include "../simple_test.hpp"
+#include <nanorange/iterator.hpp>
+#include <nanorange/algorithm/copy.hpp>
+#include <nanorange/algorithm/equal.hpp>
+//#include <stl2/view/iota.hpp>
+//#include <stl2/view/take.hpp>
+//#include <stl2/view/repeat_n.hpp>
+#include "../catch.hpp"
 
-namespace ranges = __stl2;
+namespace ranges = nano::ranges;
+
+namespace {
 
 struct A {
 	static std::size_t copy_count;
@@ -65,9 +66,9 @@ void test_move_iterator() {
 	{
 		auto first = ranges::make_move_iterator(ranges::begin(vec)),
 			last = ranges::make_move_iterator(ranges::end(vec));
-		static_assert(ranges::models::RandomAccessIterator<decltype(ranges::begin(vec))>);
-		static_assert(ranges::models::InputIterator<decltype(first)>);
-		static_assert(!ranges::models::ForwardIterator<decltype(first)>);
+		static_assert(ranges::RandomAccessIterator<decltype(ranges::begin(vec))>, "");
+		static_assert(ranges::InputIterator<decltype(first)>, "");
+		static_assert(!ranges::ForwardIterator<decltype(first)>, "");
 		auto out = ranges::back_inserter(vec2);
 
 		for (; first != last; ++first, ++out) {
@@ -166,7 +167,7 @@ public:
 		return *this;
 	}
 	readable_proxy operator++(int) & {
-		readable_proxy tmp{__stl2::iter_move(*ptr_)};
+		readable_proxy tmp{ranges::iter_move(*ptr_)};
 		++*this;
 		return tmp;
 	}
@@ -179,31 +180,43 @@ private:
 	std::shared_ptr<T*> ptr_;
 };
 
+template <typename T>
+auto print_type() = delete;
+
 void test_proxy_iterator() {
 	static constexpr std::size_t N = 42;
 	std::vector<A> vec(N);
 	std::vector<A> vec2;
 	vec2.reserve(ranges::size(vec));
 
+	using P = proxy_iterator<A>;
+	print_type<ranges::rvalue_reference_t<P>&&>();
+	print_type<ranges::reference_t<P>&&>();
+
+	//using C = ranges::common_reference_t<ranges::reference_t<P>&&, ranges::rvalue_reference_t<P>&&>>;
+	static_assert(ranges::CommonReference<ranges::reference_t<P>&&, ranges::rvalue_reference_t<P>&&>, "");
+	static_assert(ranges::CommonReference<ranges::rvalue_reference_t<P>&&, const ranges::value_type_t<P>&>, "");
+	static_assert(ranges::Readable<proxy_iterator<A>>, "");
+
 	static_assert(
-		ranges::models::Same<
+		ranges::Same<
 			ranges::reference_t<proxy_iterator<A>>,
-			std::reference_wrapper<A>>);
+			std::reference_wrapper<A>>, "");
 	static_assert(
-		ranges::models::Same<
+		ranges::Same<
 			ranges::reference_t<const proxy_iterator<A>>,
-			std::reference_wrapper<A>>);
+			std::reference_wrapper<A>>, "");
 	static_assert(
-		ranges::models::Same<
+		ranges::Same<
 			ranges::rvalue_reference_t<proxy_iterator<A>>,
-			A&&>);
+			A&&>, "");
 
 	{
 		static_assert(
-			ranges::models::Same<
+			ranges::Same<
 				ranges::rvalue_reference_t<
 					ranges::move_iterator<proxy_iterator<A>>>,
-				A&&>);
+				A&&>, "");
 		auto first = ranges::make_move_iterator(proxy_iterator<A>{ranges::data(vec)}),
 			last = ranges::make_move_iterator(proxy_iterator<A>{ranges::data(vec) + ranges::size(vec)});
 		auto out = ranges::back_inserter(vec2);
@@ -216,8 +229,10 @@ void test_proxy_iterator() {
 		CHECK(ranges::size(vec2) == N);
 		CHECK(A::copy_count == std::size_t{0});
 		CHECK(A::move_count == N);
+#ifdef HAVE_VIEWS
 		CHECK(ranges::equal(vec2, ranges::view::iota(0) | ranges::view::take(N), std::equal_to<>{}));
 		CHECK(ranges::equal(vec, ranges::ext::repeat_n_view<int>{-1, N}, std::equal_to<>{}));
+#endif
 
 		first = ranges::make_move_iterator(proxy_iterator<A>{ranges::data(vec)});
 		std::iota(vec.begin(), vec.end(), 0);
@@ -229,22 +244,24 @@ void test_proxy_iterator() {
 		CHECK(ranges::size(vec2) == N);
 		CHECK(A::copy_count == std::size_t{0});
 		CHECK(A::move_count == 2*N);
+#ifdef HAVE_VIEWS
 		CHECK(ranges::equal(vec2, ranges::view::iota(0) | ranges::view::take(N), std::equal_to<>{}));
 		CHECK(ranges::equal(vec, ranges::ext::repeat_n_view<int>{-1, N}, std::equal_to<>{}));
+#endif
 	}
 
 	{
 		static_assert(
-			ranges::models::Same<
+			ranges::Same<
 				ranges::rvalue_reference_t<
 					ranges::counted_iterator<proxy_iterator<A>>>,
-				A&&>);
+				A&&>, "");
 		static_assert(
-			ranges::models::Same<
+			ranges::Same<
 				ranges::rvalue_reference_t<
 					ranges::move_iterator<
 						ranges::counted_iterator<proxy_iterator<A>>>>,
-				A&&>);
+				A&&>, "");
 		auto first = ranges::make_move_iterator(
 			ranges::make_counted_iterator(
 				proxy_iterator<A>{ranges::data(vec)}, ranges::size(vec)));
@@ -263,11 +280,11 @@ void test_proxy_iterator() {
 	{
 		auto first = ranges::make_counted_iterator(vec.begin(), vec.size());
 		auto last = ranges::default_sentinel{};
-		static_assert(ranges::models::SizedSentinel<decltype(last), decltype(first)>);
+		static_assert(ranges::SizedSentinel<decltype(last), decltype(first)>, "");
 		CHECK((static_cast<std::size_t>(last - first) == vec.size()));
 		auto mfirst = ranges::make_move_iterator(first);
 		auto mlast = ranges::make_move_sentinel(last);
-		static_assert(ranges::models::SizedSentinel<decltype(mlast), decltype(mfirst)>);
+		static_assert(ranges::SizedSentinel<decltype(mlast), decltype(mfirst)>, "");
 		CHECK((static_cast<std::size_t>(mlast - mfirst) == vec.size()));
 	}
 }
@@ -360,12 +377,13 @@ constexpr bool test_constexpr() {
 
 	return true;
 }
-static_assert(test_constexpr());
+static_assert(test_constexpr(), "");
 
-int main() {
+}
+
+TEST_CASE("iter.move_iterator") {
 	test_move_iterator();
 	test_iter_move();
 	test_both();
 	test_proxy_iterator();
-	return ::test_result();
 }
