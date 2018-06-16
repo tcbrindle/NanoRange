@@ -98,8 +98,14 @@ public:
                               using S = typename sentinel_type<I>::type;
                               check(algo_(begin, end, rest...));
                               check(algo_(begin, S{base(end)}, rest...));
+// FIXME: GCC < 7 doesn't like subrange here, why?
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 7
+                              check(algo_(::rvalue_if<RvalueOK>(nano::ext::make_range(begin, end)), rest...));
+                              check(algo_(::rvalue_if<RvalueOK>(nano::ext::make_range(begin, S{base(end)})), rest...));
+#else
                               check(algo_(::rvalue_if<RvalueOK>(nano::make_subrange(begin, end)), rest...));
                               check(algo_(::rvalue_if<RvalueOK>(nano::make_subrange(begin, S{base(end)})), rest...));
+#endif
                           }};
     }
 };
