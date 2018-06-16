@@ -86,6 +86,7 @@ In addition, they are all available for use in `constexpr` functions.
 
 #### Heap operations ####
 
+* is_heap
 * is_heap_until
 
 #### Minimum and maximum operations ####
@@ -131,7 +132,6 @@ CommonRange. Projections cannot be used.
 * pop_heap
 * make_heap
 * sort_heap
-* is_heap
 
 #### Permutation operations ####
 

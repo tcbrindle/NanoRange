@@ -20,6 +20,8 @@ namespace detail {
 
 struct is_heap_until_fn {
 private:
+    friend struct is_heap_fn;
+
     template <typename I, typename Comp, typename Proj>
     static constexpr I impl(I first, const difference_type_t<I> n, Comp& comp,
                             Proj& proj)
