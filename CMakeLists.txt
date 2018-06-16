@@ -50,6 +50,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/partition.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/partition_copy.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/partition_point.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/pop_heap.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/push_heap.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/remove.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/remove_copy.hpp
@@ -82,7 +83,6 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/nth_element.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/partial_sort.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/partial_sort_copy.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/pop_heap.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/prev_permutation.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/sort.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/sort_heap.hpp
