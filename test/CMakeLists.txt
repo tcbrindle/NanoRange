@@ -43,10 +43,10 @@ add_executable(test_nanorange
     #algorithm/is_heap2.cpp
     #algorithm/is_heap3.cpp
     #algorithm/is_heap4.cpp
-    #algorithm/is_heap_until1.cpp
-    #algorithm/is_heap_until2.cpp
-    #algorithm/is_heap_until3.cpp
-    #algorithm/is_heap_until4.cpp
+    algorithm/is_heap_until1.cpp
+    algorithm/is_heap_until2.cpp
+    algorithm/is_heap_until3.cpp
+    algorithm/is_heap_until4.cpp
     algorithm/is_partitioned.cpp
     #algorithm/is_permutation.cpp
     algorithm/is_sorted.cpp

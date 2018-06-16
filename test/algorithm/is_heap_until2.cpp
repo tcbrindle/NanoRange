@@ -12,3 +12,25 @@
 
 #define IS_HEAP_UNTIL_2
 #include "./is_heap_until.hpp"
+
+TEST_CASE("alg.is_heap_until2")
+{
+    test();
+    test_pred();
+
+    // Test projections:
+    S i185[] = {S{1}, S{0}, S{0}, S{0}, S{0}, S{0}, S{1}};
+    auto is_heap_until = make_testable_1([](auto&&... args) {
+        return stl2::is_heap_until(std::forward<decltype(args)>(args)...);
+    });
+    is_heap_until(i185, i185+7, std::greater<int>(), &S::i)
+            .check([&](S *r){ CHECK(r == i185+1); });
+
+    // Test rvalue range
+    auto res = stl2::is_heap_until(std::move(i185), std::greater<int>(), &S::i);
+#ifndef _MSC_VER
+    CHECK(res.get_unsafe() == i185+1);
+#else
+    CHECK(res == i185+1);
+#endif
+}
