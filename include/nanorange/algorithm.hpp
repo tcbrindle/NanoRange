@@ -25,11 +25,14 @@
 #include <nanorange/algorithm/generate.hpp>
 #include <nanorange/algorithm/generate_n.hpp>
 #include <nanorange/algorithm/includes.hpp>
+#include <nanorange/algorithm/is_heap.hpp>
+#include <nanorange/algorithm/is_heap_until.hpp>
 #include <nanorange/algorithm/is_partitioned.hpp>
 #include <nanorange/algorithm/is_sorted.hpp>
 #include <nanorange/algorithm/is_sorted_until.hpp>
 #include <nanorange/algorithm/lexicographical_compare.hpp>
 #include <nanorange/algorithm/lower_bound.hpp>
+#include <nanorange/algorithm/make_heap.hpp>
 #include <nanorange/algorithm/max.hpp>
 #include <nanorange/algorithm/max_element.hpp>
 #include <nanorange/algorithm/merge.hpp>
@@ -43,6 +46,8 @@
 #include <nanorange/algorithm/partition.hpp>
 #include <nanorange/algorithm/partition_copy.hpp>
 #include <nanorange/algorithm/partition_point.hpp>
+#include <nanorange/algorithm/pop_heap.hpp>
+#include <nanorange/algorithm/push_heap.hpp>
 #include <nanorange/algorithm/remove.hpp>
 #include <nanorange/algorithm/remove_copy.hpp>
 #include <nanorange/algorithm/remove_copy_if.hpp>
@@ -62,6 +67,7 @@
 #include <nanorange/algorithm/set_symmetric_difference.hpp>
 #include <nanorange/algorithm/set_union.hpp>
 #include <nanorange/algorithm/shuffle.hpp>
+#include <nanorange/algorithm/sort_heap.hpp>
 #include <nanorange/algorithm/swap_ranges.hpp>
 #include <nanorange/algorithm/transform.hpp>
 #include <nanorange/algorithm/unique.hpp>
@@ -69,19 +75,13 @@
 
 // Algorithms which reuse the STL implementation
 #include <nanorange/algorithm/stl/inplace_merge.hpp>
-#include <nanorange/algorithm/stl/is_heap.hpp>
-#include <nanorange/algorithm/stl/is_heap_until.hpp>
 #include <nanorange/algorithm/stl/is_permutation.hpp>
-#include <nanorange/algorithm/stl/make_heap.hpp>
 #include <nanorange/algorithm/stl/next_permutation.hpp>
 #include <nanorange/algorithm/stl/nth_element.hpp>
 #include <nanorange/algorithm/stl/partial_sort.hpp>
 #include <nanorange/algorithm/stl/partial_sort_copy.hpp>
-#include <nanorange/algorithm/stl/pop_heap.hpp>
 #include <nanorange/algorithm/stl/prev_permutation.hpp>
-#include <nanorange/algorithm/stl/push_heap.hpp>
 #include <nanorange/algorithm/stl/sort.hpp>
-#include <nanorange/algorithm/stl/sort_heap.hpp>
 #include <nanorange/algorithm/stl/stable_partition.hpp>
 #include <nanorange/algorithm/stl/stable_sort.hpp>
 #include <nanorange/algorithm/stl/unique_copy.hpp>

@@ -30,11 +30,14 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/generate.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/generate_n.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/includes.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/is_heap.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/is_heap_until.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/is_partitioned.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/is_sorted.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/is_sorted_until.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/lexicographical_compare.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/lower_bound.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/make_heap.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/max.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/max_element.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/merge.hpp
@@ -48,6 +51,8 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/partition.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/partition_copy.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/partition_point.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/pop_heap.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/push_heap.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/remove.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/remove_copy.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/remove_copy_if.hpp
@@ -67,29 +72,25 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/set_symmetric_difference.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/set_union.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/shuffle.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/sort_heap.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/swap_ranges.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/transform.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/unique.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/upper_bound.hpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/inplace_merge.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/is_heap.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/is_heap_until.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/is_permutation.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/make_heap.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/next_permutation.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/nth_element.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/partial_sort.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/partial_sort_copy.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/pop_heap.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/prev_permutation.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/push_heap.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/sort.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/sort_heap.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/stable_partition.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/stable_sort.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/unique_copy.hpp
 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/algorithm/heap_sift.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/comparison.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/core.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/movable.hpp

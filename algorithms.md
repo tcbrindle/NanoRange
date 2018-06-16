@@ -84,6 +84,15 @@ In addition, they are all available for use in `constexpr` functions.
 * set_intersection
 * set_symmetric_difference
 
+#### Heap operations ####
+
+* push_heap
+* pop_heap
+* make_heap
+* sort_heap
+* is_heap
+* is_heap_until
+
 #### Minimum and maximum operations ####
 
 * min
@@ -120,15 +129,6 @@ CommonRange. Projections cannot be used.
 #### Set operations ####
 
 * inplace_merge
-
-#### Heap operations ####
-
-* push_heap
-* pop_heap
-* make_heap
-* sort_heap
-* is_heap
-* is_heap_until
 
 #### Permutation operations ####
 

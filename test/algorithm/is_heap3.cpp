@@ -12,3 +12,13 @@
 
 #define IS_HEAP_3
 #include "./is_heap.hpp"
+
+TEST_CASE("alg.is_heap3")
+{
+    test();
+    test_comp();
+
+    // Test projections:
+    S i183[] = {S{0}, S{1}, S{1}, S{1}, S{1}, S{1}, S{1}};
+    CHECK(stl2::is_heap(i183, i183+7, std::greater<int>(), &S::i));
+}

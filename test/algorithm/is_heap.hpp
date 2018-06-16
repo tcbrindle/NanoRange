@@ -25,19 +25,21 @@
 // Implementation based on the code in libc++
 //   http://http://libcxx.llvm.org/
 
-#include <stl2/detail/algorithm/is_heap.hpp>
+#include <nanorange/algorithm/is_heap.hpp>
 #include <algorithm>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
+
+namespace {
 
 void test()
 {
 #if defined(IS_HEAP_1) || defined(IS_HEAP_2)
 	auto is_heap = make_testable_1([](auto&&... args) {
-		return stl2::is_heap(stl2::forward<decltype(args)>(args)...);
+		return stl2::is_heap(std::forward<decltype(args)>(args)...);
 	});
 #endif
 
@@ -545,7 +547,7 @@ void test_comp()
 {
 #if defined(IS_HEAP_3) || defined(IS_HEAP_4)
 	auto is_heap = make_testable_1([](auto&&... args) {
-		return stl2::is_heap(stl2::forward<decltype(args)>(args)...);
+		return stl2::is_heap(std::forward<decltype(args)>(args)...);
 	});
 #endif
 
@@ -1054,14 +1056,5 @@ struct S
 	int i;
 };
 
-int main()
-{
-	test();
-	test_comp();
-
-	// Test projections:
-	S i183[] = {S{0}, S{1}, S{1}, S{1}, S{1}, S{1}, S{1}};
-	CHECK(stl2::is_heap(i183, i183+7, std::greater<int>(), &S::i));
-
-	return ::test_result();
 }
+

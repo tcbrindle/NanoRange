@@ -25,18 +25,20 @@
 // Implementation based on the code in libc++
 //   http://http://libcxx.llvm.org/
 
-#include <stl2/detail/algorithm/is_heap_until.hpp>
-#include "../simple_test.hpp"
+#include <nanorange/algorithm/is_heap_until.hpp>
+#include "../catch.hpp"
 #include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
+
+namespace {
 
 void test()
 {
 #ifdef IS_HEAP_UNTIL_1
 	auto is_heap_until = make_testable_1([](auto&&... args) {
-		return stl2::is_heap_until(stl2::forward<decltype(args)>(args)...);
+		return stl2::is_heap_until(std::forward<decltype(args)>(args)...);
 	});
 	int i1[] = {0, 0};
 	is_heap_until(i1, i1).check([&](int*r){CHECK(r == i1);});
@@ -283,7 +285,7 @@ void test()
 #endif
 #ifdef IS_HEAP_UNTIL_2
 	auto is_heap_until = make_testable_1([](auto&&... args) {
-		return stl2::is_heap_until(stl2::forward<decltype(args)>(args)...);
+		return stl2::is_heap_until(std::forward<decltype(args)>(args)...);
 	});
 	int i120[] = {0, 0, 0, 0, 0, 0, 0};
 	int i121[] = {0, 0, 0, 0, 0, 0, 1};
@@ -546,7 +548,7 @@ void test_pred()
 {
 #ifdef IS_HEAP_UNTIL_3
 	auto is_heap_until = make_testable_1([](auto&&... args) {
-		return stl2::is_heap_until(stl2::forward<decltype(args)>(args)...);
+		return stl2::is_heap_until(std::forward<decltype(args)>(args)...);
 	});
 	int i1[] = {0, 0};
 	is_heap_until(i1, i1, std::greater<int>()).check([&](int *r){ CHECK(r == i1); });
@@ -791,7 +793,7 @@ void test_pred()
 #endif
 #ifdef IS_HEAP_UNTIL_4
 	auto is_heap_until = make_testable_1([](auto&&... args) {
-		return stl2::is_heap_until(stl2::forward<decltype(args)>(args)...);
+		return stl2::is_heap_until(std::forward<decltype(args)>(args)...);
 	});
 	int i120[] = {0, 0, 0, 0, 0, 0, 0};
 	int i121[] = {0, 0, 0, 0, 0, 0, 1};
@@ -1055,22 +1057,4 @@ struct S
 	int i;
 };
 
-int main()
-{
-	test();
-	test_pred();
-
-	// Test projections:
-	S i185[] = {S{1}, S{0}, S{0}, S{0}, S{0}, S{0}, S{1}};
-	auto is_heap_until = make_testable_1([](auto&&... args) {
-		return stl2::is_heap_until(stl2::forward<decltype(args)>(args)...);
-	});
-	is_heap_until(i185, i185+7, std::greater<int>(), &S::i)
-		.check([&](S *r){ CHECK(r == i185+1); });
-
-	// Test rvalue range
-	auto res = stl2::is_heap_until(stl2::move(i185), std::greater<int>(), &S::i);
-	CHECK(res.get_unsafe() == i185+1);
-
-	return ::test_result();
 }

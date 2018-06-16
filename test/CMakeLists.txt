@@ -39,21 +39,21 @@ add_executable(test_nanorange
     algorithm/generate_n.cpp
     algorithm/includes.cpp
     #algorithm/inplace_merge.cpp
-    #algorithm/is_heap1.cpp
-    #algorithm/is_heap2.cpp
-    #algorithm/is_heap3.cpp
-    #algorithm/is_heap4.cpp
-    #algorithm/is_heap_until1.cpp
-    #algorithm/is_heap_until2.cpp
-    #algorithm/is_heap_until3.cpp
-    #algorithm/is_heap_until4.cpp
+    algorithm/is_heap1.cpp
+    algorithm/is_heap2.cpp
+    algorithm/is_heap3.cpp
+    algorithm/is_heap4.cpp
+    algorithm/is_heap_until1.cpp
+    algorithm/is_heap_until2.cpp
+    algorithm/is_heap_until3.cpp
+    algorithm/is_heap_until4.cpp
     algorithm/is_partitioned.cpp
     #algorithm/is_permutation.cpp
     algorithm/is_sorted.cpp
     algorithm/is_sorted_until.cpp
     algorithm/lexicographical_compare.cpp
     algorithm/lower_bound.cpp
-    #algorithm/make_heap.cpp
+    algorithm/make_heap.cpp
     algorithm/max.cpp
     algorithm/max_element.cpp
     algorithm/merge.cpp
@@ -72,9 +72,9 @@ add_executable(test_nanorange
     algorithm/partition.cpp
     algorithm/partition_copy.cpp
     algorithm/partition_point.cpp
-    #algorithm/pop_heap.cpp
+    algorithm/pop_heap.cpp
     #algorithm/prev_permutation.cpp
-    #algorithm/push_heap.cpp
+    algorithm/push_heap.cpp
     algorithm/remove.cpp
     algorithm/remove_copy.cpp
     algorithm/remove_copy_if.cpp
@@ -116,7 +116,7 @@ add_executable(test_nanorange
     algorithm/set_union6.cpp
     algorithm/shuffle.cpp
     #algorithm/sort.cpp
-    #algorithm/sort_heap.cpp
+    algorithm/sort_heap.cpp
     #algorithm/stable_partition.cpp
     #algorithm/stable_sort.cpp
     algorithm/swap_ranges.cpp
