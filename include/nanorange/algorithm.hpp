@@ -67,6 +67,7 @@
 #include <nanorange/algorithm/set_symmetric_difference.hpp>
 #include <nanorange/algorithm/set_union.hpp>
 #include <nanorange/algorithm/shuffle.hpp>
+#include <nanorange/algorithm/sort_heap.hpp>
 #include <nanorange/algorithm/swap_ranges.hpp>
 #include <nanorange/algorithm/transform.hpp>
 #include <nanorange/algorithm/unique.hpp>
@@ -81,7 +82,6 @@
 #include <nanorange/algorithm/stl/partial_sort_copy.hpp>
 #include <nanorange/algorithm/stl/prev_permutation.hpp>
 #include <nanorange/algorithm/stl/sort.hpp>
-#include <nanorange/algorithm/stl/sort_heap.hpp>
 #include <nanorange/algorithm/stl/stable_partition.hpp>
 #include <nanorange/algorithm/stl/stable_sort.hpp>
 #include <nanorange/algorithm/stl/unique_copy.hpp>
