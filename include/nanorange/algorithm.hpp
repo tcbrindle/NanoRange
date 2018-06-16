@@ -32,6 +32,7 @@
 #include <nanorange/algorithm/is_sorted_until.hpp>
 #include <nanorange/algorithm/lexicographical_compare.hpp>
 #include <nanorange/algorithm/lower_bound.hpp>
+#include <nanorange/algorithm/make_heap.hpp>
 #include <nanorange/algorithm/max.hpp>
 #include <nanorange/algorithm/max_element.hpp>
 #include <nanorange/algorithm/merge.hpp>
@@ -74,7 +75,6 @@
 // Algorithms which reuse the STL implementation
 #include <nanorange/algorithm/stl/inplace_merge.hpp>
 #include <nanorange/algorithm/stl/is_permutation.hpp>
-#include <nanorange/algorithm/stl/make_heap.hpp>
 #include <nanorange/algorithm/stl/next_permutation.hpp>
 #include <nanorange/algorithm/stl/nth_element.hpp>
 #include <nanorange/algorithm/stl/partial_sort.hpp>
