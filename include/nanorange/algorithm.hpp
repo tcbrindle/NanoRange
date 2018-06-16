@@ -45,6 +45,7 @@
 #include <nanorange/algorithm/partition.hpp>
 #include <nanorange/algorithm/partition_copy.hpp>
 #include <nanorange/algorithm/partition_point.hpp>
+#include <nanorange/algorithm/push_heap.hpp>
 #include <nanorange/algorithm/remove.hpp>
 #include <nanorange/algorithm/remove_copy.hpp>
 #include <nanorange/algorithm/remove_copy_if.hpp>
@@ -79,7 +80,6 @@
 #include <nanorange/algorithm/stl/partial_sort_copy.hpp>
 #include <nanorange/algorithm/stl/pop_heap.hpp>
 #include <nanorange/algorithm/stl/prev_permutation.hpp>
-#include <nanorange/algorithm/stl/push_heap.hpp>
 #include <nanorange/algorithm/stl/sort.hpp>
 #include <nanorange/algorithm/stl/sort_heap.hpp>
 #include <nanorange/algorithm/stl/stable_partition.hpp>

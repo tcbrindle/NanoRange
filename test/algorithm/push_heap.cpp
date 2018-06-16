@@ -30,96 +30,96 @@
 //   void
 //   push_heap(Iter first, Iter last);
 
-#include <stl2/detail/algorithm/push_heap.hpp>
+#include <nanorange/algorithm/push_heap.hpp>
 #include <memory>
 #include <random>
 #include <algorithm>
 #include <functional>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano::ranges;
 
-namespace { std::mt19937 gen; }
+namespace {
 
-const auto push_heap = make_testable_1([](auto&&... args) {
-	return stl2::push_heap(stl2::forward<decltype(args)>(args)...);
+std::mt19937 gen;
+
+const auto push_heap = make_testable_1([](auto&& ... args) {
+	return stl2::push_heap(std::forward<decltype(args)>(args)...);
 });
 
 void test(int N)
 {
 
-	int* ia = new int [N];
+	int* ia = new int[N];
 	for (int i = 0; i < N; ++i)
 		ia[i] = i;
-	std::shuffle(ia, ia+N, gen);
-	for (int i = 0; i <= N; ++i)
-	{
-		::push_heap(ia, ia+i).check([&](int *r){CHECK(r == ia + i);});
-		CHECK(std::is_heap(ia, ia+i));
+	std::shuffle(ia, ia + N, gen);
+	for (int i = 0; i <= N; ++i) {
+		::push_heap(ia, ia + i).check([&](int* r) { CHECK(r == ia + i); });
+		CHECK(std::is_heap(ia, ia + i));
 	}
-	delete [] ia;
+	delete[] ia;
 }
 
 void test_comp(int N)
 {
-	int* ia = new int [N];
+	int* ia = new int[N];
 	for (int i = 0; i < N; ++i)
 		ia[i] = i;
-	std::shuffle(ia, ia+N, gen);
-	for (int i = 0; i <= N; ++i)
-	{
-		::push_heap(ia, ia+i, std::greater<int>()).check([&](int *r){CHECK(r == ia+i);});
-		CHECK(std::is_heap(ia, ia+i, std::greater<int>()));
+	std::shuffle(ia, ia + N, gen);
+	for (int i = 0; i <= N; ++i) {
+		::push_heap(ia, ia + i, std::greater<int>()).check(
+				[&](int* r) { CHECK(r == ia + i); });
+		CHECK(std::is_heap(ia, ia + i, std::greater<int>()));
 	}
-	delete [] ia;
+	delete[] ia;
 }
 
-struct S
-{
+struct S {
 	int i;
 };
 
 void test_proj(int N)
 {
-	S* ia = new S [N];
-	int* ib = new int [N];
+	S* ia = new S[N];
+	int* ib = new int[N];
 	for (int i = 0; i < N; ++i)
 		ia[i].i = i;
-	std::shuffle(ia, ia+N, gen);
-	for (int i = 0; i <= N; ++i)
-	{
-		::push_heap(ia, ia+i, std::greater<int>(), &S::i).check([&](S *r){CHECK(r == ia+i);});
-		std::transform(ia, ia+i, ib, std::mem_fn(&S::i));
-		CHECK(std::is_heap(ib, ib+i, std::greater<int>()));
+	std::shuffle(ia, ia + N, gen);
+	for (int i = 0; i <= N; ++i) {
+		::push_heap(ia, ia + i, std::greater<int>(), &S::i).check(
+				[&](S* r) { CHECK(r == ia + i); });
+		std::transform(ia, ia + i, ib, std::mem_fn(&S::i));
+		CHECK(std::is_heap(ib, ib + i, std::greater<int>()));
 	}
-	delete [] ia;
-	delete [] ib;
+	delete[] ia;
+	delete[] ib;
 }
 
-struct indirect_less
-{
+struct indirect_less {
 	template <class P>
-	bool operator()(const P& x, const P& y) const
-		{return *x < *y;}
+	bool operator()(const P& x, const P& y) const { return *x < *y; }
 };
 
 void test_move_only(int N)
 {
-	std::unique_ptr<int>* ia = new std::unique_ptr<int> [N];
+	std::unique_ptr<int>* ia = new std::unique_ptr<int>[N];
 	for (int i = 0; i < N; ++i)
 		ia[i].reset(new int(i));
-	std::shuffle(ia, ia+N, gen);
-	for (int i = 0; i <= N; ++i)
-	{
-		::push_heap(ia, ia+i, indirect_less()).check([&](std::unique_ptr<int> *r){CHECK(r == ia+i);});
-		CHECK(std::is_heap(ia, ia+i, indirect_less()));
+	std::shuffle(ia, ia + N, gen);
+	for (int i = 0; i <= N; ++i) {
+		::push_heap(ia, ia + i, indirect_less()).check(
+				[&](std::unique_ptr<int>* r) { CHECK(r == ia + i); });
+		CHECK(std::is_heap(ia, ia + i, indirect_less()));
 	}
-	delete [] ia;
+	delete[] ia;
 }
 
-int main()
+}
+
+TEST_CASE("alg.push_heap")
 {
 	test(1000);
 	test_comp(1000);
@@ -142,6 +142,4 @@ int main()
 		delete [] ia;
 		delete [] ib;
 	}
-
-	return test_result();
 }
