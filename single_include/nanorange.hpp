@@ -7384,6 +7384,143 @@ NANO_END_NAMESPACE
 
 #endif
 
+// nanorange/algorithm/is_heap.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_IS_HEAP_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_IS_HEAP_HPP_INCLUDED
+
+// nanorange/algorithm/is_heap_until.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+// Uses code from CMCSTL2
+//
+// Copyright Eric Niebler 2014
+// Copyright Casey Carter 2015
+
+#ifndef NANORANGE_ALGORITHM_IS_HEAP_UNTIL_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_IS_HEAP_UNTIL_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct is_heap_until_fn {
+private:
+    friend struct is_heap_fn;
+
+    template <typename I, typename Comp, typename Proj>
+    static constexpr I impl(I first, const difference_type_t<I> n, Comp& comp,
+                            Proj& proj)
+    {
+        difference_type_t<I> p = 0, c = 1;
+
+        I pp = first;
+
+        while (c < n) {
+            I cp = first + c;
+
+            if (nano::invoke(comp, nano::invoke(proj, *pp),
+                             nano::invoke(proj, *cp))) {
+                return cp;
+            }
+
+            ++c;
+            ++cp;
+
+            if (c == n || nano::invoke(comp, nano::invoke(proj, *pp),
+                                       nano::invoke(proj, *cp))) {
+                return cp;
+            }
+
+            ++p;
+            ++pp;
+
+            c = 2 * p + 1;
+        }
+
+        return first + n;
+    }
+
+public:
+    template <typename I, typename S, typename Comp = less<>,
+              typename Proj = identity>
+    constexpr std::enable_if_t<
+        RandomAccessIterator<I> && Sentinel<S, I> &&
+            IndirectStrictWeakOrder<Comp, projected<I, Proj>>,
+        I>
+    operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        auto n = nano::distance(first, last);
+        return is_heap_until_fn::impl(std::move(first), n, comp, proj);
+    }
+
+    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+        RandomAccessRange<Rng> &&
+            IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
+        safe_iterator_t<Rng>>
+    operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return is_heap_until_fn::impl(nano::begin(rng), nano::distance(rng),
+                                      comp, proj);
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::is_heap_until_fn, is_heap_until)
+
+NANO_END_NAMESPACE
+
+#endif
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct is_heap_fn {
+    template <typename I, typename S, typename Comp = less<>,
+              typename Proj = identity>
+    std::enable_if_t<RandomAccessIterator<I> && Sentinel<S, I> &&
+                         IndirectStrictWeakOrder<Comp, projected<I, Proj>>,
+                     bool>
+    operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        const auto n = nano::distance(first, last);
+        return is_heap_until_fn::impl(std::move(first), n, comp, proj) == last;
+    }
+
+    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    std::enable_if_t<
+        RandomAccessRange<Rng> &&
+            IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
+        bool>
+    operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return is_heap_until_fn::impl(nano::begin(rng), nano::distance(rng),
+                                      comp, proj) == nano::end(rng);
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::is_heap_fn, is_heap)
+
+NANO_END_NAMESPACE
+
+#endif
+
+
 // nanorange/algorithm/is_partitioned.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -7646,6 +7783,203 @@ NANO_END_NAMESPACE
 
 #endif
 
+
+// nanorange/algorithm/make_heap.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+// Uses code from CMCSTL2
+//  Copyright Eric Niebler 2014
+//  Copyright Casey Carter 2015
+
+#ifndef NANORANGE_ALGORITHM_MAKE_HEAP_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_MAKE_HEAP_HPP_INCLUDED
+
+// nanorange/detail/algorithm/heap_sift.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+// cmcstl2 - A concept-enabled C++ standard library
+//
+//  Copyright Eric Niebler 2014
+//  Copyright Casey Carter 2015
+//
+//  Use, modification and distribution is subject to the
+//  Boost Software License, Version 1.0. (See accompanying
+//  file LICENSE_1_0.txt or copy at
+//  http://www.boost.org/LICENSE_1_0.txt)
+//
+// Project home: https://github.com/caseycarter/cmcstl2
+//
+//===----------------------------------------------------------------------===//
+//
+//                     The LLVM Compiler Infrastructure
+//
+// This file is dual licensed under the MIT and the University of Illinois Open
+// Source Licenses. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+//
+#ifndef NANORANGE_DETAIL_ALGORITHM_HEAP_SIFT_HPP
+#define NANORANGE_DETAIL_ALGORITHM_HEAP_SIFT_HPP
+
+
+
+
+///////////////////////////////////////////////////////////////////////////
+// detail::sift_up_n and detail::sift_down_n
+// (heap implementation details)
+//
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+template <typename I, typename Comp, typename Proj>
+constexpr void sift_up_n(I first, difference_type_t<I> n, Comp& comp,
+                         Proj& proj)
+{
+    if (n > 1) {
+        I last = first + n;
+        n = (n - 2) / 2;
+        I i = first + n;
+        if (nano::invoke(comp, nano::invoke(proj, *i),
+                         nano::invoke(proj, *--last))) {
+            value_type_t<I> v = nano::iter_move(last);
+            do {
+                *last = nano::iter_move(i);
+                last = i;
+                if (n == 0) {
+                    break;
+                }
+                n = (n - 1) / 2;
+                i = first + n;
+            } while (nano::invoke(comp, nano::invoke(proj, *i),
+                                  nano::invoke(proj, v)));
+            *last = std::move(v);
+        }
+    }
+}
+
+template <typename I, typename Comp, typename Proj>
+constexpr void sift_down_n(I first, difference_type_t<I> n, I start, Comp& comp,
+                           Proj& proj)
+{
+    // left-child of start is at 2 * start + 1
+    // right-child of start is at 2 * start + 2
+    auto child = start - first;
+
+    if (n < 2 || (n - 2) / 2 < child) {
+        return;
+    }
+
+    child = 2 * child + 1;
+    I child_i = first + child;
+
+    if ((child + 1) < n && nano::invoke(comp, nano::invoke(proj, *child_i),
+                                        nano::invoke(proj, *(child_i + 1)))) {
+        // right-child exists and is greater than left-child
+        ++child_i;
+        ++child;
+    }
+
+    // check if we are in heap-order
+    if (nano::invoke(comp, nano::invoke(proj, *child_i),
+                     nano::invoke(proj, *start))) {
+        // we are, start is larger than its largest child
+        return;
+    }
+
+    value_type_t<I> top = nano::iter_move(start);
+    do {
+        // we are not in heap-order, swap the parent with it's largest child
+        *start = nano::iter_move(child_i);
+        start = child_i;
+
+        if ((n - 2) / 2 < child) {
+            break;
+        }
+
+        // recompute the child based off of the updated parent
+        child = 2 * child + 1;
+        child_i = first + child;
+
+        if ((child + 1) < n &&
+            nano::invoke(comp, nano::invoke(proj, *child_i),
+                         nano::invoke(proj, *(child_i + 1)))) {
+            // right-child exists and is greater than left-child
+            ++child_i;
+            ++child;
+        }
+
+        // check if we are in heap-order
+    } while (!nano::invoke(comp, nano::invoke(proj, *child_i),
+                           nano::invoke(proj, top)));
+    *start = std::move(top);
+}
+
+} // namespace detail
+
+NANO_END_NAMESPACE
+
+#endif
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct make_heap_fn {
+private:
+    template <typename I, typename Comp, typename Proj>
+    static constexpr I impl(I first, difference_type_t<I> n, Comp& comp,
+                            Proj& proj)
+    {
+        if (n > 1) {
+            // start from the first parent, there is no need to consider
+            // children
+            for (auto start = (n - 2) / 2; start >= 0; --start) {
+                detail::sift_down_n(first, n, first + start, comp, proj);
+            }
+        }
+
+        return first + n;
+    }
+
+public:
+    template <typename I, typename S, typename Comp = less<>,
+              typename Proj = identity>
+    constexpr std::enable_if_t<
+        RandomAccessIterator<I> && Sentinel<S, I> && Sortable<I, Comp, Proj>, I>
+    operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        const auto n = nano::distance(first, last);
+        return make_heap_fn::impl(std::move(first), n, comp, proj);
+    }
+
+    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<RandomAccessRange<Rng> &&
+                                   Sortable<iterator_t<Rng>, Comp>,
+                               safe_iterator_t<Rng>>
+    operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return make_heap_fn::impl(nano::begin(rng), nano::distance(rng), comp,
+                                  proj);
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::make_heap_fn, make_heap)
+
+NANO_END_NAMESPACE
+
+#endif
 
 // nanorange/algorithm/max.hpp
 //
@@ -8755,6 +9089,116 @@ NANO_END_NAMESPACE
 
 #endif
 
+
+// nanorange/algorithm/pop_heap.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_POP_HEAP_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_POP_HEAP_HPP_INCLUDED
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct pop_heap_fn {
+private:
+    friend struct sort_heap_fn;
+
+    template <typename I, typename Comp, typename Proj>
+    static constexpr I impl(I first, difference_type_t<I> n, Comp& comp,
+                            Proj& proj)
+    {
+        if (n > 1) {
+            nano::iter_swap(first, first + (n - 1));
+            detail::sift_down_n(first, n - 1, first, comp, proj);
+        }
+
+        return first + n;
+    }
+
+public:
+    template <typename I, typename S, typename Comp = less<>,
+              typename Proj = identity>
+    constexpr std::enable_if_t<
+        RandomAccessIterator<I> && Sentinel<S, I> && Sortable<I, Comp, Proj>, I>
+    operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        const auto n = nano::distance(first, last);
+        return pop_heap_fn::impl(std::move(first), n, comp, proj);
+    }
+
+    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<RandomAccessRange<Rng> &&
+                                   Sortable<iterator_t<Rng>, Comp, Proj>,
+                               safe_iterator_t<Rng>>
+    operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return pop_heap_fn::impl(nano::begin(rng), nano::distance(rng), comp,
+                                 proj);
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::pop_heap_fn, pop_heap)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/push_heap.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_PUSH_HEAP_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_PUSH_HEAP_HPP_INCLUDED
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct push_heap_fn {
+    template <typename I, typename S, typename Comp = less<>,
+              typename Proj = identity>
+    constexpr std::enable_if_t<
+        RandomAccessIterator<I> && Sentinel<S, I> && Sortable<I, Comp, Proj>, I>
+    operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        const auto n = nano::distance(first, last);
+        detail::sift_up_n(first, n, comp, proj);
+        return first + n;
+    }
+
+    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<RandomAccessRange<Rng> &&
+                                   Sortable<iterator_t<Rng>, Comp, Proj>,
+                               safe_iterator_t<Rng>>
+    operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        const auto n = nano::distance(rng);
+        detail::sift_up_n(nano::begin(rng), n, comp, proj);
+        return nano::begin(rng) + n;
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::push_heap_fn, push_heap)
+
+NANO_END_NAMESPACE
+
+#endif
 
 // nanorange/algorithm/remove.hpp
 //
@@ -10252,6 +10696,68 @@ NANO_END_NAMESPACE
 
 #endif
 
+// nanorange/algorithm/sort_heap.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_SORT_HEAP_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_SORT_HEAP_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct sort_heap_fn {
+private:
+    template <typename I, typename Comp, typename Proj>
+    static constexpr I impl(I first, difference_type_t<I> n, Comp& comp,
+                            Proj& proj)
+    {
+        if (n < 2) {
+            return first + n;
+        }
+
+        for (auto i = n; i > 1; --i) {
+            pop_heap_fn::impl(first, i, comp, proj);
+        }
+
+        return first + n;
+    }
+
+public:
+    template <typename I, typename S, typename Comp = less<>,
+              typename Proj = identity>
+    constexpr std::enable_if_t<
+        RandomAccessIterator<I> && Sentinel<S, I> && Sortable<I, Comp, Proj>, I>
+    operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        const auto n = nano::distance(first, last);
+        return sort_heap_fn::impl(std::move(first), n, comp, proj);
+    }
+
+    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<RandomAccessRange<Rng> &&
+                                   Sortable<iterator_t<Rng>, Comp, Proj>,
+                               safe_iterator_t<Rng>>
+    operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return sort_heap_fn::impl(nano::begin(rng), nano::distance(rng), comp,
+                                  proj);
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::sort_heap_fn, sort_heap)
+
+NANO_END_NAMESPACE
+
+#endif
+
 // nanorange/algorithm/swap_ranges.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -10657,107 +11163,6 @@ NANO_END_NAMESPACE
 
 #endif
 
-// nanorange/algorithm/stl/is_heap.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_IS_HEAP_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_IS_HEAP_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct is_heap_fn {
-    template <typename I, typename Comp = less<>>
-    std::enable_if_t<
-        RandomAccessIterator<I> &&
-        Cpp98Iterator<I> &&
-        IndirectStrictWeakOrder<Comp, I>, bool>
-    operator()(I first, I last, Comp comp = Comp{}) const
-    {
-        return std::is_heap(std::move(first), std::move(last), std::ref(comp));
-    }
-
-    template <typename Rng, typename Comp = less<>>
-    std::enable_if_t<
-        RandomAccessRange<Rng> &&
-        CommonRange<Rng> &&
-        Cpp98Iterator<iterator_t<Rng>> &&
-        IndirectStrictWeakOrder<Comp, iterator_t<Rng>>, bool>
-    operator()(Rng&& rng, Comp comp = Comp{}) const
-    {
-        return std::is_heap(nano::begin(rng), nano::end(rng), std::ref(comp));
-    }
-};
-
-}
-
-NANO_INLINE_VAR(detail::is_heap_fn, is_heap)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/is_heap_until.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_IS_HEAP_UNTIL_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_IS_HEAP_UNTIL_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct is_heap_until_fn {
-    template <typename I, typename Comp = less<>>
-    std::enable_if_t<
-        RandomAccessIterator<I> &&
-        Cpp98Iterator<I> &&
-        IndirectStrictWeakOrder<Comp, I>, I>
-    operator()(I first, I last, Comp comp = Comp{}) const
-    {
-        return std::is_heap_until(std::move(first), std::move(last), std::ref(comp));
-    }
-
-    template <typename Rng, typename Comp = less<>>
-    std::enable_if_t<
-        RandomAccessRange<Rng> &&
-        CommonRange<Rng> &&
-        Cpp98Iterator<iterator_t<Rng>> &&
-        IndirectStrictWeakOrder<Comp, iterator_t<Rng>>,
-        safe_iterator_t<Rng>>
-    operator()(Rng&& rng, Comp comp = Comp{}) const
-    {
-        return std::is_heap_until(nano::begin(rng), nano::end(rng), std::ref(comp));
-    }
-};
-
-}
-
-NANO_INLINE_VAR(detail::is_heap_until_fn, is_heap_until)
-
-NANO_END_NAMESPACE
-
-#endif
-
 // nanorange/algorithm/stl/is_permutation.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -10852,56 +11257,6 @@ struct is_permutation_fn {
 }
 
 NANO_INLINE_VAR(detail::is_permutation_fn, is_permutation)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/make_heap.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_MAKE_HEAP_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_MAKE_HEAP_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct make_heap_fn {
-    template <typename I, typename Comp = less<>>
-    std::enable_if_t<
-        RandomAccessIterator<I> &&
-        Cpp98Iterator<I> &&
-        Sortable<I, Comp>>
-    operator()(I first, I last, Comp comp = Comp{}) const
-    {
-        std::make_heap(std::move(first), std::move(last), std::ref(comp));
-    }
-
-    template <typename Rng, typename Comp = less<>>
-    std::enable_if_t<
-        RandomAccessRange<Rng> &&
-        CommonRange<Rng> &&
-        Cpp98Iterator<iterator_t<Rng>> &&
-        Sortable<iterator_t<Rng>, Comp>>
-    operator()(Rng&& rng, Comp comp = Comp{}) const
-    {
-        std::make_heap(nano::begin(rng), nano::end(rng), std::ref(comp));
-    }
-};
-
-}
-
-NANO_INLINE_VAR(detail::make_heap_fn, make_heap)
 
 NANO_END_NAMESPACE
 
@@ -11128,56 +11483,6 @@ NANO_END_NAMESPACE
 
 #endif
 
-// nanorange/algorithm/stl/pop_heap.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_POP_HEAP_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_POP_HEAP_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct pop_heap_fn {
-    template <typename I, typename Comp = less<>>
-    std::enable_if_t<
-            RandomAccessIterator<I> &&
-            Cpp98Iterator<I> &&
-    Sortable<I, Comp>>
-    operator()(I first, I last, Comp comp = Comp{}) const
-    {
-        std::pop_heap(std::move(first), std::move(last), std::ref(comp));
-    }
-
-    template <typename Rng, typename Comp = less<>>
-    std::enable_if_t<
-            RandomAccessRange<Rng> &&
-            CommonRange<Rng> &&
-    Cpp98Iterator<iterator_t<Rng>> &&
-    Sortable<iterator_t<Rng>, Comp>>
-    operator()(Rng&& rng, Comp comp = Comp{}) const
-    {
-        std::pop_heap(nano::begin(rng), nano::end(rng), std::ref(comp));
-    }
-};
-
-}
-
-NANO_INLINE_VAR(detail::pop_heap_fn, pop_heap)
-
-NANO_END_NAMESPACE
-
-#endif
-
 // nanorange/algorithm/stl/prev_permutation.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -11230,56 +11535,6 @@ NANO_END_NAMESPACE
 
 #endif
 
-// nanorange/algorithm/stl/push_heap.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_PUSH_HEAP_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_PUSH_HEAP_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct push_heap_fn {
-    template <typename I, typename Comp = less<>>
-    std::enable_if_t<
-        RandomAccessIterator<I> &&
-        Cpp98Iterator<I> &&
-        Sortable<I, Comp>>
-    operator()(I first, I last, Comp comp = Comp{}) const
-    {
-        std::push_heap(std::move(first), std::move(last), std::ref(comp));
-    }
-
-    template <typename Rng, typename Comp = less<>>
-    std::enable_if_t<
-        RandomAccessRange<Rng> &&
-        CommonRange<Rng> &&
-        Cpp98Iterator<iterator_t<Rng>> &&
-        Sortable<iterator_t<Rng>, Comp>>
-    operator()(Rng&& rng, Comp comp = Comp{}) const
-    {
-        std::push_heap(nano::begin(rng), nano::end(rng), std::ref(comp));
-    }
-};
-
-}
-
-NANO_INLINE_VAR(detail::push_heap_fn, push_heap)
-
-NANO_END_NAMESPACE
-
-#endif
-
 // nanorange/algorithm/stl/sort.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -11325,56 +11580,6 @@ struct sort_fn {
 }
 
 NANO_INLINE_VAR(detail::sort_fn, sort)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/sort_heap.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_SORT_HEAP_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_SORT_HEAP_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct sort_heap_fn {
-    template <typename I, typename Comp = less<>>
-    std::enable_if_t<
-            RandomAccessIterator<I> &&
-            Cpp98Iterator<I> &&
-    Sortable<I, Comp>>
-    operator()(I first, I last, Comp comp = Comp{}) const
-    {
-        std::sort_heap(std::move(first), std::move(last), std::ref(comp));
-    }
-
-    template <typename Rng, typename Comp = less<>>
-    std::enable_if_t<
-            RandomAccessRange<Rng> &&
-            CommonRange<Rng> &&
-    Cpp98Iterator<iterator_t<Rng>> &&
-    Sortable<iterator_t<Rng>, Comp>>
-    operator()(Rng&& rng, Comp comp = Comp{}) const
-    {
-        std::sort_heap(nano::begin(rng), nano::end(rng), std::ref(comp));
-    }
-};
-
-}
-
-NANO_INLINE_VAR(detail::sort_heap_fn, sort_heap)
 
 NANO_END_NAMESPACE
 
