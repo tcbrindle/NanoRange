@@ -189,15 +189,6 @@ void test_proxy_iterator() {
 	std::vector<A> vec2;
 	vec2.reserve(ranges::size(vec));
 
-	using P = proxy_iterator<A>;
-	print_type<ranges::rvalue_reference_t<P>&&>();
-	print_type<ranges::reference_t<P>&&>();
-
-	//using C = ranges::common_reference_t<ranges::reference_t<P>&&, ranges::rvalue_reference_t<P>&&>>;
-	static_assert(ranges::CommonReference<ranges::reference_t<P>&&, ranges::rvalue_reference_t<P>&&>, "");
-	static_assert(ranges::CommonReference<ranges::rvalue_reference_t<P>&&, const ranges::value_type_t<P>&>, "");
-	static_assert(ranges::Readable<proxy_iterator<A>>, "");
-
 	static_assert(
 		ranges::Same<
 			ranges::reference_t<proxy_iterator<A>>,
@@ -238,12 +229,15 @@ void test_proxy_iterator() {
 		std::iota(vec.begin(), vec.end(), 0);
 		vec2.clear();
 		A::clear();
-		while (first != last) // Test post-increment
-			*out++ = *first++;
+		// FIXME: proxy_iterator<A> is input_iterator, so move_iterator post-inc
+        // wrapper returns void in P0896r1. So I don't think this should work.
+		//while (first != last) // Test post-increment
+		//	*out++ = *first++;
 
-		CHECK(ranges::size(vec2) == N);
-		CHECK(A::copy_count == std::size_t{0});
-		CHECK(A::move_count == 2*N);
+		//CHECK(ranges::size(vec2) == N);
+		//CHECK(A::copy_count == std::size_t{0});
+		//CHECK(A::move_count == 2*N);
+
 #ifdef HAVE_VIEWS
 		CHECK(ranges::equal(vec2, ranges::view::iota(0) | ranges::view::take(N), std::equal_to<>{}));
 		CHECK(ranges::equal(vec, ranges::ext::repeat_n_view<int>{-1, N}, std::equal_to<>{}));
