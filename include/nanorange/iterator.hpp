@@ -21,6 +21,7 @@
 #include <nanorange/iterator/default_sentinel.hpp>
 #include <nanorange/iterator/front_insert_iterator.hpp>
 #include <nanorange/iterator/insert_iterator.hpp>
+#include <nanorange/iterator/istream_iterator.hpp>
 #include <nanorange/iterator/operations.hpp>
 #include <nanorange/iterator/ostream_iterator.hpp>
 #include <nanorange/iterator/ostreambuf_iterator.hpp>

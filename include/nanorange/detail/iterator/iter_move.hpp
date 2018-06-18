@@ -9,6 +9,8 @@
 
 #include <nanorange/detail/type_traits.hpp>
 
+#include <utility>
+
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
