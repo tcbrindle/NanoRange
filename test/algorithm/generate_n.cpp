@@ -19,6 +19,7 @@
 //===----------------------------------------------------------------------===//
 
 #include <nanorange/algorithm/generate_n.hpp>
+#include <nanorange/iterator/back_insert_iterator.hpp>
 #include <vector>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"

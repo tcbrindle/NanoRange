@@ -19,6 +19,8 @@
 //===----------------------------------------------------------------------===//
 
 #include <nanorange/algorithm/generate.hpp>
+#include <nanorange/iterator/counted_iterator.hpp>
+#include <nanorange/iterator/back_insert_iterator.hpp>
 #include <vector>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"

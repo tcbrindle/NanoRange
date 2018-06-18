@@ -28,8 +28,9 @@
 #ifndef NANORANGE_DETAIL_ALGORITHM_HEAP_SIFT_HPP
 #define NANORANGE_DETAIL_ALGORITHM_HEAP_SIFT_HPP
 
+#include <nanorange/detail/iterator/associated_types.hpp>
+#include <nanorange/detail/iterator/iter_move.hpp>
 #include <nanorange/functional.hpp>
-#include <nanorange/iterator.hpp>
 
 ///////////////////////////////////////////////////////////////////////////
 // detail::sift_up_n and detail::sift_down_n

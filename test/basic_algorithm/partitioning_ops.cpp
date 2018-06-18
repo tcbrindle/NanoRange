@@ -2,6 +2,7 @@
 #include "../catch.hpp"
 
 #include <nanorange/algorithm.hpp>
+#include <nanorange/iterator/ostream_iterator.hpp>
 
 #include <sstream>
 

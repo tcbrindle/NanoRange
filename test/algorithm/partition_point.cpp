@@ -23,6 +23,7 @@
 //===----------------------------------------------------------------------===//
 
 #include <nanorange/algorithm/partition_point.hpp>
+#include <nanorange/iterator/counted_iterator.hpp>
 
 #include "../catch.hpp"
 #include "../test_utils.hpp"

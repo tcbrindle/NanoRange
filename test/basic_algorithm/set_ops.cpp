@@ -1,5 +1,6 @@
 
 #include <nanorange/algorithm.hpp>
+#include <nanorange/iterator/back_insert_iterator.hpp>
 
 #include "../catch.hpp"
 #include "../test_utils.hpp"

@@ -10,6 +10,7 @@
 // Project home: https://github.com/caseycarter/cmcstl2
 //
 #include <nanorange/iterator/ostreambuf_iterator.hpp>
+#include <nanorange/iterator/unreachable.hpp>
 //#include <stl2/iterator.hpp>
 //#include <stl2/type_traits.hpp>
 #include <nanorange/range.hpp>

@@ -7,8 +7,8 @@
 #ifndef NANORANGE_VIEW_SUBRANGE_HPP_INCLUDED
 #define NANORANGE_VIEW_SUBRANGE_HPP_INCLUDED
 
-#include <nanorange/iterator.hpp>
 #include <nanorange/detail/range/dangling.hpp>
+#include <nanorange/iterator/operations.hpp>
 #include <nanorange/view/interface.hpp>
 
 NANO_BEGIN_NAMESPACE

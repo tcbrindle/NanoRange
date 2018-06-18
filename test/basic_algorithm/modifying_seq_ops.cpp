@@ -2,6 +2,8 @@
 #include "../catch.hpp"
 
 #include <nanorange/algorithm.hpp>
+#include <nanorange/iterator/back_insert_iterator.hpp>
+#include <nanorange/iterator/ostream_iterator.hpp>
 
 #include <array>
 #include <complex>

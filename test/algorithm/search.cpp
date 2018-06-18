@@ -23,6 +23,7 @@
 //===----------------------------------------------------------------------===//
 
 #include <nanorange/algorithm/search.hpp>
+#include <nanorange/iterator/counted_iterator.hpp>
 #include <initializer_list>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"
