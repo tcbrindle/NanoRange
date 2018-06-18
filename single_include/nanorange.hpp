@@ -397,6 +397,40 @@ struct simple_common_reference<A&&, B&> : simple_common_reference<B&, A&&> {
 template <typename T, typename U>
 using simple_common_reference_t = typename simple_common_reference<T, U>::type;
 
+
+template <typename>
+struct xref { template <typename U> using type = U; };
+
+template <typename A>
+struct xref<A&> {
+    template <typename U>
+    using type = std::add_lvalue_reference_t<typename xref<A>::template type<U>>;
+};
+
+template <typename A>
+struct xref<A&&> {
+    template <typename U>
+    using type = std::add_rvalue_reference_t<typename xref<A>::template type<U>>;
+};
+
+template <typename A>
+struct xref<const A> {
+    template <typename U>
+    using type = std::add_const_t<typename xref<A>::template type<U>>;
+};
+
+template <typename A>
+struct xref<volatile A> {
+    template <typename U>
+    using type = std::add_volatile_t<typename xref<A>::template type<U>>;
+};
+
+template <typename A>
+struct xref<const volatile A> {
+    template <typename U>
+    using type = std::add_cv_t<typename xref<A>::template type<U>>;
+};
+
 } // namespace detail
 
 template <class T, class U, template <class> class TQual,
@@ -425,22 +459,17 @@ template <typename T, typename U>
 constexpr bool has_simple_common_ref_v =
     exists_v<simple_common_reference_t, T, U>;
 
-template <typename T>
-T common_ref_test_func();
-
-template <typename T, typename U,
-          typename C = decltype(false ? common_ref_test_func<T>()
-                                      : common_ref_test_func<U>())>
-struct function_common_ref {
-    using type = C;
-};
+template <typename T, typename U>
+using basic_common_ref_t =
+    typename basic_common_reference<remove_cvref_t<T>, remove_cvref_t<U>,
+                                    detail::xref<T>::template type, detail::xref<U>::template type>::type;
 
 template <typename T, typename U>
-using function_common_ref_t = typename function_common_ref<T, U>::type;
+constexpr bool has_basic_common_ref_v =
+    exists_v<basic_common_ref_t, T, U>;
 
 template <typename T, typename U>
-constexpr bool has_function_common_ref_v =
-    exists_v<function_common_ref_t, T, U>;
+constexpr bool has_cond_res_v = exists_v<cond_res_t, T, U>;
 
 template <typename T, typename U, typename = void>
 struct binary_common_ref : common_type<T, U> {
@@ -453,14 +482,23 @@ struct binary_common_ref<T, U, std::enable_if_t<has_simple_common_ref_v<T, U>>>
 
 template <typename T, typename U>
 struct binary_common_ref<T, U,
-                         std::enable_if_t<has_function_common_ref_v<T, U> &&
+                         std::enable_if_t<has_basic_common_ref_v<T, U> &&
                                           !has_simple_common_ref_v<T, U>>>
-    : function_common_ref<T, U> {
+{
+    using type = basic_common_ref_t<T, U>;
+};
+
+template <typename T, typename U>
+struct binary_common_ref<T, U,
+                         std::enable_if_t<has_cond_res_v<T, U> &&
+                                          !has_basic_common_ref_v<T, U> &&
+                                          !has_simple_common_ref_v<T, U>>>
+{
+    using type = cond_res_t<T, U>;
 };
 
 } // namespace detail
 
-// FIXME: Handle basic_common_reference
 template <typename T1, typename T2>
 struct common_reference<T1, T2> : detail::binary_common_ref<T1, T2> {
 };
@@ -537,7 +575,7 @@ struct binary_common_type<T, U,
 template <typename T, typename U>
 struct binary_common_type<T, U,
         std::enable_if_t<same_decayed_v<T, U> &&
-                         !exists_v<ternary_return_t<T, U>> &&
+                         !exists_v<ternary_return_t, T, U> &&
                           exists_v<cond_res_t, cref_t<T>, cref_t<U>>>> {
     using type = std::decay_t<cond_res_t<cref_t<T>, cref_t<U>>>;
 };
