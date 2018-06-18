@@ -31,19 +31,21 @@ private:
     }
 
     template <typename T>
-    static constexpr auto impl(T& t, priority_tag<1>) noexcept(
-        noexcept(std::move(*std::declval<T&>()))) -> decltype(std::move(*t))
+    static constexpr auto impl(T&& t, priority_tag<1>) noexcept(
+        noexcept(std::move(*std::declval<T&&>())))
+       -> std::enable_if_t<std::is_lvalue_reference<decltype(*std::forward<T>(t))>::value,
+                           decltype(std::move(*std::forward<T>(t)))>
     {
-        return std::move(*t);
+        return std::move(*std::forward<T>(t));
     }
 
     template <typename T>
     static constexpr auto
     impl(T&& t, priority_tag<0>)
-        noexcept(noexcept(*t))
-        -> decltype(*t)
+        noexcept(noexcept(*std::forward<T>(t)))
+        -> decltype(*std::forward<T>(t))
     {
-        return *t;
+        return *std::forward<T>(t);
     }
 
 public:
