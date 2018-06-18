@@ -48,7 +48,7 @@ struct binary_common_type<T, U,
 template <typename T, typename U>
 struct binary_common_type<T, U,
         std::enable_if_t<same_decayed_v<T, U> &&
-                         !exists_v<ternary_return_t<T, U>> &&
+                         !exists_v<ternary_return_t, T, U> &&
                           exists_v<cond_res_t, cref_t<T>, cref_t<U>>>> {
     using type = std::decay_t<cond_res_t<cref_t<T>, cref_t<U>>>;
 };
