@@ -18,42 +18,47 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <nanorange.hpp>
+#include <nanorange/algorithm/sort.hpp>
+#include <nanorange/algorithm/copy.hpp>
 #include <algorithm>
 #include <cassert>
 #include <memory>
 #include <random>
 #include <vector>
 #include "../catch.hpp"
-
+#include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = nanorange;
+namespace stl2 = nano;
 
-namespace {  std::mt19937 gen; }
+namespace { std::mt19937 gen; }
 
 // BUGBUG
-namespace std {
-template <typename F, typename S>
-std::ostream& operator<<(std::ostream& sout, std::pair<F, S> const& p)
+namespace std
 {
-	return sout << '[' << p.first << ',' << p.second << ']';
-}
+	template <typename F, typename S>
+	std::ostream & operator<<(std::ostream &sout, std::pair<F,S> const & p)
+	{
+		return sout << '[' << p.first << ',' << p.second << ']';
+	}
 }
 
 namespace {
 
-struct first {
+struct first
+{
 	template <typename P>
-	int operator()(P const& p) const
+	int operator()(P const & p) const
 	{
 		return p.first;
 	}
 };
 
-struct indirect_less {
+struct indirect_less
+{
 	template <class P>
-	bool operator()(const P& x, const P& y) const { return *x < *y; }
+	bool operator()(const P& x, const P& y) const
+		{return *x < *y;}
 };
 
 template <class RI>
@@ -61,27 +66,30 @@ void
 test_sort_helper(RI f, RI l)
 {
 	using value_type = stl2::value_type_t<RI>;
-	auto sort = make_testable_1<false>([](auto&& ... args) {
+	auto sort = make_testable_1<false>([](auto&&... args) {
 		return stl2::sort(std::forward<decltype(args)>(args)...);
 	});
-	if (f != l) {
+	if (f != l)
+	{
 		auto len = stl2::distance(f, l);
 		value_type* save(new value_type[len]);
-		do {
+		do
+		{
 			std::copy(f, l, save);
-			sort(save, save + len).check([&](auto res) {
-				CHECK(base(res) == save + len);
-				CHECK(std::is_sorted(save, save + len));
+			sort(save, save+len).check([&](auto res)
+			{
+				CHECK(base(res) == save+len);
+				CHECK(std::is_sorted(save, save+len));
 				std::copy(f, l, save);
 			});
-			sort(save, save + len, std::greater<int>{}).check([&](auto res) {
-				CHECK(base(res) == save + len);
-				CHECK(std::is_sorted(save, save + len, std::greater<int>{}));
+			sort(save, save+len, std::greater<int>{}).check([&](auto res)
+			{
+				CHECK(base(res) == save+len);
+				CHECK(std::is_sorted(save, save+len, std::greater<int>{}));
 				std::copy(f, l, save);
 			});
-		}
-		while (std::next_permutation(f, l));
-		delete[] save;
+		} while (std::next_permutation(f, l));
+		delete [] save;
 	}
 }
 
@@ -89,13 +97,15 @@ template <class RI>
 void
 test_sort_driver_driver(RI f, RI l, int start, RI real_last)
 {
-	for (RI i = l; i > f + start;) {
+	for (RI i = l; i > f + start;)
+	{
 		*--i = start;
-		if (f == i) {
+		if (f == i)
+		{
 			test_sort_helper(f, real_last);
 		}
 		if (start > 0)
-			test_sort_driver_driver(f, i, start - 1, real_last);
+			test_sort_driver_driver(f, i, start-1, real_last);
 	}
 }
 
@@ -111,8 +121,9 @@ void
 test_sort_()
 {
 	int ia[sa];
-	for (int i = 0; i < sa; ++i) {
-		test_sort_driver(ia, ia + sa, i);
+	for (int i = 0; i < sa; ++i)
+	{
+		test_sort_driver(ia, ia+sa, i);
 	}
 }
 
@@ -124,36 +135,37 @@ test_larger_sorts(int N, int M)
 	// create array length N filled with M different numbers
 	int* array = new int[N];
 	int x = 0;
-	for (int i = 0; i < N; ++i) {
+	for (int i = 0; i < N; ++i)
+	{
 		array[i] = x;
 		if (++x == M)
 			x = 0;
 	}
 
 	// test saw tooth pattern
-	CHECK(stl2::sort(array, array + N) == array + N);
-	CHECK(std::is_sorted(array, array + N));
+	CHECK(stl2::sort(array, array+N) == array+N);
+	CHECK(std::is_sorted(array, array+N));
 	// test random pattern
-	std::shuffle(array, array + N, gen);
-	CHECK(stl2::sort(array, array + N) == array + N);
-	CHECK(std::is_sorted(array, array + N));
+	std::shuffle(array, array+N, gen);
+	CHECK(stl2::sort(array, array+N) == array+N);
+	CHECK(std::is_sorted(array, array+N));
 	// test sorted pattern
-	CHECK(stl2::sort(array, array + N) == array + N);
-	CHECK(std::is_sorted(array, array + N));
+	CHECK(stl2::sort(array, array+N) == array+N);
+	CHECK(std::is_sorted(array, array+N));
 	// test reverse sorted pattern
-	std::reverse(array, array + N);
-	CHECK(stl2::sort(array, array + N) == array + N);
-	CHECK(std::is_sorted(array, array + N));
+	std::reverse(array, array+N);
+	CHECK(stl2::sort(array, array+N) == array+N);
+	CHECK(std::is_sorted(array, array+N));
 	// test swap ranges 2 pattern
-	std::swap_ranges(array, array + N / 2, array + N / 2);
-	CHECK(stl2::sort(array, array + N) == array + N);
-	CHECK(std::is_sorted(array, array + N));
+	std::swap_ranges(array, array+N/2, array+N/2);
+	CHECK(stl2::sort(array, array+N) == array+N);
+	CHECK(std::is_sorted(array, array+N));
 	// test reverse swap ranges 2 pattern
-	std::reverse(array, array + N);
-	std::swap_ranges(array, array + N / 2, array + N / 2);
-	CHECK(stl2::sort(array, array + N) == array + N);
-	CHECK(std::is_sorted(array, array + N));
-	delete[] array;
+	std::reverse(array, array+N);
+	std::swap_ranges(array, array+N/2, array+N/2);
+	CHECK(stl2::sort(array, array+N) == array+N);
+	CHECK(std::is_sorted(array, array+N));
+	delete [] array;
 }
 
 void
@@ -162,71 +174,55 @@ test_larger_sorts(unsigned N)
 	test_larger_sorts(N, 1);
 	test_larger_sorts(N, 2);
 	test_larger_sorts(N, 3);
-	test_larger_sorts(N, N / 2 - 1);
-	test_larger_sorts(N, N / 2);
-	test_larger_sorts(N, N / 2 + 1);
-	test_larger_sorts(N, N - 2);
-	test_larger_sorts(N, N - 1);
+	test_larger_sorts(N, N/2-1);
+	test_larger_sorts(N, N/2);
+	test_larger_sorts(N, N/2+1);
+	test_larger_sorts(N, N-2);
+	test_larger_sorts(N, N-1);
 	test_larger_sorts(N, N);
 }
 
-struct S {
+struct S
+{
 	int i, j;
 };
 
-struct Int {
+struct Int
+{
 	using difference_type = int;
 	int i_;
-
-	Int(int i = 0)
-			: i_(i) {}
-
-	Int(Int&& that)
-			: i_(that.i_) { that.i_ = 0; }
-
-	Int(Int const&) = delete;
-
-	Int& operator=(Int&& that)
+	Int(int i = 0) : i_(i) {}
+	Int(Int && that) : i_(that.i_) { that.i_ = 0; }
+	Int(Int const &) = delete;
+	Int & operator=(Int && that)
 	{
 		i_ = that.i_;
 		that.i_ = 0;
 		return *this;
 	}
-
-	Int& operator++()
-	{
-		++i_;
-		return *this;
-	}
-
+	Int &operator++() { ++i_; return *this; }
 	void operator++(int) { ++i_; }
-
-	friend bool operator==(Int const& a, Int const& b)
+	friend bool operator==(Int const &a, Int const &b)
 	{
 		return a.i_ == b.i_;
 	}
-
-	friend bool operator!=(Int const& a, Int const& b)
+	friend bool operator!=(Int const &a, Int const &b)
 	{
 		return !(a == b);
 	}
-
-	friend bool operator<(Int const& a, Int const& b)
+	friend bool operator<(Int const &a, Int const &b)
 	{
 		return a.i_ < b.i_;
 	}
-
-	friend bool operator>(Int const& a, Int const& b)
+	friend bool operator>(Int const &a, Int const &b)
 	{
 		return a.i_ > b.i_;
 	}
-
-	friend bool operator<=(Int const& a, Int const& b)
+	friend bool operator<=(Int const &a, Int const &b)
 	{
 		return a.i_ <= b.i_;
 	}
-
-	friend bool operator>=(Int const& a, Int const& b)
+	friend bool operator>=(Int const &a, Int const &b)
 	{
 		return a.i_ >= b.i_;
 	}
@@ -234,7 +230,7 @@ struct Int {
 
 }
 
-int main()
+TEST_CASE("alg.sort")
 {
 	// test null range
 	int d = 0;
@@ -327,6 +323,4 @@ int main()
 		sort(rng);
 	}
 #endif
-
-	return ::test_result();
 }
