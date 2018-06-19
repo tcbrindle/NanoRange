@@ -17,7 +17,9 @@ namespace move_iterator_ {
 template <typename I>
 class move_iterator {
 
-    static_assert(InputIterator<I>, "Template argument to move_iterator must model InputIterator");
+    static_assert(
+        InputIterator<I>,
+        "Template argument to move_iterator must model InputIterator");
 
     template <typename I2>
     friend class move_iterator;
@@ -31,13 +33,10 @@ public:
 
     constexpr move_iterator() = default;
 
-    explicit constexpr move_iterator(I i)
-        : current_(std::move(i))
-    {}
+    explicit constexpr move_iterator(I i) : current_(std::move(i)) {}
 
     template <typename U, std::enable_if_t<ConvertibleTo<U, I>, int> = 0>
-    constexpr move_iterator(const move_iterator<U>& i)
-        : current_(i.current_)
+    constexpr move_iterator(const move_iterator<U>& i) : current_(i.current_)
     {}
 
     template <typename U>
@@ -52,7 +51,11 @@ public:
 
     constexpr reference operator*() const { return iter_move(current_); }
 
-    constexpr move_iterator& operator++() { ++current_; return *this; }
+    constexpr move_iterator& operator++()
+    {
+        ++current_;
+        return *this;
+    }
 
     template <typename II = I>
     constexpr auto operator++(int) -> std::enable_if_t<!ForwardIterator<II>>
@@ -61,8 +64,8 @@ public:
     }
 
     template <typename II = I>
-    constexpr auto operator++(int) ->
-        std::enable_if_t<ForwardIterator<II>, move_iterator>
+    constexpr auto operator++(int)
+        -> std::enable_if_t<ForwardIterator<II>, move_iterator>
     {
         move_iterator tmp = *this;
         ++current_;
@@ -71,7 +74,7 @@ public:
 
     template <typename II = I>
     constexpr auto operator--()
-            -> std::enable_if_t<BidirectionalIterator<II>, move_iterator&>
+        -> std::enable_if_t<BidirectionalIterator<II>, move_iterator&>
     {
         --current_;
         return *this;
@@ -79,7 +82,7 @@ public:
 
     template <typename II = I>
     constexpr auto operator--(int)
-            -> std::enable_if_t<BidirectionalIterator<II>, move_iterator>
+        -> std::enable_if_t<BidirectionalIterator<II>, move_iterator>
     {
         move_iterator tmp = *this;
         --current_;
@@ -88,14 +91,14 @@ public:
 
     template <typename II = I>
     constexpr auto operator+(difference_type n) const
-            -> std::enable_if_t<RandomAccessIterator<II>, move_iterator>
+        -> std::enable_if_t<RandomAccessIterator<II>, move_iterator>
     {
         return move_iterator(current_ + n);
     }
 
     template <typename II = I>
     constexpr auto operator+=(difference_type n)
-            -> std::enable_if_t<RandomAccessIterator<II>, move_iterator&>
+        -> std::enable_if_t<RandomAccessIterator<II>, move_iterator&>
     {
         current_ += n;
         return *this;
@@ -103,14 +106,14 @@ public:
 
     template <typename II = I>
     constexpr auto operator-(difference_type n) const
-    -> std::enable_if_t<RandomAccessIterator<II>, move_iterator>
+        -> std::enable_if_t<RandomAccessIterator<II>, move_iterator>
     {
         return move_iterator(current_ - n);
     }
 
     template <typename II = I>
     constexpr auto operator-=(difference_type n)
-    -> std::enable_if_t<RandomAccessIterator<II>, move_iterator&>
+        -> std::enable_if_t<RandomAccessIterator<II>, move_iterator&>
     {
         current_ -= n;
         return *this;
@@ -119,22 +122,23 @@ public:
     template <typename II = I>
     constexpr auto operator[](difference_type n) const
         -> std::enable_if_t<RandomAccessIterator<II>, reference>
-     //   -> decltype(auto)
+    //   -> decltype(auto)
     {
         return iter_move(current_ + n);
     }
 
-    friend constexpr rvalue_reference_t<I> iter_move(const move_iterator& i)
-        noexcept(noexcept(ranges::iter_move(i.current_)))
+    friend constexpr rvalue_reference_t<I>
+    iter_move(const move_iterator& i) noexcept(
+        noexcept(ranges::iter_move(i.current_)))
     {
         return ranges::iter_move(i.current_);
     }
 
     template <typename I2>
-    friend constexpr auto iter_swap(const move_iterator& x,
-                                    const move_iterator<I2>& y)
-            noexcept(noexcept(ranges::iter_swap(x.current_, y.current_)))
-            -> std::enable_if_t<IndirectlySwappable<I2, I>>
+    friend constexpr auto
+    iter_swap(const move_iterator& x, const move_iterator<I2>& y) noexcept(
+        noexcept(ranges::iter_swap(x.current_, y.current_)))
+        -> std::enable_if_t<IndirectlySwappable<I2, I>>
     {
         ranges::iter_swap(x.current_, y.current_);
     }
@@ -143,11 +147,10 @@ private:
     I current_{};
 };
 
-
 template <typename I1, typename I2>
 constexpr auto operator==(const move_iterator<I1>& x,
                           const move_iterator<I2>& y)
-        -> std::enable_if_t<EqualityComparableWith<I1, I2>, bool>
+    -> std::enable_if_t<EqualityComparableWith<I1, I2>, bool>
 {
     return x.base() == y.base();
 }
@@ -155,31 +158,29 @@ constexpr auto operator==(const move_iterator<I1>& x,
 template <typename I1, typename I2>
 constexpr auto operator!=(const move_iterator<I1>& x,
                           const move_iterator<I2>& y)
--> std::enable_if_t<EqualityComparableWith<I1, I2>, bool>
+    -> std::enable_if_t<EqualityComparableWith<I1, I2>, bool>
 {
     return !(x == y);
 }
 
 template <typename I1, typename I2>
-constexpr auto operator<(const move_iterator<I1>& x,
-                          const move_iterator<I2>& y)
--> std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+constexpr auto operator<(const move_iterator<I1>& x, const move_iterator<I2>& y)
+    -> std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
 {
     return x.base() < y.base();
 }
 
 template <typename I1, typename I2>
 constexpr auto operator<=(const move_iterator<I1>& x,
-                         const move_iterator<I2>& y)
--> std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+                          const move_iterator<I2>& y)
+    -> std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
 {
     return !(y < x);
 }
 
 template <typename I1, typename I2>
-constexpr auto operator>(const move_iterator<I1>& x,
-                         const move_iterator<I2>& y)
--> std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+constexpr auto operator>(const move_iterator<I1>& x, const move_iterator<I2>& y)
+    -> std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
 {
     return y < x;
 }
@@ -187,22 +188,21 @@ constexpr auto operator>(const move_iterator<I1>& x,
 template <typename I1, typename I2>
 constexpr auto operator>=(const move_iterator<I1>& x,
                           const move_iterator<I2>& y)
--> std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+    -> std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
 {
     return !(x < y);
 }
 
 template <typename I1, typename I2>
-constexpr auto operator-(const move_iterator<I1>& x,
-                         const move_iterator<I2>& y)
-        -> std::enable_if_t<SizedSentinel<I1, I2>, difference_type_t<I2>>
+constexpr auto operator-(const move_iterator<I1>& x, const move_iterator<I2>& y)
+    -> std::enable_if_t<SizedSentinel<I1, I2>, difference_type_t<I2>>
 {
     return x.base() - y.base();
 }
 
 template <typename I>
 constexpr auto operator+(difference_type_t<I> n, const move_iterator<I>& x)
-        -> std::enable_if_t<RandomAccessIterator<I>, move_iterator<I>>
+    -> std::enable_if_t<RandomAccessIterator<I>, move_iterator<I>>
 {
     return x + n;
 }
@@ -218,26 +218,23 @@ constexpr auto make_move_iterator(I i)
     return move_iterator<I>(std::move(i));
 }
 
-
 template <typename S>
 class move_sentinel {
-    static_assert(Semiregular<S>, "Template argument to move_sentinel must model Semiregular");
+    static_assert(Semiregular<S>,
+                  "Template argument to move_sentinel must model Semiregular");
 
 public:
     constexpr move_sentinel() = default;
 
-    constexpr explicit move_sentinel(S s)
-        : last_(std::move(s))
-    {}
+    constexpr explicit move_sentinel(S s) : last_(std::move(s)) {}
 
     template <typename U, std::enable_if_t<ConvertibleTo<U, S>, int> = 0>
-    constexpr move_sentinel(const move_sentinel<U>& s)
-        : last_(s.base())
+    constexpr move_sentinel(const move_sentinel<U>& s) : last_(s.base())
     {}
 
     template <typename U>
     constexpr auto operator=(const move_sentinel<U>& s)
-            -> std::enable_if_t<ConvertibleTo<U, S>, move_sentinel&>
+        -> std::enable_if_t<ConvertibleTo<U, S>, move_sentinel&>
     {
         last_ = s.base();
         return *this;
@@ -258,21 +255,21 @@ constexpr auto operator==(const move_iterator<I>& i, const move_sentinel<S>& s)
 
 template <typename I, typename S>
 constexpr auto operator==(const move_sentinel<S>& s, const move_iterator<I>& i)
--> std::enable_if_t<Sentinel<S, I>, bool>
+    -> std::enable_if_t<Sentinel<S, I>, bool>
 {
     return i.base() == s.base();
 }
 
 template <typename I, typename S>
 constexpr auto operator!=(const move_iterator<I>& i, const move_sentinel<S>& s)
--> std::enable_if_t<Sentinel<S, I>, bool>
+    -> std::enable_if_t<Sentinel<S, I>, bool>
 {
     return !(i == s);
 }
 
 template <typename I, typename S>
 constexpr auto operator!=(const move_sentinel<S>& s, const move_iterator<I>& i)
--> std::enable_if_t<Sentinel<S, I>, bool>
+    -> std::enable_if_t<Sentinel<S, I>, bool>
 {
     return !(i == s);
 }
@@ -286,7 +283,7 @@ constexpr auto operator-(const move_sentinel<S>& s, const move_iterator<I>& i)
 
 template <typename I, typename S>
 constexpr auto operator-(const move_iterator<I>& i, const move_sentinel<S>& s)
--> std::enable_if_t<SizedSentinel<S, I>, difference_type_t<I>>
+    -> std::enable_if_t<SizedSentinel<S, I>, difference_type_t<I>>
 {
     return i.base() - s.base();
 }
@@ -299,5 +296,22 @@ constexpr auto make_move_sentinel(S s)
 }
 
 NANO_END_NAMESPACE
+
+namespace std {
+
+template <typename I>
+struct iterator_traits<::nano::move_iterator_::move_iterator<I>> {
+    using value_type =
+        typename ::nano::move_iterator_::move_iterator<I>::value_type;
+    using reference =
+        typename ::nano::move_iterator_::move_iterator<I>::reference;
+    using pointer = value_type*;
+    using difference_type =
+        typename ::nano::move_iterator_::move_iterator<I>::difference_type;
+    using iterator_category =
+        typename ::nano::move_iterator_::move_iterator<I>::iterator_category;
+};
+
+} // namespace std
 
 #endif
