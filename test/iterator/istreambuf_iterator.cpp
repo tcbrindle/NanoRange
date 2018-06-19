@@ -80,7 +80,9 @@ namespace {
 
 	template <class... Cs>
 	void validate() {
-		(validate_one<Cs>(), ...);
+		//(validate_one<Cs>(), ...);
+        using arr_t = int[];
+        (void) arr_t{ 0, (validate_one<Cs>(), 0)...};
 	}
 }
 
