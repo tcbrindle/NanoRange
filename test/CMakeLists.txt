@@ -139,7 +139,7 @@ add_executable(test_nanorange
     iterator/counted_iterator.cpp
     #iterator/incomplete.cpp
     iterator/istream_iterator.cpp
-    #iterator/istreambuf_iterator.cpp
+    iterator/istreambuf_iterator.cpp
     #iterator/iterator.cpp
     #iterator/move_iterator.cpp
     iterator/operations.cpp
