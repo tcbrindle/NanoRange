@@ -43,6 +43,7 @@
 #include <nanorange/algorithm/mismatch.hpp>
 #include <nanorange/algorithm/move.hpp>
 #include <nanorange/algorithm/none_of.hpp>
+#include <nanorange/algorithm/partial_sort.hpp>
 #include <nanorange/algorithm/partition.hpp>
 #include <nanorange/algorithm/partition_copy.hpp>
 #include <nanorange/algorithm/partition_point.hpp>
@@ -79,7 +80,6 @@
 #include <nanorange/algorithm/stl/is_permutation.hpp>
 #include <nanorange/algorithm/stl/next_permutation.hpp>
 #include <nanorange/algorithm/stl/nth_element.hpp>
-#include <nanorange/algorithm/stl/partial_sort.hpp>
 #include <nanorange/algorithm/stl/partial_sort_copy.hpp>
 #include <nanorange/algorithm/stl/prev_permutation.hpp>
 #include <nanorange/algorithm/stl/stable_partition.hpp>
