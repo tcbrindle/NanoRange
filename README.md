@@ -8,9 +8,9 @@
 
 # NanoRange #
 
-NanoRange is a new C++14 implementation of the C++20 Ranges proposals (formerly the
+NanoRange is a C++14 implementation of the C++20 Ranges proposals (formerly the
 Ranges TS). It provides SFINAE-based implementations of all the proposed Concepts,
-and constrained and range-based wrappers for the algorithms in the `<algorithm>`
+and constrained and range-based versions the algorithms in the `<algorithm>`
 standard library header.
 
 It is intended for users who want range-based goodness in their C++, but don't
@@ -20,6 +20,10 @@ want to (or can't) use the full-blown
  
 NanoRange is compatible with all three major C++ compilers, including the
 latest version of Microsoft Visual C++.
+
+There is currently no reference documentation for NanoRange itself, but
+the Ranges TS on which it is based is partially documented
+[on cppreference](http://en.cppreference.com/w/cpp/experimental/ranges).
 
 ## Usage ##
 
@@ -34,28 +38,34 @@ although there doesn't seem to be [too much difference](https://github.com/tcbri
 at present. (In any case, the single-header version is similar to what you'll
 get when you `#include <algorithm>` in C++20).
 
+Finally, if you use [vcpkg], you can install the latest version of NanoRange from
+master using
+
+```
+vcpkg install nanorange --head
+```
+
 ## Compatibility ##
 
 NanoRange requires a conforming C++14 compiler, and is
-[tested](https://travis-ci.org/tcbrindle/nanorange) with GCC 5.4 and Clang 3.8.
-Older versions may work in some cases, but this is not guaranteed.
+[tested](https://travis-ci.org/tcbrindle/nanorange) with GCC 5.4 and Clang 3.8
+and newer. Older versions may work in some cases, but this is not guaranteed.
 
-In addition, thanks to the excellent work Microsoft have done in improving their
-standards compliance, NanoRange works with MSVC 2017 version 15.7. Note that
+In addition, NanoRange works with MSVC 2017 version 15.7. Note that
 the `/permissive-` switch is required for correct two-phase lookup.
 
 ## What it provides ##
 
 ### Concepts ###
 
-NanoRange provides all of the concepts from [P0898][P0898]
+NanoRange provides all of the concepts from the ranges papers
 in the form of `constexpr bool` variable templates. You can use these to
-constrain your own templates via `std::enable_if`, or in `constexpr if` 
+constrain your own templates via `std::enable_if`, or in `if constexpr` 
 statements in C++17. For example
 
 ```cpp
-template <typename Range>
-void foo(Range&& rng) {
+template <typename Rng>
+void foo(Rng&& rng) {
     if constexpr (nano::RandomAccessRange<Rng>) {
          // do something
     } else if constexpr (nano::BidirectionalRange<Rng>>) {
@@ -69,8 +79,7 @@ void foo(Range&& rng) {
 ### Iterator adaptors ###
 
 NanoRange provides implementations of most of the iterator adaptors from
-[P0896][P0896],
-specifically:
+[P0896], specifically:
 
  * `common_iterator`
  * `counted_iterator`
@@ -78,24 +87,21 @@ specifically:
  * `front_insert_iterator`
  * `back_insert_iterator`
  * `insert_iterator`
+ * `istream_iterator`
  * `ostream_iterator`
+ * `istreambuf_iterator`
  * `ostreambuf_iterator`
- 
-The remaining adaptors (namely `move_iterator`,
-`istream_iterator` and `istreambuf_iterator`) have not yet been implemented,
-but the existing STL versions can be used with NanoRange algorithms.
 
 In addition, NanoRange provides an implementation of `subrange` from
-[P0789][P0789].
-This can be used to turn an iterator/sentinel pair into in range, or as a
-`span`-like view of a subset of another range.
+[P0789]. This can be used to turn an iterator/sentinel pair into in range,
+or as a `span`-like view of a subset of another range.
 
 ### Algorithms ###
 
 #### Range-based overloads ####
 
-NanoRange implements constrained version of all the algorithms from [P0896][P0896],
-including range-based overloads. This means that you can finally say
+NanoRange provides range-based overloads of all the algorithms in `<algorithm>`.
+This means that you can finally say
 
 ```cpp
 std::vector<int> vec{5, 4, 3, 2, 1};
@@ -123,10 +129,11 @@ int main()
 }
 ```
 
-Compiling this two-line example with Clang 6 results in over [350 lines of error messages](https://gist.github.com/tcbrindle/13c23fc5c1a46db12665ee509bf8265f)!
+Compiling this two-line example with Clang 6.0 results in over [350 lines of error messages](https://gist.github.com/tcbrindle/13c23fc5c1a46db12665ee509bf8265f)!
 
-Calling `nano::sort()` instead of `std::sort()` however means that constraints are
-checked before the template is instantated. This time, the entire error output is:
+Calling `nano::sort()` instead of `std::sort()` on the other hand means that
+constraints are checked before the template is instantated. This time, the
+entire error output is:
 
 ```
 example.cpp:9:5: error: no matching function for call to object of type 'const nano::ranges::detail::sort_fn'
@@ -145,6 +152,19 @@ which makes it clear that the first overload was rejected because `list::iterato
 doesn't meet the requirements of `RandomAccessIterator`, and the second overload
 was rejected because `list::iterator` is not a range (you can't call `nano::begin()`
 on it). Much better.
+
+#### Function objects ####
+
+The algorithms in NanoRange are implemented as non-template function objects with
+templated function call operators. This means that you can pass them around
+without needing to specify template arguments or wrap them in lambdas.
+For example:
+
+```cpp
+std::vector<std::vector<int>> vec_of_vecs = ...
+
+nano::for_each(vec_of_vecs, nano::sort); // sorts each inner vector
+```
 
 #### Projections ####
 
@@ -169,7 +189,7 @@ auto iter = nano::find(vec, 10, &S::i);
 #### `constexpr` support ####
 
 In C++20, most of the existing algorithms in `<algorithm>` will be marked
-`constexpr`, and so will be callable at compile time. While the ranges
+`constexpr`, and so will be usable at compile time. While the ranges
 proposals do not currently feature `constexpr` support, it seems inevitable
 that this will be added at some point. As an extension therefore, all of the
 fully reimplemented algorithms in NanoRange (with the exception of those
@@ -182,14 +202,13 @@ planned for a future version.)
 
 #### Algorithms status ####
 
-Many of the STL algorithms have been fully reimplemented in NanoRange and
+Most of the STL algorithms have been fully reimplemented in NanoRange and
 provide all of the improvements from the ranges papers, including differing
 iterator/sentinel types and support for projections.
 
-Several of the more complex algorithms have not yet been fully reimplemented, 
-and instead are implemented as constrained wrappers around a call to the existing
-STL implementation from your `<algorithm>` header. This is the case for
-`nano::sort()`, for example.
+A few of the more complex algorithms have not yet been fully reimplemented, 
+and instead function as constrained wrappers around a call to the existing
+STL implementation from your `<algorithm>` header.
 
 Because they call into the existing STL, these
 versions have additional constraints above what the Ranges papers require:
@@ -208,9 +227,7 @@ into the former category.
 NanoRange is a new library, and certain features haven't been implemented yet.
 
 In particular, NanoRange doesn't yet provide any of the Views from [P0789][P0789].
-These will be added as the library evolves. NanoRange is also missing the
-`tagged_tuple`/`tagged_pair` machinery from [P0896][P0896]; instead, `std::pair`
-and `std::tuple` are used as return types from algorithms.
+These will be added as the library evolves.
 
 There is a [TODO list](TODO.md) which is gradually being migrated
 to Github issues.
@@ -232,6 +249,11 @@ Having said that, a couple of NanoRange selling points might be:
  * NanoRange works with the latest MSVC, while Range-V3 currently doesn't. (There
    is an old fork of Range-V3 that is MSVC compatible, but it's buggy and
    mostly unmaintained.)
+
+ * NanoRange currently tracks the C++20 Ranges proposals more closely than
+   Range-V3. This means that if you use NanoRange today, there should be fewer
+   changes you'll need to make to your code to upgrade to standard ranges when
+   they arrive.
  
  * As an extension, NanoRange's reimplemented algorithms (see above) are all
    `constexpr`. This is not currently the case for Range-V3.
@@ -245,6 +267,7 @@ NanoRange wholly or partially implements the following C++20 proposal papers:
 
  * [P0898R2][P0898] *Standard library concepts*
  * [P0896R1][P0896] *Merging the Ranges TS*
+ * [P1037R0][P1037] *Deep Integration of the Ranges TS*
  * [P0970R1][P0970] *Better, safer range access customization points*
  * [P0789R3][P0789] *Range adaptors and utilities* (only `subrange` so far)
 
@@ -264,6 +287,8 @@ Many thanks to the following:
 
  * Eric Niebler and Casey Carter for the Ranges TS, Range-V3
    and CMCSTL2. You guys are awesome.
+   
+ * Orson Peters for [pdqsort]
 
  * Phil Nash for the fantastic Catch testing framework
 
@@ -278,3 +303,6 @@ Many thanks to the following:
 [P0896]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0896r1.pdf
 [P0970]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0970r1.pdf
 [P0789]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0789r3.pdf
+[P1037]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1037r0.pdf
+[pdqsort]: https://github.com/orlp/pdqsort
+[vcpkg]: https://github.com/Microsoft/vcpkg

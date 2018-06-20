@@ -8,10 +8,7 @@ In rough order or priority:
 * Fix common_iterator (use variant-like data store)
 * Implement the remaining iterator adaptors, namely:
   * move_iterator
-  * istream_iterator
-  * istreambuf_iterator
 * Implement istream_range from P1035
 * Re-implement the remaining algorithms properly, including projections etc
 * Implement the views from P0789
-* Implement the tagged_tuple machinery
 * Implement the uninitialized_foo algorithms from P1033
