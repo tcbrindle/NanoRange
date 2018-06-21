@@ -67,6 +67,7 @@ In addition, they are all available for use in `constexpr` functions.
 
 * sort
 * partial_sort
+* partial_sort_copy
 * is_sorted
 * is_sorted_until
 
@@ -123,7 +124,6 @@ CommonRange. Projections cannot be used.
 #### Sorting operations ####
 
 * stable_sort
-* partial_sort_copy
 * nth_element
 
 #### Set operations ####

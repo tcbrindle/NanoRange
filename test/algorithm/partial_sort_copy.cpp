@@ -18,52 +18,55 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/partial_sort_copy.hpp>
+#include <nanorange/algorithm/partial_sort_copy.hpp>
 #include <cassert>
 #include <memory>
 #include <random>
 #include <vector>
 #include <algorithm>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
 
-namespace { std::mt19937 gen; }
+namespace {
+std::mt19937 gen;
 
 template <class Iter>
 void
 test_larger_sorts(int N, int M)
 {
-    auto partial_sort_copy = ::make_testable_2<true, false>([](auto&&... args) {
-        return stl2::partial_sort_copy(std::forward<decltype(args)>(args)...);
-    });
+    auto partial_sort_copy = ::make_testable_2<true, false>(
+            [](auto&& ... args) {
+                return stl2::partial_sort_copy(
+                        std::forward<decltype(args)>(args)...);
+            });
     int* input = new int[N];
     int* output = new int[M];
     for (int i = 0; i < N; ++i)
         input[i] = i;
-    std::shuffle(input, input+N, gen);
-    partial_sort_copy(Iter(input), Iter(input+N), output, output+M).check([&](int* r)
-    {
+    std::shuffle(input, input + N, gen);
+    partial_sort_copy(Iter(input), Iter(input + N), output, output + M).check(
+            [&](int* r) {
+                int* e = output + std::min(N, M);
+                CHECK(r == e);
+                int i = 0;
+                for (int* x = output; x < e; ++x, ++i)
+                    CHECK(*x == i);
+                std::shuffle(input, input + N, gen);
+            });
+    partial_sort_copy(Iter(input), Iter(input + N), output, output + M,
+                      std::greater<int>()).check([&](int* r) {
         int* e = output + std::min(N, M);
         CHECK(r == e);
-        int i = 0;
-        for (int* x = output; x < e; ++x, ++i)
-            CHECK(*x == i);
-        std::shuffle(input, input+N, gen);
-    });
-    partial_sort_copy(Iter(input), Iter(input+N), output, output+M, std::greater<int>()).check([&](int* r)
-    {
-        int* e = output + std::min(N, M);
-        CHECK(r == e);
-        int i = N-1;
+        int i = N - 1;
         for (int* x = output; x < e; ++x, --i)
             CHECK(*x == i);
-        std::shuffle(input, input+N, gen);
+        std::shuffle(input, input + N, gen);
     });
-    delete [] output;
-    delete [] input;
+    delete[] output;
+    delete[] input;
 }
 
 template <class Iter>
@@ -74,13 +77,13 @@ test_larger_sorts(int N)
     test_larger_sorts<Iter>(N, 1);
     test_larger_sorts<Iter>(N, 2);
     test_larger_sorts<Iter>(N, 3);
-    test_larger_sorts<Iter>(N, N/2-1);
-    test_larger_sorts<Iter>(N, N/2);
-    test_larger_sorts<Iter>(N, N/2+1);
-    test_larger_sorts<Iter>(N, N-2);
-    test_larger_sorts<Iter>(N, N-1);
+    test_larger_sorts<Iter>(N, N / 2 - 1);
+    test_larger_sorts<Iter>(N, N / 2);
+    test_larger_sorts<Iter>(N, N / 2 + 1);
+    test_larger_sorts<Iter>(N, N - 2);
+    test_larger_sorts<Iter>(N, N - 1);
     test_larger_sorts<Iter>(N, N);
-    test_larger_sorts<Iter>(N, N+1000);
+    test_larger_sorts<Iter>(N, N + 1000);
 }
 
 template <class Iter>
@@ -98,22 +101,23 @@ test()
     test_larger_sorts<Iter>(1009);
 }
 
-struct S
-{
+struct S {
     int i;
 };
 
-struct U
-{
+struct U {
     int i;
-    U & operator=(S s)
+
+    U& operator=(S s)
     {
         i = s.i;
         return *this;
     }
 };
 
-int main()
+}
+
+TEST_CASE("alg.partial_sort_copy")
 {
     int i = 0;
     int * r = stl2::partial_sort_copy(&i, &i, &i, &i+5);
@@ -153,11 +157,13 @@ int main()
         std::shuffle(input, input+N, gen);
         auto r = stl2::partial_sort_copy(input, std::move(output), std::less<int>(), &S::i, &U::i);
         U* e = output + std::min(N, M);
+#ifndef _MSC_VER
         CHECK(r.get_unsafe() == e);
+#else
+        CHECK(r == e);
+#endif
         int i = 0;
         for (U* x = output; x < e; ++x, ++i)
             CHECK(x->i == i);
     }
-
-    return ::test_result();
 }
