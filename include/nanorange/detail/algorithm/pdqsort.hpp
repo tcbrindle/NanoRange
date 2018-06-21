@@ -80,10 +80,10 @@ constexpr void insertion_sort(I begin, I end, Comp& comp, Proj& proj)
         // positioned correctly.
         if (nano::invoke(comp, nano::invoke(proj, *sift),
                          nano::invoke(proj, *sift_1))) {
-            T tmp = std::move(*sift);
+            T tmp = nano::iter_move(sift);
 
             do {
-                *sift-- = std::move(*sift_1);
+                *sift-- = nano::iter_move(sift_1);
             } while (sift != begin &&
                      nano::invoke(comp, nano::invoke(proj, tmp),
                                   nano::invoke(proj, *--sift_1)));
@@ -114,10 +114,10 @@ constexpr void unguarded_insertion_sort(I begin, I end, Comp& comp, Proj& proj)
         // positioned correctly.
         if (nano::invoke(comp, nano::invoke(proj, *sift),
                          nano::invoke(proj, *sift_1))) {
-            T tmp = std::move(*sift);
+            T tmp = nano::iter_move(sift);
 
             do {
-                *sift-- = std::move(*sift_1);
+                *sift-- = nano::iter_move(sift_1);
             } while (nano::invoke(comp, nano::invoke(proj, tmp),
                                   nano::invoke(proj, *--sift_1)));
 
@@ -151,10 +151,10 @@ constexpr bool partial_insertion_sort(I begin, I end, Comp& comp, Proj& proj)
         // positioned correctly.
         if (nano::invoke(comp, nano::invoke(proj, *sift),
                          nano::invoke(proj, *sift_1))) {
-            T tmp = std::move(*sift);
+            T tmp = nano::iter_move(sift);
 
             do {
-                *sift-- = std::move(*sift_1);
+                *sift-- = nano::iter_move(sift_1);
             } while (sift != begin &&
                      nano::invoke(comp, nano::invoke(proj, tmp),
                                   nano::invoke(proj, *--sift_1)));
@@ -196,7 +196,7 @@ constexpr std::pair<I, bool> partition_right(I begin, I end, Comp& comp,
     using T = value_type_t<I>;
 
     // Move pivot into local for speed.
-    T pivot(std::move(*begin));
+    T pivot(nano::iter_move(begin));
 
     I first = begin;
     I last = end;
@@ -238,7 +238,7 @@ constexpr std::pair<I, bool> partition_right(I begin, I end, Comp& comp,
 
     // Put the pivot in the right place.
     I pivot_pos = first - 1;
-    *begin = std::move(*pivot_pos);
+    *begin = nano::iter_move(pivot_pos);
     *pivot_pos = std::move(pivot);
 
     return std::make_pair(std::move(pivot_pos), already_partitioned);
@@ -254,7 +254,7 @@ constexpr I partition_left(I begin, I end, Comp& comp, Proj& proj)
 {
     using T = value_type_t<I>;
 
-    T pivot(std::move(*begin));
+    T pivot(nano::iter_move(begin));
     I first = begin;
     I last = end;
 
@@ -283,7 +283,7 @@ constexpr I partition_left(I begin, I end, Comp& comp, Proj& proj)
     }
 
     I pivot_pos = last;
-    *begin = std::move(*pivot_pos);
+    *begin = nano::iter_move(pivot_pos);
     *pivot_pos = std::move(pivot);
 
     return pivot_pos;
