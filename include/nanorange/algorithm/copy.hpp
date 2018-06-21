@@ -62,7 +62,7 @@ public:
 
     template <typename Rng, typename O>
     constexpr std::enable_if_t<InputRange<Rng> && WeaklyIncrementable<O> &&
-                                   IndirectlyComparable<iterator_t<Rng>, O>,
+                                   IndirectlyCopyable<iterator_t<Rng>, O>,
                                std::pair<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
