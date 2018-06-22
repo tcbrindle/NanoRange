@@ -143,7 +143,11 @@ public:
         return current_[n];
     }
 
+#ifndef _MSC_VER
+    // FIXME MSVC: If this is a template, MSVC can't find it via ADL for some reason
+    // Making it a non-template doesn't lose much other than the InputIterator guard
     template <typename II = I, std::enable_if_t<InputIterator<II>, int> = 0>
+#endif
     friend constexpr rvalue_reference_t<I>
     iter_move(const counted_iterator& i) noexcept(
         noexcept(ranges::iter_move(i.current_)))
