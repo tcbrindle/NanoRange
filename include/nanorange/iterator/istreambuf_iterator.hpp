@@ -60,7 +60,7 @@ public:
         : sbuf_(p.sbuf_)
     {}
 
-    char_type operator*() const { return sbuf_->sgetc(); }
+    char_type operator*() const { return Traits::to_char_type(sbuf_->sgetc()); }
 
     istreambuf_iterator& operator++()
     {
@@ -70,7 +70,7 @@ public:
 
     proxy operator++(int)
     {
-        return proxy(sbuf_->sbumpc(), sbuf_);
+        return proxy(Traits::to_char_type(sbuf_->sbumpc()), sbuf_);
     }
 
     bool equal(const istreambuf_iterator& b) const

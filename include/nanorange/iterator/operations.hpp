@@ -193,7 +193,7 @@ private:
     static constexpr auto impl(R&& r)
         -> std::enable_if_t<SizedRange<R>, difference_type_t<iterator_t<R>>>
     {
-        return ranges::size(r);
+        return static_cast<difference_type_t<iterator_t<R>>>(ranges::size(r));
     }
 
     template <typename R>
