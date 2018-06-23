@@ -14,6 +14,9 @@ add_executable(test_nanorange
     basic_algorithm/set_ops.cpp
     basic_algorithm/sorting_ops.cpp
 
+    # Constexpr tests for algorithms
+    constexpr_algorithm/sorting_ops.cpp
+
     # Range-V3/CMCSTL2 tests
     algorithm/adjacent_find.cpp
     algorithm/all_of.cpp
@@ -176,7 +179,7 @@ endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(test_nanorange PRIVATE -Wall -Wextra -pedantic
-        -Wno-unneeded-internal-declaration -Wno-missing-braces)
+        -Wno-unused-function -Wno-unneeded-internal-declaration -Wno-missing-braces)
 endif()
 
 if (MSVC)
