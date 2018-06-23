@@ -3697,7 +3697,7 @@ private:
     static constexpr auto impl(R&& r)
         -> std::enable_if_t<SizedRange<R>, difference_type_t<iterator_t<R>>>
     {
-        return ranges::size(r);
+        return static_cast<difference_type_t<iterator_t<R>>>(ranges::size(r));
     }
 
     template <typename R>
@@ -10027,39 +10027,17 @@ NANO_END_NAMESPACE
 
 // nanorange/detail/algorithm/pqdsort.hpp
 //
+// Copyright Orson Peters 2017.
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-// Modified from pdqsort.h by Orson Peters
-// https://github.com/orlp/pdqsort
-
-/*
-   pdqsort.h - Pattern-defeating quicksort.
-
-   Copyright (c) 2015 Orson Peters
-
-   This software is provided 'as-is', without any express or implied warranty.
-   In no event will the authors be held liable for any damages arising from the
-   use of this software.
-
-   Permission is granted to anyone to use this software for any purpose,
-   including commercial applications, and to alter it and redistribute it
-   freely, subject to the following restrictions:
-
-   1. The origin of this software must not be misrepresented; you must not claim
-   that you wrote the original software. If you use this software in a product,
-   an acknowledgment in the product documentation would be appreciated but is
-   not required.
-
-   2. Altered source versions must be plainly marked as such, and must not be
-   misrepresented as being the original software.
-
-   3. This notice may not be removed or altered from any source distribution.
-*/
+// Modified from Boost.Sort by Orson Peters
+// https://github.com/boostorg/sort/blob/develop/include/boost/sort/pdqsort/pdqsort.hpp
 
 #ifndef NANORANGE_DETAIL_ALGORITHM_PDQSORT_HPP_INCLUDED
 #define NANORANGE_DETAIL_ALGORITHM_PDQSORT_HPP_INCLUDED
+
 
 
 
@@ -10078,6 +10056,27 @@ constexpr int pdqsort_ninther_threshold = 128;
 // When we detect an already sorted partition, attempt an insertion sort that
 // allows this amount of element moves before giving up.
 constexpr int pqdsort_partial_insertion_sort_limit = 8;
+
+// Must be multiple of 8 due to loop unrolling, and < 256 to fit in unsigned
+// char.
+constexpr int pdqsort_block_size = 64;
+
+// Cacheline size, assumes power of two.
+constexpr int pdqsort_cacheline_size = 64;
+
+template <typename>
+struct is_default_compare : std::false_type {};
+template <typename T>
+struct is_default_compare<nano::less<T>> : std::true_type {};
+template <typename T>
+struct is_default_compare<nano::greater<T>> : std::true_type {};
+template <typename T>
+struct is_default_compare<std::less<T>> : std::true_type {};
+template <typename T>
+struct is_default_compare<std::greater<T>> : std::true_type {};
+
+template <typename T>
+constexpr bool is_default_compare_v = is_default_compare<T>::value;
 
 // Returns floor(log2(n)), assumes n > 0.
 template <class T>
@@ -10211,6 +10210,245 @@ constexpr void sort3(I a, I b, I c, Comp& comp, Proj& proj)
     sort2(a, b, comp, proj);
 }
 
+template <typename I>
+constexpr void swap_offsets(I first, I last, unsigned char* offsets_l,
+                            unsigned char* offsets_r, int num, bool use_swaps)
+{
+    using T = value_type_t<I>;
+    if (use_swaps) {
+        // This case is needed for the descending distribution, where we need
+        // to have proper swapping for pdqsort to remain O(n).
+        for (int i = 0; i < num; ++i) {
+            nano::iter_swap(first + offsets_l[i], last - offsets_r[i]);
+        }
+    } else if (num > 0) {
+        I l = first + offsets_l[0];
+        I r = last - offsets_r[0];
+        T tmp(nano::iter_move(l));
+        *l = nano::iter_move(r);
+
+        for (int i = 1; i < num; ++i) {
+            l = first + offsets_l[i];
+            *r = nano::iter_move(l);
+            r = last - offsets_r[i];
+            *l = nano::iter_move(r);
+        }
+        *r = std::move(tmp);
+    }
+}
+
+// Partitions [begin, end) around pivot *begin using comparison function comp.
+// Elements equal to the pivot are put in the right-hand partition. Returns the
+// position of the pivot after partitioning and whether the passed sequence
+// already was correctly partitioned. Assumes the pivot is a median of at least
+// 3 elements and that [begin, end) is at least insertion_sort_threshold long.
+// Uses branchless partitioning.
+template <typename I, typename Comp, typename Pred>
+constexpr std::pair<I, bool> partition_right_branchless(I begin, I end,
+                                                        Comp& comp, Pred& pred)
+{
+    using T = value_type_t<I>;
+
+    // Move pivot into local for speed.
+    T pivot(nano::iter_move(begin));
+    I first = begin;
+    I last = end;
+
+    // Find the first element greater than or equal than the pivot (the median
+    // of 3 guarantees this exists).
+    while (nano::invoke(comp, nano::invoke(pred, *++first),
+                        nano::invoke(pred, pivot)))
+        ;
+
+    // Find the first element strictly smaller than the pivot. We have to guard
+    // this search if there was no element before *first.
+    if (first - 1 == begin) {
+        while (first < last && !nano::invoke(comp, nano::invoke(pred, *--last),
+                                             nano::invoke(pred, pivot)))
+            ;
+    } else {
+        while (!nano::invoke(comp, nano::invoke(pred, *--last),
+                             nano::invoke(pred, pivot)))
+            ;
+    }
+
+    // If the first pair of elements that should be swapped to partition are the
+    // same element, the passed in sequence already was correctly partitioned.
+    bool already_partitioned = first >= last;
+    if (!already_partitioned) {
+        nano::iter_swap(first, last);
+        ++first;
+    }
+
+    // The following branchless partitioning is derived from "BlockQuicksort:
+    // How Branch Mispredictions don't affect Quicksort" by Stefan Edelkamp and
+    // Armin Weiss.
+    alignas(pdqsort_cacheline_size) unsigned char
+        offsets_l_storage[pdqsort_block_size] = {};
+    alignas(pdqsort_cacheline_size) unsigned char
+        offsets_r_storage[pdqsort_block_size] = {};
+    unsigned char* offsets_l = offsets_l_storage;
+    unsigned char* offsets_r = offsets_r_storage;
+    int num_l = 0, num_r = 0, start_l = 0, start_r = 0;
+
+    while (last - first > 2 * pdqsort_block_size) {
+        // Fill up offset blocks with elements that are on the wrong side.
+        if (num_l == 0) {
+            start_l = 0;
+            I it = first;
+            for (unsigned char i = 0; i < pdqsort_block_size;) {
+                offsets_l[num_l] = i++;
+                num_l += !nano::invoke(comp, nano::invoke(pred, *it),
+                                       nano::invoke(pred, pivot));
+                ++it;
+                offsets_l[num_l] = i++;
+                num_l += !nano::invoke(comp, nano::invoke(pred, *it),
+                                       nano::invoke(pred, pivot));
+                ++it;
+                offsets_l[num_l] = i++;
+                num_l += !nano::invoke(comp, nano::invoke(pred, *it),
+                                       nano::invoke(pred, pivot));
+                ++it;
+                offsets_l[num_l] = i++;
+                num_l += !nano::invoke(comp, nano::invoke(pred, *it),
+                                       nano::invoke(pred, pivot));
+                ++it;
+                offsets_l[num_l] = i++;
+                num_l += !nano::invoke(comp, nano::invoke(pred, *it),
+                                       nano::invoke(pred, pivot));
+                ++it;
+                offsets_l[num_l] = i++;
+                num_l += !nano::invoke(comp, nano::invoke(pred, *it),
+                                       nano::invoke(pred, pivot));
+                ++it;
+                offsets_l[num_l] = i++;
+                num_l += !nano::invoke(comp, nano::invoke(pred, *it),
+                                       nano::invoke(pred, pivot));
+                ++it;
+                offsets_l[num_l] = i++;
+                num_l += !nano::invoke(comp, nano::invoke(pred, *it),
+                                       nano::invoke(pred, pivot));
+                ++it;
+            }
+        }
+        if (num_r == 0) {
+            start_r = 0;
+            I it = last;
+            for (unsigned char i = 0; i < pdqsort_block_size;) {
+                offsets_r[num_r] = ++i;
+                num_r += nano::invoke(comp, nano::invoke(pred, *--it),
+                                      nano::invoke(pred, pivot));
+                offsets_r[num_r] = ++i;
+                num_r += nano::invoke(comp, nano::invoke(pred, *--it),
+                                      nano::invoke(pred, pivot));
+                offsets_r[num_r] = ++i;
+                num_r += nano::invoke(comp, nano::invoke(pred, *--it),
+                                      nano::invoke(pred, pivot));
+                offsets_r[num_r] = ++i;
+                num_r += nano::invoke(comp, nano::invoke(pred, *--it),
+                                      nano::invoke(pred, pivot));
+                offsets_r[num_r] = ++i;
+                num_r += nano::invoke(comp, nano::invoke(pred, *--it),
+                                      nano::invoke(pred, pivot));
+                offsets_r[num_r] = ++i;
+                num_r += nano::invoke(comp, nano::invoke(pred, *--it),
+                                      nano::invoke(pred, pivot));
+                offsets_r[num_r] = ++i;
+                num_r += nano::invoke(comp, nano::invoke(pred, *--it),
+                                      nano::invoke(pred, pivot));
+                offsets_r[num_r] = ++i;
+                num_r += nano::invoke(comp, nano::invoke(pred, *--it),
+                                      nano::invoke(pred, pivot));
+            }
+        }
+
+        // Swap elements and update block sizes and first/last boundaries.
+        int num = (nano::min)(num_l, num_r);
+        swap_offsets(first, last, offsets_l + start_l, offsets_r + start_r, num,
+                     num_l == num_r);
+        num_l -= num;
+        num_r -= num;
+        start_l += num;
+        start_r += num;
+        if (num_l == 0)
+            first += pdqsort_block_size;
+        if (num_r == 0)
+            last -= pdqsort_block_size;
+    }
+
+    difference_type_t<I> l_size = 0, r_size = 0;
+    difference_type_t<I> unknown_left =
+        (last - first) - ((num_r || num_l) ? pdqsort_block_size : 0);
+    if (num_r) {
+        // Handle leftover block by assigning the unknown elements to the other
+        // block.
+        l_size = unknown_left;
+        r_size = pdqsort_block_size;
+    } else if (num_l) {
+        l_size = pdqsort_block_size;
+        r_size = unknown_left;
+    } else {
+        // No leftover block, split the unknown elements in two blocks.
+        l_size = unknown_left / 2;
+        r_size = unknown_left - l_size;
+    }
+
+    // Fill offset buffers if needed.
+    if (unknown_left && !num_l) {
+        start_l = 0;
+        I it = first;
+        for (unsigned char i = 0; i < l_size;) {
+            offsets_l[num_l] = i++;
+            num_l += !nano::invoke(comp, nano::invoke(pred, *it),
+                                   nano::invoke(pred, pivot));
+            ++it;
+        }
+    }
+    if (unknown_left && !num_r) {
+        start_r = 0;
+        I it = last;
+        for (unsigned char i = 0; i < r_size;) {
+            offsets_r[num_r] = ++i;
+            num_r += nano::invoke(comp, nano::invoke(pred, *--it),
+                                  nano::invoke(pred, pivot));
+        }
+    }
+
+    int num = (nano::min)(num_l, num_r);
+    swap_offsets(first, last, offsets_l + start_l, offsets_r + start_r, num,
+                 num_l == num_r);
+    num_l -= num;
+    num_r -= num;
+    start_l += num;
+    start_r += num;
+    if (num_l == 0)
+        first += l_size;
+    if (num_r == 0)
+        last -= r_size;
+
+    // We have now fully identified [first, last)'s proper position. Swap the
+    // last elements.
+    if (num_l) {
+        offsets_l += start_l;
+        while (num_l--)
+            nano::iter_swap(first + offsets_l[num_l], --last);
+        first = last;
+    }
+    if (num_r) {
+        offsets_r += start_r;
+        while (num_r--)
+            nano::iter_swap(last - offsets_r[num_r], first), ++first;
+        last = first;
+    }
+
+    // Put the pivot in the right place.
+    I pivot_pos = first - 1;
+    *begin = nano::iter_move(pivot_pos);
+    *pivot_pos = std::move(pivot);
+
+    return std::make_pair(std::move(pivot_pos), already_partitioned);
+}
+
 // Partitions [begin, end) around pivot *begin using comparison function comp.
 // Elements equal to the pivot are put in the right-hand partition. Returns the
 // position of the pivot after partitioning and whether the passed sequence
@@ -10316,7 +10554,7 @@ constexpr I partition_left(I begin, I end, Comp& comp, Proj& proj)
     return pivot_pos;
 }
 
-template <typename I, typename Comp, typename Proj>
+template <bool Branchless, typename I, typename Comp, typename Proj>
 constexpr void pdqsort_loop(I begin, I end, Comp& comp, Proj& proj,
                             int bad_allowed, bool leftmost = true)
 {
@@ -10362,7 +10600,8 @@ constexpr void pdqsort_loop(I begin, I end, Comp& comp, Proj& proj,
 
         // Partition and get results.
         std::pair<I, bool> part_result =
-            partition_right(begin, end, comp, proj);
+            Branchless ? partition_right_branchless(begin, end, comp, proj)
+                       : partition_right(begin, end, comp, proj);
         I pivot_pos = part_result.first;
         bool already_partitioned = part_result.second;
 
@@ -10420,22 +10659,25 @@ constexpr void pdqsort_loop(I begin, I end, Comp& comp, Proj& proj,
 
         // Sort the left partition first using recursion and do tail recursion
         // elimination for the right-hand partition.
-        detail::pdqsort_loop(begin, pivot_pos, comp, proj, bad_allowed,
-                             leftmost);
+        detail::pdqsort_loop<Branchless>(begin, pivot_pos, comp, proj,
+                                         bad_allowed, leftmost);
         begin = pivot_pos + 1;
         leftmost = false;
     }
 }
 
-template <typename I, typename Comp, typename Proj>
+template <typename I, typename Comp, typename Proj,
+          bool Branchless = is_default_compare_v<std::remove_const_t<Comp>>&&
+              Same<Proj, identity>&& std::is_arithmetic<value_type_t<I>>::value>
 constexpr void pdqsort(I begin, I end, Comp& comp, Proj& proj)
 {
     if (begin == end) {
         return;
     }
 
-    detail::pdqsort_loop(std::move(begin), std::move(end), comp, proj,
-                         detail::log2(nano::distance(begin, end)));
+    detail::pdqsort_loop<Branchless>(std::move(begin), std::move(end), comp,
+                                     proj,
+                                     detail::log2(nano::distance(begin, end)));
 }
 
 } // namespace detail
@@ -12070,7 +12312,7 @@ public:
         : sbuf_(p.sbuf_)
     {}
 
-    char_type operator*() const { return sbuf_->sgetc(); }
+    char_type operator*() const { return Traits::to_char_type(sbuf_->sgetc()); }
 
     istreambuf_iterator& operator++()
     {
@@ -12080,7 +12322,7 @@ public:
 
     proxy operator++(int)
     {
-        return proxy(sbuf_->sbumpc(), sbuf_);
+        return proxy(Traits::to_char_type(sbuf_->sbumpc()), sbuf_);
     }
 
     bool equal(const istreambuf_iterator& b) const
