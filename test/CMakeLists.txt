@@ -184,6 +184,7 @@ endif()
 
 if (MSVC)
     target_compile_options(test_nanorange PRIVATE
+            /constexpr:steps1000000
             /wd4267 /wd4244 # narrowing conversion warnings
     )
     # disable noisy warnings about uncheckable checked iterators in tests
