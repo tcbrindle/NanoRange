@@ -10165,7 +10165,7 @@ constexpr bool partial_insertion_sort(I begin, I end, Comp& comp, Proj& proj)
         return true;
     }
 
-    int limit = 0;
+    difference_type_t<I> limit = 0;
     for (I cur = begin + 1; cur != end; ++cur) {
         if (limit > pqdsort_partial_insertion_sort_limit) {
             return false;
