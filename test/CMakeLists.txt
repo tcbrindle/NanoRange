@@ -15,6 +15,7 @@ add_executable(test_nanorange
     basic_algorithm/sorting_ops.cpp
 
     # Constexpr tests for algorithms
+    constexpr_algorithm/modifying_seq_ops.cpp
     constexpr_algorithm/sorting_ops.cpp
 
     # Range-V3/CMCSTL2 tests
