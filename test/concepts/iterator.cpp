@@ -62,7 +62,7 @@ namespace ns {
 	template <class I>
 	using value_type_t = ranges::value_type_t<I>;
 
-	using ranges::value_type;
+	using ranges::readable_traits;
 	using ranges::difference_type;
 	using ranges::iterator_category;
 

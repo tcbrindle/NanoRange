@@ -278,12 +278,12 @@ using counted_iterator_::counted_iterator;
 namespace detail {
 
 template <typename I, typename = void>
-struct counted_iterator_value_type_helper {
+struct counted_iterator_readable_traits_helper {
 };
 
 template <typename I>
-struct counted_iterator_value_type_helper<I, std::enable_if_t<Readable<I>>> {
-    using type = value_type_t<I>;
+struct counted_iterator_readable_traits_helper<I, std::enable_if_t<Readable<I>>> {
+    using value_type = iter_value_t<I>;
 };
 
 template <typename I, typename = void>
@@ -298,8 +298,8 @@ struct counted_iterator_category_helper<I, std::enable_if_t<InputIterator<I>>> {
 } // namespace detail
 
 template <typename I>
-struct value_type<counted_iterator<I>>
-        : detail::counted_iterator_value_type_helper<I> {
+struct readable_traits<counted_iterator<I>>
+        : detail::counted_iterator_readable_traits_helper<I> {
 };
 
 template <typename I>

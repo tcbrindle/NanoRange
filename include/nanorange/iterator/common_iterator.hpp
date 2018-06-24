@@ -191,8 +191,8 @@ operator-(const common_iterator<I1, S1>& x, const common_iterator<I2, S2>& y)
 using common_iterator_::common_iterator;
 
 template <typename I, typename S>
-struct value_type<common_iterator<I, S>> {
-    using type = value_type_t<I>;
+struct readable_traits<common_iterator<I, S>> {
+    using value_type = iter_value_t<I>;
 };
 
 template <typename I, typename S>

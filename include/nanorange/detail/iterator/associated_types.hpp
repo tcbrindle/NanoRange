@@ -73,36 +73,43 @@ using difference_type_t = typename difference_type<T>::type;
 // [range.iterator.assoc.types.value_type]
 
 template <typename>
-struct value_type;
+struct readable_traits;
 
 namespace detail {
 
+struct empty {};
+
+template <typename T>
+struct with_value_type {
+    using value_type = T;
+};
+
 template <typename, typename = void>
-struct value_type_helper {
-};
+struct readable_traits_helper {};
 
 template <typename T>
-struct value_type_helper<T*>
-    : std::enable_if<std::is_object<T>::value, std::remove_cv_t<T>> {
-};
-
-template <typename T>
-struct value_type_helper<T, std::enable_if_t<std::is_array<T>::value>>
-    : value_type<std::decay_t<T>> {
-};
+struct readable_traits_helper<T*>
+    : std::conditional_t<std::is_object<T>::value,
+            with_value_type<std::remove_cv_t<T>>,
+            empty> {};
 
 template <typename I>
-struct value_type_helper<const I, std::enable_if_t<!std::is_array<I>::value>>
-    : value_type<std::decay_t<I>> {
-};
+struct readable_traits_helper<I, std::enable_if_t<std::is_array<I>::value>>
+    : readable_traits<std::decay_t<I>> {};
+
+template <typename I>
+struct readable_traits_helper<const I, std::enable_if_t<!std::is_array<I>::value>>
+    : readable_traits<std::decay_t<I>> {};
 
 template <typename T, typename V = typename T::value_type>
-struct member_value_type : std::enable_if<std::is_object<V>::value, V> {
-};
+struct member_value_type
+    : std::conditional_t<std::is_object<V>::value,
+            with_value_type<V>, empty> {};
 
 template <typename T, typename E = typename T::element_type>
-struct member_element_type : std::enable_if<std::is_object<E>::value, E> {
-};
+struct member_element_type
+    : std::conditional_t<std::is_object<E>::value,
+            with_value_type<std::remove_cv_t<E>>, empty> {};
 
 template <typename T>
 using member_value_type_t = typename T::value_type;
@@ -117,23 +124,23 @@ template <typename T>
 constexpr bool has_member_element_type_v = exists_v<member_element_type_t, T>;
 
 template <typename T>
-struct value_type_helper<T, std::enable_if_t<has_member_value_type_v<T>>>
-    : member_value_type<T> {
-};
+struct readable_traits_helper<T, std::enable_if_t<has_member_value_type_v<T>>>
+    : member_value_type<T> {};
 
 template <typename T>
-struct value_type_helper<T, std::enable_if_t<has_member_element_type_v<T>>>
-    : member_element_type<T> {
-};
+struct readable_traits_helper<T, std::enable_if_t<has_member_element_type_v<T>>>
+    : member_element_type<T> {};
 
 } // namespace detail
 
 template <typename T>
-struct value_type : detail::value_type_helper<T> {
-};
+struct readable_traits : detail::readable_traits_helper<T> {};
 
 template <typename T>
-using value_type_t = typename value_type<T>::type;
+using value_type_t = typename readable_traits<T>::value_type;
+
+template <typename T>
+using iter_value_t = typename readable_traits<T>::value_type;
 
 NANO_END_NAMESPACE
 
