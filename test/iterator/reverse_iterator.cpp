@@ -126,7 +126,7 @@ public:
 	friend bool operator==(const A &x, const A &y) { return x.data_ == y.data_; }
 };
 
-template <class It> void test14(It i, __stl2::value_type_t<It> x) {
+template <class It> void test14(It i, __stl2::iter_value_t<It> x) {
 	__stl2::reverse_iterator<It> r(i);
 	CHECK(*r == x);
 }
@@ -163,9 +163,9 @@ template <class It> void test19(It l, It r, bool x) {
 }
 
 template <class It>
-void test20(It i, __stl2::difference_type_t<It> n, __stl2::value_type_t<It> x) {
+void test20(It i, __stl2::difference_type_t<It> n, __stl2::iter_value_t<It> x) {
 	const __stl2::reverse_iterator<It> r(i);
-	__stl2::value_type_t<It> rr = r[n];
+	__stl2::iter_value_t<It> rr = r[n];
 	CHECK(rr == x);
 }
 
@@ -206,7 +206,7 @@ public:
 
 template <class It>
 void
-test24(It i, __stl2::value_type_t<It> x)
+test24(It i, __stl2::iter_value_t<It> x)
 {
 	__stl2::reverse_iterator<It> r(i);
 	CHECK((*r).get() == x.get());

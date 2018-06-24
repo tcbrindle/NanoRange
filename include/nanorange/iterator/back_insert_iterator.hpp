@@ -22,13 +22,13 @@ struct back_insert_iterator {
 
     explicit back_insert_iterator(Container& x) : cont_(std::addressof(x)) {}
 
-    back_insert_iterator& operator=(const value_type_t<Container>& value)
+    back_insert_iterator& operator=(const iter_value_t<Container>& value)
     {
         cont_->push_back(value);
         return *this;
     }
 
-    back_insert_iterator& operator=(value_type_t<Container>&& value)
+    back_insert_iterator& operator=(iter_value_t<Container>&& value)
     {
         cont_->push_back(std::move(value));
         return *this;

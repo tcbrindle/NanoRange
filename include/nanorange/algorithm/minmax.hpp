@@ -20,7 +20,7 @@ namespace detail {
 struct minmax_fn {
 private:
     template <typename Rng, typename Comp, typename Proj,
-              typename T = value_type_t<iterator_t<Rng>>>
+              typename T = iter_value_t<iterator_t<Rng>>>
     static constexpr std::pair<T, T>
     impl(Rng&& rng, Comp& comp, Proj& proj)
     {
@@ -114,9 +114,9 @@ public:
     template <typename Rng, typename Comp = less<>, typename Proj = identity>
     constexpr std::enable_if_t<
         InputRange<Rng> &&
-        Copyable<value_type_t<iterator_t<Rng>>> &&
+        Copyable<iter_value_t<iterator_t<Rng>>> &&
         IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
-    std::pair<value_type_t<iterator_t<Rng>>, value_type_t<iterator_t<Rng>>>>
+    std::pair<iter_value_t<iterator_t<Rng>>, iter_value_t<iterator_t<Rng>>>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return minmax_fn::impl(std::forward<Rng>(rng), comp, proj);

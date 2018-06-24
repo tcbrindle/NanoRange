@@ -137,9 +137,6 @@ template <typename T>
 struct readable_traits : detail::readable_traits_helper<T> {};
 
 template <typename T>
-using value_type_t = typename readable_traits<T>::value_type;
-
-template <typename T>
 using iter_value_t = typename readable_traits<T>::value_type;
 
 NANO_END_NAMESPACE

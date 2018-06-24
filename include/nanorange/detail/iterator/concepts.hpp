@@ -19,7 +19,7 @@ namespace detail {
 struct Readable_req {
     template <typename In>
     auto requires_()
-        -> decltype(std::declval<value_type_t<In>>(),
+        -> decltype(std::declval<iter_value_t<In>>(),
                                std::declval<reference_t<In>>(),
                                std::declval<rvalue_reference_t<In>>());
 };
@@ -30,9 +30,9 @@ auto Readable_fn(long) -> std::false_type;
 template <typename In>
 auto Readable_fn(int) -> std::enable_if_t<
      requires_<Readable_req, In> &&
-     CommonReference<reference_t<In>&&, value_type_t<In>&> &&
+     CommonReference<reference_t<In>&&, iter_value_t<In>&> &&
      CommonReference<reference_t<In>&&, rvalue_reference_t<In>&&> &&
-     CommonReference<rvalue_reference_t<In>&&, const value_type_t<In>&>,
+     CommonReference<rvalue_reference_t<In>&&, const iter_value_t<In>&>,
              std::true_type>;
 
 } // namespace detail
@@ -274,7 +274,7 @@ auto ContiguousIterator_fn(int) -> std::enable_if_t<
     RandomAccessIterator<I> &&
     DerivedFrom<iterator_category_t<I>, contiguous_iterator_tag> &&
     std::is_lvalue_reference<reference_t<I>>::value &&
-    Same<value_type_t<I>, remove_cvref_t<reference_t<I>>>,
+    Same<iter_value_t<I>, remove_cvref_t<reference_t<I>>>,
             std::true_type>;
 
 }

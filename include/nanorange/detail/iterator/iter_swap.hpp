@@ -27,27 +27,27 @@ struct fn {
 private:
     template <typename T1, typename T2>
     static constexpr bool iter_exchange_move_noexcept =
-        std::is_nothrow_constructible<value_type_t<T1>,
+        std::is_nothrow_constructible<iter_value_t<T1>,
                                       rvalue_reference_t<T1>>::value&&
-            std::is_nothrow_assignable<value_type_t<T1>&,
+            std::is_nothrow_assignable<iter_value_t<T1>&,
                                        rvalue_reference_t<T1>>::value&&
                 std::is_nothrow_assignable<reference_t<T1>,
                                            rvalue_reference_t<T2>>::value&&
                     std::is_nothrow_assignable<reference_t<T1>,
-                                               value_type_t<T2>>::value&&
-                        std::is_nothrow_move_constructible<value_type_t<T1>>::
+                                               iter_value_t<T2>>::value&&
+                        std::is_nothrow_move_constructible<iter_value_t<T1>>::
                             value&& noexcept(
                                 ranges::iter_move(std::declval<T1&>()));
 
     template <typename X, typename Y>
-    static constexpr value_type_t<std::remove_reference_t<X>>
+    static constexpr iter_value_t<std::remove_reference_t<X>>
     iter_exchange_move(X&& x, Y&& y) noexcept(
         iter_exchange_move_noexcept<std::remove_reference_t<X>,
                                     std::remove_reference_t<Y>>&&
             iter_exchange_move_noexcept<std::remove_reference_t<Y>,
                                         std::remove_reference_t<X>>)
     {
-        value_type_t<std::remove_reference_t<X>> old_value(
+        iter_value_t<std::remove_reference_t<X>> old_value(
             ranges::iter_move(x));
         *x = ranges::iter_move(y);
         return old_value;

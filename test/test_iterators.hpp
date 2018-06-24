@@ -140,7 +140,7 @@ class input_iterator
 	template <class U> friend class input_iterator;
 public:
 	typedef std::input_iterator_tag iterator_category;
-	typedef nano::value_type_t<It>      value_type;
+	typedef nano::iter_value_t<It>      value_type;
 	typedef nano::difference_type_t<It> difference_type;
 	typedef It                       pointer;
 	typedef nano::reference_t<It>  reference;
@@ -192,7 +192,7 @@ class forward_iterator
 	template <class U> friend class forward_iterator;
 public:
 	typedef std::forward_iterator_tag iterator_category;
-	typedef nano::value_type_t<It>        value_type;
+	typedef nano::iter_value_t<It>        value_type;
 	typedef nano::difference_type_t<It>   difference_type;
 	typedef It                         pointer;
 	typedef nano::reference_t<It>    reference;
@@ -244,7 +244,7 @@ class bidirectional_iterator
 	template <class U> friend class bidirectional_iterator;
 public:
 	typedef std::bidirectional_iterator_tag iterator_category;
-	typedef nano::value_type_t<It>              value_type;
+	typedef nano::iter_value_t<It>              value_type;
 	typedef nano::difference_type_t<It>         difference_type;
 	typedef It                               pointer;
 	typedef nano::reference_t<It>          reference;
@@ -293,7 +293,7 @@ class random_access_iterator
 	template <class U> friend class random_access_iterator;
 public:
 	typedef std::random_access_iterator_tag iterator_category;
-	typedef nano::value_type_t<It>              value_type;
+	typedef nano::iter_value_t<It>              value_type;
 	typedef nano::difference_type_t<It>         difference_type;
 	typedef It                               pointer;
 	typedef nano::reference_t<It>          reference;

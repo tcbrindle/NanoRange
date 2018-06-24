@@ -24,7 +24,7 @@ namespace {
 		//static_assert(cursor::Cursor<C>);
 		//static_assert(nano::Same<typename traits::off_type, cursor::difference_type_t<C>>);
 		//static_assert(cursor::Next<C>);
-		//static_assert(nano::Same<charT, cursor::value_type_t<C>>);
+		//static_assert(nano::Same<charT, cursor::iter_value_t<C>>);
 		//static_assert(cursor::Readable<C>);
 		//static_assert(nano::Same<charT, cursor::reference_t<C>>);
 		//static_assert(cursor::Input<C>);
@@ -36,7 +36,7 @@ namespace {
 		using I = istreambuf_iterator<charT, traits>;
 		static_assert(nano::WeaklyIncrementable<I>, "");
 		static_assert(nano::Same<typename traits::off_type, difference_type_t<I>>, "");
-		static_assert(nano::Same<charT, value_type_t<I>>, "");
+		static_assert(nano::Same<charT, iter_value_t<I>>, "");
 		static_assert(nano::Readable<I>, "");
 		static_assert(nano::Same<charT, reference_t<I>>, "");
 		static_assert(nano::Same<charT, rvalue_reference_t<I>>, "");
@@ -49,7 +49,7 @@ namespace {
 		static_assert(nano::Common<I, default_sentinel>, "");
 		static_assert(nano::Same<I, common_type_t<I, default_sentinel>>, "");
 
-		static_assert(nano::Same<value_type_t<I>, typename I::value_type>, "");
+		static_assert(nano::Same<iter_value_t<I>, typename I::value_type>, "");
 		static_assert(nano::Same<difference_type_t<I>, typename I::difference_type>, "");
 		static_assert(nano::Same<input_iterator_tag, typename I::iterator_category>, "");
 		static_assert(nano::Same<charT, typename I::reference>, "");

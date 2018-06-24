@@ -25,12 +25,12 @@ class common_iterator {
     friend class common_iterator;
 
     class op_arrow_proxy {
-        value_type_t<I> keep_;
+        iter_value_t<I> keep_;
 
         constexpr op_arrow_proxy(reference_t<I>&& x) : keep_(std::move(x)) {}
 
     public:
-        constexpr const value_type_t<I>* operator->() const
+        constexpr const iter_value_t<I>* operator->() const
         {
             return std::addressof(keep_);
         }
@@ -209,7 +209,7 @@ template <typename I, typename S>
 struct iterator_traits<::nano::common_iterator<I, S>> {
     using difference_type =
         ::nano::difference_type_t<::nano::common_iterator<I, S>>;
-    using value_type = ::nano::value_type_t<::nano::common_iterator<I, S>>;
+    using value_type = ::nano::iter_value_t<::nano::common_iterator<I, S>>;
     using pointer =
         std::add_pointer_t<::nano::reference_t<::nano::common_iterator<I, S>>>;
     using reference = ::nano::reference_t<::nano::common_iterator<I, S>>;

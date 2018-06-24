@@ -143,7 +143,7 @@ public:
               typename = std::enable_if_t<
                   ForwardRange<C> && !View<C> &&
                   ConvertibleTo<reference_t<iterator_t<const R>>,
-                                value_type_t<iterator_t<C>>> &&
+                                iter_value_t<iterator_t<C>>> &&
                   Constructible<C, detail::range_common_iterator_t<const R>,
                                 detail::range_common_iterator_t<const R>>>>
     operator C() const

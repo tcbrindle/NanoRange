@@ -65,7 +65,7 @@ constexpr int log2(T n)
 template <typename I, typename Comp, typename Proj>
 constexpr void insertion_sort(I begin, I end, Comp& comp, Proj& proj)
 {
-    using T = value_type_t<I>;
+    using T = iter_value_t<I>;
 
     if (begin == end) {
         return;
@@ -99,7 +99,7 @@ constexpr void insertion_sort(I begin, I end, Comp& comp, Proj& proj)
 template <typename I, typename Comp, typename Proj>
 constexpr void unguarded_insertion_sort(I begin, I end, Comp& comp, Proj& proj)
 {
-    using T = value_type_t<I>;
+    using T = iter_value_t<I>;
 
     if (begin == end) {
         return;
@@ -131,7 +131,7 @@ constexpr void unguarded_insertion_sort(I begin, I end, Comp& comp, Proj& proj)
 template <typename I, typename Comp, typename Proj>
 constexpr bool partial_insertion_sort(I begin, I end, Comp& comp, Proj& proj)
 {
-    using T = value_type_t<I>;
+    using T = iter_value_t<I>;
 
     if (begin == end) {
         return true;
@@ -187,7 +187,7 @@ template <typename I>
 constexpr void swap_offsets(I first, I last, unsigned char* offsets_l,
                             unsigned char* offsets_r, int num, bool use_swaps)
 {
-    using T = value_type_t<I>;
+    using T = iter_value_t<I>;
     if (use_swaps) {
         // This case is needed for the descending distribution, where we need
         // to have proper swapping for pdqsort to remain O(n).
@@ -220,7 +220,7 @@ template <typename I, typename Comp, typename Pred>
 constexpr std::pair<I, bool> partition_right_branchless(I begin, I end,
                                                         Comp& comp, Pred& pred)
 {
-    using T = value_type_t<I>;
+    using T = iter_value_t<I>;
 
     // Move pivot into local for speed.
     T pivot(nano::iter_move(begin));
@@ -431,7 +431,7 @@ template <typename I, typename Comp, typename Proj>
 constexpr std::pair<I, bool> partition_right(I begin, I end, Comp& comp,
                                              Proj& proj)
 {
-    using T = value_type_t<I>;
+    using T = iter_value_t<I>;
 
     // Move pivot into local for speed.
     T pivot(nano::iter_move(begin));
@@ -490,7 +490,7 @@ constexpr std::pair<I, bool> partition_right(I begin, I end, Comp& comp,
 template <typename I, typename Comp, typename Proj>
 constexpr I partition_left(I begin, I end, Comp& comp, Proj& proj)
 {
-    using T = value_type_t<I>;
+    using T = iter_value_t<I>;
 
     T pivot(nano::iter_move(begin));
     I first = begin;
@@ -641,7 +641,7 @@ constexpr void pdqsort_loop(I begin, I end, Comp& comp, Proj& proj,
 
 template <typename I, typename Comp, typename Proj,
           bool Branchless = is_default_compare_v<std::remove_const_t<Comp>>&&
-              Same<Proj, identity>&& std::is_arithmetic<value_type_t<I>>::value>
+              Same<Proj, identity>&& std::is_arithmetic<iter_value_t<I>>::value>
 constexpr void pdqsort(I begin, I end, Comp& comp, Proj& proj)
 {
     if (begin == end) {

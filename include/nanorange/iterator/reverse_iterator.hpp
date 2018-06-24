@@ -27,7 +27,7 @@ class reverse_iterator {
 public:
     using iterator_type = I;
     using difference_type = difference_type_t<I>;
-    using value_type = value_type_t<I>;
+    using value_type = iter_value_t<I>;
     using iterator_category = detail::legacy_iterator_category_t<I>;
     using reference = reference_t<I>;
     using pointer = I;

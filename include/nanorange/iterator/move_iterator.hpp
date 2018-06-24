@@ -27,7 +27,7 @@ class move_iterator {
 public:
     using iterator_type = I;
     using difference_type = difference_type_t<I>;
-    using value_type = value_type_t<I>;
+    using value_type = iter_value_t<I>;
     using iterator_category = input_iterator_tag;
     using reference = rvalue_reference_t<I>;
 
