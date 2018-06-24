@@ -10,14 +10,12 @@ TEST_CASE("view.subrange") {
 		using CI = nano::subrange<const int*, const int*>;
 		static_assert(models::View<I>, "");
 		static_assert(models::SizedRange<I>, "");
-		// FIXME: ContiguousRange
-		//static_assert(models::ContiguousRange<I>, "");
+		static_assert(models::ContiguousRange<I>, "");
 		static_assert(models::RandomAccessRange<I>, "");
 		static_assert(models::CommonRange<I>, "");
 		static_assert(models::View<CI>, "");
 		static_assert(models::SizedRange<CI>, "");
-		// FIXME: ContiguousRange
-		//static_assert(models::ContiguousRange<CI>, "");
+		static_assert(models::ContiguousRange<CI>, "");
 		static_assert(models::RandomAccessRange<CI>, "");
 		static_assert(models::CommonRange<CI>, "");
 	}
@@ -29,8 +27,7 @@ TEST_CASE("view.subrange") {
 		using R = decltype(r);
 		static_assert(models::View<R>, "");
 		static_assert(models::SizedRange<R>, "");
-		// FIXME: ContiguousRange
-		//static_assert(models::ContiguousRange<R>);
+		static_assert(models::ContiguousRange<R>, "");
 		static_assert(models::RandomAccessRange<R>, "");
 		static_assert(models::CommonRange<R>, "");
 

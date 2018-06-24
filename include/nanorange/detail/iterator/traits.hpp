@@ -15,14 +15,13 @@
 NANO_BEGIN_NAMESPACE
 
 // [range.iterator.assoc.types.iterator_category]
-// FIXME: Not to spec -- do we want to duplicate all the iterator tags, or just
-// use the std:: ones?
-
 using std::bidirectional_iterator_tag;
 using std::forward_iterator_tag;
 using std::input_iterator_tag;
 using std::output_iterator_tag;
 using std::random_access_iterator_tag;
+
+struct contiguous_iterator_tag : random_access_iterator_tag {};
 
 template <typename T>
 struct iterator_category;
@@ -35,7 +34,7 @@ struct iterator_category_ {
 
 template <typename T>
 struct iterator_category_<T*>
-    : std::enable_if<std::is_object<T>::value, random_access_iterator_tag> {
+    : std::enable_if<std::is_object<T>::value, contiguous_iterator_tag> {
 };
 
 template <typename T>
@@ -55,6 +54,25 @@ struct iterator_category : detail::iterator_category_<T> {
 
 template <typename T>
 using iterator_category_t = typename iterator_category<T>::type;
+
+namespace detail {
+
+template <typename T, typename = void>
+struct legacy_iterator_category
+    : iterator_category<T> {};
+
+template <typename T>
+struct legacy_iterator_category<T,
+        std::enable_if_t<std::is_same<iterator_category_t<T>, contiguous_iterator_tag>::value>>
+{
+    using type = random_access_iterator_tag;
+};
+
+template <typename T>
+using legacy_iterator_category_t = typename legacy_iterator_category<T>::type;
+
+}
+
 
 namespace detail {
 

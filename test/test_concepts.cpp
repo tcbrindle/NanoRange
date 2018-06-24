@@ -368,6 +368,12 @@ static_assert(!rng::RandomAccessIterator<void>, "");
 static_assert(rng::RandomAccessIterator<int*>, "");
 static_assert(rng::RandomAccessIterator<std::vector<int>::iterator>, "");
 
+// ContiguousIterator tests
+static_assert(!rng::ContiguousIterator<void>, "");
+static_assert(!rng::ContiguousIterator<void*>, "");
+static_assert(rng::ContiguousIterator<int*>, "");
+static_assert(rng::ContiguousIterator<const int*>, "");
+
 // IndirectUnaryInvocable tests
 static_assert(!rng::IndirectUnaryInvocable<void, void>, "");
 
@@ -379,6 +385,11 @@ static_assert(rng::Range<std::vector<int>>, "");
 // SizedRange tests
 static_assert(!rng::SizedRange<void>, "");
 static_assert(rng::SizedRange<std::vector<int>>, "");
+
+// ContiguousRange tests
+static_assert(!rng::ContiguousRange<void>, "");
+static_assert(!rng::ContiguousRange<void*>, "");
+static_assert(rng::ContiguousRange<std::vector<int>>, "");
 
 // View tests
 static_assert(!rng::View<void>, "");

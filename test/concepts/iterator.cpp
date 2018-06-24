@@ -70,6 +70,7 @@ namespace ns {
 	using ranges::forward_iterator_tag;
 	using ranges::bidirectional_iterator_tag;
 	using ranges::random_access_iterator_tag;
+	using ranges::contiguous_iterator_tag;
 
 	using ranges::indirect_result_t;
 }
@@ -119,8 +120,8 @@ namespace associated_type_test {
 	//CONCEPT_ASSERT(!meta::is_trait<ns::difference_type<void*>>());
 
 	CONCEPT_ASSERT(models::Same<int, ns::difference_type_t<int>>);
-	CONCEPT_ASSERT(models::Same<ns::iterator_category_t<int*>, ns::random_access_iterator_tag>);
-	CONCEPT_ASSERT(models::Same<ns::iterator_category_t<const int*>, ns::random_access_iterator_tag>);
+	CONCEPT_ASSERT(models::Same<ns::iterator_category_t<int*>, ns::contiguous_iterator_tag>);
+	CONCEPT_ASSERT(models::Same<ns::iterator_category_t<const int*>, ns::contiguous_iterator_tag>);
 
 	template <class T>
 	struct derive_from : T {};

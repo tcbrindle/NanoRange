@@ -259,6 +259,34 @@ template <typename T>
 NANO_CONCEPT RandomAccessRange =
     decltype(detail::RandomAccessRange_fn<T>(0))::value;
 
+namespace detail {
+
+// Not to spec: P0944 requires that R's iterator_t models ContiguousIterator,
+// but we only require RandomAccessIterator.
+// This is so that std::vector, std::string etc can model ContiguousRange
+struct ContiguousRange_req {
+    template <typename R>
+    auto requires_(R& r) -> decltype(
+        requires_expr<Same<decltype(ranges::data(r)), std::add_pointer_t<reference_t<iterator_t<R>>>>>{}
+    );
+};
+
+
+template <typename>
+auto ContiguousRange_fn(long) -> std::false_type;
+
+template <typename R>
+auto ContiguousRange_fn(int) -> std::enable_if_t<
+        Range<R> && RandomAccessIterator<iterator_t<R>> &&
+        requires_<ContiguousRange_req, R>,
+                std::true_type>;
+
+}
+
+template <typename R>
+NANO_CONCEPT ContiguousRange =
+    decltype(detail::ContiguousRange_fn<R>(0))::value;
+
 NANO_END_NAMESPACE
 
 #endif
