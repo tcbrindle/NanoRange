@@ -1812,14 +1812,13 @@ NANO_END_NAMESPACE
 NANO_BEGIN_NAMESPACE
 
 // [range.iterator.assoc.types.iterator_category]
-// FIXME: Not to spec -- do we want to duplicate all the iterator tags, or just
-// use the std:: ones?
-
 using std::bidirectional_iterator_tag;
 using std::forward_iterator_tag;
 using std::input_iterator_tag;
 using std::output_iterator_tag;
 using std::random_access_iterator_tag;
+
+struct contiguous_iterator_tag : random_access_iterator_tag {};
 
 template <typename T>
 struct iterator_category;
@@ -1832,7 +1831,7 @@ struct iterator_category_ {
 
 template <typename T>
 struct iterator_category_<T*>
-    : std::enable_if<std::is_object<T>::value, random_access_iterator_tag> {
+    : std::enable_if<std::is_object<T>::value, contiguous_iterator_tag> {
 };
 
 template <typename T>
@@ -1852,6 +1851,25 @@ struct iterator_category : detail::iterator_category_<T> {
 
 template <typename T>
 using iterator_category_t = typename iterator_category<T>::type;
+
+namespace detail {
+
+template <typename T, typename = void>
+struct legacy_iterator_category
+    : iterator_category<T> {};
+
+template <typename T>
+struct legacy_iterator_category<T,
+        std::enable_if_t<std::is_same<iterator_category_t<T>, contiguous_iterator_tag>::value>>
+{
+    using type = random_access_iterator_tag;
+};
+
+template <typename T>
+using legacy_iterator_category_t = typename legacy_iterator_category<T>::type;
+
+}
+
 
 namespace detail {
 
@@ -2005,6 +2023,17 @@ NANO_CONCEPT SizedSentinel =
     !disable_sized_sentinel<std::remove_cv_t<S>, std::remove_cv_t<I>> &&
     detail::requires_<detail::SizedSentinel_req, S, I>;
 
+// This is a hack, but I'm fed up with my tests breaking because GCC
+// has a silly extension
+template <typename S>
+NANO_CONCEPT SizedSentinel<S, void*> = false;
+
+template <typename I>
+NANO_CONCEPT SizedSentinel<void*, I> = false;
+
+template <>
+NANO_CONCEPT SizedSentinel<void*, void*> = false;
+
 // [range.iterators.input]
 
 namespace detail {
@@ -2118,6 +2147,24 @@ auto RandomAccessIterator_fn(int) -> std::enable_if_t<
 template <typename I>
 NANO_CONCEPT RandomAccessIterator = 
         decltype(detail::RandomAccessIterator_fn<I>(0))::value;
+
+namespace detail {
+
+template <typename>
+auto ContiguousIterator_fn(long) -> std::false_type;
+
+template <typename I>
+auto ContiguousIterator_fn(int) -> std::enable_if_t<
+    RandomAccessIterator<I> &&
+    DerivedFrom<iterator_category_t<I>, contiguous_iterator_tag> &&
+    std::is_lvalue_reference<reference_t<I>>::value &&
+    Same<value_type_t<I>, remove_cvref_t<reference_t<I>>>,
+            std::true_type>;
+
+}
+
+template <typename I>
+NANO_CONCEPT ContiguousIterator = decltype(detail::ContiguousIterator_fn<I>(0))::value;
 
 
 // Extension: used for constraining iterators for existing STL algos
@@ -3442,6 +3489,34 @@ auto RandomAccessRange_fn(int) -> std::enable_if_t<
 template <typename T>
 NANO_CONCEPT RandomAccessRange =
     decltype(detail::RandomAccessRange_fn<T>(0))::value;
+
+namespace detail {
+
+// Not to spec: P0944 requires that R's iterator_t models ContiguousIterator,
+// but we only require RandomAccessIterator.
+// This is so that std::vector, std::string etc can model ContiguousRange
+struct ContiguousRange_req {
+    template <typename R>
+    auto requires_(R& r) -> decltype(
+        requires_expr<Same<decltype(ranges::data(r)), std::add_pointer_t<reference_t<iterator_t<R>>>>>{}
+    );
+};
+
+
+template <typename>
+auto ContiguousRange_fn(long) -> std::false_type;
+
+template <typename R>
+auto ContiguousRange_fn(int) -> std::enable_if_t<
+        Range<R> && RandomAccessIterator<iterator_t<R>> &&
+        requires_<ContiguousRange_req, R>,
+                std::true_type>;
+
+}
+
+template <typename R>
+NANO_CONCEPT ContiguousRange =
+    decltype(detail::ContiguousRange_fn<R>(0))::value;
 
 NANO_END_NAMESPACE
 
@@ -12869,7 +12944,7 @@ public:
     using iterator_type = I;
     using difference_type = difference_type_t<I>;
     using value_type = value_type_t<I>;
-    using iterator_category = iterator_category_t<I>;
+    using iterator_category = detail::legacy_iterator_category_t<I>;
     using reference = reference_t<I>;
     using pointer = I;
 
