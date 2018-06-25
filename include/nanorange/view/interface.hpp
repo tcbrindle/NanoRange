@@ -106,20 +106,20 @@ public:
     }
 
     template <typename R = D, typename = std::enable_if_t<RandomAccessRange<R>>>
-    constexpr decltype(auto) operator[](difference_type_t<iterator_t<R>> n)
+    constexpr decltype(auto) operator[](iter_difference_t<iterator_t<R>> n)
     {
         return ranges::begin(derived())[n];
     }
 
     template <typename R = const D,  typename = std::enable_if_t<RandomAccessRange<R>>>
-    constexpr decltype(auto) operator[](difference_type_t<iterator_t<R>> n) const
+    constexpr decltype(auto) operator[](iter_difference_t<iterator_t<R>> n) const
     {
         return ranges::begin(derived())[n];
     }
 
     template <typename R = D, typename = std::enable_if_t<
         RandomAccessRange<R> && SizedRange<R>>>
-    constexpr decltype(auto) at(difference_type_t<iterator_t<R>> n)
+    constexpr decltype(auto) at(iter_difference_t<iterator_t<R>> n)
     {
         if (n < 0 || n >= ranges::size(derived())) {
             throw std::out_of_range{""};
@@ -130,7 +130,7 @@ public:
 
     template <typename R = const D, typename = std::enable_if_t<
             RandomAccessRange<R> && SizedRange<R>>>
-    constexpr decltype(auto) at(difference_type_t<iterator_t<R>> n) const
+    constexpr decltype(auto) at(iter_difference_t<iterator_t<R>> n) const
     {
         if (n < 0 || n >= ranges::size(derived())) {
             throw std::out_of_range{""};
@@ -142,8 +142,8 @@ public:
     template <typename C, typename R = D,
               typename = std::enable_if_t<
                   ForwardRange<C> && !View<C> &&
-                  ConvertibleTo<reference_t<iterator_t<const R>>,
-                                value_type_t<iterator_t<C>>> &&
+                  ConvertibleTo<iter_reference_t<iterator_t<const R>>,
+                                iter_value_t<iterator_t<C>>> &&
                   Constructible<C, detail::range_common_iterator_t<const R>,
                                 detail::range_common_iterator_t<const R>>>>
     operator C() const

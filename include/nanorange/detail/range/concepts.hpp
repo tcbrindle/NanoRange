@@ -75,7 +75,7 @@ auto convertible_to_helper(Deduced)
 struct SizedRange_req {
     template <typename T>
     auto requires_(T& t) -> decltype(
-        valid_expr(convertible_to_helper<difference_type_t<iterator_t<T>>>(
+        valid_expr(convertible_to_helper<iter_difference_t<iterator_t<T>>>(
             ranges::size(t))));
 };
 
@@ -137,7 +137,7 @@ auto view_predicate_helper_fn(int) -> std::enable_if_t<
         !DerivedFrom<T, view_base> &&
         Range<T> &&
         Range<const T> &&
-        !Same<reference_t<iterator_t<T>>, reference_t<iterator_t<const T>>>,
+        !Same<iter_reference_t<iterator_t<T>>, iter_reference_t<iterator_t<const T>>>,
     std::true_type>;
 
 template <typename T>
@@ -267,7 +267,7 @@ namespace detail {
 struct ContiguousRange_req {
     template <typename R>
     auto requires_(R& r) -> decltype(
-        requires_expr<Same<decltype(ranges::data(r)), std::add_pointer_t<reference_t<iterator_t<R>>>>>{}
+        requires_expr<Same<decltype(ranges::data(r)), std::add_pointer_t<iter_reference_t<iterator_t<R>>>>>{}
     );
 };
 

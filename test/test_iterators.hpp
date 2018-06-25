@@ -112,9 +112,9 @@ class output_iterator
 
 	template <class U> friend class output_iterator;
 public:
-	using difference_type = nano::difference_type_t<It>;
+	using difference_type = nano::iter_difference_t<It>;
 	using pointer = It;
-	using reference = nano::reference_t<It>;
+	using reference = nano::iter_reference_t<It>;
 
 	constexpr It base() const {return it_;}
 
@@ -140,10 +140,10 @@ class input_iterator
 	template <class U> friend class input_iterator;
 public:
 	typedef std::input_iterator_tag iterator_category;
-	typedef nano::value_type_t<It>      value_type;
-	typedef nano::difference_type_t<It> difference_type;
+	typedef nano::iter_value_t<It>      value_type;
+	typedef nano::iter_difference_t<It> difference_type;
 	typedef It                       pointer;
-	typedef nano::reference_t<It>  reference;
+	typedef nano::iter_reference_t<It>  reference;
 
 	constexpr It base() const {return it_;}
 
@@ -192,10 +192,10 @@ class forward_iterator
 	template <class U> friend class forward_iterator;
 public:
 	typedef std::forward_iterator_tag iterator_category;
-	typedef nano::value_type_t<It>        value_type;
-	typedef nano::difference_type_t<It>   difference_type;
+	typedef nano::iter_value_t<It>        value_type;
+	typedef nano::iter_difference_t<It>   difference_type;
 	typedef It                         pointer;
-	typedef nano::reference_t<It>    reference;
+	typedef nano::iter_reference_t<It>    reference;
 
 	constexpr It base() const {return it_;}
 
@@ -244,10 +244,10 @@ class bidirectional_iterator
 	template <class U> friend class bidirectional_iterator;
 public:
 	typedef std::bidirectional_iterator_tag iterator_category;
-	typedef nano::value_type_t<It>              value_type;
-	typedef nano::difference_type_t<It>         difference_type;
+	typedef nano::iter_value_t<It>              value_type;
+	typedef nano::iter_difference_t<It>         difference_type;
 	typedef It                               pointer;
-	typedef nano::reference_t<It>          reference;
+	typedef nano::iter_reference_t<It>          reference;
 
 	constexpr It base() const {return it_;}
 
@@ -293,10 +293,10 @@ class random_access_iterator
 	template <class U> friend class random_access_iterator;
 public:
 	typedef std::random_access_iterator_tag iterator_category;
-	typedef nano::value_type_t<It>              value_type;
-	typedef nano::difference_type_t<It>         difference_type;
+	typedef nano::iter_value_t<It>              value_type;
+	typedef nano::iter_difference_t<It>         difference_type;
 	typedef It                               pointer;
-	typedef nano::reference_t<It>          reference;
+	typedef nano::iter_reference_t<It>          reference;
 
 	constexpr It base() const {return it_;}
 
@@ -385,7 +385,7 @@ operator>=(const random_access_iterator<T>& x, const random_access_iterator<U>& 
 
 template <class T, class U>
 constexpr
-nano::difference_type_t<T>
+nano::iter_difference_t<T>
 operator-(const random_access_iterator<T>& x, const random_access_iterator<U>& y)
 {
 	return x.base() - y.base();

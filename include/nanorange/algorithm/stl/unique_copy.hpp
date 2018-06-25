@@ -29,7 +29,7 @@ private:
 
     template <typename I, typename O, typename R>
     static std::enable_if_t<
-            InputIterator<O> && Same<value_type_t<I>, value_type_t<O>>,
+            InputIterator<O> && Same<iter_value_t<I>, iter_value_t<O>>,
     O>
     dispatch_helper(I first, I last, O result, R& comp, priority_tag<1>)
     {

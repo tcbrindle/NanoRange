@@ -145,7 +145,7 @@ namespace detail {
 
 template <typename P>
 constexpr bool is_object_pointer_v =
-    std::is_pointer<P>::value && std::is_object<test_t<value_type_t, P>>::value;
+    std::is_pointer<P>::value && std::is_object<test_t<iter_value_t, P>>::value;
 
 namespace data_ {
 

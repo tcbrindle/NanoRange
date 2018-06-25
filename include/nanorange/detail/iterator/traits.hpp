@@ -88,10 +88,10 @@ struct reference_helper<T, std::enable_if_t<Dereferenceable<T>>> {
 } // namespace detail
 
 template <typename T>
-using reference_t = typename detail::reference_helper<T>::type;
+using iter_reference_t = typename detail::reference_helper<T>::type;
 
 template <typename T>
-using rvalue_reference_t = decltype(ranges::iter_move(std::declval<T&>()));
+using iter_rvalue_reference_t = decltype(ranges::iter_move(std::declval<T&>()));
 
 NANO_END_NAMESPACE
 

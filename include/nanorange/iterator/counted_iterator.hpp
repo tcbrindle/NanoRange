@@ -23,11 +23,11 @@ class counted_iterator {
 
 public:
     using iterator = I;
-    using difference_type = difference_type_t<I>;
+    using difference_type = iter_difference_t<I>;
 
     constexpr counted_iterator() = default;
 
-    constexpr counted_iterator(I x, difference_type_t<I> n)
+    constexpr counted_iterator(I x, iter_difference_t<I> n)
         : current_(x), cnt_(n)
     {}
 
@@ -47,7 +47,7 @@ public:
 
     constexpr I base() const { return current_; }
 
-    constexpr difference_type_t<I> count() const { return cnt_; }
+    constexpr iter_difference_t<I> count() const { return cnt_; }
 
     constexpr decltype(auto) operator*() { return *current_; }
 
@@ -148,7 +148,7 @@ public:
     // Making it a non-template doesn't lose much other than the InputIterator guard
     template <typename II = I, std::enable_if_t<InputIterator<II>, int> = 0>
 #endif
-    friend constexpr rvalue_reference_t<I>
+    friend constexpr iter_rvalue_reference_t<I>
     iter_move(const counted_iterator& i) noexcept(
         noexcept(ranges::iter_move(i.current_)))
     {
@@ -167,7 +167,7 @@ public:
 
 private:
     I current_{};
-    difference_type_t<I> cnt_{0};
+    iter_difference_t<I> cnt_{0};
 };
 
 template <typename I1, typename I2>
@@ -245,27 +245,27 @@ constexpr auto operator>=(const counted_iterator<I1>& x,
 template <typename I1, typename I2>
 constexpr auto operator-(const counted_iterator<I1>& x,
                          const counted_iterator<I2>& y)
-    -> std::enable_if_t<Common<I1, I2>, difference_type_t<I2>>
+    -> std::enable_if_t<Common<I1, I2>, iter_difference_t<I2>>
 {
     return y.count() - x.count();
 }
 
 template <typename I>
-constexpr difference_type_t<I> operator-(const counted_iterator<I>& x,
+constexpr iter_difference_t<I> operator-(const counted_iterator<I>& x,
                                          default_sentinel)
 {
     return -x.count();
 }
 
 template <typename I>
-constexpr difference_type_t<I> operator-(default_sentinel,
+constexpr iter_difference_t<I> operator-(default_sentinel,
                                          const counted_iterator<I>& y)
 {
     return y.count();
 }
 
 template <typename I>
-constexpr auto operator+(difference_type_t<I> n, const counted_iterator<I>& x)
+constexpr auto operator+(iter_difference_t<I> n, const counted_iterator<I>& x)
     -> std::enable_if_t<RandomAccessIterator<I>, counted_iterator<I>>
 {
     return x + n;
@@ -278,12 +278,12 @@ using counted_iterator_::counted_iterator;
 namespace detail {
 
 template <typename I, typename = void>
-struct counted_iterator_value_type_helper {
+struct counted_iterator_readable_traits_helper {
 };
 
 template <typename I>
-struct counted_iterator_value_type_helper<I, std::enable_if_t<Readable<I>>> {
-    using type = value_type_t<I>;
+struct counted_iterator_readable_traits_helper<I, std::enable_if_t<Readable<I>>> {
+    using value_type = iter_value_t<I>;
 };
 
 template <typename I, typename = void>
@@ -298,8 +298,8 @@ struct counted_iterator_category_helper<I, std::enable_if_t<InputIterator<I>>> {
 } // namespace detail
 
 template <typename I>
-struct value_type<counted_iterator<I>>
-        : detail::counted_iterator_value_type_helper<I> {
+struct readable_traits<counted_iterator<I>>
+        : detail::counted_iterator_readable_traits_helper<I> {
 };
 
 template <typename I>
@@ -308,7 +308,7 @@ struct iterator_category<counted_iterator<I>>
 };
 
 template <typename I>
-constexpr auto make_counted_iterator(I i, difference_type_t<I> n)
+constexpr auto make_counted_iterator(I i, iter_difference_t<I> n)
     -> std::enable_if_t<Iterator<I>, counted_iterator<I>>
 {
     return counted_iterator<I>(std::move(i), n);

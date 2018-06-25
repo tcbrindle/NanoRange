@@ -19,9 +19,9 @@ namespace detail {
 struct Readable_req {
     template <typename In>
     auto requires_()
-        -> decltype(std::declval<value_type_t<In>>(),
-                               std::declval<reference_t<In>>(),
-                               std::declval<rvalue_reference_t<In>>());
+        -> decltype(std::declval<iter_value_t<In>>(),
+                               std::declval<iter_reference_t<In>>(),
+                               std::declval<iter_rvalue_reference_t<In>>());
 };
 
 template <typename>
@@ -30,9 +30,9 @@ auto Readable_fn(long) -> std::false_type;
 template <typename In>
 auto Readable_fn(int) -> std::enable_if_t<
      requires_<Readable_req, In> &&
-     CommonReference<reference_t<In>&&, value_type_t<In>&> &&
-     CommonReference<reference_t<In>&&, rvalue_reference_t<In>&&> &&
-     CommonReference<rvalue_reference_t<In>&&, const value_type_t<In>&>,
+     CommonReference<iter_reference_t<In>&&, iter_value_t<In>&> &&
+     CommonReference<iter_reference_t<In>&&, iter_rvalue_reference_t<In>&&> &&
+     CommonReference<iter_rvalue_reference_t<In>&&, const iter_value_t<In>&>,
              std::true_type>;
 
 } // namespace detail
@@ -47,8 +47,8 @@ struct Writable_req {
     template <typename Out, typename T>
     auto requires_(Out&& o, T&& t) -> decltype(valid_expr(
         *o = std::forward<T>(t), *std::forward<Out>(o) = std::forward<T>(t),
-        const_cast<const reference_t<Out>&&>(*o) = std::forward<T>(t),
-        const_cast<const reference_t<Out>&&>(*std::forward<Out>(o)) =
+        const_cast<const iter_reference_t<Out>&&>(*o) = std::forward<T>(t),
+        const_cast<const iter_reference_t<Out>&&>(*std::forward<Out>(o)) =
             std::forward<T>(t)));
 };
 
@@ -70,8 +70,8 @@ auto same_rv(Deduced &&) -> std::enable_if_t<Same<T, Deduced>, int>;
 struct WeaklyIncrementable_req {
     template <typename I>
     auto requires_(I i) -> decltype(
-        std::declval<difference_type_t<I>>(),
-        requires_expr<SignedIntegral<difference_type_t<I>>>{},
+        std::declval<iter_difference_t<I>>(),
+        requires_expr<SignedIntegral<iter_difference_t<I>>>{},
         same_lv<I>(++i), i++);
 };
 
@@ -127,8 +127,8 @@ namespace detail {
 struct SizedSentinel_req {
     template <typename S, typename I>
     auto requires_(const S& s, const I& i)
-        -> decltype(valid_expr(same_rv<difference_type_t<I>>(s - i),
-                               same_rv<difference_type_t<I>>(i - s)));
+        -> decltype(valid_expr(same_rv<iter_difference_t<I>>(s - i),
+                               same_rv<iter_difference_t<I>>(i - s)));
 };
 
 } // namespace detail
@@ -238,12 +238,12 @@ namespace detail {
 
 struct RandomAccessIterator_req {
     template <typename I>
-    auto requires_(I i, const I j, const difference_type_t<I> n) -> decltype(
+    auto requires_(I i, const I j, const iter_difference_t<I> n) -> decltype(
         valid_expr(same_lv<I>(i += n), same_rv<I>(j + n),
                    n + j, // same_rv<I>(n + j) -- FIXME: MSVC doesn't like this
                           // with I = int*, find out why
                    same_lv<I>(i -= n), same_rv<I>(j - n), j[n],
-                   requires_expr<Same<decltype(j[n]), reference_t<I>>>{}));
+                   requires_expr<Same<decltype(j[n]), iter_reference_t<I>>>{}));
 };
 
 template <typename>
@@ -273,8 +273,8 @@ template <typename I>
 auto ContiguousIterator_fn(int) -> std::enable_if_t<
     RandomAccessIterator<I> &&
     DerivedFrom<iterator_category_t<I>, contiguous_iterator_tag> &&
-    std::is_lvalue_reference<reference_t<I>>::value &&
-    Same<value_type_t<I>, remove_cvref_t<reference_t<I>>>,
+    std::is_lvalue_reference<iter_reference_t<I>>::value &&
+    Same<iter_value_t<I>, remove_cvref_t<iter_reference_t<I>>>,
             std::true_type>;
 
 }

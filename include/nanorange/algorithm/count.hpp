@@ -20,10 +20,10 @@ private:
     friend struct count_fn;
 
     template <typename I, typename S, typename Proj, typename Pred>
-    static constexpr difference_type_t<I> impl(I first, S last, Pred pred,
+    static constexpr iter_difference_t<I> impl(I first, S last, Pred pred,
                                                Proj proj)
     {
-        difference_type_t<I> counter = 0;
+        iter_difference_t<I> counter = 0;
 
         for (; first != last; ++first) {
             if (nano::invoke(pred, nano::invoke(proj, *first))) {
@@ -39,7 +39,7 @@ public:
     constexpr std::enable_if_t<
         InputIterator<I> && Sentinel<S, I> &&
             IndirectUnaryPredicate<Pred, projected<I, Proj>>,
-        difference_type_t<I>>
+        iter_difference_t<I>>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
         return count_if_fn::impl(std::move(first), std::move(last),
@@ -50,7 +50,7 @@ public:
     constexpr std::enable_if_t<
         InputRange<Rng> &&
             IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        difference_type_t<iterator_t<Rng>>>
+        iter_difference_t<iterator_t<Rng>>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return count_if_fn::impl(nano::begin(rng), nano::end(rng),
@@ -81,7 +81,7 @@ public:
     constexpr std::enable_if_t<
         InputIterator<I> && Sentinel<S, I> &&
             IndirectRelation<equal_to<>, projected<I, Proj>, const T*>,
-        difference_type_t<I>>
+        iter_difference_t<I>>
     operator()(I first, S last, const T& value, Proj proj = Proj{}) const
     {
         return count_if_fn::impl(std::move(first), std::move(last),
@@ -93,7 +93,7 @@ public:
         InputRange<Rng> &&
             IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>,
                              const T*>,
-        difference_type_t<iterator_t<Rng>>>
+        iter_difference_t<iterator_t<Rng>>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
     {
         return count_if_fn::impl(nano::begin(rng), nano::end(rng),

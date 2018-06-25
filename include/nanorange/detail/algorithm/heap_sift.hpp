@@ -42,7 +42,7 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 template <typename I, typename Comp, typename Proj>
-constexpr void sift_up_n(I first, difference_type_t<I> n, Comp& comp,
+constexpr void sift_up_n(I first, iter_difference_t<I> n, Comp& comp,
                          Proj& proj)
 {
     if (n > 1) {
@@ -51,7 +51,7 @@ constexpr void sift_up_n(I first, difference_type_t<I> n, Comp& comp,
         I i = first + n;
         if (nano::invoke(comp, nano::invoke(proj, *i),
                          nano::invoke(proj, *--last))) {
-            value_type_t<I> v = nano::iter_move(last);
+            iter_value_t<I> v = nano::iter_move(last);
             do {
                 *last = nano::iter_move(i);
                 last = i;
@@ -68,7 +68,7 @@ constexpr void sift_up_n(I first, difference_type_t<I> n, Comp& comp,
 }
 
 template <typename I, typename Comp, typename Proj>
-constexpr void sift_down_n(I first, difference_type_t<I> n, I start, Comp& comp,
+constexpr void sift_down_n(I first, iter_difference_t<I> n, I start, Comp& comp,
                            Proj& proj)
 {
     // left-child of start is at 2 * start + 1
@@ -96,7 +96,7 @@ constexpr void sift_down_n(I first, difference_type_t<I> n, I start, Comp& comp,
         return;
     }
 
-    value_type_t<I> top = nano::iter_move(start);
+    iter_value_t<I> top = nano::iter_move(start);
     do {
         // we are not in heap-order, swap the parent with it's largest child
         *start = nano::iter_move(child_i);

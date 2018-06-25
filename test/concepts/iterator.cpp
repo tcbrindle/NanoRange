@@ -48,22 +48,22 @@ namespace models {
 
 namespace ns {
 	template <class I>
-	using difference_type_t = ranges::difference_type_t<I>;
+	using iter_difference_t = ranges::iter_difference_t<I>;
 
 	template <class I>
 	using iterator_category_t = ranges::iterator_category_t<I>;
 
 	template <class I>
-	using reference_t = ranges::reference_t<I>;
+	using iter_reference_t = ranges::iter_reference_t<I>;
 
 	template <class I>
-	using rvalue_reference_t = ranges::rvalue_reference_t<I>;
+	using iter_rvalue_reference_t = ranges::iter_rvalue_reference_t<I>;
 
 	template <class I>
-	using value_type_t = ranges::value_type_t<I>;
+	using iter_value_t = ranges::iter_value_t<I>;
 
-	using ranges::value_type;
-	using ranges::difference_type;
+	using ranges::readable_traits;
+	using ranges::incrementable_traits;
 	using ranges::iterator_category;
 
 	using ranges::input_iterator_tag;
@@ -84,42 +84,42 @@ namespace associated_type_test {
 	struct A { using value_type = int; int& operator*() const; };
 	struct B : A { using value_type = double; };
 
-	CONCEPT_ASSERT(models::Same<int&, ns::reference_t<int*>>);
-	CONCEPT_ASSERT(models::Same<int&, ns::reference_t<int[]>>);
-	CONCEPT_ASSERT(models::Same<int&, ns::reference_t<int[4]>>);
-	CONCEPT_ASSERT(models::Same<int&, ns::reference_t<A>>);
-	CONCEPT_ASSERT(models::Same<int&, ns::reference_t<B>>);
-	CONCEPT_ASSERT(models::Same<const int&, ns::reference_t<const int*>>);
+	CONCEPT_ASSERT(models::Same<int&, ns::iter_reference_t<int*>>);
+	CONCEPT_ASSERT(models::Same<int&, ns::iter_reference_t<int[]>>);
+	CONCEPT_ASSERT(models::Same<int&, ns::iter_reference_t<int[4]>>);
+	CONCEPT_ASSERT(models::Same<int&, ns::iter_reference_t<A>>);
+	CONCEPT_ASSERT(models::Same<int&, ns::iter_reference_t<B>>);
+	CONCEPT_ASSERT(models::Same<const int&, ns::iter_reference_t<const int*>>);
 
-	CONCEPT_ASSERT(models::Same<int&&, ns::rvalue_reference_t<int*>>);
-	CONCEPT_ASSERT(models::Same<int&&, ns::rvalue_reference_t<int[]>>);
-	CONCEPT_ASSERT(models::Same<int&&, ns::rvalue_reference_t<int[4]>>);
-	CONCEPT_ASSERT(models::Same<int&&, ns::rvalue_reference_t<A>>);
-	CONCEPT_ASSERT(models::Same<int&&, ns::rvalue_reference_t<B>>);
-	CONCEPT_ASSERT(models::Same<const int&&, ns::rvalue_reference_t<const int*>>);
+	CONCEPT_ASSERT(models::Same<int&&, ns::iter_rvalue_reference_t<int*>>);
+	CONCEPT_ASSERT(models::Same<int&&, ns::iter_rvalue_reference_t<int[]>>);
+	CONCEPT_ASSERT(models::Same<int&&, ns::iter_rvalue_reference_t<int[4]>>);
+	CONCEPT_ASSERT(models::Same<int&&, ns::iter_rvalue_reference_t<A>>);
+	CONCEPT_ASSERT(models::Same<int&&, ns::iter_rvalue_reference_t<B>>);
+	CONCEPT_ASSERT(models::Same<const int&&, ns::iter_rvalue_reference_t<const int*>>);
 
-	CONCEPT_ASSERT(models::Same<int, ns::value_type_t<int*>>);
-	CONCEPT_ASSERT(models::Same<int, ns::value_type_t<int[]>>);
-	CONCEPT_ASSERT(models::Same<int, ns::value_type_t<int[4]>>);
-	CONCEPT_ASSERT(models::Same<int, ns::value_type_t<A>>);
-	CONCEPT_ASSERT(models::Same<double, ns::value_type_t<B>>);
-	CONCEPT_ASSERT(models::Same<int, ns::value_type_t<const int*>>);
+	CONCEPT_ASSERT(models::Same<int, ns::iter_value_t<int*>>);
+	CONCEPT_ASSERT(models::Same<int, ns::iter_value_t<int[]>>);
+	CONCEPT_ASSERT(models::Same<int, ns::iter_value_t<int[4]>>);
+	CONCEPT_ASSERT(models::Same<int, ns::iter_value_t<A>>);
+	CONCEPT_ASSERT(models::Same<double, ns::iter_value_t<B>>);
+	CONCEPT_ASSERT(models::Same<int, ns::iter_value_t<const int*>>);
 	//CONCEPT_ASSERT(!meta::is_trait<ns::value_type<void>>());
 	//CONCEPT_ASSERT(!meta::is_trait<ns::value_type<void*>>());
-	CONCEPT_ASSERT(models::Same<int, ns::value_type_t<const int* const>>);
-	CONCEPT_ASSERT(models::Same<int, ns::value_type_t<const int[2]>>);
+	CONCEPT_ASSERT(models::Same<int, ns::iter_value_t<const int* const>>);
+	CONCEPT_ASSERT(models::Same<int, ns::iter_value_t<const int[2]>>);
 // FIXME: The spec seems to say this should be ambiguous
 	//	struct S { using value_type = int; using element_type = int const; };
-//	CONCEPT_ASSERT(models::Same<int, ns::value_type_t<S>>);
+//	CONCEPT_ASSERT(models::Same<int, ns::iter_value_t<S>>);
 
-	CONCEPT_ASSERT(models::Same<std::ptrdiff_t, ns::difference_type_t<int*>>);
-	CONCEPT_ASSERT(models::Same<std::ptrdiff_t, ns::difference_type_t<int[]>>);
-	CONCEPT_ASSERT(models::Same<std::ptrdiff_t, ns::difference_type_t<int[4]>>);
+	CONCEPT_ASSERT(models::Same<std::ptrdiff_t, ns::iter_difference_t<int*>>);
+	CONCEPT_ASSERT(models::Same<std::ptrdiff_t, ns::iter_difference_t<int[]>>);
+	CONCEPT_ASSERT(models::Same<std::ptrdiff_t, ns::iter_difference_t<int[4]>>);
 
 	//CONCEPT_ASSERT(!meta::is_trait<ns::difference_type<void>>());
 	//CONCEPT_ASSERT(!meta::is_trait<ns::difference_type<void*>>());
 
-	CONCEPT_ASSERT(models::Same<int, ns::difference_type_t<int>>);
+	CONCEPT_ASSERT(models::Same<int, ns::iter_difference_t<int>>);
 	CONCEPT_ASSERT(models::Same<ns::iterator_category_t<int*>, ns::contiguous_iterator_tag>);
 	CONCEPT_ASSERT(models::Same<ns::iterator_category_t<const int*>, ns::contiguous_iterator_tag>);
 
@@ -182,7 +182,7 @@ namespace readable_test {
 	CONCEPT_ASSERT(models::Readable<int*>);
 	CONCEPT_ASSERT(models::Readable<const int*>);
 	CONCEPT_ASSERT(models::Readable<A>);
-	CONCEPT_ASSERT(models::Same<ns::value_type_t<A>,int>);
+	CONCEPT_ASSERT(models::Same<ns::iter_value_t<A>,int>);
 
 	struct MoveOnlyReadable {
 		using value_type = std::unique_ptr<int>;

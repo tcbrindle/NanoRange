@@ -25,12 +25,12 @@ class common_iterator {
     friend class common_iterator;
 
     class op_arrow_proxy {
-        value_type_t<I> keep_;
+        iter_value_t<I> keep_;
 
-        constexpr op_arrow_proxy(reference_t<I>&& x) : keep_(std::move(x)) {}
+        constexpr op_arrow_proxy(iter_reference_t<I>&& x) : keep_(std::move(x)) {}
 
     public:
-        constexpr const value_type_t<I>* operator->() const
+        constexpr const iter_value_t<I>* operator->() const
         {
             return std::addressof(keep_);
         }
@@ -49,8 +49,8 @@ class common_iterator {
 
     template <typename II>
     static constexpr auto do_op_arrow(const II& i, detail::priority_tag<1>)
-        -> std::enable_if_t<std::is_reference<reference_t<const II>>::value,
-                            std::add_pointer_t<reference_t<const II>>>
+        -> std::enable_if_t<std::is_reference<iter_reference_t<const II>>::value,
+                            std::add_pointer_t<iter_reference_t<const II>>>
     {
         auto&& tmp = *i;
         return std::addressof(tmp);
@@ -64,7 +64,7 @@ class common_iterator {
     }
 
 public:
-    using difference_type = difference_type_t<I>;
+    using difference_type = iter_difference_t<I>;
 
     constexpr common_iterator() : is_sentinel_{false}, iter_{} {}
 
@@ -129,7 +129,7 @@ public:
         return tmp;
     }
 
-    friend constexpr rvalue_reference_t<I> iter_move(const common_iterator& i)
+    friend constexpr iter_rvalue_reference_t<I> iter_move(const common_iterator& i)
     {
         return ranges::iter_move(i.iter_);
     }
@@ -178,7 +178,7 @@ template <typename I2, typename I1, typename S1, typename S2>
 constexpr
 std::enable_if_t<SizedSentinel<I1, I2> && SizedSentinel<S1, I2> &&
                      SizedSentinel<S2, I2>,
-                 difference_type_t<I2>>
+                 iter_difference_t<I2>>
 operator-(const common_iterator<I1, S1>& x, const common_iterator<I2, S2>& y)
 {
     return x.is_sentinel_
@@ -191,8 +191,8 @@ operator-(const common_iterator<I1, S1>& x, const common_iterator<I2, S2>& y)
 using common_iterator_::common_iterator;
 
 template <typename I, typename S>
-struct value_type<common_iterator<I, S>> {
-    using type = value_type_t<I>;
+struct readable_traits<common_iterator<I, S>> {
+    using value_type = iter_value_t<I>;
 };
 
 template <typename I, typename S>
@@ -208,11 +208,11 @@ namespace std {
 template <typename I, typename S>
 struct iterator_traits<::nano::common_iterator<I, S>> {
     using difference_type =
-        ::nano::difference_type_t<::nano::common_iterator<I, S>>;
-    using value_type = ::nano::value_type_t<::nano::common_iterator<I, S>>;
+        ::nano::iter_difference_t<::nano::common_iterator<I, S>>;
+    using value_type = ::nano::iter_value_t<::nano::common_iterator<I, S>>;
     using pointer =
-        std::add_pointer_t<::nano::reference_t<::nano::common_iterator<I, S>>>;
-    using reference = ::nano::reference_t<::nano::common_iterator<I, S>>;
+        std::add_pointer_t<::nano::iter_reference_t<::nano::common_iterator<I, S>>>;
+    using reference = ::nano::iter_reference_t<::nano::common_iterator<I, S>>;
     using iterator_category =
         std::conditional_t<::nano::ForwardIterator<I>,
                            std::forward_iterator_tag,

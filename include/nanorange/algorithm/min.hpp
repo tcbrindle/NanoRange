@@ -16,7 +16,7 @@ namespace detail {
 struct min_fn {
 private:
     template <typename Rng, typename Comp, typename Proj>
-    static constexpr value_type_t<iterator_t<Rng>>
+    static constexpr iter_value_t<iterator_t<Rng>>
     impl(Rng&& rng, Comp& comp, Proj& proj)
     {
         auto first = nano::begin(rng);
@@ -61,9 +61,9 @@ public:
     template <typename Rng, typename Comp = less<>, typename Proj = identity>
     constexpr std::enable_if_t<
         InputRange<Rng> &&
-        Copyable<value_type_t<iterator_t<Rng>>> &&
+        Copyable<iter_value_t<iterator_t<Rng>>> &&
         IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
-        value_type_t<iterator_t<Rng>>>
+        iter_value_t<iterator_t<Rng>>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return min_fn::impl(std::forward<Rng>(rng), comp, proj);

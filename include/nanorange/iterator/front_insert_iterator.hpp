@@ -22,13 +22,13 @@ struct front_insert_iterator {
 
     explicit front_insert_iterator(Container& x) : cont_(std::addressof(x)) {}
 
-    front_insert_iterator& operator=(const value_type_t<Container>& value)
+    front_insert_iterator& operator=(const iter_value_t<Container>& value)
     {
         cont_->push_front(value);
         return *this;
     }
 
-    front_insert_iterator& operator=(value_type_t<Container>&& value)
+    front_insert_iterator& operator=(iter_value_t<Container>&& value)
     {
         cont_->front_back(std::move(value));
         return *this;

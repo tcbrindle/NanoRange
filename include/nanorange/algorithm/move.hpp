@@ -23,7 +23,7 @@ private:
     {
         const auto dist = last - first;
 
-        for (difference_type_t<I> i{0}; i < dist; i++) {
+        for (iter_difference_t<I> i{0}; i < dist; i++) {
             *result = nano::iter_move(first);
             ++first;
             ++result;

@@ -21,7 +21,7 @@ struct iter_common_ref_helper {
 
 template <typename T>
 struct iter_common_ref_helper<T, std::enable_if_t<Readable<T>>> {
-    using type = common_reference_t<reference_t<T>, value_type_t<T>&>;
+    using type = common_reference_t<iter_reference_t<T>, iter_value_t<T>&>;
 };
 
 } // namespace detail
@@ -39,12 +39,12 @@ template <typename F, typename I>
 auto IndirectUnaryInvocable_fn(int) -> std::enable_if_t<
         Readable<I> &&
         CopyConstructible<F> &&
-        Invocable<F&, value_type_t<I>&> &&
-        Invocable<F&, reference_t<I>> &&
+        Invocable<F&, iter_value_t<I>&> &&
+        Invocable<F&, iter_reference_t<I>> &&
         Invocable<F&, iter_common_reference_t<I>> &&
         CommonReference<
-                invoke_result_t<F&, value_type_t<I>&>,
-                invoke_result_t<F&, reference_t<I>&>>,
+                invoke_result_t<F&, iter_value_t<I>&>,
+                invoke_result_t<F&, iter_reference_t<I>&>>,
             std::true_type>;
 
 }
@@ -62,12 +62,12 @@ template <typename F, typename I>
 auto IndirectRegularUnaryInvocable_fn(int) -> std::enable_if_t<
         Readable<I> &&
         CopyConstructible<F> &&
-        RegularInvocable<F&, value_type_t<I>&> &&
-        RegularInvocable<F&, reference_t<I>> &&
+        RegularInvocable<F&, iter_value_t<I>&> &&
+        RegularInvocable<F&, iter_reference_t<I>> &&
         RegularInvocable<F&, iter_common_reference_t<I>> &&
         CommonReference<
-            invoke_result_t<F&, value_type_t<I>&>,
-            invoke_result_t<F&, reference_t<I>&>>,
+            invoke_result_t<F&, iter_value_t<I>&>,
+            invoke_result_t<F&, iter_reference_t<I>&>>,
         std::true_type>;
 
 }
@@ -86,8 +86,8 @@ template <typename F, typename I>
 auto IndirectUnaryPredicate_fn(int) -> std::enable_if_t<
         Readable<I> &&
         CopyConstructible<F> &&
-        Predicate<F&, value_type_t<I>&> &&
-        Predicate<F&, reference_t<I>> &&
+        Predicate<F&, iter_value_t<I>&> &&
+        Predicate<F&, iter_reference_t<I>> &&
         Predicate<F&, iter_common_reference_t<I>>,
             std::true_type>;
 
@@ -105,10 +105,10 @@ auto IndirectRelation_fn(long) -> std::false_type;
 template <typename F, typename I1, typename I2>
 auto IndirectRelation_fn(int) -> std::enable_if_t<
         Readable<I1> && Readable<I2> && CopyConstructible<F> &&
-        Relation<F&, value_type_t<I1>&, value_type_t<I2>&>&&
-        Relation<F&, value_type_t<I1>&, reference_t<I2>>&&
-        Relation<F&, reference_t<I1>, value_type_t<I2>&>&&
-        Relation<F&, reference_t<I1>, reference_t<I2>>&&
+        Relation<F&, iter_value_t<I1>&, iter_value_t<I2>&>&&
+        Relation<F&, iter_value_t<I1>&, iter_reference_t<I2>>&&
+        Relation<F&, iter_reference_t<I1>, iter_value_t<I2>&>&&
+        Relation<F&, iter_reference_t<I1>, iter_reference_t<I2>>&&
         Relation<F&,
             iter_common_reference_t<I1>,
             iter_common_reference_t<I2>>,
@@ -131,10 +131,10 @@ template <typename F, typename I1, typename I2>
 auto IndirectStrictWeakOrder_fn(int) -> std::enable_if_t<
         Readable<I1> &&
         Readable<I2> &&
-        StrictWeakOrder<F&, value_type_t<I1>&, value_type_t<I2>&> &&
-        StrictWeakOrder<F&, value_type_t<I1>&, reference_t<I2>> &&
-        StrictWeakOrder<F&, reference_t<I1>, value_type_t<I2>&> &&
-        StrictWeakOrder<F&, reference_t<I1>, reference_t<I2>> &&
+        StrictWeakOrder<F&, iter_value_t<I1>&, iter_value_t<I2>&> &&
+        StrictWeakOrder<F&, iter_value_t<I1>&, iter_reference_t<I2>> &&
+        StrictWeakOrder<F&, iter_reference_t<I1>, iter_value_t<I2>&> &&
+        StrictWeakOrder<F&, iter_reference_t<I1>, iter_reference_t<I2>> &&
         StrictWeakOrder<F&, iter_common_reference_t<I1>, iter_common_reference_t<I2>>,
     std::true_type>;
 
@@ -170,9 +170,9 @@ constexpr bool all_readable = all_readable_helper<Readable<Is>...>::value;
 
 template <typename F, typename... Is>
 struct indirect_result_helper<
-    std::enable_if_t<all_readable<Is...> && Invocable<F, reference_t<Is>...>>,
-    F, Is...> : invoke_result<F, reference_t<Is>...> {
-    using type = invoke_result_t<F, reference_t<Is>...>;
+    std::enable_if_t<all_readable<Is...> && Invocable<F, iter_reference_t<Is>...>>,
+    F, Is...> : invoke_result<F, iter_reference_t<Is>...> {
+    using type = invoke_result_t<F, iter_reference_t<Is>...>;
 };
 
 } // namespace detail
@@ -194,7 +194,7 @@ auto IndirectlyMovable_fn(long) -> std::false_type;
 template <typename In, typename Out>
 auto IndirectlyMovable_fn(int) -> std::enable_if_t<
         Readable<In> &&
-        Writable<Out, rvalue_reference_t<In>>,
+        Writable<Out, iter_rvalue_reference_t<In>>,
     std::true_type>;
 
 
@@ -212,10 +212,10 @@ auto IndirectlyMovableStorable_fn(long) -> std::false_type;
 template <typename In, typename Out>
 auto IndirectlyMovableStorable_fn(int) -> std::enable_if_t<
         IndirectlyMovable<In, Out> &&
-        Writable<Out, value_type_t<In>> &&
-        Movable<value_type_t<In>> &&
-        Constructible<value_type_t<In>, rvalue_reference_t<In>> &&
-        Assignable<value_type_t<In>&, rvalue_reference_t<In>>,
+        Writable<Out, iter_value_t<In>> &&
+        Movable<iter_value_t<In>> &&
+        Constructible<iter_value_t<In>, iter_rvalue_reference_t<In>> &&
+        Assignable<iter_value_t<In>&, iter_rvalue_reference_t<In>>,
     std::true_type>;
 
 }
@@ -234,7 +234,7 @@ auto IndirectlyCopyable_fn(long) -> std::false_type;
 template <typename In, typename Out>
 auto IndirectlyCopyable_fn(int) -> std::enable_if_t<
         Readable<In> &&
-        Writable<Out, reference_t<In>>,
+        Writable<Out, iter_reference_t<In>>,
     std::true_type>;
 
 }
@@ -251,10 +251,10 @@ auto IndirectlyCopyableStorable_fn(long) -> std::false_type;
 template <typename In, typename Out>
 auto IndirectlyCopyableStorable_fn(int) -> std::enable_if_t<
         IndirectlyCopyable<In, Out> &&
-        Writable<Out, const value_type_t<In>&> &&
-        Copyable<value_type_t<In>> &&
-        Constructible<value_type_t<In>, reference_t<In>> &&
-        Assignable<value_type_t<In>&, reference_t<In>>,
+        Writable<Out, const iter_value_t<In>&> &&
+        Copyable<iter_value_t<In>> &&
+        Constructible<iter_value_t<In>, iter_reference_t<In>> &&
+        Assignable<iter_value_t<In>&, iter_reference_t<In>>,
     std::true_type>;
 
 }

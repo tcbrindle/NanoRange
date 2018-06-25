@@ -24,14 +24,14 @@ struct insert_iterator {
         : cont_(std::addressof(x)), it_(i)
     {}
 
-    insert_iterator& operator=(const value_type_t<Container>& value)
+    insert_iterator& operator=(const iter_value_t<Container>& value)
     {
         cont_->insert(it_, value);
         ++it_;
         return *this;
     }
 
-    insert_iterator& operator=(value_type_t<Container>&& value)
+    insert_iterator& operator=(iter_value_t<Container>&& value)
     {
         cont_->push_back(it_, std::move(value));
         ++it_;
