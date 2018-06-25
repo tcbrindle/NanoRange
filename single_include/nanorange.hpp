@@ -1564,96 +1564,109 @@ NANO_END_NAMESPACE
 NANO_BEGIN_NAMESPACE
 
 template <typename>
-struct difference_type;
+struct incrementable_traits;
 
 namespace detail {
 
+struct empty {};
+
+template <typename T>
+struct with_difference_type {
+    using difference_type = T;
+};
+
 template <typename, typename = void>
-struct difference_type_ {
+struct incrementable_traits_helper {
 };
 
 // Workaround for GCC silliness: void* has no difference_type
 // FIXME: This is required to stop WeaklyIncrementable<void*> being a hard error
 // Can we formulate the concept differently to avoid the need for this hack?
 template <>
-struct difference_type_<void*> {};
+struct incrementable_traits_helper<void*> {};
 
 template <typename T>
-struct difference_type_<T*>
-    : std::enable_if<std::is_object<T>::value, std::ptrdiff_t> {
+struct incrementable_traits_helper<T*>
+    : std::conditional_t<std::is_object<T>::value,
+            with_difference_type<std::ptrdiff_t>, empty> {
 };
 
 template <class I>
-struct difference_type_<const I> : difference_type<std::decay_t<I>> {
+struct incrementable_traits_helper<const I> : incrementable_traits<std::decay_t<I>> {
 };
 
 template <typename, typename = void>
-struct has_member_difference_type_helper : std::false_type {};
+struct has_member_difference_type : std::false_type {};
 
 template <typename T>
-struct has_member_difference_type_helper<T, void_t<typename T::difference_type>>
+struct has_member_difference_type<T, void_t<typename T::difference_type>>
     : std::true_type{};
 
-template <typename T, typename = void>
+template <typename T>
 constexpr bool has_member_difference_type_v =
-        has_member_difference_type_helper<T>::value;
+        has_member_difference_type<T>::value;
 
 template <typename T>
-struct difference_type_<T, std::enable_if_t<has_member_difference_type_v<T>>> {
-    using type = typename T::difference_type;
+struct incrementable_traits_helper<T, std::enable_if_t<has_member_difference_type_v<T>>> {
+    using difference_type = typename T::difference_type;
 };
 
 template <typename T>
-struct difference_type_<
+struct incrementable_traits_helper<
     T, std::enable_if_t<!std::is_pointer<T>::value &&
                         !has_member_difference_type_v<T> &&
                         Integral<decltype(std::declval<const T&>() -
                                           std::declval<const T&>())>>>
-    : std::make_signed<decltype(std::declval<T>() - std::declval<T>())> {
+    : with_difference_type<std::make_signed_t<decltype(std::declval<T>() - std::declval<T>())>> {
 };
 
 } // namespace detail
 
 template <typename T>
-struct difference_type : detail::difference_type_<T> {
+struct incrementable_traits : detail::incrementable_traits_helper<T> {
 };
 
 template <typename T>
-using difference_type_t = typename difference_type<T>::type;
+using iter_difference_t = typename incrementable_traits<T>::difference_type;
 
 // [range.iterator.assoc.types.value_type]
 
 template <typename>
-struct value_type;
+struct readable_traits;
 
 namespace detail {
 
+template <typename T>
+struct with_value_type {
+    using value_type = T;
+};
+
 template <typename, typename = void>
-struct value_type_helper {
-};
+struct readable_traits_helper {};
 
 template <typename T>
-struct value_type_helper<T*>
-    : std::enable_if<std::is_object<T>::value, std::remove_cv_t<T>> {
-};
-
-template <typename T>
-struct value_type_helper<T, std::enable_if_t<std::is_array<T>::value>>
-    : value_type<std::decay_t<T>> {
-};
+struct readable_traits_helper<T*>
+    : std::conditional_t<std::is_object<T>::value,
+            with_value_type<std::remove_cv_t<T>>,
+            empty> {};
 
 template <typename I>
-struct value_type_helper<const I, std::enable_if_t<!std::is_array<I>::value>>
-    : value_type<std::decay_t<I>> {
-};
+struct readable_traits_helper<I, std::enable_if_t<std::is_array<I>::value>>
+    : readable_traits<std::decay_t<I>> {};
+
+template <typename I>
+struct readable_traits_helper<const I, std::enable_if_t<!std::is_array<I>::value>>
+    : readable_traits<std::decay_t<I>> {};
 
 template <typename T, typename V = typename T::value_type>
-struct member_value_type : std::enable_if<std::is_object<V>::value, V> {
-};
+struct member_value_type
+    : std::conditional_t<std::is_object<V>::value,
+            with_value_type<V>, empty> {};
 
 template <typename T, typename E = typename T::element_type>
-struct member_element_type : std::enable_if<std::is_object<E>::value, E> {
-};
+struct member_element_type
+    : std::conditional_t<std::is_object<E>::value,
+            with_value_type<std::remove_cv_t<E>>, empty> {};
 
 template <typename T>
 using member_value_type_t = typename T::value_type;
@@ -1668,23 +1681,20 @@ template <typename T>
 constexpr bool has_member_element_type_v = exists_v<member_element_type_t, T>;
 
 template <typename T>
-struct value_type_helper<T, std::enable_if_t<has_member_value_type_v<T>>>
-    : member_value_type<T> {
-};
+struct readable_traits_helper<T, std::enable_if_t<has_member_value_type_v<T>>>
+    : member_value_type<T> {};
 
 template <typename T>
-struct value_type_helper<T, std::enable_if_t<has_member_element_type_v<T>>>
-    : member_element_type<T> {
-};
+struct readable_traits_helper<T, std::enable_if_t<has_member_element_type_v<T>>>
+    : member_element_type<T> {};
 
 } // namespace detail
 
 template <typename T>
-struct value_type : detail::value_type_helper<T> {
-};
+struct readable_traits : detail::readable_traits_helper<T> {};
 
 template <typename T>
-using value_type_t = typename value_type<T>::type;
+using iter_value_t = typename readable_traits<T>::value_type;
 
 NANO_END_NAMESPACE
 
@@ -1885,10 +1895,10 @@ struct reference_helper<T, std::enable_if_t<Dereferenceable<T>>> {
 } // namespace detail
 
 template <typename T>
-using reference_t = typename detail::reference_helper<T>::type;
+using iter_reference_t = typename detail::reference_helper<T>::type;
 
 template <typename T>
-using rvalue_reference_t = decltype(ranges::iter_move(std::declval<T&>()));
+using iter_rvalue_reference_t = decltype(ranges::iter_move(std::declval<T&>()));
 
 NANO_END_NAMESPACE
 
@@ -1903,9 +1913,9 @@ namespace detail {
 struct Readable_req {
     template <typename In>
     auto requires_()
-        -> decltype(std::declval<value_type_t<In>>(),
-                               std::declval<reference_t<In>>(),
-                               std::declval<rvalue_reference_t<In>>());
+        -> decltype(std::declval<iter_value_t<In>>(),
+                               std::declval<iter_reference_t<In>>(),
+                               std::declval<iter_rvalue_reference_t<In>>());
 };
 
 template <typename>
@@ -1914,9 +1924,9 @@ auto Readable_fn(long) -> std::false_type;
 template <typename In>
 auto Readable_fn(int) -> std::enable_if_t<
      requires_<Readable_req, In> &&
-     CommonReference<reference_t<In>&&, value_type_t<In>&> &&
-     CommonReference<reference_t<In>&&, rvalue_reference_t<In>&&> &&
-     CommonReference<rvalue_reference_t<In>&&, const value_type_t<In>&>,
+     CommonReference<iter_reference_t<In>&&, iter_value_t<In>&> &&
+     CommonReference<iter_reference_t<In>&&, iter_rvalue_reference_t<In>&&> &&
+     CommonReference<iter_rvalue_reference_t<In>&&, const iter_value_t<In>&>,
              std::true_type>;
 
 } // namespace detail
@@ -1931,8 +1941,8 @@ struct Writable_req {
     template <typename Out, typename T>
     auto requires_(Out&& o, T&& t) -> decltype(valid_expr(
         *o = std::forward<T>(t), *std::forward<Out>(o) = std::forward<T>(t),
-        const_cast<const reference_t<Out>&&>(*o) = std::forward<T>(t),
-        const_cast<const reference_t<Out>&&>(*std::forward<Out>(o)) =
+        const_cast<const iter_reference_t<Out>&&>(*o) = std::forward<T>(t),
+        const_cast<const iter_reference_t<Out>&&>(*std::forward<Out>(o)) =
             std::forward<T>(t)));
 };
 
@@ -1954,8 +1964,8 @@ auto same_rv(Deduced &&) -> std::enable_if_t<Same<T, Deduced>, int>;
 struct WeaklyIncrementable_req {
     template <typename I>
     auto requires_(I i) -> decltype(
-        std::declval<difference_type_t<I>>(),
-        requires_expr<SignedIntegral<difference_type_t<I>>>{},
+        std::declval<iter_difference_t<I>>(),
+        requires_expr<SignedIntegral<iter_difference_t<I>>>{},
         same_lv<I>(++i), i++);
 };
 
@@ -2011,8 +2021,8 @@ namespace detail {
 struct SizedSentinel_req {
     template <typename S, typename I>
     auto requires_(const S& s, const I& i)
-        -> decltype(valid_expr(same_rv<difference_type_t<I>>(s - i),
-                               same_rv<difference_type_t<I>>(i - s)));
+        -> decltype(valid_expr(same_rv<iter_difference_t<I>>(s - i),
+                               same_rv<iter_difference_t<I>>(i - s)));
 };
 
 } // namespace detail
@@ -2122,12 +2132,12 @@ namespace detail {
 
 struct RandomAccessIterator_req {
     template <typename I>
-    auto requires_(I i, const I j, const difference_type_t<I> n) -> decltype(
+    auto requires_(I i, const I j, const iter_difference_t<I> n) -> decltype(
         valid_expr(same_lv<I>(i += n), same_rv<I>(j + n),
                    n + j, // same_rv<I>(n + j) -- FIXME: MSVC doesn't like this
                           // with I = int*, find out why
                    same_lv<I>(i -= n), same_rv<I>(j - n), j[n],
-                   requires_expr<Same<decltype(j[n]), reference_t<I>>>{}));
+                   requires_expr<Same<decltype(j[n]), iter_reference_t<I>>>{}));
 };
 
 template <typename>
@@ -2157,8 +2167,8 @@ template <typename I>
 auto ContiguousIterator_fn(int) -> std::enable_if_t<
     RandomAccessIterator<I> &&
     DerivedFrom<iterator_category_t<I>, contiguous_iterator_tag> &&
-    std::is_lvalue_reference<reference_t<I>>::value &&
-    Same<value_type_t<I>, remove_cvref_t<reference_t<I>>>,
+    std::is_lvalue_reference<iter_reference_t<I>>::value &&
+    Same<iter_value_t<I>, remove_cvref_t<iter_reference_t<I>>>,
             std::true_type>;
 
 }
@@ -2202,7 +2212,7 @@ struct iter_common_ref_helper {
 
 template <typename T>
 struct iter_common_ref_helper<T, std::enable_if_t<Readable<T>>> {
-    using type = common_reference_t<reference_t<T>, value_type_t<T>&>;
+    using type = common_reference_t<iter_reference_t<T>, iter_value_t<T>&>;
 };
 
 } // namespace detail
@@ -2220,12 +2230,12 @@ template <typename F, typename I>
 auto IndirectUnaryInvocable_fn(int) -> std::enable_if_t<
         Readable<I> &&
         CopyConstructible<F> &&
-        Invocable<F&, value_type_t<I>&> &&
-        Invocable<F&, reference_t<I>> &&
+        Invocable<F&, iter_value_t<I>&> &&
+        Invocable<F&, iter_reference_t<I>> &&
         Invocable<F&, iter_common_reference_t<I>> &&
         CommonReference<
-                invoke_result_t<F&, value_type_t<I>&>,
-                invoke_result_t<F&, reference_t<I>&>>,
+                invoke_result_t<F&, iter_value_t<I>&>,
+                invoke_result_t<F&, iter_reference_t<I>&>>,
             std::true_type>;
 
 }
@@ -2243,12 +2253,12 @@ template <typename F, typename I>
 auto IndirectRegularUnaryInvocable_fn(int) -> std::enable_if_t<
         Readable<I> &&
         CopyConstructible<F> &&
-        RegularInvocable<F&, value_type_t<I>&> &&
-        RegularInvocable<F&, reference_t<I>> &&
+        RegularInvocable<F&, iter_value_t<I>&> &&
+        RegularInvocable<F&, iter_reference_t<I>> &&
         RegularInvocable<F&, iter_common_reference_t<I>> &&
         CommonReference<
-            invoke_result_t<F&, value_type_t<I>&>,
-            invoke_result_t<F&, reference_t<I>&>>,
+            invoke_result_t<F&, iter_value_t<I>&>,
+            invoke_result_t<F&, iter_reference_t<I>&>>,
         std::true_type>;
 
 }
@@ -2267,8 +2277,8 @@ template <typename F, typename I>
 auto IndirectUnaryPredicate_fn(int) -> std::enable_if_t<
         Readable<I> &&
         CopyConstructible<F> &&
-        Predicate<F&, value_type_t<I>&> &&
-        Predicate<F&, reference_t<I>> &&
+        Predicate<F&, iter_value_t<I>&> &&
+        Predicate<F&, iter_reference_t<I>> &&
         Predicate<F&, iter_common_reference_t<I>>,
             std::true_type>;
 
@@ -2286,10 +2296,10 @@ auto IndirectRelation_fn(long) -> std::false_type;
 template <typename F, typename I1, typename I2>
 auto IndirectRelation_fn(int) -> std::enable_if_t<
         Readable<I1> && Readable<I2> && CopyConstructible<F> &&
-        Relation<F&, value_type_t<I1>&, value_type_t<I2>&>&&
-        Relation<F&, value_type_t<I1>&, reference_t<I2>>&&
-        Relation<F&, reference_t<I1>, value_type_t<I2>&>&&
-        Relation<F&, reference_t<I1>, reference_t<I2>>&&
+        Relation<F&, iter_value_t<I1>&, iter_value_t<I2>&>&&
+        Relation<F&, iter_value_t<I1>&, iter_reference_t<I2>>&&
+        Relation<F&, iter_reference_t<I1>, iter_value_t<I2>&>&&
+        Relation<F&, iter_reference_t<I1>, iter_reference_t<I2>>&&
         Relation<F&,
             iter_common_reference_t<I1>,
             iter_common_reference_t<I2>>,
@@ -2312,10 +2322,10 @@ template <typename F, typename I1, typename I2>
 auto IndirectStrictWeakOrder_fn(int) -> std::enable_if_t<
         Readable<I1> &&
         Readable<I2> &&
-        StrictWeakOrder<F&, value_type_t<I1>&, value_type_t<I2>&> &&
-        StrictWeakOrder<F&, value_type_t<I1>&, reference_t<I2>> &&
-        StrictWeakOrder<F&, reference_t<I1>, value_type_t<I2>&> &&
-        StrictWeakOrder<F&, reference_t<I1>, reference_t<I2>> &&
+        StrictWeakOrder<F&, iter_value_t<I1>&, iter_value_t<I2>&> &&
+        StrictWeakOrder<F&, iter_value_t<I1>&, iter_reference_t<I2>> &&
+        StrictWeakOrder<F&, iter_reference_t<I1>, iter_value_t<I2>&> &&
+        StrictWeakOrder<F&, iter_reference_t<I1>, iter_reference_t<I2>> &&
         StrictWeakOrder<F&, iter_common_reference_t<I1>, iter_common_reference_t<I2>>,
     std::true_type>;
 
@@ -2351,9 +2361,9 @@ constexpr bool all_readable = all_readable_helper<Readable<Is>...>::value;
 
 template <typename F, typename... Is>
 struct indirect_result_helper<
-    std::enable_if_t<all_readable<Is...> && Invocable<F, reference_t<Is>...>>,
-    F, Is...> : invoke_result<F, reference_t<Is>...> {
-    using type = invoke_result_t<F, reference_t<Is>...>;
+    std::enable_if_t<all_readable<Is...> && Invocable<F, iter_reference_t<Is>...>>,
+    F, Is...> : invoke_result<F, iter_reference_t<Is>...> {
+    using type = invoke_result_t<F, iter_reference_t<Is>...>;
 };
 
 } // namespace detail
@@ -2375,7 +2385,7 @@ auto IndirectlyMovable_fn(long) -> std::false_type;
 template <typename In, typename Out>
 auto IndirectlyMovable_fn(int) -> std::enable_if_t<
         Readable<In> &&
-        Writable<Out, rvalue_reference_t<In>>,
+        Writable<Out, iter_rvalue_reference_t<In>>,
     std::true_type>;
 
 
@@ -2393,10 +2403,10 @@ auto IndirectlyMovableStorable_fn(long) -> std::false_type;
 template <typename In, typename Out>
 auto IndirectlyMovableStorable_fn(int) -> std::enable_if_t<
         IndirectlyMovable<In, Out> &&
-        Writable<Out, value_type_t<In>> &&
-        Movable<value_type_t<In>> &&
-        Constructible<value_type_t<In>, rvalue_reference_t<In>> &&
-        Assignable<value_type_t<In>&, rvalue_reference_t<In>>,
+        Writable<Out, iter_value_t<In>> &&
+        Movable<iter_value_t<In>> &&
+        Constructible<iter_value_t<In>, iter_rvalue_reference_t<In>> &&
+        Assignable<iter_value_t<In>&, iter_rvalue_reference_t<In>>,
     std::true_type>;
 
 }
@@ -2415,7 +2425,7 @@ auto IndirectlyCopyable_fn(long) -> std::false_type;
 template <typename In, typename Out>
 auto IndirectlyCopyable_fn(int) -> std::enable_if_t<
         Readable<In> &&
-        Writable<Out, reference_t<In>>,
+        Writable<Out, iter_reference_t<In>>,
     std::true_type>;
 
 }
@@ -2432,10 +2442,10 @@ auto IndirectlyCopyableStorable_fn(long) -> std::false_type;
 template <typename In, typename Out>
 auto IndirectlyCopyableStorable_fn(int) -> std::enable_if_t<
         IndirectlyCopyable<In, Out> &&
-        Writable<Out, const value_type_t<In>&> &&
-        Copyable<value_type_t<In>> &&
-        Constructible<value_type_t<In>, reference_t<In>> &&
-        Assignable<value_type_t<In>&, reference_t<In>>,
+        Writable<Out, const iter_value_t<In>&> &&
+        Copyable<iter_value_t<In>> &&
+        Constructible<iter_value_t<In>, iter_reference_t<In>> &&
+        Assignable<iter_value_t<In>&, iter_reference_t<In>>,
     std::true_type>;
 
 }
@@ -2477,27 +2487,27 @@ struct fn {
 private:
     template <typename T1, typename T2>
     static constexpr bool iter_exchange_move_noexcept =
-        std::is_nothrow_constructible<value_type_t<T1>,
-                                      rvalue_reference_t<T1>>::value&&
-            std::is_nothrow_assignable<value_type_t<T1>&,
-                                       rvalue_reference_t<T1>>::value&&
-                std::is_nothrow_assignable<reference_t<T1>,
-                                           rvalue_reference_t<T2>>::value&&
-                    std::is_nothrow_assignable<reference_t<T1>,
-                                               value_type_t<T2>>::value&&
-                        std::is_nothrow_move_constructible<value_type_t<T1>>::
+        std::is_nothrow_constructible<iter_value_t<T1>,
+                                      iter_rvalue_reference_t<T1>>::value&&
+            std::is_nothrow_assignable<iter_value_t<T1>&,
+                                       iter_rvalue_reference_t<T1>>::value&&
+                std::is_nothrow_assignable<iter_reference_t<T1>,
+                                           iter_rvalue_reference_t<T2>>::value&&
+                    std::is_nothrow_assignable<iter_reference_t<T1>,
+                                               iter_value_t<T2>>::value&&
+                        std::is_nothrow_move_constructible<iter_value_t<T1>>::
                             value&& noexcept(
                                 ranges::iter_move(std::declval<T1&>()));
 
     template <typename X, typename Y>
-    static constexpr value_type_t<std::remove_reference_t<X>>
+    static constexpr iter_value_t<std::remove_reference_t<X>>
     iter_exchange_move(X&& x, Y&& y) noexcept(
         iter_exchange_move_noexcept<std::remove_reference_t<X>,
                                     std::remove_reference_t<Y>>&&
             iter_exchange_move_noexcept<std::remove_reference_t<Y>,
                                         std::remove_reference_t<X>>)
     {
-        value_type_t<std::remove_reference_t<X>> old_value(
+        iter_value_t<std::remove_reference_t<X>> old_value(
             ranges::iter_move(x));
         *x = ranges::iter_move(y);
         return old_value;
@@ -2516,7 +2526,7 @@ private:
         noexcept(ranges::swap(*std::forward<T>(t), *std::forward<U>(u))))
         -> std::enable_if_t<Readable<std::remove_reference_t<T>> &&
                             Readable<std::remove_reference_t<U>> &&
-                            SwappableWith<reference_t<T>, reference_t<U>>>
+                            SwappableWith<iter_reference_t<T>, iter_reference_t<U>>>
     {
         ranges::swap(*std::forward<T>(t), *std::forward<U>(u));
     }
@@ -3197,7 +3207,7 @@ namespace detail {
 
 template <typename P>
 constexpr bool is_object_pointer_v =
-    std::is_pointer<P>::value && std::is_object<test_t<value_type_t, P>>::value;
+    std::is_pointer<P>::value && std::is_object<test_t<iter_value_t, P>>::value;
 
 namespace data_ {
 
@@ -3306,7 +3316,7 @@ auto convertible_to_helper(Deduced)
 struct SizedRange_req {
     template <typename T>
     auto requires_(T& t) -> decltype(
-        valid_expr(convertible_to_helper<difference_type_t<iterator_t<T>>>(
+        valid_expr(convertible_to_helper<iter_difference_t<iterator_t<T>>>(
             ranges::size(t))));
 };
 
@@ -3368,7 +3378,7 @@ auto view_predicate_helper_fn(int) -> std::enable_if_t<
         !DerivedFrom<T, view_base> &&
         Range<T> &&
         Range<const T> &&
-        !Same<reference_t<iterator_t<T>>, reference_t<iterator_t<const T>>>,
+        !Same<iter_reference_t<iterator_t<T>>, iter_reference_t<iterator_t<const T>>>,
     std::true_type>;
 
 template <typename T>
@@ -3498,7 +3508,7 @@ namespace detail {
 struct ContiguousRange_req {
     template <typename R>
     auto requires_(R& r) -> decltype(
-        requires_expr<Same<decltype(ranges::data(r)), std::add_pointer_t<reference_t<iterator_t<R>>>>>{}
+        requires_expr<Same<decltype(ranges::data(r)), std::add_pointer_t<iter_reference_t<iterator_t<R>>>>>{}
     );
 };
 
@@ -3608,18 +3618,18 @@ private:
     }
 
     template <typename R>
-    static constexpr auto impl(R& r, difference_type_t<R> n)
+    static constexpr auto impl(R& r, iter_difference_t<R> n)
         -> std::enable_if_t<RandomAccessIterator<R>>
     {
         r += n;
     }
 
     template <typename I>
-    static constexpr auto impl(I& i, difference_type_t<I> n)
+    static constexpr auto impl(I& i, iter_difference_t<I> n)
         -> std::enable_if_t<BidirectionalIterator<I> &&
                             !RandomAccessIterator<I>>
     {
-        constexpr auto zero = difference_type_t<I>{0};
+        constexpr auto zero = iter_difference_t<I>{0};
 
         if (n > zero) {
             while (n-- > zero) {
@@ -3633,10 +3643,10 @@ private:
     }
 
     template <typename I>
-    static constexpr auto impl(I& i, difference_type_t<I> n)
+    static constexpr auto impl(I& i, iter_difference_t<I> n)
         -> std::enable_if_t<!BidirectionalIterator<I>>
     {
-        while (n-- > difference_type_t<I>{0}) {
+        while (n-- > iter_difference_t<I>{0}) {
             ++i;
         }
     }
@@ -3664,8 +3674,8 @@ private:
     }
 
     template <typename I, typename S>
-    static constexpr auto impl(I& i, difference_type_t<I> n, S bound)
-        -> std::enable_if_t<SizedSentinel<S, I>, difference_type_t<I>>
+    static constexpr auto impl(I& i, iter_difference_t<I> n, S bound)
+        -> std::enable_if_t<SizedSentinel<S, I>, iter_difference_t<I>>
     {
         if (fn::abs(n) >= fn::abs(bound - i)) {
             auto dist = bound - i;
@@ -3678,12 +3688,12 @@ private:
     }
 
     template <typename I, typename S>
-    static constexpr auto impl(I& i, difference_type_t<I> n, S bound)
+    static constexpr auto impl(I& i, iter_difference_t<I> n, S bound)
         -> std::enable_if_t<BidirectionalIterator<I> && !SizedSentinel<S, I>,
-                            difference_type_t<I>>
+                            iter_difference_t<I>>
     {
-        constexpr difference_type_t<I> zero{0};
-        difference_type_t<I> counter{0};
+        constexpr iter_difference_t<I> zero{0};
+        iter_difference_t<I> counter{0};
 
         if (n < zero) {
             do {
@@ -3701,12 +3711,12 @@ private:
     }
 
     template <typename I, typename S>
-    static constexpr auto impl(I& i, difference_type_t<I> n, S bound)
+    static constexpr auto impl(I& i, iter_difference_t<I> n, S bound)
         -> std::enable_if_t<!BidirectionalIterator<I> && !SizedSentinel<S, I>,
-                            difference_type_t<I>>
+                            iter_difference_t<I>>
     {
-        constexpr difference_type_t<I> zero{0};
-        difference_type_t<I> counter{0};
+        constexpr iter_difference_t<I> zero{0};
+        iter_difference_t<I> counter{0};
 
         while (n-- > zero && i != bound) {
             ++i;
@@ -3718,7 +3728,7 @@ private:
 
 public:
     template <typename I>
-    constexpr auto operator()(I& i, difference_type_t<I> n) const
+    constexpr auto operator()(I& i, iter_difference_t<I> n) const
         -> std::enable_if_t<Iterator<I>>
     {
         fn::impl(i, n);
@@ -3732,8 +3742,8 @@ public:
     }
 
     template <typename I, typename S>
-    constexpr auto operator()(I& i, difference_type_t<I> n, S bound) const
-        -> std::enable_if_t<Iterator<I> && Sentinel<S, I>, difference_type_t<I>>
+    constexpr auto operator()(I& i, iter_difference_t<I> n, S bound) const
+        -> std::enable_if_t<Iterator<I> && Sentinel<S, I>, iter_difference_t<I>>
     {
         return n - fn::impl(i, n, bound);
     }
@@ -3751,16 +3761,16 @@ struct fn {
 private:
     template <typename I, typename S>
     static constexpr auto impl(I i, S s)
-        -> std::enable_if_t<SizedSentinel<S, I>, difference_type_t<I>>
+        -> std::enable_if_t<SizedSentinel<S, I>, iter_difference_t<I>>
     {
         return s - i;
     }
 
     template <typename I, typename S>
     static constexpr auto impl(I i, S s)
-        -> std::enable_if_t<!SizedSentinel<S, I>, difference_type_t<I>>
+        -> std::enable_if_t<!SizedSentinel<S, I>, iter_difference_t<I>>
     {
-        difference_type_t<I> counter{0};
+        iter_difference_t<I> counter{0};
         while (i != s) {
             ++i;
             ++counter;
@@ -3770,14 +3780,14 @@ private:
 
     template <typename R>
     static constexpr auto impl(R&& r)
-        -> std::enable_if_t<SizedRange<R>, difference_type_t<iterator_t<R>>>
+        -> std::enable_if_t<SizedRange<R>, iter_difference_t<iterator_t<R>>>
     {
-        return static_cast<difference_type_t<iterator_t<R>>>(ranges::size(r));
+        return static_cast<iter_difference_t<iterator_t<R>>>(ranges::size(r));
     }
 
     template <typename R>
     static constexpr auto impl(R&& r)
-        -> std::enable_if_t<!SizedRange<R>, difference_type_t<iterator_t<R>>>
+        -> std::enable_if_t<!SizedRange<R>, iter_difference_t<iterator_t<R>>>
     {
         return fn::impl(ranges::begin(r), ranges::end(r));
     }
@@ -3785,14 +3795,14 @@ private:
 public:
     template <typename I, typename S>
     constexpr auto operator()(I first, S last) const
-        -> std::enable_if_t<Iterator<I> && Sentinel<S, I>, difference_type_t<I>>
+        -> std::enable_if_t<Iterator<I> && Sentinel<S, I>, iter_difference_t<I>>
     {
         return fn::impl(std::move(first), std::move(last));
     }
 
     template <typename R>
     constexpr auto operator()(R&& r) const
-        -> std::enable_if_t<Range<R>, difference_type_t<iterator_t<R>>>
+        -> std::enable_if_t<Range<R>, iter_difference_t<iterator_t<R>>>
     {
         return fn::impl(std::forward<R>(r));
     }
@@ -3815,7 +3825,7 @@ struct fn {
     }
 
     template <typename I>
-    constexpr auto operator()(I x, difference_type_t<I> n) const
+    constexpr auto operator()(I x, iter_difference_t<I> n) const
         -> std::enable_if_t<Iterator<I>, I>
     {
         ranges::advance(x, n);
@@ -3831,7 +3841,7 @@ struct fn {
     }
 
     template <typename I, typename S>
-    constexpr auto operator()(I x, difference_type_t<I> n, S bound) const
+    constexpr auto operator()(I x, iter_difference_t<I> n, S bound) const
         -> std::enable_if_t<Iterator<I> && Sentinel<S, I>, I>
     {
         ranges::advance(x, n, bound);
@@ -3857,7 +3867,7 @@ struct fn {
     }
 
     template <typename I>
-    constexpr auto operator()(I x, difference_type_t<I> n) const
+    constexpr auto operator()(I x, iter_difference_t<I> n) const
         -> std::enable_if_t<BidirectionalIterator<I>, I>
     {
         ranges::advance(x, -n);
@@ -3865,7 +3875,7 @@ struct fn {
     }
 
     template <typename I, typename S>
-    constexpr auto operator()(I x, difference_type_t<I> n, S bound) const
+    constexpr auto operator()(I x, iter_difference_t<I> n, S bound) const
         -> std::enable_if_t<BidirectionalIterator<I> && Sentinel<S, I>, I>
     {
         ranges::advance(x, -n, bound);
@@ -4149,7 +4159,7 @@ private:
     friend struct upper_bound_fn;
 
     template <typename I, typename Pred, typename Proj>
-    static constexpr I impl_n(I first, difference_type_t<I> n, Pred& pred,
+    static constexpr I impl_n(I first, iter_difference_t<I> n, Pred& pred,
                               Proj& proj)
     {
         while (n != 0) {
@@ -4182,7 +4192,7 @@ private:
     {
         // Probe exponentially for either end-of-range or an iterator
         // that is past the partition point (i.e., does not satisfy pred).
-        difference_type_t<I> n{1};
+        iter_difference_t<I> n{1};
 
         while (true) {
             auto m = first;
@@ -4377,7 +4387,7 @@ private:
     {
         const auto dist = last - first;
 
-        for (difference_type_t<I> i = 0; i < dist; ++i) {
+        for (iter_difference_t<I> i = 0; i < dist; ++i) {
             *result = *first;
             ++first;
             ++result;
@@ -4433,9 +4443,9 @@ struct copy_n_fn {
     constexpr std::enable_if_t<InputIterator<I> && WeaklyIncrementable<O> &&
                                    IndirectlyCopyable<I, O>,
                                std::pair<I, O>>
-    operator()(I first, difference_type_t<I> n, O result) const
+    operator()(I first, iter_difference_t<I> n, O result) const
     {
-        for (difference_type_t<I> i{}; i < n; i++) {
+        for (iter_difference_t<I> i{}; i < n; i++) {
             *result = *first;
             ++first;
             ++result;
@@ -4571,10 +4581,10 @@ private:
     friend struct count_fn;
 
     template <typename I, typename S, typename Proj, typename Pred>
-    static constexpr difference_type_t<I> impl(I first, S last, Pred pred,
+    static constexpr iter_difference_t<I> impl(I first, S last, Pred pred,
                                                Proj proj)
     {
-        difference_type_t<I> counter = 0;
+        iter_difference_t<I> counter = 0;
 
         for (; first != last; ++first) {
             if (nano::invoke(pred, nano::invoke(proj, *first))) {
@@ -4590,7 +4600,7 @@ public:
     constexpr std::enable_if_t<
         InputIterator<I> && Sentinel<S, I> &&
             IndirectUnaryPredicate<Pred, projected<I, Proj>>,
-        difference_type_t<I>>
+        iter_difference_t<I>>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
         return count_if_fn::impl(std::move(first), std::move(last),
@@ -4601,7 +4611,7 @@ public:
     constexpr std::enable_if_t<
         InputRange<Rng> &&
             IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        difference_type_t<iterator_t<Rng>>>
+        iter_difference_t<iterator_t<Rng>>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return count_if_fn::impl(nano::begin(rng), nano::end(rng),
@@ -4632,7 +4642,7 @@ public:
     constexpr std::enable_if_t<
         InputIterator<I> && Sentinel<S, I> &&
             IndirectRelation<equal_to<>, projected<I, Proj>, const T*>,
-        difference_type_t<I>>
+        iter_difference_t<I>>
     operator()(I first, S last, const T& value, Proj proj = Proj{}) const
     {
         return count_if_fn::impl(std::move(first), std::move(last),
@@ -4644,7 +4654,7 @@ public:
         InputRange<Rng> &&
             IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>,
                              const T*>,
-        difference_type_t<iterator_t<Rng>>>
+        iter_difference_t<iterator_t<Rng>>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
     {
         return count_if_fn::impl(nano::begin(rng), nano::end(rng),
@@ -4985,12 +4995,12 @@ class common_iterator {
     friend class common_iterator;
 
     class op_arrow_proxy {
-        value_type_t<I> keep_;
+        iter_value_t<I> keep_;
 
-        constexpr op_arrow_proxy(reference_t<I>&& x) : keep_(std::move(x)) {}
+        constexpr op_arrow_proxy(iter_reference_t<I>&& x) : keep_(std::move(x)) {}
 
     public:
-        constexpr const value_type_t<I>* operator->() const
+        constexpr const iter_value_t<I>* operator->() const
         {
             return std::addressof(keep_);
         }
@@ -5009,8 +5019,8 @@ class common_iterator {
 
     template <typename II>
     static constexpr auto do_op_arrow(const II& i, detail::priority_tag<1>)
-        -> std::enable_if_t<std::is_reference<reference_t<const II>>::value,
-                            std::add_pointer_t<reference_t<const II>>>
+        -> std::enable_if_t<std::is_reference<iter_reference_t<const II>>::value,
+                            std::add_pointer_t<iter_reference_t<const II>>>
     {
         auto&& tmp = *i;
         return std::addressof(tmp);
@@ -5024,7 +5034,7 @@ class common_iterator {
     }
 
 public:
-    using difference_type = difference_type_t<I>;
+    using difference_type = iter_difference_t<I>;
 
     constexpr common_iterator() : is_sentinel_{false}, iter_{} {}
 
@@ -5089,7 +5099,7 @@ public:
         return tmp;
     }
 
-    friend constexpr rvalue_reference_t<I> iter_move(const common_iterator& i)
+    friend constexpr iter_rvalue_reference_t<I> iter_move(const common_iterator& i)
     {
         return ranges::iter_move(i.iter_);
     }
@@ -5138,7 +5148,7 @@ template <typename I2, typename I1, typename S1, typename S2>
 constexpr
 std::enable_if_t<SizedSentinel<I1, I2> && SizedSentinel<S1, I2> &&
                      SizedSentinel<S2, I2>,
-                 difference_type_t<I2>>
+                 iter_difference_t<I2>>
 operator-(const common_iterator<I1, S1>& x, const common_iterator<I2, S2>& y)
 {
     return x.is_sentinel_
@@ -5151,8 +5161,8 @@ operator-(const common_iterator<I1, S1>& x, const common_iterator<I2, S2>& y)
 using common_iterator_::common_iterator;
 
 template <typename I, typename S>
-struct value_type<common_iterator<I, S>> {
-    using type = value_type_t<I>;
+struct readable_traits<common_iterator<I, S>> {
+    using value_type = iter_value_t<I>;
 };
 
 template <typename I, typename S>
@@ -5168,11 +5178,11 @@ namespace std {
 template <typename I, typename S>
 struct iterator_traits<::nano::common_iterator<I, S>> {
     using difference_type =
-        ::nano::difference_type_t<::nano::common_iterator<I, S>>;
-    using value_type = ::nano::value_type_t<::nano::common_iterator<I, S>>;
+        ::nano::iter_difference_t<::nano::common_iterator<I, S>>;
+    using value_type = ::nano::iter_value_t<::nano::common_iterator<I, S>>;
     using pointer =
-        std::add_pointer_t<::nano::reference_t<::nano::common_iterator<I, S>>>;
-    using reference = ::nano::reference_t<::nano::common_iterator<I, S>>;
+        std::add_pointer_t<::nano::iter_reference_t<::nano::common_iterator<I, S>>>;
+    using reference = ::nano::iter_reference_t<::nano::common_iterator<I, S>>;
     using iterator_category =
         std::conditional_t<::nano::ForwardIterator<I>,
                            std::forward_iterator_tag,
@@ -5280,20 +5290,20 @@ public:
     }
 
     template <typename R = D, typename = std::enable_if_t<RandomAccessRange<R>>>
-    constexpr decltype(auto) operator[](difference_type_t<iterator_t<R>> n)
+    constexpr decltype(auto) operator[](iter_difference_t<iterator_t<R>> n)
     {
         return ranges::begin(derived())[n];
     }
 
     template <typename R = const D,  typename = std::enable_if_t<RandomAccessRange<R>>>
-    constexpr decltype(auto) operator[](difference_type_t<iterator_t<R>> n) const
+    constexpr decltype(auto) operator[](iter_difference_t<iterator_t<R>> n) const
     {
         return ranges::begin(derived())[n];
     }
 
     template <typename R = D, typename = std::enable_if_t<
         RandomAccessRange<R> && SizedRange<R>>>
-    constexpr decltype(auto) at(difference_type_t<iterator_t<R>> n)
+    constexpr decltype(auto) at(iter_difference_t<iterator_t<R>> n)
     {
         if (n < 0 || n >= ranges::size(derived())) {
             throw std::out_of_range{""};
@@ -5304,7 +5314,7 @@ public:
 
     template <typename R = const D, typename = std::enable_if_t<
             RandomAccessRange<R> && SizedRange<R>>>
-    constexpr decltype(auto) at(difference_type_t<iterator_t<R>> n) const
+    constexpr decltype(auto) at(iter_difference_t<iterator_t<R>> n) const
     {
         if (n < 0 || n >= ranges::size(derived())) {
             throw std::out_of_range{""};
@@ -5316,8 +5326,8 @@ public:
     template <typename C, typename R = D,
               typename = std::enable_if_t<
                   ForwardRange<C> && !View<C> &&
-                  ConvertibleTo<reference_t<iterator_t<const R>>,
-                                value_type_t<iterator_t<C>>> &&
+                  ConvertibleTo<iter_reference_t<iterator_t<const R>>,
+                                iter_value_t<iterator_t<C>>> &&
                   Constructible<C, detail::range_common_iterator_t<const R>,
                                 detail::range_common_iterator_t<const R>>>>
     operator C() const
@@ -5413,7 +5423,7 @@ template <typename I, typename S>
 struct subrange_data<I, S, true> {
     I begin_{};
     S end_{};
-    difference_type_t<I> size_ = 0;
+    iter_difference_t<I> size_ = 0;
 };
 
 // MSVC gets confused if enable_if conditions in template param lists are too
@@ -5463,7 +5473,7 @@ public:
 
     template <subrange_kind KK = K,
             typename = std::enable_if_t<KK == subrange_kind::sized>>
-    constexpr subrange(I i, S s, difference_type_t<I> n)
+    constexpr subrange(I i, S s, iter_difference_t<I> n)
             : data_{std::move(i), std::move(s), n} {}
 
     template <typename R, bool SS = StoreSize,
@@ -5486,7 +5496,7 @@ public:
             ConvertibleTo<sentinel_t<R>, S>&&
             KK == subrange_kind::sized, int> = 0>
 
-    constexpr subrange(R&& r, difference_type_t<I> n)
+    constexpr subrange(R&& r, iter_difference_t<I> n)
             : subrange(ranges::begin(r), ranges::end(r), n) {}
 
     template <typename PairLike_, bool SS = StoreSize,
@@ -5503,7 +5513,7 @@ public:
             std::enable_if_t<detail::PairlikeConvertibleTo<PairLike_, I, S> &&
                     KK == subrange_kind::sized,
                     int> = 0>
-    constexpr subrange(PairLike_&& r, difference_type_t<I> n)
+    constexpr subrange(PairLike_&& r, iter_difference_t<I> n)
             : subrange{std::get<0>(std::forward<PairLike_>(r)),
                        std::get<1>(std::forward<PairLike_>(r)), n} {}
 
@@ -5526,8 +5536,8 @@ public:
               typename = std::enable_if_t<
                     ForwardRange<C> && /*!View<C> &&*/
                     !detail::view_predicate_v<C> &&
-                    ConvertibleTo<reference_t<iterator_t<const R>>,
-                                  value_type_t<iterator_t<C>>> &&
+                    ConvertibleTo<iter_reference_t<iterator_t<const R>>,
+                                  iter_value_t<iterator_t<C>>> &&
                     Constructible<C, detail::range_common_iterator_t<const R>,
                                      detail::range_common_iterator_t<const R>>>>
     operator C() const
@@ -5548,7 +5558,7 @@ public:
     template <subrange_kind KK = K, bool SS = StoreSize>
     constexpr auto size() const
     -> std::enable_if_t<KK == subrange_kind::sized && SS,
-            difference_type_t<I>>
+            iter_difference_t<I>>
     {
         return data_.size_;
     }
@@ -5556,12 +5566,12 @@ public:
     template <subrange_kind KK = K, bool SS = StoreSize>
     constexpr auto size() const
     -> std::enable_if_t<KK == subrange_kind::sized && !SS,
-            difference_type_t<I>>
+            iter_difference_t<I>>
     {
         return data_.end_ - data_.begin_;
     }
 
-    NANO_NODISCARD constexpr subrange next(difference_type_t<I> n = 1) const
+    NANO_NODISCARD constexpr subrange next(iter_difference_t<I> n = 1) const
     {
         auto tmp = *this;
         tmp.advance(n);
@@ -5569,7 +5579,7 @@ public:
     }
 
     template <typename II = I>
-    NANO_NODISCARD constexpr auto prev(difference_type_t<I> n = 1) const
+    NANO_NODISCARD constexpr auto prev(iter_difference_t<I> n = 1) const
     -> std::enable_if_t<BidirectionalIterator<II>, subrange>
     {
         auto tmp = *this;
@@ -5578,7 +5588,7 @@ public:
     }
 
     template <bool SS = StoreSize>
-    constexpr auto advance(difference_type_t<I> n)
+    constexpr auto advance(iter_difference_t<I> n)
     -> std::enable_if_t<SS, subrange&>
     {
         data_.size_ -= n - ranges::advance(data_.begin_, n, data_.end_);
@@ -5586,7 +5596,7 @@ public:
     }
 
     template <bool SS = StoreSize>
-    constexpr auto advance(difference_type_t<I> n)
+    constexpr auto advance(iter_difference_t<I> n)
     -> std::enable_if_t<!SS, subrange&>
     {
         ranges::advance(data_.begin_, n, data_.end_);
@@ -5616,7 +5626,7 @@ subrange(R&&, std::nullptr_t = nullptr)
     ->subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>;
 
 template <typename R, std::enable_if_t<detail::ForwardingRange<R>, int> = 0>
-subrange(R&&, difference_type_t<iterator_t<R>>) ->
+subrange(R&&, iter_difference_t<iterator_t<R>>) ->
     subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>;
 
 #endif
@@ -5662,7 +5672,7 @@ constexpr auto make_subrange(I i, S s)
 }
 
 template <typename I, typename S>
-constexpr auto make_subrange(I i, S s, difference_type_t<I> n)
+constexpr auto make_subrange(I i, S s, iter_difference_t<I> n)
     -> std::enable_if_t<Iterator<I> && Sentinel<S, I>,
                         decltype(subrange<I, S>{std::move(i), std::move(s)}, n)>
 {
@@ -5686,7 +5696,7 @@ constexpr auto make_subrange(R&& r)
 }
 
 template <typename R>
-constexpr auto make_subrange(R&& r, difference_type_t<R> n)
+constexpr auto make_subrange(R&& r, iter_difference_t<R> n)
 -> std::enable_if_t<detail::ForwardingRange<R>,
         subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>>
 {
@@ -5846,9 +5856,9 @@ namespace detail {
 struct fill_n_fn {
     template <typename T, typename O>
     constexpr std::enable_if_t<OutputIterator<O, const T&>, O>
-    operator()(O first, difference_type_t<O> n, const T& value) const
+    operator()(O first, iter_difference_t<O> n, const T& value) const
     {
-        for (difference_type_t<O> i{0}; i < n; ++i, ++first) {
+        for (iter_difference_t<O> i{0}; i < n; ++i, ++first) {
             *first = value;
         }
         return first;
@@ -6436,9 +6446,9 @@ struct generate_n_fn {
                                    Invocable<F&> &&
                                    Writable<O, invoke_result_t<F&>>,
                                O>
-    operator()(O first, difference_type_t<O> n, F gen) const
+    operator()(O first, iter_difference_t<O> n, F gen) const
     {
-        for (difference_type_t<O> i{0}; i < n; ++i, ++first) {
+        for (iter_difference_t<O> i{0}; i < n; ++i, ++first) {
             *first = gen();
         }
 
@@ -6582,10 +6592,10 @@ private:
     friend struct is_heap_fn;
 
     template <typename I, typename Comp, typename Proj>
-    static constexpr I impl(I first, const difference_type_t<I> n, Comp& comp,
+    static constexpr I impl(I first, const iter_difference_t<I> n, Comp& comp,
                             Proj& proj)
     {
-        difference_type_t<I> p = 0, c = 1;
+        iter_difference_t<I> p = 0, c = 1;
 
         I pp = first;
 
@@ -7005,7 +7015,7 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 template <typename I, typename Comp, typename Proj>
-constexpr void sift_up_n(I first, difference_type_t<I> n, Comp& comp,
+constexpr void sift_up_n(I first, iter_difference_t<I> n, Comp& comp,
                          Proj& proj)
 {
     if (n > 1) {
@@ -7014,7 +7024,7 @@ constexpr void sift_up_n(I first, difference_type_t<I> n, Comp& comp,
         I i = first + n;
         if (nano::invoke(comp, nano::invoke(proj, *i),
                          nano::invoke(proj, *--last))) {
-            value_type_t<I> v = nano::iter_move(last);
+            iter_value_t<I> v = nano::iter_move(last);
             do {
                 *last = nano::iter_move(i);
                 last = i;
@@ -7031,7 +7041,7 @@ constexpr void sift_up_n(I first, difference_type_t<I> n, Comp& comp,
 }
 
 template <typename I, typename Comp, typename Proj>
-constexpr void sift_down_n(I first, difference_type_t<I> n, I start, Comp& comp,
+constexpr void sift_down_n(I first, iter_difference_t<I> n, I start, Comp& comp,
                            Proj& proj)
 {
     // left-child of start is at 2 * start + 1
@@ -7059,7 +7069,7 @@ constexpr void sift_down_n(I first, difference_type_t<I> n, I start, Comp& comp,
         return;
     }
 
-    value_type_t<I> top = nano::iter_move(start);
+    iter_value_t<I> top = nano::iter_move(start);
     do {
         // we are not in heap-order, swap the parent with it's largest child
         *start = nano::iter_move(child_i);
@@ -7102,7 +7112,7 @@ namespace detail {
 struct make_heap_fn {
 private:
     template <typename I, typename Comp, typename Proj>
-    static constexpr I impl(I first, difference_type_t<I> n, Comp& comp,
+    static constexpr I impl(I first, iter_difference_t<I> n, Comp& comp,
                             Proj& proj)
     {
         if (n > 1) {
@@ -7164,7 +7174,7 @@ namespace detail {
 struct max_fn {
 private:
     template <typename Rng, typename Comp, typename Proj>
-    static constexpr value_type_t<iterator_t<Rng>>
+    static constexpr iter_value_t<iterator_t<Rng>>
     impl(Rng&& rng, Comp& comp, Proj& proj)
     {
         auto first = nano::begin(rng);
@@ -7210,9 +7220,9 @@ public:
     template <typename Rng, typename Comp = less<>, typename Proj = identity>
     constexpr std::enable_if_t<
             InputRange<Rng> &&
-            Copyable<value_type_t<iterator_t<Rng>>> &&
+            Copyable<iter_value_t<iterator_t<Rng>>> &&
     IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
-    value_type_t<iterator_t<Rng>>>
+    iter_value_t<iterator_t<Rng>>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return max_fn::impl(std::forward<Rng>(rng), comp, proj);
@@ -7418,7 +7428,7 @@ namespace detail {
 struct min_fn {
 private:
     template <typename Rng, typename Comp, typename Proj>
-    static constexpr value_type_t<iterator_t<Rng>>
+    static constexpr iter_value_t<iterator_t<Rng>>
     impl(Rng&& rng, Comp& comp, Proj& proj)
     {
         auto first = nano::begin(rng);
@@ -7463,9 +7473,9 @@ public:
     template <typename Rng, typename Comp = less<>, typename Proj = identity>
     constexpr std::enable_if_t<
         InputRange<Rng> &&
-        Copyable<value_type_t<iterator_t<Rng>>> &&
+        Copyable<iter_value_t<iterator_t<Rng>>> &&
         IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
-        value_type_t<iterator_t<Rng>>>
+        iter_value_t<iterator_t<Rng>>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return min_fn::impl(std::forward<Rng>(rng), comp, proj);
@@ -7571,7 +7581,7 @@ namespace detail {
 struct minmax_fn {
 private:
     template <typename Rng, typename Comp, typename Proj,
-              typename T = value_type_t<iterator_t<Rng>>>
+              typename T = iter_value_t<iterator_t<Rng>>>
     static constexpr std::pair<T, T>
     impl(Rng&& rng, Comp& comp, Proj& proj)
     {
@@ -7665,9 +7675,9 @@ public:
     template <typename Rng, typename Comp = less<>, typename Proj = identity>
     constexpr std::enable_if_t<
         InputRange<Rng> &&
-        Copyable<value_type_t<iterator_t<Rng>>> &&
+        Copyable<iter_value_t<iterator_t<Rng>>> &&
         IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
-    std::pair<value_type_t<iterator_t<Rng>>, value_type_t<iterator_t<Rng>>>>
+    std::pair<iter_value_t<iterator_t<Rng>>, iter_value_t<iterator_t<Rng>>>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return minmax_fn::impl(std::forward<Rng>(rng), comp, proj);
@@ -7951,7 +7961,7 @@ private:
     {
         const auto dist = last - first;
 
-        for (difference_type_t<I> i{0}; i < dist; i++) {
+        for (iter_difference_t<I> i{0}; i < dist; i++) {
             *result = nano::iter_move(first);
             ++first;
             ++result;
@@ -8142,7 +8152,7 @@ private:
     friend struct sort_heap_fn;
 
     template <typename I, typename Comp, typename Proj>
-    static constexpr I impl(I first, difference_type_t<I> n, Comp& comp,
+    static constexpr I impl(I first, iter_difference_t<I> n, Comp& comp,
                             Proj& proj)
     {
         if (n > 1) {
@@ -8191,7 +8201,7 @@ namespace detail {
 struct sort_heap_fn {
 private:
     template <typename I, typename Comp, typename Proj>
-    static constexpr I impl(I first, difference_type_t<I> n, Comp& comp,
+    static constexpr I impl(I first, iter_difference_t<I> n, Comp& comp,
                             Proj& proj)
     {
         if (n < 2) {
@@ -8329,9 +8339,9 @@ private:
         const auto len = nano::distance(result_first, r);
 
         while (first != last) {
-            reference_t<I1>&& x = *first;
+            iter_reference_t<I1>&& x = *first;
             if (nano::invoke(comp, nano::invoke(proj1, x), nano::invoke(proj2, *result_first))) {
-                *result_first = std::forward<reference_t<I1>>(x);
+                *result_first = std::forward<iter_reference_t<I1>>(x);
                 detail::sift_down_n(result_first, len, result_first, comp, proj2);
             }
             ++first;
@@ -9474,10 +9484,10 @@ namespace detail {
 struct search_n_fn {
 private:
     template <typename I, typename S, typename T, typename Pred, typename Proj>
-    static constexpr I impl(I first, S last, difference_type_t<I> count,
+    static constexpr I impl(I first, S last, iter_difference_t<I> count,
                             const T& value, Pred pred, Proj& proj)
     {
-        if (count == difference_type_t<I>{0}) {
+        if (count == iter_difference_t<I>{0}) {
             return first;
         }
 
@@ -9487,7 +9497,7 @@ private:
             }
 
             I save = first;
-            difference_type_t<I> running_count{1};
+            iter_difference_t<I> running_count{1};
 
             while (true) {
                 if (running_count++ == count) {
@@ -9512,7 +9522,7 @@ private:
 public:
     template <typename I, typename S, typename T, typename Pred = equal_to<>,
         typename Proj = identity>
-    constexpr auto operator()(I first, S last, difference_type_t<I> count,
+    constexpr auto operator()(I first, S last, iter_difference_t<I> count,
                               const T& value, Pred pred = Pred{},
                               Proj proj = Proj{}) const
     -> std::enable_if_t<ForwardIterator<I> && Sentinel<S, I> &&
@@ -9526,7 +9536,7 @@ public:
     template <typename Rng, typename T, typename Pred = equal_to<>,
         typename Proj = identity>
     constexpr auto
-    operator()(Rng&& rng, difference_type_t<iterator_t<Rng>> count,
+    operator()(Rng&& rng, iter_difference_t<iterator_t<Rng>> count,
                const T& value, Pred pred = Pred{}, Proj proj = Proj{}) const
     -> std::enable_if_t<
         ForwardRange<Rng> &&
@@ -10042,7 +10052,7 @@ private:
     template <typename I, typename S, typename Gen>
     static constexpr I impl(I first, S last, Gen&& g)
     {
-        using diff_t = difference_type_t<I>;
+        using diff_t = iter_difference_t<I>;
         using distr_t = std::uniform_int_distribution<diff_t>;
         using param_t = typename distr_t::param_type;
 
@@ -10062,7 +10072,7 @@ public:
         RandomAccessIterator<I> &&
         Sentinel<S, I> &&
         UniformRandomBitGenerator<std::remove_reference_t<Gen>> &&
-        ConvertibleTo<invoke_result_t<Gen&>, difference_type_t<I>>,
+        ConvertibleTo<invoke_result_t<Gen&>, iter_difference_t<I>>,
         I>
     operator()(I first, S last, Gen&& gen) const
     {
@@ -10074,7 +10084,7 @@ public:
     constexpr std::enable_if_t<
             RandomAccessRange<Rng> &&
             UniformRandomBitGenerator<std::remove_reference_t<Gen>> &&
-            ConvertibleTo<invoke_result_t<Gen&>, difference_type_t<iterator_t<Rng>>>,
+            ConvertibleTo<invoke_result_t<Gen&>, iter_difference_t<iterator_t<Rng>>>,
     safe_iterator_t<Rng>>
     operator()(Rng&& rng, Gen&& gen) const
     {
@@ -10167,7 +10177,7 @@ constexpr int log2(T n)
 template <typename I, typename Comp, typename Proj>
 constexpr void insertion_sort(I begin, I end, Comp& comp, Proj& proj)
 {
-    using T = value_type_t<I>;
+    using T = iter_value_t<I>;
 
     if (begin == end) {
         return;
@@ -10201,7 +10211,7 @@ constexpr void insertion_sort(I begin, I end, Comp& comp, Proj& proj)
 template <typename I, typename Comp, typename Proj>
 constexpr void unguarded_insertion_sort(I begin, I end, Comp& comp, Proj& proj)
 {
-    using T = value_type_t<I>;
+    using T = iter_value_t<I>;
 
     if (begin == end) {
         return;
@@ -10233,13 +10243,13 @@ constexpr void unguarded_insertion_sort(I begin, I end, Comp& comp, Proj& proj)
 template <typename I, typename Comp, typename Proj>
 constexpr bool partial_insertion_sort(I begin, I end, Comp& comp, Proj& proj)
 {
-    using T = value_type_t<I>;
+    using T = iter_value_t<I>;
 
     if (begin == end) {
         return true;
     }
 
-    difference_type_t<I> limit = 0;
+    iter_difference_t<I> limit = 0;
     for (I cur = begin + 1; cur != end; ++cur) {
         if (limit > pqdsort_partial_insertion_sort_limit) {
             return false;
@@ -10289,7 +10299,7 @@ template <typename I>
 constexpr void swap_offsets(I first, I last, unsigned char* offsets_l,
                             unsigned char* offsets_r, int num, bool use_swaps)
 {
-    using T = value_type_t<I>;
+    using T = iter_value_t<I>;
     if (use_swaps) {
         // This case is needed for the descending distribution, where we need
         // to have proper swapping for pdqsort to remain O(n).
@@ -10322,7 +10332,7 @@ template <typename I, typename Comp, typename Pred>
 constexpr std::pair<I, bool> partition_right_branchless(I begin, I end,
                                                         Comp& comp, Pred& pred)
 {
-    using T = value_type_t<I>;
+    using T = iter_value_t<I>;
 
     // Move pivot into local for speed.
     T pivot(nano::iter_move(begin));
@@ -10451,8 +10461,8 @@ constexpr std::pair<I, bool> partition_right_branchless(I begin, I end,
             last -= pdqsort_block_size;
     }
 
-    difference_type_t<I> l_size = 0, r_size = 0;
-    difference_type_t<I> unknown_left =
+    iter_difference_t<I> l_size = 0, r_size = 0;
+    iter_difference_t<I> unknown_left =
         (last - first) - ((num_r || num_l) ? pdqsort_block_size : 0);
     if (num_r) {
         // Handle leftover block by assigning the unknown elements to the other
@@ -10533,7 +10543,7 @@ template <typename I, typename Comp, typename Proj>
 constexpr std::pair<I, bool> partition_right(I begin, I end, Comp& comp,
                                              Proj& proj)
 {
-    using T = value_type_t<I>;
+    using T = iter_value_t<I>;
 
     // Move pivot into local for speed.
     T pivot(nano::iter_move(begin));
@@ -10592,7 +10602,7 @@ constexpr std::pair<I, bool> partition_right(I begin, I end, Comp& comp,
 template <typename I, typename Comp, typename Proj>
 constexpr I partition_left(I begin, I end, Comp& comp, Proj& proj)
 {
-    using T = value_type_t<I>;
+    using T = iter_value_t<I>;
 
     T pivot(nano::iter_move(begin));
     I first = begin;
@@ -10633,7 +10643,7 @@ template <bool Branchless, typename I, typename Comp, typename Proj>
 constexpr void pdqsort_loop(I begin, I end, Comp& comp, Proj& proj,
                             int bad_allowed, bool leftmost = true)
 {
-    using diff_t = difference_type_t<I>;
+    using diff_t = iter_difference_t<I>;
 
     // Use a while loop for tail recursion elimination.
     while (true) {
@@ -10743,7 +10753,7 @@ constexpr void pdqsort_loop(I begin, I end, Comp& comp, Proj& proj,
 
 template <typename I, typename Comp, typename Proj,
           bool Branchless = is_default_compare_v<std::remove_const_t<Comp>>&&
-              Same<Proj, identity>&& std::is_arithmetic<value_type_t<I>>::value>
+              Same<Proj, identity>&& std::is_arithmetic<iter_value_t<I>>::value>
 constexpr void pdqsort(I begin, I end, Comp& comp, Proj& proj)
 {
     if (begin == end) {
@@ -11594,7 +11604,7 @@ private:
 
     template <typename I, typename O, typename R>
     static std::enable_if_t<
-            InputIterator<O> && Same<value_type_t<I>, value_type_t<O>>,
+            InputIterator<O> && Same<iter_value_t<I>, iter_value_t<O>>,
     O>
     dispatch_helper(I first, I last, O result, R& comp, priority_tag<1>)
     {
@@ -11701,13 +11711,13 @@ struct back_insert_iterator {
 
     explicit back_insert_iterator(Container& x) : cont_(std::addressof(x)) {}
 
-    back_insert_iterator& operator=(const value_type_t<Container>& value)
+    back_insert_iterator& operator=(const iter_value_t<Container>& value)
     {
         cont_->push_back(value);
         return *this;
     }
 
-    back_insert_iterator& operator=(value_type_t<Container>&& value)
+    back_insert_iterator& operator=(iter_value_t<Container>&& value)
     {
         cont_->push_back(std::move(value));
         return *this;
@@ -11789,11 +11799,11 @@ class counted_iterator {
 
 public:
     using iterator = I;
-    using difference_type = difference_type_t<I>;
+    using difference_type = iter_difference_t<I>;
 
     constexpr counted_iterator() = default;
 
-    constexpr counted_iterator(I x, difference_type_t<I> n)
+    constexpr counted_iterator(I x, iter_difference_t<I> n)
         : current_(x), cnt_(n)
     {}
 
@@ -11813,7 +11823,7 @@ public:
 
     constexpr I base() const { return current_; }
 
-    constexpr difference_type_t<I> count() const { return cnt_; }
+    constexpr iter_difference_t<I> count() const { return cnt_; }
 
     constexpr decltype(auto) operator*() { return *current_; }
 
@@ -11914,7 +11924,7 @@ public:
     // Making it a non-template doesn't lose much other than the InputIterator guard
     template <typename II = I, std::enable_if_t<InputIterator<II>, int> = 0>
 #endif
-    friend constexpr rvalue_reference_t<I>
+    friend constexpr iter_rvalue_reference_t<I>
     iter_move(const counted_iterator& i) noexcept(
         noexcept(ranges::iter_move(i.current_)))
     {
@@ -11933,7 +11943,7 @@ public:
 
 private:
     I current_{};
-    difference_type_t<I> cnt_{0};
+    iter_difference_t<I> cnt_{0};
 };
 
 template <typename I1, typename I2>
@@ -12011,27 +12021,27 @@ constexpr auto operator>=(const counted_iterator<I1>& x,
 template <typename I1, typename I2>
 constexpr auto operator-(const counted_iterator<I1>& x,
                          const counted_iterator<I2>& y)
-    -> std::enable_if_t<Common<I1, I2>, difference_type_t<I2>>
+    -> std::enable_if_t<Common<I1, I2>, iter_difference_t<I2>>
 {
     return y.count() - x.count();
 }
 
 template <typename I>
-constexpr difference_type_t<I> operator-(const counted_iterator<I>& x,
+constexpr iter_difference_t<I> operator-(const counted_iterator<I>& x,
                                          default_sentinel)
 {
     return -x.count();
 }
 
 template <typename I>
-constexpr difference_type_t<I> operator-(default_sentinel,
+constexpr iter_difference_t<I> operator-(default_sentinel,
                                          const counted_iterator<I>& y)
 {
     return y.count();
 }
 
 template <typename I>
-constexpr auto operator+(difference_type_t<I> n, const counted_iterator<I>& x)
+constexpr auto operator+(iter_difference_t<I> n, const counted_iterator<I>& x)
     -> std::enable_if_t<RandomAccessIterator<I>, counted_iterator<I>>
 {
     return x + n;
@@ -12044,12 +12054,12 @@ using counted_iterator_::counted_iterator;
 namespace detail {
 
 template <typename I, typename = void>
-struct counted_iterator_value_type_helper {
+struct counted_iterator_readable_traits_helper {
 };
 
 template <typename I>
-struct counted_iterator_value_type_helper<I, std::enable_if_t<Readable<I>>> {
-    using type = value_type_t<I>;
+struct counted_iterator_readable_traits_helper<I, std::enable_if_t<Readable<I>>> {
+    using value_type = iter_value_t<I>;
 };
 
 template <typename I, typename = void>
@@ -12064,8 +12074,8 @@ struct counted_iterator_category_helper<I, std::enable_if_t<InputIterator<I>>> {
 } // namespace detail
 
 template <typename I>
-struct value_type<counted_iterator<I>>
-        : detail::counted_iterator_value_type_helper<I> {
+struct readable_traits<counted_iterator<I>>
+        : detail::counted_iterator_readable_traits_helper<I> {
 };
 
 template <typename I>
@@ -12074,7 +12084,7 @@ struct iterator_category<counted_iterator<I>>
 };
 
 template <typename I>
-constexpr auto make_counted_iterator(I i, difference_type_t<I> n)
+constexpr auto make_counted_iterator(I i, iter_difference_t<I> n)
     -> std::enable_if_t<Iterator<I>, counted_iterator<I>>
 {
     return counted_iterator<I>(std::move(i), n);
@@ -12109,13 +12119,13 @@ struct front_insert_iterator {
 
     explicit front_insert_iterator(Container& x) : cont_(std::addressof(x)) {}
 
-    front_insert_iterator& operator=(const value_type_t<Container>& value)
+    front_insert_iterator& operator=(const iter_value_t<Container>& value)
     {
         cont_->push_front(value);
         return *this;
     }
 
-    front_insert_iterator& operator=(value_type_t<Container>&& value)
+    front_insert_iterator& operator=(iter_value_t<Container>&& value)
     {
         cont_->front_back(std::move(value));
         return *this;
@@ -12178,14 +12188,14 @@ struct insert_iterator {
         : cont_(std::addressof(x)), it_(i)
     {}
 
-    insert_iterator& operator=(const value_type_t<Container>& value)
+    insert_iterator& operator=(const iter_value_t<Container>& value)
     {
         cont_->insert(it_, value);
         ++it_;
         return *this;
     }
 
-    insert_iterator& operator=(value_type_t<Container>&& value)
+    insert_iterator& operator=(iter_value_t<Container>&& value)
     {
         cont_->push_back(it_, std::move(value));
         ++it_;
@@ -12493,10 +12503,10 @@ class move_iterator {
 
 public:
     using iterator_type = I;
-    using difference_type = difference_type_t<I>;
-    using value_type = value_type_t<I>;
+    using difference_type = iter_difference_t<I>;
+    using value_type = iter_value_t<I>;
     using iterator_category = input_iterator_tag;
-    using reference = rvalue_reference_t<I>;
+    using reference = iter_rvalue_reference_t<I>;
 
     constexpr move_iterator() = default;
 
@@ -12594,7 +12604,7 @@ public:
         return iter_move(current_ + n);
     }
 
-    friend constexpr rvalue_reference_t<I>
+    friend constexpr iter_rvalue_reference_t<I>
     iter_move(const move_iterator& i) noexcept(
         noexcept(ranges::iter_move(i.current_)))
     {
@@ -12662,13 +12672,13 @@ constexpr auto operator>=(const move_iterator<I1>& x,
 
 template <typename I1, typename I2>
 constexpr auto operator-(const move_iterator<I1>& x, const move_iterator<I2>& y)
-    -> std::enable_if_t<SizedSentinel<I1, I2>, difference_type_t<I2>>
+    -> std::enable_if_t<SizedSentinel<I1, I2>, iter_difference_t<I2>>
 {
     return x.base() - y.base();
 }
 
 template <typename I>
-constexpr auto operator+(difference_type_t<I> n, const move_iterator<I>& x)
+constexpr auto operator+(iter_difference_t<I> n, const move_iterator<I>& x)
     -> std::enable_if_t<RandomAccessIterator<I>, move_iterator<I>>
 {
     return x + n;
@@ -12743,14 +12753,14 @@ constexpr auto operator!=(const move_sentinel<S>& s, const move_iterator<I>& i)
 
 template <typename I, typename S>
 constexpr auto operator-(const move_sentinel<S>& s, const move_iterator<I>& i)
-    -> std::enable_if_t<SizedSentinel<S, I>, difference_type_t<I>>
+    -> std::enable_if_t<SizedSentinel<S, I>, iter_difference_t<I>>
 {
     return s.base() - i.base();
 }
 
 template <typename I, typename S>
 constexpr auto operator-(const move_iterator<I>& i, const move_sentinel<S>& s)
-    -> std::enable_if_t<SizedSentinel<S, I>, difference_type_t<I>>
+    -> std::enable_if_t<SizedSentinel<S, I>, iter_difference_t<I>>
 {
     return i.base() - s.base();
 }
@@ -12942,10 +12952,10 @@ class reverse_iterator {
 
 public:
     using iterator_type = I;
-    using difference_type = difference_type_t<I>;
-    using value_type = value_type_t<I>;
+    using difference_type = iter_difference_t<I>;
+    using value_type = iter_value_t<I>;
     using iterator_category = detail::legacy_iterator_category_t<I>;
-    using reference = reference_t<I>;
+    using reference = iter_reference_t<I>;
     using pointer = I;
 
     constexpr reverse_iterator() = default;
@@ -13105,7 +13115,7 @@ operator<=(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 }
 
 template <typename I1, typename I2>
-constexpr std::enable_if_t<SizedSentinel<I1, I2>, difference_type_t<I2>>
+constexpr std::enable_if_t<SizedSentinel<I1, I2>, iter_difference_t<I2>>
 operator-(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 {
     return y.base() - x.base();
@@ -13113,7 +13123,7 @@ operator-(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 
 template <typename I>
 constexpr std::enable_if_t<RandomAccessIterator<I>, reverse_iterator<I>>
-operator+(difference_type_t<I> n, const reverse_iterator<I>& x)
+operator+(iter_difference_t<I> n, const reverse_iterator<I>& x)
 {
     return reverse_iterator<I>(x.base() - n);
 }
