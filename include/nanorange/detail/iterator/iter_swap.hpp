@@ -31,9 +31,9 @@ private:
                                       rvalue_reference_t<T1>>::value&&
             std::is_nothrow_assignable<iter_value_t<T1>&,
                                        rvalue_reference_t<T1>>::value&&
-                std::is_nothrow_assignable<reference_t<T1>,
+                std::is_nothrow_assignable<iter_reference_t<T1>,
                                            rvalue_reference_t<T2>>::value&&
-                    std::is_nothrow_assignable<reference_t<T1>,
+                    std::is_nothrow_assignable<iter_reference_t<T1>,
                                                iter_value_t<T2>>::value&&
                         std::is_nothrow_move_constructible<iter_value_t<T1>>::
                             value&& noexcept(
@@ -66,7 +66,7 @@ private:
         noexcept(ranges::swap(*std::forward<T>(t), *std::forward<U>(u))))
         -> std::enable_if_t<Readable<std::remove_reference_t<T>> &&
                             Readable<std::remove_reference_t<U>> &&
-                            SwappableWith<reference_t<T>, reference_t<U>>>
+                            SwappableWith<iter_reference_t<T>, iter_reference_t<U>>>
     {
         ranges::swap(*std::forward<T>(t), *std::forward<U>(u));
     }

@@ -20,7 +20,7 @@ struct Readable_req {
     template <typename In>
     auto requires_()
         -> decltype(std::declval<iter_value_t<In>>(),
-                               std::declval<reference_t<In>>(),
+                               std::declval<iter_reference_t<In>>(),
                                std::declval<rvalue_reference_t<In>>());
 };
 
@@ -30,8 +30,8 @@ auto Readable_fn(long) -> std::false_type;
 template <typename In>
 auto Readable_fn(int) -> std::enable_if_t<
      requires_<Readable_req, In> &&
-     CommonReference<reference_t<In>&&, iter_value_t<In>&> &&
-     CommonReference<reference_t<In>&&, rvalue_reference_t<In>&&> &&
+     CommonReference<iter_reference_t<In>&&, iter_value_t<In>&> &&
+     CommonReference<iter_reference_t<In>&&, rvalue_reference_t<In>&&> &&
      CommonReference<rvalue_reference_t<In>&&, const iter_value_t<In>&>,
              std::true_type>;
 
@@ -47,8 +47,8 @@ struct Writable_req {
     template <typename Out, typename T>
     auto requires_(Out&& o, T&& t) -> decltype(valid_expr(
         *o = std::forward<T>(t), *std::forward<Out>(o) = std::forward<T>(t),
-        const_cast<const reference_t<Out>&&>(*o) = std::forward<T>(t),
-        const_cast<const reference_t<Out>&&>(*std::forward<Out>(o)) =
+        const_cast<const iter_reference_t<Out>&&>(*o) = std::forward<T>(t),
+        const_cast<const iter_reference_t<Out>&&>(*std::forward<Out>(o)) =
             std::forward<T>(t)));
 };
 
@@ -243,7 +243,7 @@ struct RandomAccessIterator_req {
                    n + j, // same_rv<I>(n + j) -- FIXME: MSVC doesn't like this
                           // with I = int*, find out why
                    same_lv<I>(i -= n), same_rv<I>(j - n), j[n],
-                   requires_expr<Same<decltype(j[n]), reference_t<I>>>{}));
+                   requires_expr<Same<decltype(j[n]), iter_reference_t<I>>>{}));
 };
 
 template <typename>
@@ -273,8 +273,8 @@ template <typename I>
 auto ContiguousIterator_fn(int) -> std::enable_if_t<
     RandomAccessIterator<I> &&
     DerivedFrom<iterator_category_t<I>, contiguous_iterator_tag> &&
-    std::is_lvalue_reference<reference_t<I>>::value &&
-    Same<iter_value_t<I>, remove_cvref_t<reference_t<I>>>,
+    std::is_lvalue_reference<iter_reference_t<I>>::value &&
+    Same<iter_value_t<I>, remove_cvref_t<iter_reference_t<I>>>,
             std::true_type>;
 
 }

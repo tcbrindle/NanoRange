@@ -27,7 +27,7 @@ class common_iterator {
     class op_arrow_proxy {
         iter_value_t<I> keep_;
 
-        constexpr op_arrow_proxy(reference_t<I>&& x) : keep_(std::move(x)) {}
+        constexpr op_arrow_proxy(iter_reference_t<I>&& x) : keep_(std::move(x)) {}
 
     public:
         constexpr const iter_value_t<I>* operator->() const
@@ -49,8 +49,8 @@ class common_iterator {
 
     template <typename II>
     static constexpr auto do_op_arrow(const II& i, detail::priority_tag<1>)
-        -> std::enable_if_t<std::is_reference<reference_t<const II>>::value,
-                            std::add_pointer_t<reference_t<const II>>>
+        -> std::enable_if_t<std::is_reference<iter_reference_t<const II>>::value,
+                            std::add_pointer_t<iter_reference_t<const II>>>
     {
         auto&& tmp = *i;
         return std::addressof(tmp);
@@ -211,8 +211,8 @@ struct iterator_traits<::nano::common_iterator<I, S>> {
         ::nano::iter_difference_t<::nano::common_iterator<I, S>>;
     using value_type = ::nano::iter_value_t<::nano::common_iterator<I, S>>;
     using pointer =
-        std::add_pointer_t<::nano::reference_t<::nano::common_iterator<I, S>>>;
-    using reference = ::nano::reference_t<::nano::common_iterator<I, S>>;
+        std::add_pointer_t<::nano::iter_reference_t<::nano::common_iterator<I, S>>>;
+    using reference = ::nano::iter_reference_t<::nano::common_iterator<I, S>>;
     using iterator_category =
         std::conditional_t<::nano::ForwardIterator<I>,
                            std::forward_iterator_tag,

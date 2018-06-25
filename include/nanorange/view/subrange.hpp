@@ -205,7 +205,7 @@ public:
               typename = std::enable_if_t<
                     ForwardRange<C> && /*!View<C> &&*/
                     !detail::view_predicate_v<C> &&
-                    ConvertibleTo<reference_t<iterator_t<const R>>,
+                    ConvertibleTo<iter_reference_t<iterator_t<const R>>,
                                   iter_value_t<iterator_t<C>>> &&
                     Constructible<C, detail::range_common_iterator_t<const R>,
                                      detail::range_common_iterator_t<const R>>>>

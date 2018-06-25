@@ -38,7 +38,7 @@ TEST_CASE("iter.istream_iterator")
 		static_assert(nano::Same<iter_difference_t<I>, std::ptrdiff_t>, "");
 		static_assert(nano::Readable<I>, "");
 		static_assert(nano::Same<iter_value_t<I>, int>, "");
-		static_assert(nano::Same<reference_t<I>, const int&>, "");
+		static_assert(nano::Same<iter_reference_t<I>, const int&>, "");
 		static_assert(nano::Same<rvalue_reference_t<I>, const int&&>, "");
 		static_assert(nano::Iterator<I>, "");
 		static_assert(nano::InputIterator<I>, "");

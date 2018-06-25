@@ -191,11 +191,11 @@ void test_proxy_iterator() {
 
 	static_assert(
 		ranges::Same<
-			ranges::reference_t<proxy_iterator<A>>,
+			ranges::iter_reference_t<proxy_iterator<A>>,
 			std::reference_wrapper<A>>, "");
 	static_assert(
 		ranges::Same<
-			ranges::reference_t<const proxy_iterator<A>>,
+			ranges::iter_reference_t<const proxy_iterator<A>>,
 			std::reference_wrapper<A>>, "");
 	static_assert(
 		ranges::Same<

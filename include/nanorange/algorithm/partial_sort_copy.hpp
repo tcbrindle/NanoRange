@@ -36,9 +36,9 @@ private:
         const auto len = nano::distance(result_first, r);
 
         while (first != last) {
-            reference_t<I1>&& x = *first;
+            iter_reference_t<I1>&& x = *first;
             if (nano::invoke(comp, nano::invoke(proj1, x), nano::invoke(proj2, *result_first))) {
-                *result_first = std::forward<reference_t<I1>>(x);
+                *result_first = std::forward<iter_reference_t<I1>>(x);
                 detail::sift_down_n(result_first, len, result_first, comp, proj2);
             }
             ++first;

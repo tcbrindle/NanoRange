@@ -29,7 +29,7 @@ public:
     using difference_type = iter_difference_t<I>;
     using value_type = iter_value_t<I>;
     using iterator_category = detail::legacy_iterator_category_t<I>;
-    using reference = reference_t<I>;
+    using reference = iter_reference_t<I>;
     using pointer = I;
 
     constexpr reverse_iterator() = default;

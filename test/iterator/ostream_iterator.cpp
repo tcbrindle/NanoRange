@@ -40,7 +40,7 @@ TEST_CASE("iter.output_iterator") {
 	static_assert(models::WeaklyIncrementable<I>, "");
 	static_assert(models::Same<iter_difference_t<I>, std::ptrdiff_t>, "");
 	static_assert(models::Iterator<I>, "");
-	static_assert(models::Same<reference_t<I>, I&>, "");
+	static_assert(models::Same<iter_reference_t<I>, I&>, "");
 	static_assert(models::OutputIterator<I, const int&>, "");
 	static_assert(!models::InputIterator<I>, "");
 

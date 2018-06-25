@@ -38,7 +38,7 @@ namespace {
 		static_assert(nano::Same<typename traits::off_type, iter_difference_t<I>>, "");
 		static_assert(nano::Same<charT, iter_value_t<I>>, "");
 		static_assert(nano::Readable<I>, "");
-		static_assert(nano::Same<charT, reference_t<I>>, "");
+		static_assert(nano::Same<charT, iter_reference_t<I>>, "");
 		static_assert(nano::Same<charT, rvalue_reference_t<I>>, "");
 		static_assert(nano::Iterator<I>, "");
 		static_assert(nano::Same<input_iterator_tag, iterator_category_t<I>>, "");
