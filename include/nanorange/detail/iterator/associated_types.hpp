@@ -13,62 +13,70 @@
 NANO_BEGIN_NAMESPACE
 
 template <typename>
-struct difference_type;
+struct incrementable_traits;
 
 namespace detail {
 
+struct empty {};
+
+template <typename T>
+struct with_difference_type {
+    using difference_type = T;
+};
+
 template <typename, typename = void>
-struct difference_type_ {
+struct incrementable_traits_helper {
 };
 
 // Workaround for GCC silliness: void* has no difference_type
 // FIXME: This is required to stop WeaklyIncrementable<void*> being a hard error
 // Can we formulate the concept differently to avoid the need for this hack?
 template <>
-struct difference_type_<void*> {};
+struct incrementable_traits_helper<void*> {};
 
 template <typename T>
-struct difference_type_<T*>
-    : std::enable_if<std::is_object<T>::value, std::ptrdiff_t> {
+struct incrementable_traits_helper<T*>
+    : std::conditional_t<std::is_object<T>::value,
+            with_difference_type<std::ptrdiff_t>, empty> {
 };
 
 template <class I>
-struct difference_type_<const I> : difference_type<std::decay_t<I>> {
+struct incrementable_traits_helper<const I> : incrementable_traits<std::decay_t<I>> {
 };
 
 template <typename, typename = void>
-struct has_member_difference_type_helper : std::false_type {};
+struct has_member_difference_type : std::false_type {};
 
 template <typename T>
-struct has_member_difference_type_helper<T, void_t<typename T::difference_type>>
+struct has_member_difference_type<T, void_t<typename T::difference_type>>
     : std::true_type{};
 
-template <typename T, typename = void>
+template <typename T>
 constexpr bool has_member_difference_type_v =
-        has_member_difference_type_helper<T>::value;
+        has_member_difference_type<T>::value;
 
 template <typename T>
-struct difference_type_<T, std::enable_if_t<has_member_difference_type_v<T>>> {
-    using type = typename T::difference_type;
+struct incrementable_traits_helper<T, std::enable_if_t<has_member_difference_type_v<T>>> {
+    using difference_type = typename T::difference_type;
 };
 
 template <typename T>
-struct difference_type_<
+struct incrementable_traits_helper<
     T, std::enable_if_t<!std::is_pointer<T>::value &&
                         !has_member_difference_type_v<T> &&
                         Integral<decltype(std::declval<const T&>() -
                                           std::declval<const T&>())>>>
-    : std::make_signed<decltype(std::declval<T>() - std::declval<T>())> {
+    : with_difference_type<std::make_signed_t<decltype(std::declval<T>() - std::declval<T>())>> {
 };
 
 } // namespace detail
 
 template <typename T>
-struct difference_type : detail::difference_type_<T> {
+struct incrementable_traits : detail::incrementable_traits_helper<T> {
 };
 
 template <typename T>
-using difference_type_t = typename difference_type<T>::type;
+using difference_type_t = typename incrementable_traits<T>::difference_type;
 
 // [range.iterator.assoc.types.value_type]
 
@@ -76,8 +84,6 @@ template <typename>
 struct readable_traits;
 
 namespace detail {
-
-struct empty {};
 
 template <typename T>
 struct with_value_type {

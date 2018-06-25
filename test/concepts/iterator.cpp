@@ -63,7 +63,7 @@ namespace ns {
 	using iter_value_t = ranges::iter_value_t<I>;
 
 	using ranges::readable_traits;
-	using ranges::difference_type;
+	using ranges::incrementable_traits;
 	using ranges::iterator_category;
 
 	using ranges::input_iterator_tag;
