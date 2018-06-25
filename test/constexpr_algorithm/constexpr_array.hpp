@@ -3,6 +3,7 @@
 
 // constexpr std::array implementation for testing
 
+#include <nanorange/algorithm/equal.hpp>
 #include <nanorange/algorithm/fill.hpp>
 
 template <typename T, std::size_t N>
@@ -47,6 +48,16 @@ struct carray {
     constexpr void swap(carray& other)
     {
         nano::swap(arr_, other.arr_);
+    }
+
+    friend constexpr bool operator==(const carray& lhs, const carray& rhs)
+    {
+        return nano::equal(lhs, rhs);
+    }
+
+    friend constexpr bool operator!=(const carray& lhs, const carray& rhs)
+    {
+        return !(lhs == rhs);
     }
 
     T arr_[N];

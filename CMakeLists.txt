@@ -47,6 +47,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/minmax_element.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/mismatch.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/move.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/next_permutation.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/none_of.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/partial_sort.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/partial_sort_copy.hpp
@@ -83,7 +84,6 @@ target_sources(nanorange INTERFACE
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/inplace_merge.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/is_permutation.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/next_permutation.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/nth_element.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/prev_permutation.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/stable_partition.hpp
