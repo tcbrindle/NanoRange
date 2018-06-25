@@ -55,6 +55,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/partition_copy.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/partition_point.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/pop_heap.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/prev_permutation.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/push_heap.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/remove.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/remove_copy.hpp
@@ -85,7 +86,6 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/inplace_merge.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/is_permutation.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/nth_element.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/prev_permutation.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/stable_partition.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/stable_sort.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/unique_copy.hpp
