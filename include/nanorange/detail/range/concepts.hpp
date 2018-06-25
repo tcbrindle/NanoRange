@@ -75,7 +75,7 @@ auto convertible_to_helper(Deduced)
 struct SizedRange_req {
     template <typename T>
     auto requires_(T& t) -> decltype(
-        valid_expr(convertible_to_helper<difference_type_t<iterator_t<T>>>(
+        valid_expr(convertible_to_helper<iter_difference_t<iterator_t<T>>>(
             ranges::size(t))));
 };
 

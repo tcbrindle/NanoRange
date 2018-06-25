@@ -19,7 +19,7 @@ private:
     template <typename I, typename S, typename Gen>
     static constexpr I impl(I first, S last, Gen&& g)
     {
-        using diff_t = difference_type_t<I>;
+        using diff_t = iter_difference_t<I>;
         using distr_t = std::uniform_int_distribution<diff_t>;
         using param_t = typename distr_t::param_type;
 
@@ -39,7 +39,7 @@ public:
         RandomAccessIterator<I> &&
         Sentinel<S, I> &&
         UniformRandomBitGenerator<std::remove_reference_t<Gen>> &&
-        ConvertibleTo<invoke_result_t<Gen&>, difference_type_t<I>>,
+        ConvertibleTo<invoke_result_t<Gen&>, iter_difference_t<I>>,
         I>
     operator()(I first, S last, Gen&& gen) const
     {
@@ -51,7 +51,7 @@ public:
     constexpr std::enable_if_t<
             RandomAccessRange<Rng> &&
             UniformRandomBitGenerator<std::remove_reference_t<Gen>> &&
-            ConvertibleTo<invoke_result_t<Gen&>, difference_type_t<iterator_t<Rng>>>,
+            ConvertibleTo<invoke_result_t<Gen&>, iter_difference_t<iterator_t<Rng>>>,
     safe_iterator_t<Rng>>
     operator()(Rng&& rng, Gen&& gen) const
     {

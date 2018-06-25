@@ -64,7 +64,7 @@ class common_iterator {
     }
 
 public:
-    using difference_type = difference_type_t<I>;
+    using difference_type = iter_difference_t<I>;
 
     constexpr common_iterator() : is_sentinel_{false}, iter_{} {}
 
@@ -178,7 +178,7 @@ template <typename I2, typename I1, typename S1, typename S2>
 constexpr
 std::enable_if_t<SizedSentinel<I1, I2> && SizedSentinel<S1, I2> &&
                      SizedSentinel<S2, I2>,
-                 difference_type_t<I2>>
+                 iter_difference_t<I2>>
 operator-(const common_iterator<I1, S1>& x, const common_iterator<I2, S2>& y)
 {
     return x.is_sentinel_
@@ -208,7 +208,7 @@ namespace std {
 template <typename I, typename S>
 struct iterator_traits<::nano::common_iterator<I, S>> {
     using difference_type =
-        ::nano::difference_type_t<::nano::common_iterator<I, S>>;
+        ::nano::iter_difference_t<::nano::common_iterator<I, S>>;
     using value_type = ::nano::iter_value_t<::nano::common_iterator<I, S>>;
     using pointer =
         std::add_pointer_t<::nano::reference_t<::nano::common_iterator<I, S>>>;

@@ -23,10 +23,10 @@ private:
     friend struct is_heap_fn;
 
     template <typename I, typename Comp, typename Proj>
-    static constexpr I impl(I first, const difference_type_t<I> n, Comp& comp,
+    static constexpr I impl(I first, const iter_difference_t<I> n, Comp& comp,
                             Proj& proj)
     {
-        difference_type_t<I> p = 0, c = 1;
+        iter_difference_t<I> p = 0, c = 1;
 
         I pp = first;
 

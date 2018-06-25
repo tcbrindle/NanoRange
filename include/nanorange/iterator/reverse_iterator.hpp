@@ -26,7 +26,7 @@ class reverse_iterator {
 
 public:
     using iterator_type = I;
-    using difference_type = difference_type_t<I>;
+    using difference_type = iter_difference_t<I>;
     using value_type = iter_value_t<I>;
     using iterator_category = detail::legacy_iterator_category_t<I>;
     using reference = reference_t<I>;
@@ -189,7 +189,7 @@ operator<=(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 }
 
 template <typename I1, typename I2>
-constexpr std::enable_if_t<SizedSentinel<I1, I2>, difference_type_t<I2>>
+constexpr std::enable_if_t<SizedSentinel<I1, I2>, iter_difference_t<I2>>
 operator-(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 {
     return y.base() - x.base();
@@ -197,7 +197,7 @@ operator-(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 
 template <typename I>
 constexpr std::enable_if_t<RandomAccessIterator<I>, reverse_iterator<I>>
-operator+(difference_type_t<I> n, const reverse_iterator<I>& x)
+operator+(iter_difference_t<I> n, const reverse_iterator<I>& x)
 {
     return reverse_iterator<I>(x.base() - n);
 }

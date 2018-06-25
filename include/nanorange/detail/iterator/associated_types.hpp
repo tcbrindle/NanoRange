@@ -76,7 +76,7 @@ struct incrementable_traits : detail::incrementable_traits_helper<T> {
 };
 
 template <typename T>
-using difference_type_t = typename incrementable_traits<T>::difference_type;
+using iter_difference_t = typename incrementable_traits<T>::difference_type;
 
 // [range.iterator.assoc.types.value_type]
 

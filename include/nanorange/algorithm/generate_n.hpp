@@ -19,9 +19,9 @@ struct generate_n_fn {
                                    Invocable<F&> &&
                                    Writable<O, invoke_result_t<F&>>,
                                O>
-    operator()(O first, difference_type_t<O> n, F gen) const
+    operator()(O first, iter_difference_t<O> n, F gen) const
     {
-        for (difference_type_t<O> i{0}; i < n; ++i, ++first) {
+        for (iter_difference_t<O> i{0}; i < n; ++i, ++first) {
             *first = gen();
         }
 

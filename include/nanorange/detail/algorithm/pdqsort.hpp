@@ -137,7 +137,7 @@ constexpr bool partial_insertion_sort(I begin, I end, Comp& comp, Proj& proj)
         return true;
     }
 
-    difference_type_t<I> limit = 0;
+    iter_difference_t<I> limit = 0;
     for (I cur = begin + 1; cur != end; ++cur) {
         if (limit > pqdsort_partial_insertion_sort_limit) {
             return false;
@@ -349,8 +349,8 @@ constexpr std::pair<I, bool> partition_right_branchless(I begin, I end,
             last -= pdqsort_block_size;
     }
 
-    difference_type_t<I> l_size = 0, r_size = 0;
-    difference_type_t<I> unknown_left =
+    iter_difference_t<I> l_size = 0, r_size = 0;
+    iter_difference_t<I> unknown_left =
         (last - first) - ((num_r || num_l) ? pdqsort_block_size : 0);
     if (num_r) {
         // Handle leftover block by assigning the unknown elements to the other
@@ -531,7 +531,7 @@ template <bool Branchless, typename I, typename Comp, typename Proj>
 constexpr void pdqsort_loop(I begin, I end, Comp& comp, Proj& proj,
                             int bad_allowed, bool leftmost = true)
 {
-    using diff_t = difference_type_t<I>;
+    using diff_t = iter_difference_t<I>;
 
     // Use a while loop for tail recursion elimination.
     while (true) {

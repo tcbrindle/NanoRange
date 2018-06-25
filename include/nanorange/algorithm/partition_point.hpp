@@ -35,7 +35,7 @@ private:
     friend struct upper_bound_fn;
 
     template <typename I, typename Pred, typename Proj>
-    static constexpr I impl_n(I first, difference_type_t<I> n, Pred& pred,
+    static constexpr I impl_n(I first, iter_difference_t<I> n, Pred& pred,
                               Proj& proj)
     {
         while (n != 0) {
@@ -68,7 +68,7 @@ private:
     {
         // Probe exponentially for either end-of-range or an iterator
         // that is past the partition point (i.e., does not satisfy pred).
-        difference_type_t<I> n{1};
+        iter_difference_t<I> n{1};
 
         while (true) {
             auto m = first;

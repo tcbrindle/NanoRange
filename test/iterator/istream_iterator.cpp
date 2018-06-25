@@ -35,7 +35,7 @@ TEST_CASE("iter.istream_iterator")
 	{
 		using I = istream_iterator<int>;
 		static_assert(nano::WeaklyIncrementable<I>, "");
-		static_assert(nano::Same<difference_type_t<I>, std::ptrdiff_t>, "");
+		static_assert(nano::Same<iter_difference_t<I>, std::ptrdiff_t>, "");
 		static_assert(nano::Readable<I>, "");
 		static_assert(nano::Same<iter_value_t<I>, int>, "");
 		static_assert(nano::Same<reference_t<I>, const int&>, "");

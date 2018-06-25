@@ -76,14 +76,14 @@ template <class It> void test7(It i, It x) {
 }
 
 template <class It>
-void test8(It i, __stl2::difference_type_t<It> n, It x) {
+void test8(It i, __stl2::iter_difference_t<It> n, It x) {
 	const __stl2::reverse_iterator<It> r(i);
 	__stl2::reverse_iterator<It> rr = r + n;
 	CHECK(rr.base() == x);
 }
 
 template <class It>
-void test9(It i, __stl2::difference_type_t<It> n, It x) {
+void test9(It i, __stl2::iter_difference_t<It> n, It x) {
 	__stl2::reverse_iterator<It> r(i);
 	__stl2::reverse_iterator<It> &rr = r += n;
 	CHECK(r.base() == x);
@@ -103,14 +103,14 @@ template <class It> void test11(It i, It x) {
 	CHECK(&rr == &r);
 }
 template <class It>
-void test12(It i, __stl2::difference_type_t<It> n, It x) {
+void test12(It i, __stl2::iter_difference_t<It> n, It x) {
 	const __stl2::reverse_iterator<It> r(i);
 	__stl2::reverse_iterator<It> rr = r - n;
 	CHECK(rr.base() == x);
 }
 
 template <class It>
-void test13(It i, __stl2::difference_type_t<It> n, It x) {
+void test13(It i, __stl2::iter_difference_t<It> n, It x) {
 	__stl2::reverse_iterator<It> r(i);
 	__stl2::reverse_iterator<It> &rr = r -= n;
 	CHECK(r.base() == x);
@@ -163,7 +163,7 @@ template <class It> void test19(It l, It r, bool x) {
 }
 
 template <class It>
-void test20(It i, __stl2::difference_type_t<It> n, __stl2::iter_value_t<It> x) {
+void test20(It i, __stl2::iter_difference_t<It> n, __stl2::iter_value_t<It> x) {
 	const __stl2::reverse_iterator<It> r(i);
 	__stl2::iter_value_t<It> rr = r[n];
 	CHECK(rr == x);
@@ -230,7 +230,7 @@ public:
 
 template <class It>
 void
-test25(It i, __stl2::difference_type_t<It> n, It x)
+test25(It i, __stl2::iter_difference_t<It> n, It x)
 {
 	const __stl2::reverse_iterator<It> r(i);
 	__stl2::reverse_iterator<It> rr = n + r;

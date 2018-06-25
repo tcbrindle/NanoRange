@@ -92,7 +92,7 @@ template <typename I, typename S>
 struct subrange_data<I, S, true> {
     I begin_{};
     S end_{};
-    difference_type_t<I> size_ = 0;
+    iter_difference_t<I> size_ = 0;
 };
 
 // MSVC gets confused if enable_if conditions in template param lists are too
@@ -142,7 +142,7 @@ public:
 
     template <subrange_kind KK = K,
             typename = std::enable_if_t<KK == subrange_kind::sized>>
-    constexpr subrange(I i, S s, difference_type_t<I> n)
+    constexpr subrange(I i, S s, iter_difference_t<I> n)
             : data_{std::move(i), std::move(s), n} {}
 
     template <typename R, bool SS = StoreSize,
@@ -165,7 +165,7 @@ public:
             ConvertibleTo<sentinel_t<R>, S>&&
             KK == subrange_kind::sized, int> = 0>
 
-    constexpr subrange(R&& r, difference_type_t<I> n)
+    constexpr subrange(R&& r, iter_difference_t<I> n)
             : subrange(ranges::begin(r), ranges::end(r), n) {}
 
     template <typename PairLike_, bool SS = StoreSize,
@@ -182,7 +182,7 @@ public:
             std::enable_if_t<detail::PairlikeConvertibleTo<PairLike_, I, S> &&
                     KK == subrange_kind::sized,
                     int> = 0>
-    constexpr subrange(PairLike_&& r, difference_type_t<I> n)
+    constexpr subrange(PairLike_&& r, iter_difference_t<I> n)
             : subrange{std::get<0>(std::forward<PairLike_>(r)),
                        std::get<1>(std::forward<PairLike_>(r)), n} {}
 
@@ -227,7 +227,7 @@ public:
     template <subrange_kind KK = K, bool SS = StoreSize>
     constexpr auto size() const
     -> std::enable_if_t<KK == subrange_kind::sized && SS,
-            difference_type_t<I>>
+            iter_difference_t<I>>
     {
         return data_.size_;
     }
@@ -235,12 +235,12 @@ public:
     template <subrange_kind KK = K, bool SS = StoreSize>
     constexpr auto size() const
     -> std::enable_if_t<KK == subrange_kind::sized && !SS,
-            difference_type_t<I>>
+            iter_difference_t<I>>
     {
         return data_.end_ - data_.begin_;
     }
 
-    NANO_NODISCARD constexpr subrange next(difference_type_t<I> n = 1) const
+    NANO_NODISCARD constexpr subrange next(iter_difference_t<I> n = 1) const
     {
         auto tmp = *this;
         tmp.advance(n);
@@ -248,7 +248,7 @@ public:
     }
 
     template <typename II = I>
-    NANO_NODISCARD constexpr auto prev(difference_type_t<I> n = 1) const
+    NANO_NODISCARD constexpr auto prev(iter_difference_t<I> n = 1) const
     -> std::enable_if_t<BidirectionalIterator<II>, subrange>
     {
         auto tmp = *this;
@@ -257,7 +257,7 @@ public:
     }
 
     template <bool SS = StoreSize>
-    constexpr auto advance(difference_type_t<I> n)
+    constexpr auto advance(iter_difference_t<I> n)
     -> std::enable_if_t<SS, subrange&>
     {
         data_.size_ -= n - ranges::advance(data_.begin_, n, data_.end_);
@@ -265,7 +265,7 @@ public:
     }
 
     template <bool SS = StoreSize>
-    constexpr auto advance(difference_type_t<I> n)
+    constexpr auto advance(iter_difference_t<I> n)
     -> std::enable_if_t<!SS, subrange&>
     {
         ranges::advance(data_.begin_, n, data_.end_);
@@ -295,7 +295,7 @@ subrange(R&&, std::nullptr_t = nullptr)
     ->subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>;
 
 template <typename R, std::enable_if_t<detail::ForwardingRange<R>, int> = 0>
-subrange(R&&, difference_type_t<iterator_t<R>>) ->
+subrange(R&&, iter_difference_t<iterator_t<R>>) ->
     subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>;
 
 #endif
@@ -341,7 +341,7 @@ constexpr auto make_subrange(I i, S s)
 }
 
 template <typename I, typename S>
-constexpr auto make_subrange(I i, S s, difference_type_t<I> n)
+constexpr auto make_subrange(I i, S s, iter_difference_t<I> n)
     -> std::enable_if_t<Iterator<I> && Sentinel<S, I>,
                         decltype(subrange<I, S>{std::move(i), std::move(s)}, n)>
 {
@@ -365,7 +365,7 @@ constexpr auto make_subrange(R&& r)
 }
 
 template <typename R>
-constexpr auto make_subrange(R&& r, difference_type_t<R> n)
+constexpr auto make_subrange(R&& r, iter_difference_t<R> n)
 -> std::enable_if_t<detail::ForwardingRange<R>,
         subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>>
 {

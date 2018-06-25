@@ -29,18 +29,18 @@ private:
     }
 
     template <typename R>
-    static constexpr auto impl(R& r, difference_type_t<R> n)
+    static constexpr auto impl(R& r, iter_difference_t<R> n)
         -> std::enable_if_t<RandomAccessIterator<R>>
     {
         r += n;
     }
 
     template <typename I>
-    static constexpr auto impl(I& i, difference_type_t<I> n)
+    static constexpr auto impl(I& i, iter_difference_t<I> n)
         -> std::enable_if_t<BidirectionalIterator<I> &&
                             !RandomAccessIterator<I>>
     {
-        constexpr auto zero = difference_type_t<I>{0};
+        constexpr auto zero = iter_difference_t<I>{0};
 
         if (n > zero) {
             while (n-- > zero) {
@@ -54,10 +54,10 @@ private:
     }
 
     template <typename I>
-    static constexpr auto impl(I& i, difference_type_t<I> n)
+    static constexpr auto impl(I& i, iter_difference_t<I> n)
         -> std::enable_if_t<!BidirectionalIterator<I>>
     {
-        while (n-- > difference_type_t<I>{0}) {
+        while (n-- > iter_difference_t<I>{0}) {
             ++i;
         }
     }
@@ -85,8 +85,8 @@ private:
     }
 
     template <typename I, typename S>
-    static constexpr auto impl(I& i, difference_type_t<I> n, S bound)
-        -> std::enable_if_t<SizedSentinel<S, I>, difference_type_t<I>>
+    static constexpr auto impl(I& i, iter_difference_t<I> n, S bound)
+        -> std::enable_if_t<SizedSentinel<S, I>, iter_difference_t<I>>
     {
         if (fn::abs(n) >= fn::abs(bound - i)) {
             auto dist = bound - i;
@@ -99,12 +99,12 @@ private:
     }
 
     template <typename I, typename S>
-    static constexpr auto impl(I& i, difference_type_t<I> n, S bound)
+    static constexpr auto impl(I& i, iter_difference_t<I> n, S bound)
         -> std::enable_if_t<BidirectionalIterator<I> && !SizedSentinel<S, I>,
-                            difference_type_t<I>>
+                            iter_difference_t<I>>
     {
-        constexpr difference_type_t<I> zero{0};
-        difference_type_t<I> counter{0};
+        constexpr iter_difference_t<I> zero{0};
+        iter_difference_t<I> counter{0};
 
         if (n < zero) {
             do {
@@ -122,12 +122,12 @@ private:
     }
 
     template <typename I, typename S>
-    static constexpr auto impl(I& i, difference_type_t<I> n, S bound)
+    static constexpr auto impl(I& i, iter_difference_t<I> n, S bound)
         -> std::enable_if_t<!BidirectionalIterator<I> && !SizedSentinel<S, I>,
-                            difference_type_t<I>>
+                            iter_difference_t<I>>
     {
-        constexpr difference_type_t<I> zero{0};
-        difference_type_t<I> counter{0};
+        constexpr iter_difference_t<I> zero{0};
+        iter_difference_t<I> counter{0};
 
         while (n-- > zero && i != bound) {
             ++i;
@@ -139,7 +139,7 @@ private:
 
 public:
     template <typename I>
-    constexpr auto operator()(I& i, difference_type_t<I> n) const
+    constexpr auto operator()(I& i, iter_difference_t<I> n) const
         -> std::enable_if_t<Iterator<I>>
     {
         fn::impl(i, n);
@@ -153,8 +153,8 @@ public:
     }
 
     template <typename I, typename S>
-    constexpr auto operator()(I& i, difference_type_t<I> n, S bound) const
-        -> std::enable_if_t<Iterator<I> && Sentinel<S, I>, difference_type_t<I>>
+    constexpr auto operator()(I& i, iter_difference_t<I> n, S bound) const
+        -> std::enable_if_t<Iterator<I> && Sentinel<S, I>, iter_difference_t<I>>
     {
         return n - fn::impl(i, n, bound);
     }
@@ -172,16 +172,16 @@ struct fn {
 private:
     template <typename I, typename S>
     static constexpr auto impl(I i, S s)
-        -> std::enable_if_t<SizedSentinel<S, I>, difference_type_t<I>>
+        -> std::enable_if_t<SizedSentinel<S, I>, iter_difference_t<I>>
     {
         return s - i;
     }
 
     template <typename I, typename S>
     static constexpr auto impl(I i, S s)
-        -> std::enable_if_t<!SizedSentinel<S, I>, difference_type_t<I>>
+        -> std::enable_if_t<!SizedSentinel<S, I>, iter_difference_t<I>>
     {
-        difference_type_t<I> counter{0};
+        iter_difference_t<I> counter{0};
         while (i != s) {
             ++i;
             ++counter;
@@ -191,14 +191,14 @@ private:
 
     template <typename R>
     static constexpr auto impl(R&& r)
-        -> std::enable_if_t<SizedRange<R>, difference_type_t<iterator_t<R>>>
+        -> std::enable_if_t<SizedRange<R>, iter_difference_t<iterator_t<R>>>
     {
-        return static_cast<difference_type_t<iterator_t<R>>>(ranges::size(r));
+        return static_cast<iter_difference_t<iterator_t<R>>>(ranges::size(r));
     }
 
     template <typename R>
     static constexpr auto impl(R&& r)
-        -> std::enable_if_t<!SizedRange<R>, difference_type_t<iterator_t<R>>>
+        -> std::enable_if_t<!SizedRange<R>, iter_difference_t<iterator_t<R>>>
     {
         return fn::impl(ranges::begin(r), ranges::end(r));
     }
@@ -206,14 +206,14 @@ private:
 public:
     template <typename I, typename S>
     constexpr auto operator()(I first, S last) const
-        -> std::enable_if_t<Iterator<I> && Sentinel<S, I>, difference_type_t<I>>
+        -> std::enable_if_t<Iterator<I> && Sentinel<S, I>, iter_difference_t<I>>
     {
         return fn::impl(std::move(first), std::move(last));
     }
 
     template <typename R>
     constexpr auto operator()(R&& r) const
-        -> std::enable_if_t<Range<R>, difference_type_t<iterator_t<R>>>
+        -> std::enable_if_t<Range<R>, iter_difference_t<iterator_t<R>>>
     {
         return fn::impl(std::forward<R>(r));
     }
@@ -236,7 +236,7 @@ struct fn {
     }
 
     template <typename I>
-    constexpr auto operator()(I x, difference_type_t<I> n) const
+    constexpr auto operator()(I x, iter_difference_t<I> n) const
         -> std::enable_if_t<Iterator<I>, I>
     {
         ranges::advance(x, n);
@@ -252,7 +252,7 @@ struct fn {
     }
 
     template <typename I, typename S>
-    constexpr auto operator()(I x, difference_type_t<I> n, S bound) const
+    constexpr auto operator()(I x, iter_difference_t<I> n, S bound) const
         -> std::enable_if_t<Iterator<I> && Sentinel<S, I>, I>
     {
         ranges::advance(x, n, bound);
@@ -278,7 +278,7 @@ struct fn {
     }
 
     template <typename I>
-    constexpr auto operator()(I x, difference_type_t<I> n) const
+    constexpr auto operator()(I x, iter_difference_t<I> n) const
         -> std::enable_if_t<BidirectionalIterator<I>, I>
     {
         ranges::advance(x, -n);
@@ -286,7 +286,7 @@ struct fn {
     }
 
     template <typename I, typename S>
-    constexpr auto operator()(I x, difference_type_t<I> n, S bound) const
+    constexpr auto operator()(I x, iter_difference_t<I> n, S bound) const
         -> std::enable_if_t<BidirectionalIterator<I> && Sentinel<S, I>, I>
     {
         ranges::advance(x, -n, bound);

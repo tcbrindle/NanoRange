@@ -16,7 +16,7 @@ namespace detail {
 struct sort_heap_fn {
 private:
     template <typename I, typename Comp, typename Proj>
-    static constexpr I impl(I first, difference_type_t<I> n, Comp& comp,
+    static constexpr I impl(I first, iter_difference_t<I> n, Comp& comp,
                             Proj& proj)
     {
         if (n < 2) {

@@ -17,10 +17,10 @@ namespace detail {
 struct search_n_fn {
 private:
     template <typename I, typename S, typename T, typename Pred, typename Proj>
-    static constexpr I impl(I first, S last, difference_type_t<I> count,
+    static constexpr I impl(I first, S last, iter_difference_t<I> count,
                             const T& value, Pred pred, Proj& proj)
     {
-        if (count == difference_type_t<I>{0}) {
+        if (count == iter_difference_t<I>{0}) {
             return first;
         }
 
@@ -30,7 +30,7 @@ private:
             }
 
             I save = first;
-            difference_type_t<I> running_count{1};
+            iter_difference_t<I> running_count{1};
 
             while (true) {
                 if (running_count++ == count) {
@@ -55,7 +55,7 @@ private:
 public:
     template <typename I, typename S, typename T, typename Pred = equal_to<>,
         typename Proj = identity>
-    constexpr auto operator()(I first, S last, difference_type_t<I> count,
+    constexpr auto operator()(I first, S last, iter_difference_t<I> count,
                               const T& value, Pred pred = Pred{},
                               Proj proj = Proj{}) const
     -> std::enable_if_t<ForwardIterator<I> && Sentinel<S, I> &&
@@ -69,7 +69,7 @@ public:
     template <typename Rng, typename T, typename Pred = equal_to<>,
         typename Proj = identity>
     constexpr auto
-    operator()(Rng&& rng, difference_type_t<iterator_t<Rng>> count,
+    operator()(Rng&& rng, iter_difference_t<iterator_t<Rng>> count,
                const T& value, Pred pred = Pred{}, Proj proj = Proj{}) const
     -> std::enable_if_t<
         ForwardRange<Rng> &&

@@ -70,8 +70,8 @@ auto same_rv(Deduced &&) -> std::enable_if_t<Same<T, Deduced>, int>;
 struct WeaklyIncrementable_req {
     template <typename I>
     auto requires_(I i) -> decltype(
-        std::declval<difference_type_t<I>>(),
-        requires_expr<SignedIntegral<difference_type_t<I>>>{},
+        std::declval<iter_difference_t<I>>(),
+        requires_expr<SignedIntegral<iter_difference_t<I>>>{},
         same_lv<I>(++i), i++);
 };
 
@@ -127,8 +127,8 @@ namespace detail {
 struct SizedSentinel_req {
     template <typename S, typename I>
     auto requires_(const S& s, const I& i)
-        -> decltype(valid_expr(same_rv<difference_type_t<I>>(s - i),
-                               same_rv<difference_type_t<I>>(i - s)));
+        -> decltype(valid_expr(same_rv<iter_difference_t<I>>(s - i),
+                               same_rv<iter_difference_t<I>>(i - s)));
 };
 
 } // namespace detail
@@ -238,7 +238,7 @@ namespace detail {
 
 struct RandomAccessIterator_req {
     template <typename I>
-    auto requires_(I i, const I j, const difference_type_t<I> n) -> decltype(
+    auto requires_(I i, const I j, const iter_difference_t<I> n) -> decltype(
         valid_expr(same_lv<I>(i += n), same_rv<I>(j + n),
                    n + j, // same_rv<I>(n + j) -- FIXME: MSVC doesn't like this
                           // with I = int*, find out why

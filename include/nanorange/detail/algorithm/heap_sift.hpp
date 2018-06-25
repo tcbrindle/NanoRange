@@ -42,7 +42,7 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 template <typename I, typename Comp, typename Proj>
-constexpr void sift_up_n(I first, difference_type_t<I> n, Comp& comp,
+constexpr void sift_up_n(I first, iter_difference_t<I> n, Comp& comp,
                          Proj& proj)
 {
     if (n > 1) {
@@ -68,7 +68,7 @@ constexpr void sift_up_n(I first, difference_type_t<I> n, Comp& comp,
 }
 
 template <typename I, typename Comp, typename Proj>
-constexpr void sift_down_n(I first, difference_type_t<I> n, I start, Comp& comp,
+constexpr void sift_down_n(I first, iter_difference_t<I> n, I start, Comp& comp,
                            Proj& proj)
 {
     // left-child of start is at 2 * start + 1

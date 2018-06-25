@@ -48,7 +48,7 @@ namespace models {
 
 namespace ns {
 	template <class I>
-	using difference_type_t = ranges::difference_type_t<I>;
+	using iter_difference_t = ranges::iter_difference_t<I>;
 
 	template <class I>
 	using iterator_category_t = ranges::iterator_category_t<I>;
@@ -112,14 +112,14 @@ namespace associated_type_test {
 	//	struct S { using value_type = int; using element_type = int const; };
 //	CONCEPT_ASSERT(models::Same<int, ns::iter_value_t<S>>);
 
-	CONCEPT_ASSERT(models::Same<std::ptrdiff_t, ns::difference_type_t<int*>>);
-	CONCEPT_ASSERT(models::Same<std::ptrdiff_t, ns::difference_type_t<int[]>>);
-	CONCEPT_ASSERT(models::Same<std::ptrdiff_t, ns::difference_type_t<int[4]>>);
+	CONCEPT_ASSERT(models::Same<std::ptrdiff_t, ns::iter_difference_t<int*>>);
+	CONCEPT_ASSERT(models::Same<std::ptrdiff_t, ns::iter_difference_t<int[]>>);
+	CONCEPT_ASSERT(models::Same<std::ptrdiff_t, ns::iter_difference_t<int[4]>>);
 
 	//CONCEPT_ASSERT(!meta::is_trait<ns::difference_type<void>>());
 	//CONCEPT_ASSERT(!meta::is_trait<ns::difference_type<void*>>());
 
-	CONCEPT_ASSERT(models::Same<int, ns::difference_type_t<int>>);
+	CONCEPT_ASSERT(models::Same<int, ns::iter_difference_t<int>>);
 	CONCEPT_ASSERT(models::Same<ns::iterator_category_t<int*>, ns::contiguous_iterator_tag>);
 	CONCEPT_ASSERT(models::Same<ns::iterator_category_t<const int*>, ns::contiguous_iterator_tag>);
 

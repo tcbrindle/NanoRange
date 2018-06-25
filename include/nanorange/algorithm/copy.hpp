@@ -26,7 +26,7 @@ private:
     {
         const auto dist = last - first;
 
-        for (difference_type_t<I> i = 0; i < dist; ++i) {
+        for (iter_difference_t<I> i = 0; i < dist; ++i) {
             *result = *first;
             ++first;
             ++result;
@@ -82,9 +82,9 @@ struct copy_n_fn {
     constexpr std::enable_if_t<InputIterator<I> && WeaklyIncrementable<O> &&
                                    IndirectlyCopyable<I, O>,
                                std::pair<I, O>>
-    operator()(I first, difference_type_t<I> n, O result) const
+    operator()(I first, iter_difference_t<I> n, O result) const
     {
-        for (difference_type_t<I> i{}; i < n; i++) {
+        for (iter_difference_t<I> i{}; i < n; i++) {
             *result = *first;
             ++first;
             ++result;
