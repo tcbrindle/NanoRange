@@ -148,7 +148,7 @@ public:
     // Making it a non-template doesn't lose much other than the InputIterator guard
     template <typename II = I, std::enable_if_t<InputIterator<II>, int> = 0>
 #endif
-    friend constexpr rvalue_reference_t<I>
+    friend constexpr iter_rvalue_reference_t<I>
     iter_move(const counted_iterator& i) noexcept(
         noexcept(ranges::iter_move(i.current_)))
     {

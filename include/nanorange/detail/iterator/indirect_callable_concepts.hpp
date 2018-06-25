@@ -194,7 +194,7 @@ auto IndirectlyMovable_fn(long) -> std::false_type;
 template <typename In, typename Out>
 auto IndirectlyMovable_fn(int) -> std::enable_if_t<
         Readable<In> &&
-        Writable<Out, rvalue_reference_t<In>>,
+        Writable<Out, iter_rvalue_reference_t<In>>,
     std::true_type>;
 
 
@@ -214,8 +214,8 @@ auto IndirectlyMovableStorable_fn(int) -> std::enable_if_t<
         IndirectlyMovable<In, Out> &&
         Writable<Out, iter_value_t<In>> &&
         Movable<iter_value_t<In>> &&
-        Constructible<iter_value_t<In>, rvalue_reference_t<In>> &&
-        Assignable<iter_value_t<In>&, rvalue_reference_t<In>>,
+        Constructible<iter_value_t<In>, iter_rvalue_reference_t<In>> &&
+        Assignable<iter_value_t<In>&, iter_rvalue_reference_t<In>>,
     std::true_type>;
 
 }

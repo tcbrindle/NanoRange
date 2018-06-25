@@ -29,7 +29,7 @@ public:
     using difference_type = iter_difference_t<I>;
     using value_type = iter_value_t<I>;
     using iterator_category = input_iterator_tag;
-    using reference = rvalue_reference_t<I>;
+    using reference = iter_rvalue_reference_t<I>;
 
     constexpr move_iterator() = default;
 
@@ -127,7 +127,7 @@ public:
         return iter_move(current_ + n);
     }
 
-    friend constexpr rvalue_reference_t<I>
+    friend constexpr iter_rvalue_reference_t<I>
     iter_move(const move_iterator& i) noexcept(
         noexcept(ranges::iter_move(i.current_)))
     {

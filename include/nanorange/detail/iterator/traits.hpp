@@ -91,7 +91,7 @@ template <typename T>
 using iter_reference_t = typename detail::reference_helper<T>::type;
 
 template <typename T>
-using rvalue_reference_t = decltype(ranges::iter_move(std::declval<T&>()));
+using iter_rvalue_reference_t = decltype(ranges::iter_move(std::declval<T&>()));
 
 NANO_END_NAMESPACE
 

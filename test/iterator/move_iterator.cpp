@@ -199,13 +199,13 @@ void test_proxy_iterator() {
 			std::reference_wrapper<A>>, "");
 	static_assert(
 		ranges::Same<
-			ranges::rvalue_reference_t<proxy_iterator<A>>,
+			ranges::iter_rvalue_reference_t<proxy_iterator<A>>,
 			A&&>, "");
 
 	{
 		static_assert(
 			ranges::Same<
-				ranges::rvalue_reference_t<
+				ranges::iter_rvalue_reference_t<
 					ranges::move_iterator<proxy_iterator<A>>>,
 				A&&>, "");
 		auto first = ranges::make_move_iterator(proxy_iterator<A>{ranges::data(vec)}),
@@ -247,12 +247,12 @@ void test_proxy_iterator() {
 	{
 		static_assert(
 			ranges::Same<
-				ranges::rvalue_reference_t<
+				ranges::iter_rvalue_reference_t<
 					ranges::counted_iterator<proxy_iterator<A>>>,
 				A&&>, "");
 		static_assert(
 			ranges::Same<
-				ranges::rvalue_reference_t<
+				ranges::iter_rvalue_reference_t<
 					ranges::move_iterator<
 						ranges::counted_iterator<proxy_iterator<A>>>>,
 				A&&>, "");

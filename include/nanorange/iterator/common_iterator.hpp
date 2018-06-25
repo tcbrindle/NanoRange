@@ -129,7 +129,7 @@ public:
         return tmp;
     }
 
-    friend constexpr rvalue_reference_t<I> iter_move(const common_iterator& i)
+    friend constexpr iter_rvalue_reference_t<I> iter_move(const common_iterator& i)
     {
         return ranges::iter_move(i.iter_);
     }

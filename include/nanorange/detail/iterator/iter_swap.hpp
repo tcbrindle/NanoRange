@@ -28,11 +28,11 @@ private:
     template <typename T1, typename T2>
     static constexpr bool iter_exchange_move_noexcept =
         std::is_nothrow_constructible<iter_value_t<T1>,
-                                      rvalue_reference_t<T1>>::value&&
+                                      iter_rvalue_reference_t<T1>>::value&&
             std::is_nothrow_assignable<iter_value_t<T1>&,
-                                       rvalue_reference_t<T1>>::value&&
+                                       iter_rvalue_reference_t<T1>>::value&&
                 std::is_nothrow_assignable<iter_reference_t<T1>,
-                                           rvalue_reference_t<T2>>::value&&
+                                           iter_rvalue_reference_t<T2>>::value&&
                     std::is_nothrow_assignable<iter_reference_t<T1>,
                                                iter_value_t<T2>>::value&&
                         std::is_nothrow_move_constructible<iter_value_t<T1>>::

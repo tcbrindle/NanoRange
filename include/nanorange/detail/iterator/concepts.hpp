@@ -21,7 +21,7 @@ struct Readable_req {
     auto requires_()
         -> decltype(std::declval<iter_value_t<In>>(),
                                std::declval<iter_reference_t<In>>(),
-                               std::declval<rvalue_reference_t<In>>());
+                               std::declval<iter_rvalue_reference_t<In>>());
 };
 
 template <typename>
@@ -31,8 +31,8 @@ template <typename In>
 auto Readable_fn(int) -> std::enable_if_t<
      requires_<Readable_req, In> &&
      CommonReference<iter_reference_t<In>&&, iter_value_t<In>&> &&
-     CommonReference<iter_reference_t<In>&&, rvalue_reference_t<In>&&> &&
-     CommonReference<rvalue_reference_t<In>&&, const iter_value_t<In>&>,
+     CommonReference<iter_reference_t<In>&&, iter_rvalue_reference_t<In>&&> &&
+     CommonReference<iter_rvalue_reference_t<In>&&, const iter_value_t<In>&>,
              std::true_type>;
 
 } // namespace detail

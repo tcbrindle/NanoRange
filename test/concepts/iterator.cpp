@@ -57,7 +57,7 @@ namespace ns {
 	using iter_reference_t = ranges::iter_reference_t<I>;
 
 	template <class I>
-	using rvalue_reference_t = ranges::rvalue_reference_t<I>;
+	using iter_rvalue_reference_t = ranges::iter_rvalue_reference_t<I>;
 
 	template <class I>
 	using iter_value_t = ranges::iter_value_t<I>;
@@ -91,12 +91,12 @@ namespace associated_type_test {
 	CONCEPT_ASSERT(models::Same<int&, ns::iter_reference_t<B>>);
 	CONCEPT_ASSERT(models::Same<const int&, ns::iter_reference_t<const int*>>);
 
-	CONCEPT_ASSERT(models::Same<int&&, ns::rvalue_reference_t<int*>>);
-	CONCEPT_ASSERT(models::Same<int&&, ns::rvalue_reference_t<int[]>>);
-	CONCEPT_ASSERT(models::Same<int&&, ns::rvalue_reference_t<int[4]>>);
-	CONCEPT_ASSERT(models::Same<int&&, ns::rvalue_reference_t<A>>);
-	CONCEPT_ASSERT(models::Same<int&&, ns::rvalue_reference_t<B>>);
-	CONCEPT_ASSERT(models::Same<const int&&, ns::rvalue_reference_t<const int*>>);
+	CONCEPT_ASSERT(models::Same<int&&, ns::iter_rvalue_reference_t<int*>>);
+	CONCEPT_ASSERT(models::Same<int&&, ns::iter_rvalue_reference_t<int[]>>);
+	CONCEPT_ASSERT(models::Same<int&&, ns::iter_rvalue_reference_t<int[4]>>);
+	CONCEPT_ASSERT(models::Same<int&&, ns::iter_rvalue_reference_t<A>>);
+	CONCEPT_ASSERT(models::Same<int&&, ns::iter_rvalue_reference_t<B>>);
+	CONCEPT_ASSERT(models::Same<const int&&, ns::iter_rvalue_reference_t<const int*>>);
 
 	CONCEPT_ASSERT(models::Same<int, ns::iter_value_t<int*>>);
 	CONCEPT_ASSERT(models::Same<int, ns::iter_value_t<int[]>>);
