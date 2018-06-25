@@ -19,6 +19,13 @@ os: linux
 dist: trusty
 sudo: false
 
+# Do not build branches of the form "pr/*". By prefixing pull requests coming
+# from branches inside the repository with pr/, this avoids building both the
+# branch push _and_ the pull request.
+# Based on https://github.com/boostorg/hana/blob/master/.travis.yml
+branches:
+  except: /pr\/.*/
+
 matrix:
   include:
     #
