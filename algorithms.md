@@ -109,6 +109,7 @@ In addition, they are all available for use in `constexpr` functions.
 
 * next_permutation
 * prev_permutation
+* is_permutation
 
 ## Partially implemented (using STL) ##
 
@@ -134,7 +135,3 @@ CommonRange. Projections cannot be used.
 #### Set operations ####
 
 * inplace_merge
-
-#### Permutation operations ####
-
-* is_permutation

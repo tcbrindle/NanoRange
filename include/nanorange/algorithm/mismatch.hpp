@@ -18,6 +18,8 @@ namespace detail {
 // FIXME: Use tagged pair
 struct mismatch_fn {
 private:
+    friend struct is_permutation_fn;
+
     template <typename I1, typename S1, typename I2, typename Proj1,
               typename Proj2, typename Pred>
     static constexpr std::pair<I1, I2>

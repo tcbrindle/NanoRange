@@ -18,6 +18,7 @@ namespace detail {
 struct count_if_fn {
 private:
     friend struct count_fn;
+    friend struct is_permutation_fn;
 
     template <typename I, typename S, typename Proj, typename Pred>
     static constexpr iter_difference_t<I> impl(I first, S last, Pred& pred,

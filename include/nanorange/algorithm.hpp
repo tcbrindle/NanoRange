@@ -28,6 +28,7 @@
 #include <nanorange/algorithm/is_heap.hpp>
 #include <nanorange/algorithm/is_heap_until.hpp>
 #include <nanorange/algorithm/is_partitioned.hpp>
+#include <nanorange/algorithm/is_permutation.hpp>
 #include <nanorange/algorithm/is_sorted.hpp>
 #include <nanorange/algorithm/is_sorted_until.hpp>
 #include <nanorange/algorithm/lexicographical_compare.hpp>
@@ -80,7 +81,6 @@
 
 // Algorithms which reuse the STL implementation
 #include <nanorange/algorithm/stl/inplace_merge.hpp>
-#include <nanorange/algorithm/stl/is_permutation.hpp>
 #include <nanorange/algorithm/stl/nth_element.hpp>
 #include <nanorange/algorithm/stl/stable_partition.hpp>
 #include <nanorange/algorithm/stl/stable_sort.hpp>

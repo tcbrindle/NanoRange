@@ -22,34 +22,34 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/utility.hpp>
-#include <stl2/detail/algorithm/is_permutation.hpp>
-#include "../simple_test.hpp"
+#include <nanorange/algorithm/is_permutation.hpp>
+#include "../catch.hpp"
 #include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano;
+
+namespace {
 
 int comparison_count = 0;
 
-template <typename T>
-bool counting_equals( T const &a, T const &b )
-{
+template<typename T>
+bool counting_equals(T const &a, T const &b) {
 	++comparison_count;
 	return a == b;
 }
 
-struct S
-{
+struct S {
 	int i;
 };
 
-struct T
-{
+struct T {
 	int i;
 };
 
-int main()
+}
+
+TEST_CASE("alg.is_permutation")
 {
 	{
 		const int ia[] = {0};
@@ -855,6 +855,4 @@ int main()
 		CHECK(stl2::is_permutation(a, stl2::begin(b)));
 		CHECK(stl2::is_permutation(stl2::begin(a), stl2::end(a), stl2::begin(b)));
 	}
-
-	return ::test_result();
 }

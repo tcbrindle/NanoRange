@@ -17,7 +17,7 @@ namespace detail {
 
 struct any_of_fn {
 private:
-    // Allow none_of to use this implementation
+    friend struct is_permutation_fn;
     friend struct none_of_fn;
 
     template <typename I, typename S, typename Proj, typename Pred>
