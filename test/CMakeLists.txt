@@ -127,7 +127,7 @@ add_executable(test_nanorange
     algorithm/swap_ranges.cpp
     algorithm/transform.cpp
     algorithm/unique.cpp
-    #algorithm/unique_copy.cpp
+    algorithm/unique_copy.cpp
     algorithm/upper_bound.cpp
 
     concepts/compare.cpp
@@ -176,7 +176,7 @@ target_compile_definitions(test_nanorange PRIVATE "-DNANORANGE_NO_DEPRECATION_WA
 target_link_libraries(test_nanorange PRIVATE nanorange)
 
 if (CMAKE_COMPILER_IS_GNUCXX)
-    target_compile_options(test_nanorange PRIVATE -Wall -Wextra -pedantic -Wno-noexcept-type)
+    target_compile_options(test_nanorange PRIVATE -Wall -Wextra -pedantic -Wno-noexcept-type -Wno-attributes)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
