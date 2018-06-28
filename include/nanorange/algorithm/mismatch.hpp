@@ -21,7 +21,7 @@ private:
     template <typename I1, typename S1, typename I2, typename Proj1,
               typename Proj2, typename Pred>
     static constexpr std::pair<I1, I2>
-    impl3(I1 first1, S1 last1, I2 first2, Pred pred, Proj1 proj1, Proj2 proj2)
+    impl3(I1 first1, S1 last1, I2 first2, Pred& pred, Proj1& proj1, Proj2& proj2)
     {
         while (first1 != last1 &&
                nano::invoke(pred, nano::invoke(proj1, *first1),
@@ -36,8 +36,8 @@ private:
     template <typename I1, typename S1, typename I2, typename S2,
               typename Proj1, typename Proj2, typename Pred>
     static constexpr std::pair<I1, I2> impl4(I1 first1, S1 last1, I2 first2,
-                                             S2 last2, Pred pred, Proj1 proj1,
-                                             Proj2 proj2)
+                                             S2 last2, Pred& pred, Proj1& proj1,
+                                             Proj2& proj2)
     {
         while (first1 != last1 && first2 != last2 &&
                nano::invoke(pred, nano::invoke(proj1, *first1),
@@ -62,8 +62,8 @@ public:
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
         return mismatch_fn::impl3(std::move(first1), std::move(last1),
-                                  std::forward<I2>(first2), std::move(pred),
-                                  std::move(proj1), std::move(proj2));
+                                  std::forward<I2>(first2), pred,
+                                  proj1, proj2);
     }
 
     // range and a half
@@ -79,8 +79,8 @@ public:
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
         return mismatch_fn::impl3(nano::begin(rng1), nano::end(rng1),
-                                  std::forward<I2>(first2), std::move(pred),
-                                  std::move(proj1), std::move(proj2));
+                                  std::forward<I2>(first2), pred,
+                                  proj1, proj2);
     }
 
     // four legged
@@ -97,8 +97,7 @@ public:
     {
         return mismatch_fn::impl4(std::move(first1), std::move(last1),
                                   std::move(first2), std::move(last2),
-                                  std::move(pred), std::move(proj1),
-                                  std::move(proj2));
+                                  pred, proj1, proj2);
     }
 
     // two ranges
@@ -114,8 +113,7 @@ public:
     {
         return mismatch_fn::impl4(nano::begin(rng1), nano::end(rng1),
                                   nano::begin(rng2), nano::end(rng2),
-                                  std::move(pred), std::move(proj1),
-                                  std::move(proj2));
+                                  pred, proj1, proj2);
     }
 };
 

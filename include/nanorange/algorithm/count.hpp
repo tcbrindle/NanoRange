@@ -20,8 +20,8 @@ private:
     friend struct count_fn;
 
     template <typename I, typename S, typename Proj, typename Pred>
-    static constexpr iter_difference_t<I> impl(I first, S last, Pred pred,
-                                               Proj proj)
+    static constexpr iter_difference_t<I> impl(I first, S last, Pred& pred,
+                                               Proj& proj)
     {
         iter_difference_t<I> counter = 0;
 
@@ -43,7 +43,7 @@ public:
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
         return count_if_fn::impl(std::move(first), std::move(last),
-                                 std::move(pred), std::move(proj));
+                                 pred, proj);
     }
 
     template <typename Rng, typename Proj = identity, typename Pred>
@@ -54,7 +54,7 @@ public:
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return count_if_fn::impl(nano::begin(rng), nano::end(rng),
-                                 std::move(pred), std::move(proj));
+                                 pred, proj);
     }
 };
 } // namespace detail
@@ -84,8 +84,9 @@ public:
         iter_difference_t<I>>
     operator()(I first, S last, const T& value, Proj proj = Proj{}) const
     {
+        const auto pred = equal_to_pred<T>{value};
         return count_if_fn::impl(std::move(first), std::move(last),
-                                 equal_to_pred<T>{value}, std::move(proj));
+                                 pred, proj);
     }
 
     template <typename Rng, typename T, typename Proj = identity>
@@ -96,8 +97,9 @@ public:
         iter_difference_t<iterator_t<Rng>>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
     {
+        const auto pred = equal_to_pred<T>{value};
         return count_if_fn::impl(nano::begin(rng), nano::end(rng),
-                                 equal_to_pred<T>{value}, std::move(proj));
+                                 pred, proj);
     }
 };
 
