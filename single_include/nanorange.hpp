@@ -4057,11 +4057,11 @@ namespace detail {
 
 struct any_of_fn {
 private:
-    // Allow none_of to use this implementation
+    friend struct is_permutation_fn;
     friend struct none_of_fn;
 
     template <typename I, typename S, typename Proj, typename Pred>
-    static constexpr bool impl(I first, S last, Pred pred, Proj proj)
+    static constexpr bool impl(I first, S last, Pred& pred, Proj& proj)
     {
         while (first != last) {
             if (nano::invoke(pred, nano::invoke(proj, *first)) == true) {
@@ -4081,7 +4081,7 @@ public:
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
         return any_of_fn::impl(std::move(first), std::move(last),
-                               std::move(pred), std::move(proj));
+                               pred, proj);
     }
 
     template <typename Rng, typename Proj = identity, typename Pred>
@@ -4092,7 +4092,7 @@ public:
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return any_of_fn::impl(nano::begin(rng), nano::end(rng),
-                               std::move(pred), std::move(proj));
+                               pred, proj);
     }
 };
 
@@ -4579,10 +4579,11 @@ namespace detail {
 struct count_if_fn {
 private:
     friend struct count_fn;
+    friend struct is_permutation_fn;
 
     template <typename I, typename S, typename Proj, typename Pred>
-    static constexpr iter_difference_t<I> impl(I first, S last, Pred pred,
-                                               Proj proj)
+    static constexpr iter_difference_t<I> impl(I first, S last, Pred& pred,
+                                               Proj& proj)
     {
         iter_difference_t<I> counter = 0;
 
@@ -4604,7 +4605,7 @@ public:
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
         return count_if_fn::impl(std::move(first), std::move(last),
-                                 std::move(pred), std::move(proj));
+                                 pred, proj);
     }
 
     template <typename Rng, typename Proj = identity, typename Pred>
@@ -4615,7 +4616,7 @@ public:
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return count_if_fn::impl(nano::begin(rng), nano::end(rng),
-                                 std::move(pred), std::move(proj));
+                                 pred, proj);
     }
 };
 } // namespace detail
@@ -4645,8 +4646,9 @@ public:
         iter_difference_t<I>>
     operator()(I first, S last, const T& value, Proj proj = Proj{}) const
     {
+        const auto pred = equal_to_pred<T>{value};
         return count_if_fn::impl(std::move(first), std::move(last),
-                                 equal_to_pred<T>{value}, std::move(proj));
+                                 pred, proj);
     }
 
     template <typename Rng, typename T, typename Proj = identity>
@@ -4657,8 +4659,9 @@ public:
         iter_difference_t<iterator_t<Rng>>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
     {
+        const auto pred = equal_to_pred<T>{value};
         return count_if_fn::impl(nano::begin(rng), nano::end(rng),
-                                 equal_to_pred<T>{value}, std::move(proj));
+                                 pred, proj);
     }
 };
 
@@ -6750,6 +6753,355 @@ NANO_END_NAMESPACE
 
 #endif
 
+// nanorange/algorithm/is_permutation.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_IS_PERMUTATION_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_IS_PERMUTATION_HPP_INCLUDED
+
+
+
+// nanorange/algorithm/mismatch.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_MISMATCH_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_MISMATCH_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+// [range.mismatch]
+
+namespace detail {
+
+// FIXME: Use tagged pair
+struct mismatch_fn {
+private:
+    friend struct is_permutation_fn;
+
+    template <typename I1, typename S1, typename I2, typename Proj1,
+              typename Proj2, typename Pred>
+    static constexpr std::pair<I1, I2>
+    impl3(I1 first1, S1 last1, I2 first2, Pred& pred, Proj1& proj1, Proj2& proj2)
+    {
+        while (first1 != last1 &&
+               nano::invoke(pred, nano::invoke(proj1, *first1),
+                            nano::invoke(proj2, *first2))) {
+            ++first1;
+            ++first2;
+        }
+
+        return {first1, first2};
+    }
+
+    template <typename I1, typename S1, typename I2, typename S2,
+              typename Proj1, typename Proj2, typename Pred>
+    static constexpr std::pair<I1, I2> impl4(I1 first1, S1 last1, I2 first2,
+                                             S2 last2, Pred& pred, Proj1& proj1,
+                                             Proj2& proj2)
+    {
+        while (first1 != last1 && first2 != last2 &&
+               nano::invoke(pred, nano::invoke(proj1, *first1),
+                            nano::invoke(proj2, *first2))) {
+            ++first1;
+            ++first2;
+        }
+
+        return {first1, first2};
+    }
+
+public:
+    // three legged
+    template <typename I1, typename S1, typename I2, typename Proj1 = identity,
+              typename Proj2 = identity, typename Pred = equal_to<>>
+    NANO_DEPRECATED constexpr std::enable_if_t<
+        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<std::decay_t<I2>> &&
+        !InputRange<I1> &&
+        IndirectRelation<Pred, projected<I1, Proj1>, projected<std::decay_t<I2>, Proj2>>,
+        std::pair<I1, std::decay_t<I2>>>
+    operator()(I1 first1, S1 last1, I2&& first2, Pred pred = Pred{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return mismatch_fn::impl3(std::move(first1), std::move(last1),
+                                  std::forward<I2>(first2), pred,
+                                  proj1, proj2);
+    }
+
+    // range and a half
+    template <typename Rng1, typename I2, typename Proj1 = identity,
+              typename Proj2 = identity, typename Pred = equal_to<>>
+    NANO_DEPRECATED constexpr std::enable_if_t<
+        InputRange<Rng1> && InputIterator<std::decay_t<I2>> &&
+                !InputRange<I2> &&
+            IndirectRelation<Pred, projected<iterator_t<Rng1>, Proj1>,
+                             projected<std::decay_t<I2>, Proj2>>,
+        std::pair<safe_iterator_t<Rng1>, std::decay_t<I2>>>
+    operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return mismatch_fn::impl3(nano::begin(rng1), nano::end(rng1),
+                                  std::forward<I2>(first2), pred,
+                                  proj1, proj2);
+    }
+
+    // four legged
+    template <typename I1, typename S1, typename I2, typename S2,
+              typename Proj1 = identity, typename Proj2 = identity,
+              typename Pred = equal_to<>>
+    constexpr std::enable_if_t<
+        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
+            Sentinel<S2, I2> &&
+            IndirectRelation<Pred, projected<I1, Proj1>, projected<I2, Proj2>>,
+        std::pair<I1, I2>>
+    operator()(I1 first1, S1 last1, I2 first2, S2 last2, Pred pred = Pred{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return mismatch_fn::impl4(std::move(first1), std::move(last1),
+                                  std::move(first2), std::move(last2),
+                                  pred, proj1, proj2);
+    }
+
+    // two ranges
+    template <typename Rng1, typename Rng2, typename Proj1 = identity,
+              typename Proj2 = identity, typename Pred = equal_to<>>
+    constexpr std::enable_if_t<
+        InputRange<Rng1> && InputRange<Rng2> &&
+            IndirectRelation<Pred, projected<iterator_t<Rng1>, Proj1>,
+                             projected<iterator_t<Rng2>, Proj2>>,
+        std::pair<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>>>
+    operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return mismatch_fn::impl4(nano::begin(rng1), nano::end(rng1),
+                                  nano::begin(rng2), nano::end(rng2),
+                                  pred, proj1, proj2);
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::mismatch_fn, mismatch)
+
+NANO_END_NAMESPACE
+
+#endif
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct is_permutation_fn {
+private:
+    template <typename Pred, typename Val>
+    struct comparator
+    {
+        Pred& pred;
+        const Val& val;
+
+        template <typename T>
+        constexpr bool operator()(const T& t) const
+        {
+            return nano::invoke(pred, t, val);
+        }
+    };
+
+    template <typename I1, typename S1, typename I2, typename S2, typename Pred,
+              typename Proj1, typename Proj2>
+    static constexpr bool process_tail(I1 first1, S1 last1, I2 first2, S2 last2,
+                                       Pred& pred, Proj1& proj1, Proj2& proj2)
+    {
+        for (auto it = first1; it != last1; ++it) {
+            comparator<Pred, decltype(nano::invoke(proj1, *it))>
+                comp{pred, nano::invoke(proj1, *it)};
+
+            // Check whether we have already seen this value
+            if (any_of_fn::impl(first1, it, comp, proj1)) {
+                continue;
+            }
+
+            // Count how many times *it appears in range2
+            const auto count1 = count_if_fn::impl(first2, last2, comp, proj2);
+
+            // If we have a count of zero, we know the ranges are different
+            if (count1 == 0) {
+                return false;
+            }
+
+            // Count how many times *it appears in the remainder of range1
+            // (we can start from one)
+            const auto count2 = iter_difference_t<I1>{1} +
+                count_if_fn::impl(nano::next(it), last1, comp, proj1);
+
+            if (count1 != count2) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    template <typename I1, typename S1, typename I2, typename Pred,
+        typename Proj1, typename Proj2>
+    static constexpr bool impl3(I1 first1, S1 last1, I2 first2,
+                                Pred& pred, Proj1& proj1, Proj2& proj2)
+    {
+        // Strip equal prefixes from both ranges
+        auto result = mismatch_fn::impl3(std::move(first1), last1,
+                                         std::move(first2),
+                                         pred, proj1, proj2);
+        first1 = std::move(result).first;
+        first2 = std::move(result).second;
+
+        if (first1 == last1) {
+            return true;
+        }
+
+        // If we have only one value left in range1, it can't be in range2
+        const auto d = nano::distance(first1, last1);
+        if (d == 1) {
+            return false;
+        }
+
+        auto last2 = nano::next(first2, d);
+
+        return is_permutation_fn::process_tail(std::move(first1), std::move(last1),
+                                               std::move(first2), std::move(last2),
+                                               pred, proj1, proj2);
+    }
+
+    template <typename I1, typename S1, typename I2, typename S2,
+              typename Pred, typename Proj1, typename Proj2>
+    static constexpr bool impl4(I1 first1, S1 last1, I2 first2, S2 last2,
+                                Pred& pred, Proj1& proj1, Proj2& proj2)
+    {
+        // Strip equal prefixes from both ranges
+        auto result = mismatch_fn::impl4(std::move(first1), last1,
+                                         std::move(first2), last2,
+                                         pred, proj1, proj2);
+        first1 = std::move(result).first;
+        first2 = std::move(result).second;
+
+        // If we have reached the end of both ranges, they were the same
+        if (first1 == last1 && first2 == last2) {
+            return true;
+        }
+
+        // If we have different numbers of elements left in the ranges,
+        // they are not permutations of one another
+        if (nano::distance(first1, last1) != nano::distance(first2, last2)) {
+            return false;
+        }
+
+        return is_permutation_fn::process_tail(std::move(first1), std::move(last1),
+                                               std::move(first2), std::move(last2),
+                                               pred, proj1, proj2);
+    }
+
+public:
+    // Four-legged
+    template <typename I1, typename S1, typename I2, typename S2,
+              typename Pred = equal_to<>, typename Proj1 = identity,
+              typename Proj2 = identity>
+    constexpr
+        std::enable_if_t<ForwardIterator<I1> && Sentinel<S1, I1> &&
+                             ForwardIterator<I2> && Sentinel<S2, I2> &&
+                             IndirectlyComparable<I1, I2, Pred, Proj1, Proj2>,
+                         bool>
+    operator()(I1 first1, S1 last1, I2 first2, S2 last2, Pred pred = Pred{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        if /*constexpr*/ (SizedSentinel<S1, I1> && SizedSentinel<S2, I2>) {
+            if (nano::distance(first1, last1) != nano::distance(first2, last2)) {
+                return false;
+            }
+            return is_permutation_fn::impl3(std::move(first1), std::move(last1),
+                                            std::move(first2), pred,
+                                            proj1, proj2);
+        }
+
+        return is_permutation_fn::impl4(std::move(first1), std::move(last1),
+                                        std::move(first2), std::move(last2),
+                                        pred, proj1, proj2);
+    }
+
+    // Three-legged
+    template <typename I1, typename S1, typename I2,
+        typename Pred = equal_to<>, typename Proj1 = identity,
+        typename Proj2 = identity>
+    NANO_DEPRECATED
+    constexpr
+    std::enable_if_t<ForwardIterator<I1> && Sentinel<S1, I1> &&
+                     ForwardIterator<I2> &&
+                     IndirectlyComparable<I1, I2, Pred, Proj1, Proj2>,
+        bool>
+    operator()(I1 first1, S1 last1, I2 first2, Pred pred = Pred{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return is_permutation_fn::impl3(std::move(first1), std::move(last1),
+                                        std::move(first2), pred,
+                                        proj1, proj2);
+
+    }
+
+    // Two ranges
+    template <typename Rng1, typename Rng2, typename Pred = equal_to<>,
+              typename Proj1 = identity, typename Proj2 = identity>
+    constexpr std::enable_if_t<
+        ForwardRange<Rng1> && ForwardRange<Rng2> &&
+            IndirectlyComparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred,
+                                 Proj1, Proj2>,
+        bool>
+    operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        if (SizedRange<Rng1> && SizedRange<Rng2>) {
+            if (nano::distance(rng1) != nano::distance(rng2)) {
+                return false;
+            }
+
+            return is_permutation_fn::impl3(nano::begin(rng1), nano::end(rng1),
+                                            nano::begin(rng2), pred,
+                                            proj1, proj2);
+        }
+
+        return is_permutation_fn::impl4(nano::begin(rng1), nano::end(rng1),
+                                        nano::begin(rng2), nano::end(rng2),
+                                        pred, proj1, proj2);
+    }
+
+    // Range and a half
+    template <typename Rng1, typename I2, typename Pred = equal_to<>,
+        typename Proj1 = identity, typename Proj2 = identity>
+    NANO_DEPRECATED
+    constexpr std::enable_if_t<
+        ForwardRange<Rng1> && ForwardIterator<std::decay_t<I2>> &&
+        !Range<I2> &&
+        IndirectlyComparable<iterator_t<Rng1>, I2, Pred, Proj1, Proj2>,
+        bool>
+    operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const {
+        return is_permutation_fn::impl3(nano::begin(rng1), nano::end(rng1),
+                                        std::forward<I2>(first2), pred,
+                                        proj1, proj2);
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::is_permutation_fn, is_permutation)
+
+NANO_END_NAMESPACE
+
+#endif
+
 // nanorange/algorithm/is_sorted.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -7807,134 +8159,6 @@ NANO_END_NAMESPACE
 
 #endif
 
-// nanorange/algorithm/mismatch.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_MISMATCH_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_MISMATCH_HPP_INCLUDED
-
-
-
-NANO_BEGIN_NAMESPACE
-
-// [range.mismatch]
-
-namespace detail {
-
-// FIXME: Use tagged pair
-struct mismatch_fn {
-private:
-    template <typename I1, typename S1, typename I2, typename Proj1,
-              typename Proj2, typename Pred>
-    static constexpr std::pair<I1, I2>
-    impl3(I1 first1, S1 last1, I2 first2, Pred pred, Proj1 proj1, Proj2 proj2)
-    {
-        while (first1 != last1 &&
-               nano::invoke(pred, nano::invoke(proj1, *first1),
-                            nano::invoke(proj2, *first2))) {
-            ++first1;
-            ++first2;
-        }
-
-        return {first1, first2};
-    }
-
-    template <typename I1, typename S1, typename I2, typename S2,
-              typename Proj1, typename Proj2, typename Pred>
-    static constexpr std::pair<I1, I2> impl4(I1 first1, S1 last1, I2 first2,
-                                             S2 last2, Pred pred, Proj1 proj1,
-                                             Proj2 proj2)
-    {
-        while (first1 != last1 && first2 != last2 &&
-               nano::invoke(pred, nano::invoke(proj1, *first1),
-                            nano::invoke(proj2, *first2))) {
-            ++first1;
-            ++first2;
-        }
-
-        return {first1, first2};
-    }
-
-public:
-    // three legged
-    template <typename I1, typename S1, typename I2, typename Proj1 = identity,
-              typename Proj2 = identity, typename Pred = equal_to<>>
-    NANO_DEPRECATED constexpr std::enable_if_t<
-        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<std::decay_t<I2>> &&
-        !InputRange<I1> &&
-        IndirectRelation<Pred, projected<I1, Proj1>, projected<std::decay_t<I2>, Proj2>>,
-        std::pair<I1, std::decay_t<I2>>>
-    operator()(I1 first1, S1 last1, I2&& first2, Pred pred = Pred{},
-               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
-    {
-        return mismatch_fn::impl3(std::move(first1), std::move(last1),
-                                  std::forward<I2>(first2), std::move(pred),
-                                  std::move(proj1), std::move(proj2));
-    }
-
-    // range and a half
-    template <typename Rng1, typename I2, typename Proj1 = identity,
-              typename Proj2 = identity, typename Pred = equal_to<>>
-    NANO_DEPRECATED constexpr std::enable_if_t<
-        InputRange<Rng1> && InputIterator<std::decay_t<I2>> &&
-                !InputRange<I2> &&
-            IndirectRelation<Pred, projected<iterator_t<Rng1>, Proj1>,
-                             projected<std::decay_t<I2>, Proj2>>,
-        std::pair<safe_iterator_t<Rng1>, std::decay_t<I2>>>
-    operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{},
-               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
-    {
-        return mismatch_fn::impl3(nano::begin(rng1), nano::end(rng1),
-                                  std::forward<I2>(first2), std::move(pred),
-                                  std::move(proj1), std::move(proj2));
-    }
-
-    // four legged
-    template <typename I1, typename S1, typename I2, typename S2,
-              typename Proj1 = identity, typename Proj2 = identity,
-              typename Pred = equal_to<>>
-    constexpr std::enable_if_t<
-        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
-            Sentinel<S2, I2> &&
-            IndirectRelation<Pred, projected<I1, Proj1>, projected<I2, Proj2>>,
-        std::pair<I1, I2>>
-    operator()(I1 first1, S1 last1, I2 first2, S2 last2, Pred pred = Pred{},
-               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
-    {
-        return mismatch_fn::impl4(std::move(first1), std::move(last1),
-                                  std::move(first2), std::move(last2),
-                                  std::move(pred), std::move(proj1),
-                                  std::move(proj2));
-    }
-
-    // two ranges
-    template <typename Rng1, typename Rng2, typename Proj1 = identity,
-              typename Proj2 = identity, typename Pred = equal_to<>>
-    constexpr std::enable_if_t<
-        InputRange<Rng1> && InputRange<Rng2> &&
-            IndirectRelation<Pred, projected<iterator_t<Rng1>, Proj1>,
-                             projected<iterator_t<Rng2>, Proj2>>,
-        std::pair<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>>>
-    operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
-               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
-    {
-        return mismatch_fn::impl4(nano::begin(rng1), nano::end(rng1),
-                                  nano::begin(rng2), nano::end(rng2),
-                                  std::move(pred), std::move(proj1),
-                                  std::move(proj2));
-    }
-};
-
-} // namespace detail
-
-NANO_INLINE_VAR(detail::mismatch_fn, mismatch)
-
-NANO_END_NAMESPACE
-
-#endif
 
 // nanorange/algorithm/move.hpp
 //
@@ -8059,6 +8283,169 @@ NANO_END_NAMESPACE
 
 #endif
 
+// nanorange/algorithm/next_permutation.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+// Taken from Range-V3
+//
+// Copyright Eric Niebler 2014-2018
+//
+//===-------------------------- algorithm ---------------------------------===//
+//
+//                     The LLVM Compiler Infrastructure
+//
+// This file is dual licensed under the MIT and the University of Illinois Open
+// Source Licenses. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef NANORANGE_ALGORITHM_NEXT_PERMUTATION_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_NEXT_PERMUTATION_HPP_INCLUDED
+
+// nanorange/algorithm/reverse.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_REVERSE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_REVERSE_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct reverse_fn {
+private:
+    template <typename I>
+    static constexpr I impl(I first, I last)
+    {
+        I ret = last;
+        while (first != last && first !=  --last) {
+            nano::iter_swap(first, last);
+            ++first;
+        }
+
+        return ret;
+    }
+
+    template <typename I, typename S>
+    static constexpr std::enable_if_t<
+        !Same<I, S>, I>
+    impl(I first, S bound)
+    {
+        I last = next(first, bound);
+        return reverse_fn::impl(std::move(first), std::move(last));
+    }
+
+public:
+    template <typename I, typename S>
+    constexpr std::enable_if_t<
+        BidirectionalIterator<I> &&
+        Sentinel<S, I>,
+        I>
+    operator()(I first, S last) const
+    {
+        return reverse_fn::impl(std::move(first), std::move(last));
+    }
+
+    template <typename Rng>
+    constexpr std::enable_if_t<
+        BidirectionalRange<Rng>,
+        safe_iterator_t<Rng>>
+    operator()(Rng&& rng) const
+    {
+        return reverse_fn::impl(nano::begin(rng), nano::end(rng));
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::reverse_fn, reverse)
+
+NANO_END_NAMESPACE
+
+#endif
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct next_permutation_fn {
+private:
+    template <typename I, typename S, typename Comp, typename Proj>
+    static constexpr bool impl(I first, S last, Comp& comp, Proj& proj)
+    {
+        if (first == last) {
+            return false;
+        }
+
+        const I last_it = nano::next(first, last);
+        I i = last_it;
+
+        if (first == --i) {
+            return false;
+        }
+
+        while (true) {
+            I ip1 = i;
+
+            if (nano::invoke(comp, nano::invoke(proj, *--i),
+                             nano::invoke(proj, *ip1))) {
+                I j = last_it;
+                while (!nano::invoke(comp, nano::invoke(proj, *i),
+                                     nano::invoke(proj, *--j)));
+
+                nano::iter_swap(i, j);
+                nano::reverse(ip1, last_it);
+                return true;
+            }
+
+            if (i == first) {
+                nano::reverse(first, last);
+                return false;
+            }
+        }
+    }
+
+public:
+    template <typename I, typename S, typename Comp = less<>,
+              typename Proj = identity>
+    constexpr std::enable_if_t<
+        BidirectionalIterator<I> &&
+        Sentinel<S, I> &&
+        Sortable<I, Comp, Proj>, bool>
+    operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return next_permutation_fn::impl(std::move(first), std::move(last),
+                                         comp, proj);
+    }
+
+    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+        BidirectionalRange<Rng> &&
+        Sortable<iterator_t<Rng>, Comp, Proj>, bool>
+    operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return next_permutation_fn::impl(nano::begin(rng), nano::end(rng),
+                                         comp, proj);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::next_permutation_fn, next_permutation)
+
+NANO_END_NAMESPACE
+
+#endif
+
 // nanorange/algorithm/none_of.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -8085,7 +8472,7 @@ struct none_of_fn {
         bool>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
-        return !any_of_fn::impl(first, last, std::move(pred), std::move(proj));
+        return !any_of_fn::impl(first, last, pred, proj);
     }
 
     template <typename Rng, typename Proj = identity, typename Pred>
@@ -8096,7 +8483,7 @@ struct none_of_fn {
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return !any_of_fn::impl(nano::begin(rng), nano::end(rng),
-                                std::move(pred), std::move(proj));
+                                pred, proj);
     }
 };
 
@@ -8556,6 +8943,105 @@ NANO_END_NAMESPACE
 #endif
 
 
+
+// nanorange/algorithm/prev_permutation.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+// Taken from Range-V3
+//
+// Copyright Eric Niebler 2014-2018
+//
+//===-------------------------- algorithm ---------------------------------===//
+//
+//                     The LLVM Compiler Infrastructure
+//
+// This file is dual licensed under the MIT and the University of Illinois Open
+// Source Licenses. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef NANORANGE_ALGORITHM_PREV_PERMUTATION_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_PREV_PERMUTATION_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct prev_permutation_fn {
+private:
+    template <typename I, typename S, typename Comp, typename Proj>
+    static constexpr bool impl(I first, S last, Comp& comp, Proj& proj)
+    {
+        if (first == last) {
+            return false;
+        }
+
+        const I last_it = nano::next(first, last);
+        I i = last_it;
+
+        if (first == --i) {
+            return false;
+        }
+
+        while (true) {
+            I ip1 = i;
+
+            if (nano::invoke(comp, nano::invoke(proj, *ip1),
+                             nano::invoke(proj, *--i))) {
+                I j = last_it;
+
+                while (!nano::invoke(comp, nano::invoke(proj, *--j),
+                                     nano::invoke(proj, *i)));
+
+                nano::iter_swap(i, j);
+                nano::reverse(ip1, last_it);
+                return true;
+            }
+
+            if (i == first) {
+                nano::reverse(first, last_it);
+                return false;
+            }
+        }
+    }
+
+
+public:
+    template <typename I, typename S, typename Comp = less<>,
+              typename Proj = identity>
+    constexpr std::enable_if_t<
+        BidirectionalIterator<I> &&
+        Sentinel<S, I> &&
+        Sortable<I, Comp, Proj>, bool>
+    operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return prev_permutation_fn::impl(std::move(first), std::move(last),
+                                         comp, proj);
+    }
+
+    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    constexpr std::enable_if_t<
+        BidirectionalRange<Rng> &&
+        Sortable<iterator_t<Rng>, Comp, Proj>, bool>
+    operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
+    {
+        return prev_permutation_fn::impl(nano::begin(rng), nano::end(rng),
+                                         comp, proj);
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::prev_permutation_fn, prev_permutation)
+
+NANO_END_NAMESPACE
+
+#endif
 
 // nanorange/algorithm/push_heap.hpp
 //
@@ -9175,72 +9661,6 @@ NANO_END_NAMESPACE
 
 #endif
 
-// nanorange/algorithm/reverse.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_REVERSE_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_REVERSE_HPP_INCLUDED
-
-
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct reverse_fn {
-private:
-    template <typename I>
-    static constexpr I impl(I first, I last)
-    {
-        I ret = last;
-        while (first != last && first !=  --last) {
-            nano::iter_swap(first, last);
-            ++first;
-        }
-
-        return ret;
-    }
-
-    template <typename I, typename S>
-    static constexpr std::enable_if_t<
-        !Same<I, S>, I>
-    impl(I first, S bound)
-    {
-        I last = next(first, bound);
-        return reverse_fn::impl(std::move(first), std::move(last));
-    }
-
-public:
-    template <typename I, typename S>
-    constexpr std::enable_if_t<
-        BidirectionalIterator<I> &&
-        Sentinel<S, I>,
-        I>
-    operator()(I first, S last) const
-    {
-        return reverse_fn::impl(std::move(first), std::move(last));
-    }
-
-    template <typename Rng>
-    constexpr std::enable_if_t<
-        BidirectionalRange<Rng>,
-        safe_iterator_t<Rng>>
-    operator()(Rng&& rng) const
-    {
-        return reverse_fn::impl(nano::begin(rng), nano::end(rng));
-    }
-};
-
-} // namespace detail
-
-NANO_INLINE_VAR(detail::reverse_fn, reverse)
-
-NANO_END_NAMESPACE
-
-#endif
 
 // nanorange/algorithm/reverse_copy.hpp
 //
@@ -11215,157 +11635,6 @@ NANO_END_NAMESPACE
 
 #endif
 
-// nanorange/algorithm/stl/is_permutation.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_STL_IS_PERMUTATION_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_STL_IS_PERMUTATION_HPP_INCLUDED
-
-
-
-// TODO: Reimplement
-
-#include <algorithm>
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct is_permutation_fn {
-
-    // Four-legged
-    template <typename I1, typename I2, typename Pred = equal_to<>>
-    std::enable_if_t<
-        ForwardIterator<I1> &&
-        Cpp98Iterator<I1> &&
-        ForwardIterator<I2> &&
-        Cpp98Iterator<I1> &&
-        IndirectlyComparable<I1, I2, Pred>,
-        bool>
-    operator()(I1 first1, I1 last1, I2 first2, I2 last2, Pred pred = Pred{}) const
-    {
-        return std::is_permutation(std::move(first1), std::move(last1),
-                                   std::move(first2), std::move(last2),
-                                   std::ref(pred));
-    }
-
-    // Two ranges
-    template <typename Rng1, typename Rng2, typename Pred = equal_to<>>
-    std::enable_if_t<
-            ForwardRange<Rng1> &&
-            CommonRange<Rng1> &&
-            Cpp98Iterator<iterator_t<Rng1>> &&
-            ForwardRange<Rng2> &&
-            CommonRange<Rng2> &&
-            Cpp98Iterator<iterator_t<Rng2>> &&
-            IndirectlyComparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred>,
-            bool>
-    operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{}) const
-    {
-        return std::is_permutation(nano::begin(rng1), nano::end(rng1),
-                                   nano::begin(rng2), nano::end(rng2),
-                                   std::ref(pred));
-    }
-
-    // Three-legged
-    template <typename I1, typename I2, typename Pred = equal_to<>>
-    NANO_DEPRECATED
-    std::enable_if_t<
-            ForwardIterator<I1> &&
-            Cpp98Iterator<I1> &&
-            ForwardIterator<std::decay_t<I2>> &&
-            Cpp98Iterator<std::decay_t<I1>> &&
-            !ForwardRange<I2> &&
-            IndirectlyComparable<I1, std::decay_t<I2>, Pred>,
-            bool>
-    operator()(I1 first1, I1 last1, I2&& first2, Pred pred = Pred{}) const
-    {
-        return std::is_permutation(std::move(first1), std::move(last1),
-                                   std::forward<I2>(first2), std::ref(pred));
-    }
-
-    // Range and a half
-    template <typename Rng1, typename I2, typename Pred = equal_to<>>
-    NANO_DEPRECATED
-    std::enable_if_t<
-            ForwardRange<Rng1> &&
-            CommonRange<Rng1> &&
-            Cpp98Iterator<iterator_t<Rng1>> &&
-            ForwardIterator<std::decay_t<I2>> &&
-            Cpp98Iterator<std::decay_t<I2>> &&
-            !ForwardRange<I2> &&
-            IndirectlyComparable<iterator_t<Rng1>, std::decay_t<I2>, Pred>,
-            bool>
-    operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{}) const
-    {
-        return std::is_permutation(nano::begin(rng1), nano::end(rng1),
-                                   std::forward<I2>(first2), std::ref(pred));
-    }
-};
-
-}
-
-NANO_INLINE_VAR(detail::is_permutation_fn, is_permutation)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/next_permutation.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_NEXT_PERMUTATION_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_NEXT_PERMUTATION_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct next_permutation_fn {
-    template <typename I, typename Comp = less<>>
-    std::enable_if_t<
-        BidirectionalIterator<I> &&
-        Cpp98Iterator<I> &&
-        Sortable<I, Comp>, bool>
-    operator()(I first, I last, Comp comp = Comp{}) const
-    {
-        return std::next_permutation(std::move(first), std::move(last),
-                                     std::ref(comp));
-    }
-
-    template <typename Rng, typename Comp = less<>>
-    std::enable_if_t<
-        BidirectionalRange<Rng> &&
-        CommonRange<Rng> &&
-        Cpp98Iterator<iterator_t<Rng>> &&
-        Sortable<iterator_t<Rng>, Comp>, bool>
-    operator()(Rng&& rng, Comp comp = Comp{}) const
-    {
-        return std::next_permutation(nano::begin(rng), nano::end(rng),
-                                     std::ref(comp));
-    }
-};
-
-}
-
-NANO_INLINE_VAR(detail::next_permutation_fn, next_permutation)
-
-NANO_END_NAMESPACE
-
-#endif
-
 // nanorange/algorithm/stl/nth_element.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -11413,58 +11682,6 @@ struct nth_element_fn {
 }
 
 NANO_INLINE_VAR(detail::nth_element_fn, nth_element)
-
-NANO_END_NAMESPACE
-
-#endif
-
-// nanorange/algorithm/stl/prev_permutation.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_PREV_PERMUTATION_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_PREV_PERMUTATION_HPP_INCLUDED
-
-
-
-#include <algorithm>
-
-// TODO: Implement
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-struct prev_permutation_fn {
-    template <typename I, typename Comp = less<>>
-    std::enable_if_t<
-        BidirectionalIterator<I> &&
-        Cpp98Iterator<I> &&
-        Sortable<I, Comp>, bool>
-    operator()(I first, I last, Comp comp = Comp{}) const
-    {
-        return std::prev_permutation(std::move(first), std::move(last),
-                                     std::ref(comp));
-    }
-
-    template <typename Rng, typename Comp = less<>>
-    std::enable_if_t<
-        BidirectionalRange<Rng> &&
-        CommonRange<Rng> &&
-        Cpp98Iterator<iterator_t<Rng>> &&
-        Sortable<iterator_t<Rng>, Comp>, bool>
-    operator()(Rng&& rng, Comp comp = Comp{}) const
-    {
-        return std::prev_permutation(nano::begin(rng), nano::end(rng),
-                                     std::ref(comp));
-    }
-};
-
-}
-
-NANO_INLINE_VAR(detail::prev_permutation_fn, prev_permutation)
 
 NANO_END_NAMESPACE
 
