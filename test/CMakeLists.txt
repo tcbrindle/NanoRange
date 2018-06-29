@@ -16,6 +16,7 @@ add_executable(test_nanorange
 
     # Constexpr tests for algorithms
     constexpr_algorithm/modifying_seq_ops.cpp
+    constexpr_algorithm/permutation_ops.cpp
     constexpr_algorithm/sorting_ops.cpp
 
     # Range-V3/CMCSTL2 tests
@@ -52,7 +53,7 @@ add_executable(test_nanorange
     algorithm/is_heap_until3.cpp
     algorithm/is_heap_until4.cpp
     algorithm/is_partitioned.cpp
-    #algorithm/is_permutation.cpp
+    algorithm/is_permutation.cpp
     algorithm/is_sorted.cpp
     algorithm/is_sorted_until.cpp
     algorithm/lexicographical_compare.cpp
@@ -68,7 +69,7 @@ add_executable(test_nanorange
     algorithm/mismatch.cpp
     algorithm/move.cpp
     algorithm/move_backward.cpp
-    #algorithm/next_permutation.cpp
+    algorithm/next_permutation.cpp
     algorithm/none_of.cpp
     #algorithm/nth_element.cpp
     algorithm/partial_sort.cpp
@@ -77,7 +78,7 @@ add_executable(test_nanorange
     algorithm/partition_copy.cpp
     algorithm/partition_point.cpp
     algorithm/pop_heap.cpp
-    #algorithm/prev_permutation.cpp
+    algorithm/prev_permutation.cpp
     algorithm/push_heap.cpp
     algorithm/remove.cpp
     algorithm/remove_copy.cpp

@@ -22,48 +22,49 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/next_permutation.hpp>
-#include <stl2/detail/concepts/fundamental.hpp>
+#include <nanorange/algorithm/next_permutation.hpp>
 #include <cstring>
 #include <utility>
 #include <algorithm>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
-namespace ranges = __stl2;
+namespace ranges = nano::ranges;
 
-constexpr ranges::Integral factorial(ranges::Integral x)
-{
-	decltype(x) r = 1;
-	for (; 1 < x; --x)
-		r *= x;
-	return r;
+namespace {
+
+template <typename T>
+constexpr T factorial(T x) {
+    T r = 1;
+    for (; 1 < x; --x)
+        r *=x;
+    return r;
 }
 
 template <typename Iter, typename Sent = Iter>
 void test_iter()
 {
 	int ia[] = {1, 2, 3, 4, 5, 6};
-	const int sa = sizeof(ia)/sizeof(ia[0]);
+	const int sa = sizeof(ia) / sizeof(ia[0]);
 	int prev[sa];
-	for (int e = 0; e <= sa; ++e)
-	{
+	for (int e = 0; e <= sa; ++e) {
 		int count = 0;
 		bool x;
-		do
-		{
-			std::copy(ia, ia+e, prev);
-			x = ranges::next_permutation(Iter(ia), Sent(ia+e));
-			if(e > 1)
-			{
-				if(x)
-					CHECK(std::lexicographical_compare(prev, prev+e, ia, ia+e));
+		do {
+			std::copy(ia, ia + e, prev);
+			x = ranges::next_permutation(Iter(ia), Sent(ia + e));
+			if (e > 1) {
+				if (x)
+					CHECK(std::lexicographical_compare(prev, prev + e, ia,
+													   ia + e));
 				else
-					CHECK(std::lexicographical_compare(ia, ia+e, prev, prev+e));
+					CHECK(std::lexicographical_compare(ia, ia + e, prev,
+													   prev + e));
 			}
 			++count;
-		} while(x);
+		}
+		while (x);
 		CHECK(count == factorial(e));
 	}
 }
@@ -72,25 +73,26 @@ template <typename Iter, typename Sent = Iter>
 void test_range()
 {
 	int ia[] = {1, 2, 3, 4, 5, 6};
-	const int sa = sizeof(ia)/sizeof(ia[0]);
+	const int sa = sizeof(ia) / sizeof(ia[0]);
 	int prev[sa];
-	for (int e = 0; e <= sa; ++e)
-	{
+	for (int e = 0; e <= sa; ++e) {
 		int count = 0;
 		bool x;
-		do
-		{
-			std::copy(ia, ia+e, prev);
-			x = ranges::next_permutation(ranges::ext::make_range(Iter(ia), Sent(ia+e)));
-			if(e > 1)
-			{
-				if(x)
-					CHECK(std::lexicographical_compare(prev, prev+e, ia, ia+e));
+		do {
+			std::copy(ia, ia + e, prev);
+			x = ranges::next_permutation(
+					ranges::ext::make_range(Iter(ia), Sent(ia + e)));
+			if (e > 1) {
+				if (x)
+					CHECK(std::lexicographical_compare(prev, prev + e, ia,
+													   ia + e));
 				else
-					CHECK(std::lexicographical_compare(ia, ia+e, prev, prev+e));
+					CHECK(std::lexicographical_compare(ia, ia + e, prev,
+													   prev + e));
 			}
 			++count;
-		} while(x);
+		}
+		while (x);
 		CHECK(count == factorial(e));
 	}
 }
@@ -100,25 +102,25 @@ void test_iter_comp()
 {
 	typedef std::greater<int> C;
 	int ia[] = {6, 5, 4, 3, 2, 1};
-	const int sa = sizeof(ia)/sizeof(ia[0]);
+	const int sa = sizeof(ia) / sizeof(ia[0]);
 	int prev[sa];
-	for(int e = 0; e <= sa; ++e)
-	{
+	for (int e = 0; e <= sa; ++e) {
 		int count = 0;
 		bool x;
-		do
-		{
-			std::copy(ia, ia+e, prev);
-			x = ranges::next_permutation(Iter(ia), Sent(ia+e), C());
-			if(e > 1)
-			{
+		do {
+			std::copy(ia, ia + e, prev);
+			x = ranges::next_permutation(Iter(ia), Sent(ia + e), C());
+			if (e > 1) {
 				if (x)
-					CHECK(std::lexicographical_compare(prev, prev+e, ia, ia+e, C()));
+					CHECK(std::lexicographical_compare(prev, prev + e, ia,
+													   ia + e, C()));
 				else
-					CHECK(std::lexicographical_compare(ia, ia+e, prev, prev+e, C()));
+					CHECK(std::lexicographical_compare(ia, ia + e, prev,
+													   prev + e, C()));
 			}
 			++count;
-		} while (x);
+		}
+		while (x);
 		CHECK(count == factorial(e));
 	}
 }
@@ -128,32 +130,32 @@ void test_range_comp()
 {
 	typedef std::greater<int> C;
 	int ia[] = {6, 5, 4, 3, 2, 1};
-	const int sa = sizeof(ia)/sizeof(ia[0]);
+	const int sa = sizeof(ia) / sizeof(ia[0]);
 	int prev[sa];
-	for(int e = 0; e <= sa; ++e)
-	{
+	for (int e = 0; e <= sa; ++e) {
 		int count = 0;
 		bool x;
-		do
-		{
-			std::copy(ia, ia+e, prev);
-			x = ranges::next_permutation(ranges::ext::make_range(Iter(ia), Sent(ia+e)), C());
-			if(e > 1)
-			{
+		do {
+			std::copy(ia, ia + e, prev);
+			x = ranges::next_permutation(
+					ranges::ext::make_range(Iter(ia), Sent(ia + e)), C());
+			if (e > 1) {
 				if (x)
-					CHECK(std::lexicographical_compare(prev, prev+e, ia, ia+e, C()));
+					CHECK(std::lexicographical_compare(prev, prev + e, ia,
+													   ia + e, C()));
 				else
-					CHECK(std::lexicographical_compare(ia, ia+e, prev, prev+e, C()));
+					CHECK(std::lexicographical_compare(ia, ia + e, prev,
+													   prev + e, C()));
 			}
 			++count;
-		} while (x);
-			CHECK(count == factorial(e));
+		}
+		while (x);
+		CHECK(count == factorial(e));
 	}
 }
 
-struct c_str
-{
-	char const * value;
+struct c_str {
+	char const* value;
 
 	friend bool operator==(c_str a, c_str b)
 	{
@@ -167,12 +169,14 @@ struct c_str
 };
 
 // For debugging the projection test
-std::ostream &operator<<(std::ostream& sout, std::pair<int, c_str> p)
+std::ostream& operator<<(std::ostream& sout, std::pair<int, c_str> p)
 {
 	return sout << "{" << p.first << "," << p.second.value << "}";
 }
 
-int main()
+}
+
+TEST_CASE("alg.next_permutation")
 {
 	test_iter<bidirectional_iterator<int*> >();
 	test_iter<random_access_iterator<int*> >();
@@ -213,6 +217,4 @@ int main()
 	CHECK(ranges::next_permutation(ia, C(), &std::pair<int,c_str>::first));
 	::check_equal<std::pair<int, c_str>>(ia, {{6, {"six"}}, {5,{"five"}}, {4,{"four"}}, {2,{"two"}}, {1,{"one"}}, {3,{"three"}}});
 	// etc..
-
-	return ::test_result();
 }

@@ -24,7 +24,7 @@ struct none_of_fn {
         bool>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
-        return !any_of_fn::impl(first, last, std::move(pred), std::move(proj));
+        return !any_of_fn::impl(first, last, pred, proj);
     }
 
     template <typename Rng, typename Proj = identity, typename Pred>
@@ -35,7 +35,7 @@ struct none_of_fn {
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return !any_of_fn::impl(nano::begin(rng), nano::end(rng),
-                                std::move(pred), std::move(proj));
+                                pred, proj);
     }
 };
 

@@ -105,6 +105,12 @@ In addition, they are all available for use in `constexpr` functions.
 * max_element
 * minmax_element
 
+#### Permutation operations ####
+
+* next_permutation
+* prev_permutation
+* is_permutation
+
 ## Partially implemented (using STL) ##
 
 The following algorithms are implemented in Nanorange as wrappers around the
@@ -129,10 +135,3 @@ CommonRange. Projections cannot be used.
 #### Set operations ####
 
 * inplace_merge
-
-#### Permutation operations ####
-
-* is_permutation
-* next_permutation
-* prev_permutation
-
