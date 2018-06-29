@@ -50,6 +50,7 @@ In addition, they are all available for use in `constexpr` functions.
 * remove_copy
 * remove_copy_if
 * unique
+* unique_copy
 * reverse
 * reverse_copy
 * rotate
@@ -118,10 +119,6 @@ existing standard library implementation. Constraints and return types are based
 on the C++98 specification. This means that the iterator and sentinel types
 must be the same, or for the range-based overloads, the range must model
 CommonRange. Projections cannot be used.
-
-#### Modifying sequence operations ####
-
-* unique_copy
 
 #### Partitioning operations ####
 
