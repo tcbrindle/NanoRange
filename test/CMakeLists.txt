@@ -154,7 +154,7 @@ add_executable(test_nanorange
     iterator/unreachable.cpp
 
     memory/destroy.cpp
-    #memory/uninitialized_copy.cpp
+    memory/uninitialized_copy.cpp
     memory/uninitialized_default_construct.cpp
     #memory/uninitialized_fill.cpp
     #memory/uninitialized_move.cpp

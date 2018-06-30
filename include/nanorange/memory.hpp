@@ -7,6 +7,7 @@
 #ifndef NANORANGE_MEMORY_HPP_INCLUDED
 
 #include <nanorange/memory/destroy.hpp>
+#include <nanorange/memory/uninitialized_copy.hpp>
 #include <nanorange/memory/uninitialized_default_construct.hpp>
 #include <nanorange/memory/uninitialized_value_construct.hpp>
 

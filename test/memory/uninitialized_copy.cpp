@@ -10,27 +10,24 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <stl2/detail/memory/uninitialized_copy.hpp>
+#include <nanorange/memory/uninitialized_copy.hpp>
 
-#include <stl2/concepts.hpp>
-#include <stl2/detail/algorithm/equal.hpp>
-#include <stl2/detail/memory/destroy.hpp>
-#include <stl2/iterator.hpp>
-#include <stl2/view/repeat.hpp>
-#include <stl2/view/take_exactly.hpp>
+#include <nanorange/algorithm/equal.hpp>
+//#include <stl2/view/repeat.hpp>
+//#include <stl2/view/take_exactly.hpp>
 #include <algorithm>
 #include <cstdint>
 #include <vector>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "common.hpp"
 
-namespace ranges = __stl2;
+namespace ranges = nano::ranges;
 
 namespace {
 	template <typename T>
-	requires
-		ranges::CopyConstructible<T> &&
-		ranges::EqualityComparable<T>
+	//requires
+	//	ranges::CopyConstructible<T> &&
+	//	ranges::EqualityComparable<T>
 	void uninitialized_copy_test(const Array<T>& control)
 	{
 		auto independent = make_buffer<T>(control.size());
@@ -39,10 +36,10 @@ namespace {
 				std::min(
 					static_cast<std::ptrdiff_t>(control.size()),
 					static_cast<std::ptrdiff_t>(independent.size()));
-			CHECK(p.in() == ranges::next(control.begin(), distance_traversed));
-			CHECK(p.out() == ranges::next(independent.begin(), distance_traversed));
-			CHECK(ranges::equal(control.begin(), p.in(), independent.begin(), p.out()));
-			ranges::destroy(independent.begin(), p.out());
+			CHECK(p.in == ranges::next(control.begin(), distance_traversed));
+			CHECK(p.out == ranges::next(independent.begin(), distance_traversed));
+			CHECK(ranges::equal(control.begin(), p.in, independent.begin(), p.out));
+			ranges::destroy(independent.begin(), p.out);
 		};
 
 		test(control, independent,
@@ -103,7 +100,8 @@ namespace {
 
 	void throw_test() {
 		constexpr int n = 2 * S::throw_after;
-		auto control = ranges::ext::repeat_view<S>{S{}};
+		//auto control = ranges::ext::repeat_view<S>{S{}};
+		auto control = std::vector<S>(n);
 		auto independent = make_buffer<S>(n);
 		S::count = 0;
 		try {
@@ -113,9 +111,10 @@ namespace {
 			CHECK(S::count == S::throw_after);
 		}
 
-		auto control2 = ranges::ext::take_exactly_view<ranges::ext::repeat_view<S>>{
-			std::move(control), n
-		};
+		//auto control2 = ranges::ext::take_exactly_view<ranges::ext::repeat_view<S>>{
+		//	std::move(control), n
+		//};
+		auto control2 = control;
 		S::count = 0;
 		try {
 			ranges::uninitialized_copy(control2, independent.begin());
@@ -136,7 +135,7 @@ namespace {
  * - second array:  using a non-default constructor
  */
 
-int main()
+TEST_CASE("mem.unintialized_copy")
 {
 	using Test_type_one = Array<int>;
 	using Test_type_two = Array<std::vector<double>>;
@@ -157,6 +156,4 @@ int main()
 		std::vector<double>(1 << 12, 7.0)}});
 
 	throw_test();
-
-	return ::test_result();
 }
