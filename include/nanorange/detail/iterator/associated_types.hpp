@@ -130,12 +130,25 @@ template <typename T>
 constexpr bool has_member_element_type_v = exists_v<member_element_type_t, T>;
 
 template <typename T>
-struct readable_traits_helper<T, std::enable_if_t<has_member_value_type_v<T>>>
+struct readable_traits_helper<T, std::enable_if_t<
+    has_member_value_type_v<T> &&
+    !has_member_element_type_v<T>>>
     : member_value_type<T> {};
 
 template <typename T>
-struct readable_traits_helper<T, std::enable_if_t<has_member_element_type_v<T>>>
+struct readable_traits_helper<T, std::enable_if_t<
+    has_member_element_type_v<T> &&
+    !has_member_value_type_v<T>>>
     : member_element_type<T> {};
+
+// A type which has both value_type and element_type members must specialise
+// readable_traits to tell us which one to prefer -- see
+// https://github.com/ericniebler/stl2/issues/562
+template <typename T>
+struct readable_traits_helper<T, std::enable_if_t<
+    has_member_element_type_v<T> &&
+    has_member_value_type_v<T>>>
+{};
 
 } // namespace detail
 
