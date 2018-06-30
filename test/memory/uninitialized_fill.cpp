@@ -10,22 +10,20 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <stl2/detail/memory/uninitialized_fill.hpp>
+#include <nanorange/memory/uninitialized_fill.hpp>
 #include <cstdint>
-#include <stl2/concepts.hpp>
-#include <stl2/detail/algorithm/find_if.hpp>
-#include <stl2/detail/memory/destroy.hpp>
+#include <nanorange/algorithm/find.hpp>
 #include <vector>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "common.hpp"
 
-namespace ranges = __stl2;
+namespace ranges = nano::ranges;
 
 namespace {
 	constexpr auto test_size{1 << 10};
 
 	template <typename T>
-	requires ranges::CopyConstructible<T> && ranges::EqualityComparable<T>
+	//requires ranges::CopyConstructible<T> && ranges::EqualityComparable<T>
 	void uninitialized_fill_test(const T& x)
 	{
 		const auto independent = make_buffer<T>(test_size);
@@ -88,7 +86,7 @@ namespace {
 	}
 }
 
-int main()
+TEST_CASE("mem.uninitialized_fill")
 {
 	uninitialized_fill_test(0);
 	uninitialized_fill_test(0.0);
@@ -98,6 +96,4 @@ int main()
 	uninitialized_fill_test(Book{});
 
 	throw_test();
-
-	return ::test_result();
 }
