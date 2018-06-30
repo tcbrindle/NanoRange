@@ -402,3 +402,10 @@ static_assert(rng::InputIterator<rng::common_iterator<int*, rng::unreachable>>, 
 static_assert(rng::ForwardIterator<rng::common_iterator<int*, rng::unreachable>>, "");
 static_assert(rng::EqualityComparable<I>, "");
 using eq = decltype(std::declval<I const&>() == std::declval<I const&>());
+
+// Regression test for #24
+struct value_type_and_element_type {
+    using value_type = int;
+    using element_type = int;
+};
+static_assert(!rng::Readable<value_type_and_element_type>, "");
