@@ -123,7 +123,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::uninitialized_copy_fn, uninitialized_copy);
+NANO_INLINE_VAR(detail::uninitialized_copy_fn, uninitialized_copy)
 
 template <typename I, typename O>
 using uninitialized_copy_n_result = uninitialized_copy_result<I, O>;

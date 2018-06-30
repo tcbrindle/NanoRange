@@ -59,7 +59,7 @@ public:
 }
 
 NANO_INLINE_VAR(detail::uninitialized_default_construct_fn,
-                uninitialized_default_construct);
+                uninitialized_default_construct)
 
 namespace detail {
 

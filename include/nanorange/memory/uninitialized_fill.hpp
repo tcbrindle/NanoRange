@@ -59,7 +59,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::uninitialized_fill_fn, uninitialized_fill);
+NANO_INLINE_VAR(detail::uninitialized_fill_fn, uninitialized_fill)
 
 namespace detail {
 

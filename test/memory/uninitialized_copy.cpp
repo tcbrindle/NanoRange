@@ -101,7 +101,17 @@ namespace {
 	void throw_test() {
 		constexpr int n = 2 * S::throw_after;
 		//auto control = ranges::ext::repeat_view<S>{S{}};
-		auto control = std::vector<S>(n);
+		auto make_control = [] (int n) {
+		    std::vector<S> v;
+		    v.reserve(n);
+		    for (int i = 0; i < n; i++) {
+		        v.emplace_back();
+		    }
+		    return v;
+		};
+
+        auto control = make_control(n);
+
 		auto independent = make_buffer<S>(n);
 		S::count = 0;
 		try {
@@ -114,7 +124,7 @@ namespace {
 		//auto control2 = ranges::ext::take_exactly_view<ranges::ext::repeat_view<S>>{
 		//	std::move(control), n
 		//};
-		auto control2 = control;
+		auto control2 = make_control(n);
 		S::count = 0;
 		try {
 			ranges::uninitialized_copy(control2, independent.begin());
@@ -155,5 +165,5 @@ TEST_CASE("mem.unintialized_copy")
 		{6.1, 3.02, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9},
 		std::vector<double>(1 << 12, 7.0)}});
 
-	throw_test();
+	CHECK_NOTHROW(throw_test());
 }

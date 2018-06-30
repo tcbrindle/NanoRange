@@ -120,7 +120,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::uninitialized_move_fn, uninitialized_move);
+NANO_INLINE_VAR(detail::uninitialized_move_fn, uninitialized_move)
 
 template <typename I, typename O>
 using uninitialized_move_n_result = uninitialized_copy_result<I, O>;
