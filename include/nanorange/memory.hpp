@@ -8,5 +8,6 @@
 
 #include <nanorange/memory/destroy.hpp>
 #include <nanorange/memory/uninitialized_default_construct.hpp>
+#include <nanorange/memory/uninitialized_value_construct.hpp>
 
 #endif

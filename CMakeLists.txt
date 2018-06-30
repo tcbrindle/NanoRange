@@ -139,6 +139,7 @@ target_sources(nanorange INTERFACE
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/memory/destroy.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/memory/uninitialized_default_construct.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/memory/uninitialized_value_construct.hpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/interface.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/subrange.hpp

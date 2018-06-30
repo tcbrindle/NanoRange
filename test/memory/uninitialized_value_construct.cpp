@@ -10,28 +10,26 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <stl2/detail/memory/uninitialized_value_construct.hpp>
+#include <nanorange/memory/uninitialized_value_construct.hpp>
 #include <cstdint>
 #include <deque>
 #include <list>
 #include <memory>
 #include <string>
 #include <vector>
-#include <stl2/concepts.hpp>
-#include <stl2/detail/algorithm/find_if.hpp>
-#include <stl2/detail/memory/destroy.hpp>
-#include "../simple_test.hpp"
+#include <nanorange/algorithm/find.hpp>
+#include "../catch.hpp"
 #include "common.hpp"
 
-namespace ranges = __stl2;
+namespace ranges = nano::ranges;
 
 namespace {
 	constexpr auto N = 1 << 10;
 
 	template <typename T>
-	requires
-		ranges::DefaultConstructible<T> &&
-		ranges::EqualityComparable<T>
+	//requires
+	//	ranges::DefaultConstructible<T> &&
+	//	ranges::EqualityComparable<T>
 	void uninitialized_value_construct_test()
 	{
 		auto independent = make_buffer<T>(N);
@@ -88,7 +86,7 @@ namespace {
 	}
 }
 
-int main()
+TEST_CASE("mem.uninitialized_value_construct")
 {
 	using namespace std;
 
@@ -106,6 +104,4 @@ int main()
 	uninitialized_value_construct_test<unique_ptr<string>>();
 
 	throw_test();
-
-	return ::test_result();
 }
