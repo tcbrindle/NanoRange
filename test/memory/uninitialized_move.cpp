@@ -10,51 +10,57 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <stl2/detail/memory/uninitialized_move.hpp>
-#include <stl2/concepts.hpp>
-#include <stl2/detail/algorithm/all_of.hpp>
-#include <stl2/detail/algorithm/count_if.hpp>
-#include <stl2/detail/algorithm/equal.hpp>
-#include <stl2/detail/memory/destroy.hpp>
-#include <stl2/detail/span.hpp>
-#include <stl2/iterator.hpp>
-#include <stl2/view/repeat.hpp>
-#include <stl2/view/take_exactly.hpp>
+#include <nanorange/memory/uninitialized_move.hpp>
+#include <nanorange/algorithm/all_of.hpp>
+#include <nanorange/algorithm/count.hpp>
+#include <nanorange/algorithm/equal.hpp>
+//#include <stl2/detail/span.hpp>
+//#include <stl2/view/repeat.hpp>
+//#include <stl2/view/take_exactly.hpp>
 #include <algorithm>
 #include <cstdint>
 #include <memory>
 #include <vector>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "common.hpp"
 
-namespace ranges = __stl2;
-using ranges::ext::span;
+namespace ranges = nano::ranges;
+//using ranges::ext::span;
 
 namespace {
-	template <ranges::InputRange Rng>
-	requires requires {
+	template <typename Rng, typename = decltype(&ranges::iter_value_t<Rng>::empty)>
+	/*requires requires {
 		typename ranges::value_type_t<Rng>;
 		&ranges::value_type_t<Rng>::empty;
 		requires ranges::Invocable<
 			decltype(&ranges::value_type_t<Rng>::empty),
 			ranges::reference_t<ranges::iterator_t<const Rng>>>;
-	}
-	bool empty(const Rng& rng, const std::ptrdiff_t n) {
+	}*/
+	bool empty(const Rng& rng, const std::ptrdiff_t n, ranges::detail::priority_tag<1>)
+	{
 		return ranges::all_of(ranges::make_counted_iterator(rng.begin(), n), ranges::default_sentinel{},
-			&ranges::value_type_t<Rng>::empty);
+			&ranges::iter_value_t<Rng>::empty);
 	}
 
-	template <ranges::InputRange Rng>
-	requires requires {
-		typename ranges::value_type_t<Rng>;
-		requires std::is_fundamental<ranges::value_type_t<Rng>>::value;
-	}
-	bool empty(const Rng&, const std::ptrdiff_t) {
+	template <typename Rng>
+	//requires requires {
+	//	typename ranges::value_type_t<Rng>;
+	//	requires std::is_fundamental<ranges::value_type_t<Rng>>::value;
+	//}
+	bool empty(const Rng&, const std::ptrdiff_t, ranges::detail::priority_tag<0>) {
 		return true;
 	}
 
-	template <ranges::Copyable T>
-	void uninitialized_move_test(const Array<T>& control)
+	template <typename Rng>
+	bool empty(const Rng& rng, const std::ptrdiff_t n)
+	{
+		return empty(rng, n, ranges::detail::priority_tag<1>{});
+	}
+
+	//template <ranges::Copyable T>
+	template <typename T>
+	std::enable_if_t<ranges::Copyable<T>>
+	uninitialized_move_test(const Array<T>& control)
 	{
 		auto independent = make_buffer<T>(control.size());
 		auto to_move = control;
@@ -64,12 +70,12 @@ namespace {
 					static_cast<std::ptrdiff_t>(to_move.size()),
 					static_cast<std::ptrdiff_t>(independent.size()));
 			CHECK(::empty(to_move, distance_traversed));
-			CHECK(p.in() == ranges::next(to_move.begin(), distance_traversed));
-			CHECK(p.out() == ranges::next(independent.begin(), distance_traversed));
+			CHECK(p.in == ranges::next(to_move.begin(), distance_traversed));
+			CHECK(p.out == ranges::next(independent.begin(), distance_traversed));
 
 			CHECK(ranges::equal(control.begin(), control.begin() + distance_traversed,
-					independent.begin(), p.out()));
-			ranges::destroy(independent.begin(), p.out());
+					independent.begin(), p.out));
+			ranges::destroy(independent.begin(), p.out);
 		};
 
 		test(to_move, independent,
@@ -129,9 +135,9 @@ namespace {
 	void uninitialized_move_test(Move_only_t first)
 	{
 		auto test = [](const auto& s, const auto& d, const auto& p) {
-			CHECK(p.in() == s.end());
-			CHECK(p.out() == d.end());
-			auto n = ranges::count_if(s.begin(), p.in(), [](const auto& i){ return !i; });
+			CHECK(p.in == s.end());
+			CHECK(p.out == d.end());
+			auto n = ranges::count_if(s.begin(), p.in, [](const auto& i){ return !i; });
 			CHECK(static_cast<std::size_t>(n) == static_cast<std::size_t>(s.size()));
 		};
 
@@ -176,7 +182,8 @@ namespace {
 
 	void throw_test() {
 		constexpr int n = 2 * S::throw_after;
-		auto control = ranges::ext::repeat_view<S>{S{}};
+		//auto control = ranges::ext::repeat_view<S>{S{}};
+		auto control = std::vector<S>(n);
 		auto independent = make_buffer<S>(n);
 		S::count = 0;
 		try {
@@ -187,9 +194,10 @@ namespace {
 		}
 		S::count = 0;
 
-		auto control2 = ranges::ext::take_exactly_view<ranges::ext::repeat_view<S>>{
-			std::move(control), n
-		};
+		//auto control2 = ranges::ext::take_exactly_view<ranges::ext::repeat_view<S>>{
+		//	std::move(control), n
+		//};
+		auto control2 = std::vector<S>(n);
 		S::count = 0;
 		try {
 			ranges::uninitialized_move(control2, independent.begin());
@@ -210,7 +218,7 @@ namespace {
  * - initial array: using the default constructor
  * - second array:  using a non-default constructor
  */
-int main()
+TEST_CASE("mem.uninitialized_move")
 {
 	using Test_type_one = Array<int>;
 	using Test_type_two = Array<std::vector<double>>;
@@ -240,6 +248,4 @@ int main()
 		std::make_unique<std::string>("0")});
 
 	throw_test();
-
-	return ::test_result();
 }

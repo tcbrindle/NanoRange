@@ -157,7 +157,7 @@ add_executable(test_nanorange
     memory/uninitialized_copy.cpp
     memory/uninitialized_default_construct.cpp
     #memory/uninitialized_fill.cpp
-    #memory/uninitialized_move.cpp
+    memory/uninitialized_move.cpp
     memory/uninitialized_value_construct.cpp
 
     range_access.cpp
