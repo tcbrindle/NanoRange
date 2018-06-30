@@ -10,12 +10,12 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <stl2/detail/memory/destroy.hpp>
-#include <stl2/detail/memory/uninitialized_default_construct.hpp>
-#include "../simple_test.hpp"
+#include <nanorange/memory/destroy.hpp>
+#include <nanorange/memory/uninitialized_default_construct.hpp>
+#include "../catch.hpp"
 #include "common.hpp"
 
-namespace ranges = __stl2;
+namespace ranges = nano::ranges;
 
 namespace {
 	class Construct {
@@ -54,7 +54,7 @@ namespace {
 	int Construct::instantiated{0};
 }
 
-int main()
+TEST_CASE("mem.destroy")
 {
 	auto independent = make_buffer<Construct>(1 << 20);
 	auto test = [&independent](const auto& p) {
@@ -76,6 +76,4 @@ int main()
 
 	ranges::uninitialized_default_construct(independent);
 	test(ranges::destroy_n(independent.cbegin(), independent.size()));
-
-	return ::test_result();
 }

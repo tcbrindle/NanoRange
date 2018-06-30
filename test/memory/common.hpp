@@ -13,10 +13,9 @@
 #ifndef COMMON_HPP
 #define COMMON_HPP
 
+#include <array>
 #include <cstdint>
 #include <string>
-#include <stl2/memory.hpp>
-#include <stl2/utility.hpp>
 
 template <typename T>
 class raw_buffer {
@@ -35,13 +34,16 @@ public:
 	{}
 
 	raw_buffer(raw_buffer&& that) noexcept
-	: data_{__stl2::exchange(that.data_, nullptr)}
-	, size_{__stl2::exchange(that.size_, 0)}
-	{}
+	: data_{that.data}
+	, size_{that.size}
+	{
+		that.data = nullptr;
+		that.size = 0;
+	}
 
 	raw_buffer& operator=(raw_buffer&& that) & noexcept {
-		data_ = __stl2::exchange(that.data_, nullptr);
-		size_ = __stl2::exchange(that.size_, 0);
+		nano::swap(that.data, nullptr);
+		nano::swap(that.size_, 0);
 		return *this;
 	}
 
@@ -86,7 +88,6 @@ private:
 
 template <typename T>
 auto make_buffer(const std::size_t size) {
-	STL2_EXPECT(size <= static_cast<std::size_t>(PTRDIFF_MAX));
 	return raw_buffer<T>{static_cast<std::ptrdiff_t>(size)};
 }
 
@@ -114,7 +115,7 @@ private:
 	std::int64_t isbn_{1248163264128-256};
 	double price_{16.64};
 	std::string title_{"The Lord of the Rings: The Ring Goes South"};
-	std::string author_{"J.R.R Tolkein"};
+	std::string author_{"J.R.R Tolkien"};
 };
 
 template <typename T>

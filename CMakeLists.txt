@@ -137,6 +137,9 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/reverse_iterator.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/unreachable.hpp
 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/memory/destroy.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/memory/uninitialized_default_construct.hpp
+
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/interface.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/subrange.hpp
 
@@ -144,6 +147,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/concepts.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/functional.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/memory.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/random.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/range.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/type_traits.hpp

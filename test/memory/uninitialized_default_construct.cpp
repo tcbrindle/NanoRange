@@ -10,10 +10,8 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <stl2/detail/memory/uninitialized_default_construct.hpp>
-#include <stl2/concepts.hpp>
-#include <stl2/detail/algorithm/find_if.hpp>
-#include <stl2/detail/memory/destroy.hpp>
+#include <nanorange/memory/uninitialized_default_construct.hpp>
+#include <nanorange/algorithm/find.hpp>
 #include <cstdint>
 #include <cstring>
 #include <deque>
@@ -21,17 +19,21 @@
 #include <list>
 #include <string>
 #include <vector>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "common.hpp"
 
-namespace ranges = __stl2;
+namespace ranges = nano::ranges;
 
 namespace {
 	constexpr int N = 1 << 12;
 
 	template <typename T>
-	requires ranges::DefaultConstructible<T> && ranges::EqualityComparable<T>
-	void test(const raw_buffer<T>& independent, ranges::iterator_t<const raw_buffer<T>> p)
+	//requires ranges::DefaultConstructible<T> && ranges::EqualityComparable<T>
+	std::enable_if_t<
+		ranges::DefaultConstructible<T> &&
+		ranges::EqualityComparable<T> &&
+		!std::is_fundamental<T>::value>
+	test(const raw_buffer<T>& independent, ranges::iterator_t<const raw_buffer<T>> p)
 	{
 		T t{};
 		CHECK(p == independent.cend());
@@ -40,10 +42,14 @@ namespace {
 	}
 
 	template <typename T>
-	requires
+	/*requires
 		ranges::DefaultConstructible<T> &&
-		ranges::EqualityComparable<T>
-	void uninitialized_default_construct_test()
+		ranges::EqualityComparable<T>*/
+	std::enable_if_t<
+	    ranges::DefaultConstructible<T> &&
+	    ranges::EqualityComparable<T> &&
+	    !std::is_fundamental<T>::value>
+	uninitialized_default_construct_test()
 	{
 		auto independent = make_buffer<T>(N);
 
@@ -55,11 +61,15 @@ namespace {
 	}
 
 	template <typename T>
-	requires
+	/*requires
 		ranges::DefaultConstructible<T> &&
 		ranges::EqualityComparable<T> &&
-		std::is_fundamental<T>::value
-	void test(const raw_buffer<T>& independent, ranges::iterator_t<const raw_buffer<T>> p)
+		std::is_fundamental<T>::value*/
+	std::enable_if_t<
+	    ranges::DefaultConstructible<T> &&
+	    ranges::EqualityComparable<T> &&
+	    std::is_fundamental<T>::value>
+	test(const raw_buffer<T>& independent, ranges::iterator_t<const raw_buffer<T>> p)
 	{
 		T t;
 		std::memset(&t, 0xCC, sizeof(T));
@@ -69,11 +79,15 @@ namespace {
 	}
 
 	template <typename T>
-	requires
+	/*requires
 		ranges::DefaultConstructible<T> &&
 		ranges::EqualityComparable<T> &&
-		std::is_fundamental<T>::value
-	void uninitialized_default_construct_test()
+		std::is_fundamental<T>::value */
+	std::enable_if_t<
+			ranges::DefaultConstructible<T> &&
+			ranges::EqualityComparable<T> &&
+			std::is_fundamental<T>::value>
+	uninitialized_default_construct_test()
 	{
 		auto independent = make_buffer<T>(N);
 
@@ -87,6 +101,7 @@ namespace {
 	struct S {
 		static constexpr int throw_after = 42;
 		static int count;
+		static int destroy_count;
 
 		static void increment() {
 			if (++count >= throw_after) {
@@ -97,9 +112,12 @@ namespace {
 		struct exception {};
 
 		S() { increment(); }
+
+		~S() { ++destroy_count; }
 	};
 	constexpr int S::throw_after;
 	int S::count;
+	int S::destroy_count;
 
 	void throw_test() {
 		constexpr int n = 2 * S::throw_after;
@@ -110,20 +128,24 @@ namespace {
 			CHECK(false);
 		} catch(S::exception&) {
 			CHECK(S::count == S::throw_after);
+			CHECK(S::destroy_count == S::count);
 		}
 		S::count = 0;
+		S::destroy_count = 0;
 
 		try {
 			ranges::uninitialized_default_construct(independent);
 			CHECK(false);
 		} catch(S::exception&) {
 			CHECK(S::count == S::throw_after);
+			CHECK(S::destroy_count == S::count);
 		}
 		S::count = 0;
+		S::destroy_count = 0;
 	}
 }
 
-int main()
+TEST_CASE("mem.uninitialized_default_construct")
 {
 	uninitialized_default_construct_test<char>();
 	uninitialized_default_construct_test<int>();
@@ -137,6 +159,4 @@ int main()
 	uninitialized_default_construct_test<std::unique_ptr<std::string>>();
 
 	throw_test();
-
-	return ::test_result();
 }
