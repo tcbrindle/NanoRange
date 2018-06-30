@@ -16,13 +16,11 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 namespace swap_ {
 
-#ifndef MSVC_NO_POISON_PILLS
 template <typename T>
 void swap(T&, T&) = delete;
 
 template <typename T, std::size_t N>
 void swap(T (&)[N], T (&)[N]) = delete;
-#endif
 
 struct fn {
 private:
