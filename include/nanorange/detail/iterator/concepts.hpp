@@ -238,7 +238,10 @@ struct RandomAccessIterator_req {
     auto requires_(I i, const I j, const iter_difference_t<I> n) -> decltype(
         valid_expr(same_lv<I>(i += n),
                    j + n, requires_expr<Same<decltype(j + n), I>>{},
-                   n + j, requires_expr<Same<decltype(n + j), I>>{},
+                   n + j,
+#ifndef _MSC_VER
+                   requires_expr<Same<decltype(n + j), I>>{}, // FIXME: MSVC doesn't like this when I = int*
+#endif
                    same_lv<I>(i -= n),
                    j - n, requires_expr<Same<decltype(j - n), I>>{},
                    j[n],
