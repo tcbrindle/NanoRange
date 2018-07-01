@@ -42,10 +42,8 @@ public:
 	}
 
 	raw_buffer& operator=(raw_buffer&& that) & noexcept {
-		data_ = that.data_;
-		that.data_ = nullptr;
-		size_ = that.size_;
-		that.size_ = 0;
+		nano::swap(data_, that.data_);
+		nano::swap(size_, that.size_);
 		return *this;
 	}
 

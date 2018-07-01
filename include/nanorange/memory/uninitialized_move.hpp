@@ -63,7 +63,7 @@ public:
         InputIterator<I> &&
         Sentinel<S, I> &&
         NoThrowForwardIterator<O> &&
-        NoThrowSentinel<S2, I> &&
+        NoThrowSentinel<S2, O> &&
         Constructible<iter_value_t<O>, iter_rvalue_reference_t<I>>,
         uninitialized_move_result<I, O>>
     operator()(I ifirst, S ilast, O ofirst, S2 olast) const
@@ -132,7 +132,7 @@ struct uninitialized_move_n_fn {
     std::enable_if_t<
         InputIterator<I> &&
         NoThrowForwardIterator<O> &&
-        NoThrowSentinel<O, S> &&
+        NoThrowSentinel<S, O> &&
         Constructible<iter_value_t<O>, iter_rvalue_reference_t<I>>,
         uninitialized_move_n_result<I, O>>
     operator()(I ifirst, iter_difference_t<I> n, O ofirst, S olast) const
