@@ -62,9 +62,16 @@ public:
         return !ranges::empty(derived());
     }
 
-    template <typename R = D, typename = std::enable_if_t<
-            RandomAccessRange<R> &&
-            std::is_pointer<iterator_t<R>>::value>>
+    // FIXME: This is to spec (P0896R2) but seems wrong when begin() does not return a pointer type
+    template <typename R = D, typename = std::enable_if_t<ContiguousIterator<iterator_t<R>>>>
+    constexpr auto data()
+    {
+        return ranges::begin(derived());
+    }
+
+    template <typename R = const D, typename = std::enable_if_t<
+            Range<R> &&
+            ContiguousIterator<iterator_t<R>>>>
     constexpr auto data() const
     {
         return ranges::begin(derived());
@@ -95,14 +102,14 @@ public:
             BidirectionalRange<R> && CommonRange<R>>>
     constexpr decltype(auto) back()
     {
-        return *prev(ranges::end(derived()));
+        return *ranges::prev(ranges::end(derived()));
     }
 
     template <typename R = D, typename = std::enable_if_t<
             BidirectionalRange<const R> && CommonRange<const R>>>
     constexpr decltype(auto) back() const
     {
-        return *prev(ranges::end(derived()));
+        return *ranges::prev(ranges::end(derived()));
     }
 
     template <typename R = D, typename = std::enable_if_t<RandomAccessRange<R>>>
@@ -115,28 +122,6 @@ public:
     constexpr decltype(auto) operator[](iter_difference_t<iterator_t<R>> n) const
     {
         return ranges::begin(derived())[n];
-    }
-
-    template <typename R = D, typename = std::enable_if_t<
-        RandomAccessRange<R> && SizedRange<R>>>
-    constexpr decltype(auto) at(iter_difference_t<iterator_t<R>> n)
-    {
-        if (n < 0 || n >= ranges::size(derived())) {
-            throw std::out_of_range{""};
-        }
-
-        return derived()[n];
-    }
-
-    template <typename R = const D, typename = std::enable_if_t<
-            RandomAccessRange<R> && SizedRange<R>>>
-    constexpr decltype(auto) at(iter_difference_t<iterator_t<R>> n) const
-    {
-        if (n < 0 || n >= ranges::size(derived())) {
-            throw std::out_of_range{""};
-        }
-
-        return derived()[n];
     }
 
     template <typename C, typename R = D,
