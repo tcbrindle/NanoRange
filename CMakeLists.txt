@@ -93,6 +93,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/algorithm/heap_sift.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/algorithm/pdqsort.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/comparison.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/concept_def.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/core.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/movable.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/object.hpp
