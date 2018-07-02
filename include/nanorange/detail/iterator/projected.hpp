@@ -34,11 +34,24 @@ struct projected_helper<
     indirect_result_t<Proj&, I> operator*() const { throw 0; };
 };
 
+template <typename, typename, typename = void>
+struct projected_difference_t_helper {};
+
+template <typename I, typename Proj>
+struct projected_difference_t_helper<I, Proj, std::enable_if_t<
+    WeaklyIncrementable<I>>> {
+    using difference_type = iter_difference_t<I>;
+};
+
 } // namespace detail
 
 template <typename I, typename Proj>
 struct projected : detail::projected_helper<I, Proj> {
 };
+
+template <typename I, typename Proj>
+struct incrementable_traits<projected<I, Proj>>
+    : detail::projected_difference_t_helper<I, Proj> {};
 
 NANO_END_NAMESPACE
 
