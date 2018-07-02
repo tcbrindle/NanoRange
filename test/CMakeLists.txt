@@ -4,6 +4,14 @@ add_executable(test_nanorange
     test_concepts.cpp
     #test_type_traits.cpp
 
+    concepts/compare.cpp
+    concepts/core.cpp
+    concepts/fundamental.cpp
+    concepts/iterator.cpp
+    concepts/object.cpp
+    concepts/ranges.cpp
+    concepts/swap.cpp
+
     # Basic tests for algorithms
     basic_algorithm/binary_search_ops.cpp
     basic_algorithm/heap_ops.cpp
@@ -129,14 +137,6 @@ add_executable(test_nanorange
     algorithm/unique.cpp
     algorithm/unique_copy.cpp
     algorithm/upper_bound.cpp
-
-    concepts/compare.cpp
-    concepts/core.cpp
-    concepts/fundamental.cpp
-    concepts/iterator.cpp
-    concepts/object.cpp
-        concepts/ranges.cpp
-    concepts/swap.cpp
 
     functional/invoke.cpp
 
