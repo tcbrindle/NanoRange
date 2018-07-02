@@ -7,7 +7,7 @@
 #ifndef NANORANGE_VIEW_INTERFACE_HPP_INCLUDED
 #define NANORANGE_VIEW_INTERFACE_HPP_INCLUDED
 
-#include <nanorange/detail/range/concepts.hpp>
+#include <nanorange/detail/ranges/concepts.hpp>
 #include <nanorange/iterator/common_iterator.hpp>
 
 NANO_BEGIN_NAMESPACE

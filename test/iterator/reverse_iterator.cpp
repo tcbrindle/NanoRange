@@ -25,7 +25,7 @@
 //////===----------------------------------------------------------------------===//
 //
 #include <nanorange/iterator/reverse_iterator.hpp>
-#include <nanorange/range.hpp>
+#include <nanorange/ranges.hpp>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"
 

@@ -7,7 +7,7 @@
 #ifndef NANORANGE_ALGORITHM_TRANSFORM_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_TRANSFORM_HPP_INCLUDED
 
-#include <nanorange/range.hpp>
+#include <nanorange/ranges.hpp>
 
 NANO_BEGIN_NAMESPACE
 

@@ -10,7 +10,7 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <nanorange/range.hpp>
+#include <nanorange/ranges.hpp>
 #include <iostream>
 #include <vector>
 #include <nanorange/view/subrange.hpp>

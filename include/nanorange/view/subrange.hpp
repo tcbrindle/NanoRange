@@ -7,7 +7,7 @@
 #ifndef NANORANGE_VIEW_SUBRANGE_HPP_INCLUDED
 #define NANORANGE_VIEW_SUBRANGE_HPP_INCLUDED
 
-#include <nanorange/detail/range/dangling.hpp>
+#include <nanorange/detail/ranges/dangling.hpp>
 #include <nanorange/iterator/operations.hpp>
 #include <nanorange/view/interface.hpp>
 

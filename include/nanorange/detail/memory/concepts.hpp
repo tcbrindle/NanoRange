@@ -7,7 +7,7 @@
 #ifndef NANORANGE_DETAIL_MEMORY_CONCEPTS_HPP_INCLUDED
 #define NANORANGE_DETAIL_MEMORY_CONCEPTS_HPP_INCLUDED
 
-#include <nanorange/detail/range/concepts.hpp>
+#include <nanorange/detail/ranges/concepts.hpp>
 
 NANO_BEGIN_NAMESPACE
 

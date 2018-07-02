@@ -11,7 +11,7 @@
 
 #include <sstream>
 #include <vector>
-#include <nanorange/range.hpp>
+#include <nanorange/ranges.hpp>
 #include "../catch.hpp"
 
 namespace ranges = nano::ranges;

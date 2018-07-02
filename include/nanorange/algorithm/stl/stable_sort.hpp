@@ -7,7 +7,7 @@
 #ifndef NANORANGE_ALGORITHM_STL_STABLE_SORT_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_STL_STABLE_SORT_HPP_INCLUDED
 
-#include <nanorange/range.hpp>
+#include <nanorange/ranges.hpp>
 
 #include <algorithm>
 

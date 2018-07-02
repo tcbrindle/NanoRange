@@ -8,7 +8,7 @@
 #define NANORANGE_ALGORITHM_EQUAL_HPP_INCLUDED
 
 #include <nanorange/iterator/operations.hpp>
-#include <nanorange/range.hpp>
+#include <nanorange/ranges.hpp>
 
 NANO_BEGIN_NAMESPACE
 

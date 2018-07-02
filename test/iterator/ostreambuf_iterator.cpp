@@ -13,7 +13,7 @@
 #include <nanorange/iterator/unreachable.hpp>
 //#include <stl2/iterator.hpp>
 //#include <stl2/type_traits.hpp>
-#include <nanorange/range.hpp>
+#include <nanorange/ranges.hpp>
 #include <nanorange/algorithm/equal.hpp>
 #include <sstream>
 #include "../catch.hpp"

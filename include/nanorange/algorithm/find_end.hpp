@@ -7,7 +7,7 @@
 #ifndef NANORANGE_ALGORITHM_FIND_END_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_FIND_END_HPP_INCLUDED
 
-#include <nanorange/range.hpp>
+#include <nanorange/ranges.hpp>
 
 #include <nanorange/algorithm/search.hpp>
 

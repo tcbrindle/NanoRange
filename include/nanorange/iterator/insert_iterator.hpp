@@ -7,7 +7,7 @@
 #ifndef NANORANGE_ITERATOR_INSERT_ITERATOR_HPP_INCLUDED
 #define NANORANGE_ITERATOR_INSERT_ITERATOR_HPP_INCLUDED
 
-#include <nanorange/detail/range/concepts.hpp>
+#include <nanorange/detail/ranges/concepts.hpp>
 
 #include <iterator>
 

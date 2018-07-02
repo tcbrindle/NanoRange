@@ -8,9 +8,9 @@
 #define NANORANGE_ITERATOR_OPERATIONS_HPP_INCLUDED
 
 #include <nanorange/detail/iterator/concepts.hpp>
-#include <nanorange/detail/range/access.hpp>
-#include <nanorange/detail/range/concepts.hpp>
-#include <nanorange/detail/range/primitives.hpp>
+#include <nanorange/detail/ranges/access.hpp>
+#include <nanorange/detail/ranges/concepts.hpp>
+#include <nanorange/detail/ranges/primitives.hpp>
 
 NANO_BEGIN_NAMESPACE
 

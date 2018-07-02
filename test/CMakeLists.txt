@@ -135,7 +135,7 @@ add_executable(test_nanorange
     concepts/fundamental.cpp
     concepts/iterator.cpp
     concepts/object.cpp
-    concepts/range.cpp
+        concepts/ranges.cpp
     concepts/swap.cpp
 
     functional/invoke.cpp

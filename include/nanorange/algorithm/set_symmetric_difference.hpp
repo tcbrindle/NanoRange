@@ -7,7 +7,7 @@
 #ifndef NANORANGE_ALGORITHM_SET_SYMMETRIC_DIFFERENCE_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_SET_SYMMETRIC_DIFFERENCE_HPP_INCLUDED
 
-#include <nanorange/range.hpp>
+#include <nanorange/ranges.hpp>
 #include <nanorange/algorithm/copy.hpp>
 
 NANO_BEGIN_NAMESPACE

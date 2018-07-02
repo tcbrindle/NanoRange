@@ -12,7 +12,7 @@
 #ifndef NANORANGE_ALGORITHM_IS_HEAP_UNTIL_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_IS_HEAP_UNTIL_HPP_INCLUDED
 
-#include <nanorange/range.hpp>
+#include <nanorange/ranges.hpp>
 
 NANO_BEGIN_NAMESPACE
 

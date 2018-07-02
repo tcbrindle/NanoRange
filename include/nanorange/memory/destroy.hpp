@@ -8,7 +8,7 @@
 #define NANORANGE_MEMORY_DESTROY_HPP_INCLUDED
 
 #include <nanorange/detail/memory/concepts.hpp>
-#include <nanorange/detail/range/dangling.hpp>
+#include <nanorange/detail/ranges/dangling.hpp>
 #include <nanorange/iterator/counted_iterator.hpp>
 
 NANO_BEGIN_NAMESPACE
