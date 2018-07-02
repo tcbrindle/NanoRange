@@ -22,7 +22,7 @@ struct Dereferenceable_req {
 };
 
 template <typename T>
-NANO_CONCEPT Dereferenceable = requires_<Dereferenceable_req, T>;
+NANO_CONCEPT Dereferenceable = requires_v<Dereferenceable_req, T>;
 
 // GCC and Clang allow dereferencing void* as an extension.
 // Let's kill that off now.

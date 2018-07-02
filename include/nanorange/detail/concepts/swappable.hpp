@@ -33,10 +33,10 @@ struct SwappableWith_req {
 } // namespace detail
 
 template <typename T>
-NANO_CONCEPT Swappable = detail::requires_<detail::Swappable_req, T>;
+NANO_CONCEPT Swappable = detail::requires_v<detail::Swappable_req, T>;
 
 template <typename T, typename U>
-NANO_CONCEPT SwappableWith = detail::requires_<detail::SwappableWith_req, T, U>;
+NANO_CONCEPT SwappableWith = detail::requires_v<detail::SwappableWith_req, T, U>;
 
 NANO_END_NAMESPACE
 

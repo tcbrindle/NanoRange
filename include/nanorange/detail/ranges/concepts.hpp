@@ -44,7 +44,7 @@ struct Range_req {
 };
 
 template <typename T>
-NANO_CONCEPT RangeImpl = requires_<Range_req, T>;
+NANO_CONCEPT RangeImpl = requires_v<Range_req, T>;
 
 template <typename>
 auto Range_fn(long) -> std::false_type;
@@ -85,7 +85,7 @@ template <typename T>
 NANO_CONCEPT SizedRange =
     Range<T> &&
     !disable_sized_range<std::remove_cv_t<std::remove_reference_t<T>>> &&
-    detail::requires_<detail::SizedRange_req, T>;
+    detail::requires_v<detail::SizedRange_req, T>;
 
 // [range.view]
 
@@ -278,7 +278,7 @@ auto ContiguousRange_fn(long) -> std::false_type;
 template <typename R>
 auto ContiguousRange_fn(int) -> std::enable_if_t<
         Range<R> && RandomAccessIterator<iterator_t<R>> &&
-        requires_<ContiguousRange_req, R>,
+        requires_v<ContiguousRange_req, R>,
                 std::true_type>;
 
 }

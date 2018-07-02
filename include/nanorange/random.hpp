@@ -33,7 +33,7 @@ template <typename G>
 auto UniformRandomBitGenerator_fn(int) -> std::enable_if_t<
         Invocable<G&> &&
         UnsignedIntegral<invoke_result_t<G&>> &&
-        requires_<UniformRandomBitGenerator_req, G>,
+        requires_v<UniformRandomBitGenerator_req, G>,
     std::true_type>;
 
 } // namespace detail

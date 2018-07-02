@@ -44,7 +44,7 @@ namespace detail {
 
 struct Invocable_req {
     /*template <typename F, typename... Args>
-    auto requires_(F&& f, Args&&... args) -> decltype(
+    auto requires_v(F&& f, Args&&... args) -> decltype(
         nano::invoke(std::forward<F>(f), std::forward<Args>(args)...)
     );*/
     // FIXME: Clang really doesn't like the above, work out why
@@ -55,7 +55,7 @@ struct Invocable_req {
 } // namespace detail
 
 template <typename F, typename... Args>
-NANO_CONCEPT Invocable = detail::requires_<detail::Invocable_req, F, Args...>;
+NANO_CONCEPT Invocable = detail::requires_v<detail::Invocable_req, F, Args...>;
 
 template <typename F, typename... Args>
 NANO_CONCEPT RegularInvocable = Invocable<F, Args...>;

@@ -30,7 +30,7 @@ struct IndirectlySwappable_req {
 
 template <typename I1, typename I2 = I1>
 NANO_CONCEPT IndirectlySwappable = Readable<I1>&& Readable<I2>&&
-    detail::requires_<detail::IndirectlySwappable_req, I1, I2>;
+    detail::requires_v<detail::IndirectlySwappable_req, I1, I2>;
 
 // [range.commonalgoreq.indirectlycomparable]
 

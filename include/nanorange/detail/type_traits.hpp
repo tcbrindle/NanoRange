@@ -63,7 +63,7 @@ template <typename R, typename... Args>
 using test_requires_t = decltype(test_requires<R, Args...>(std::declval<R&>()));
 
 template <typename R, typename... Args>
-constexpr bool requires_ = exists_v<test_requires_t, R, Args...>;
+constexpr bool requires_v = exists_v<test_requires_t, R, Args...>;
 
 template <bool Expr>
 using requires_expr = std::enable_if_t<Expr, int>;

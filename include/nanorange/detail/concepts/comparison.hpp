@@ -43,7 +43,7 @@ struct Boolean_req {
 
 template <typename B>
 NANO_CONCEPT Boolean = Movable<detail::remove_cvref_t<B>>&&
-    detail::requires_<detail::Boolean_req, B>;
+    detail::requires_v<detail::Boolean_req, B>;
 
 // [concepts.lib.compare.equalitycomparable]
 
@@ -62,7 +62,7 @@ struct WeaklyEqualityComparableWith_req {
 
 template <typename T, typename U>
 NANO_CONCEPT WeaklyEqualityComparableWith =
-    requires_<WeaklyEqualityComparableWith_req, T, U>;
+    requires_v<WeaklyEqualityComparableWith_req, T, U>;
 
 } // namespace detail
 
@@ -111,7 +111,7 @@ struct StrictTotallyOrdered_req {
 
 template <typename T>
 NANO_CONCEPT StrictTotallyOrdered = EqualityComparable<T>&&
-    detail::requires_<detail::StrictTotallyOrdered_req, T>;
+    detail::requires_v<detail::StrictTotallyOrdered_req, T>;
 
 namespace detail {
 
@@ -143,7 +143,7 @@ auto StrictTotallyOrderedWith_fn(int) -> std::enable_if_t<
                         const std::remove_reference_t<T>&,
                         const std::remove_reference_t<U>&>> &&
         EqualityComparableWith<T, U> &&
-        requires_<StrictTotallyOrderedWith_req, T, U>,
+        requires_v<StrictTotallyOrderedWith_req, T, U>,
                 std::true_type>;
 
 } // namespace detail

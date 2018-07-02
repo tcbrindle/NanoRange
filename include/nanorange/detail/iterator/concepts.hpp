@@ -29,7 +29,7 @@ auto Readable_fn(long) -> std::false_type;
 
 template <typename In>
 auto Readable_fn(int) -> std::enable_if_t<
-     requires_<Readable_req, In> &&
+     requires_v<Readable_req, In> &&
      CommonReference<iter_reference_t<In>&&, iter_value_t<In>&> &&
      CommonReference<iter_reference_t<In>&&, iter_rvalue_reference_t<In>&&> &&
      CommonReference<iter_rvalue_reference_t<In>&&, const iter_value_t<In>&>,
@@ -55,7 +55,7 @@ struct Writable_req {
 } // namespace detail
 
 template <typename Out, typename T>
-NANO_CONCEPT Writable = detail::requires_<detail::Writable_req, Out, T>;
+NANO_CONCEPT Writable = detail::requires_v<detail::Writable_req, Out, T>;
 
 // [range.iterators.weaklyincrementable]
 
@@ -76,7 +76,7 @@ struct WeaklyIncrementable_req {
 
 template <typename I>
 NANO_CONCEPT WeaklyIncrementable =
-    Semiregular<I>&& detail::requires_<detail::WeaklyIncrementable_req, I>;
+    Semiregular<I>&& detail::requires_v<detail::WeaklyIncrementable_req, I>;
 
 // [range.iterators.incrementable]
 
@@ -91,7 +91,7 @@ struct Incrementable_req {
 
 template <typename I>
 NANO_CONCEPT Incrementable = Regular<I>&& WeaklyIncrementable<I>&&
-    detail::requires_<detail::Incrementable_req, I>;
+    detail::requires_v<detail::Incrementable_req, I>;
 
 // [range.iterators.iterator]
 
@@ -106,7 +106,7 @@ struct Iterator_req {
 
 template <typename I>
 NANO_CONCEPT Iterator =
-    detail::requires_<detail::Iterator_req, I> && WeaklyIncrementable<I>;
+    detail::requires_v<detail::Iterator_req, I> && WeaklyIncrementable<I>;
 
 // [range.iterators.sentinel]
 
@@ -134,7 +134,7 @@ template <typename S, typename I>
 NANO_CONCEPT SizedSentinel =
     Sentinel<S, I> &&
     !disable_sized_sentinel<std::remove_cv_t<S>, std::remove_cv_t<I>> &&
-    detail::requires_<detail::SizedSentinel_req, S, I>;
+    detail::requires_v<detail::SizedSentinel_req, S, I>;
 
 // This is a hack, but I'm fed up with my tests breaking because GCC
 // has a silly extension
@@ -181,7 +181,7 @@ struct OutputIterator_req {
 
 template <typename I, typename T>
 NANO_CONCEPT OutputIterator = Iterator<I>&& Writable<I, T>&&
-    detail::requires_<detail::OutputIterator_req, I, T>;
+    detail::requires_v<detail::OutputIterator_req, I, T>;
 
 // [ranges.iterators.forward]
 
@@ -220,7 +220,7 @@ template <typename I>
 auto BidirectionalIterator_fn(int) -> std::enable_if_t<
         ForwardIterator<I> &&
         DerivedFrom<iterator_category_t<I>, bidirectional_iterator_tag> &&
-        requires_<BidirectionalIterator_req, I>,
+        requires_v<BidirectionalIterator_req, I>,
                 std::true_type>;
 
 } // namespace detail
@@ -257,7 +257,7 @@ auto RandomAccessIterator_fn(int) -> std::enable_if_t<
      DerivedFrom<iterator_category_t<I>, random_access_iterator_tag> &&
      StrictTotallyOrdered<I> &&
      SizedSentinel<I, I> &&
-     requires_<RandomAccessIterator_req, I>,
+     requires_v<RandomAccessIterator_req, I>,
              std::true_type>;
 
 } // namespace detail

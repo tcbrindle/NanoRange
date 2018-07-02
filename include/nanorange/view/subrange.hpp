@@ -88,7 +88,7 @@ struct PairLike_req {
 };
 
 template <typename T>
-NANO_CONCEPT PairLike = detail::requires_<detail::PairLike_req, T>;
+NANO_CONCEPT PairLike = detail::requires_v<detail::PairLike_req, T>;
 
 struct PairLikeConvertibleTo_req {
     template <typename T, typename U, typename V>
@@ -100,7 +100,7 @@ struct PairLikeConvertibleTo_req {
 template <typename T, typename U, typename V>
 NANO_CONCEPT PairlikeConvertibleTo =
     !Range<T> && PairLike<std::decay_t<T>> &&
-    detail::requires_<PairLikeConvertibleTo_req, T, U, V>;
+    detail::requires_v<PairLikeConvertibleTo_req, T, U, V>;
 
 template <typename T, typename U, typename V>
 NANO_CONCEPT PairLikeConvertibleFrom = !Range<T> && Same<T, std::decay_t<T>> &&

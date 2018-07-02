@@ -90,7 +90,7 @@ namespace begin_testing {
 	};
 
 	template <class R>
-	constexpr bool can_begin = ranges::detail::requires_<CanBegin_r, R>;
+	constexpr bool can_begin = ranges::detail::requires_v<CanBegin_r, R>;
 
 	struct A {
 		int* begin();
