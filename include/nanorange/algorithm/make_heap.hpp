@@ -59,7 +59,7 @@ public:
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::make_heap_fn, make_heap)
+NANO_DEFINE_CPO(detail::make_heap_fn, make_heap)
 
 NANO_END_NAMESPACE
 

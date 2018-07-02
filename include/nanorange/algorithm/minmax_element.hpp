@@ -106,7 +106,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::minmax_element_fn, minmax_element)
+NANO_DEFINE_CPO(detail::minmax_element_fn, minmax_element)
 
 NANO_END_NAMESPACE
 

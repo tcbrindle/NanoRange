@@ -83,7 +83,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::partition_copy_fn, partition_copy)
+NANO_DEFINE_CPO(detail::partition_copy_fn, partition_copy)
 
 NANO_END_NAMESPACE
 

@@ -91,7 +91,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::unique_copy_fn, unique_copy)
+NANO_DEFINE_CPO(detail::unique_copy_fn, unique_copy)
 
 NANO_END_NAMESPACE
 

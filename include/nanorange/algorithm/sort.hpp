@@ -41,7 +41,7 @@ struct sort_fn {
 
 }
 
-NANO_INLINE_VAR(detail::sort_fn, sort)
+NANO_DEFINE_CPO(detail::sort_fn, sort)
 
 NANO_END_NAMESPACE
 

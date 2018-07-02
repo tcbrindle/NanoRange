@@ -128,7 +128,7 @@ public:
 } // namespace invoke_
 } // namespace detail
 
-NANO_INLINE_VAR(nano::detail::invoke_::fn, invoke)
+NANO_DEFINE_CPO(nano::detail::invoke_::fn, invoke)
 
 namespace detail {
 

@@ -56,7 +56,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::equal_range_fn, equal_range)
+NANO_DEFINE_CPO(detail::equal_range_fn, equal_range)
 
 NANO_END_NAMESPACE
 

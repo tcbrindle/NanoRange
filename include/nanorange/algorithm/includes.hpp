@@ -86,7 +86,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::includes_fn, includes)
+NANO_DEFINE_CPO(detail::includes_fn, includes)
 
 NANO_END_NAMESPACE
 

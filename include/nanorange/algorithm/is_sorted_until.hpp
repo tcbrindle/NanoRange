@@ -65,7 +65,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::is_sorted_until_fn, is_sorted_until)
+NANO_DEFINE_CPO(detail::is_sorted_until_fn, is_sorted_until)
 
 NANO_END_NAMESPACE
 

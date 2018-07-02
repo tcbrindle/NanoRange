@@ -57,7 +57,7 @@ public:
 };
 } // namespace detail
 
-NANO_INLINE_VAR(detail::find_if_fn, find_if)
+NANO_DEFINE_CPO(detail::find_if_fn, find_if)
 
 namespace detail {
 
@@ -100,7 +100,7 @@ public:
 };
 } // namespace detail
 
-NANO_INLINE_VAR(detail::find_fn, find)
+NANO_DEFINE_CPO(detail::find_fn, find)
 
 namespace detail {
 
@@ -142,7 +142,7 @@ public:
 };
 } // namespace detail
 
-NANO_INLINE_VAR(detail::find_if_not_fn, find_if_not)
+NANO_DEFINE_CPO(detail::find_if_not_fn, find_if_not)
 
 NANO_END_NAMESPACE
 

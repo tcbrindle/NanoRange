@@ -73,7 +73,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::max_fn, max)
+NANO_DEFINE_CPO(detail::max_fn, max)
 
 NANO_END_NAMESPACE
 

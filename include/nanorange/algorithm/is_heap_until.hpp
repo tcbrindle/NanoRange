@@ -82,7 +82,7 @@ public:
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::is_heap_until_fn, is_heap_until)
+NANO_DEFINE_CPO(detail::is_heap_until_fn, is_heap_until)
 
 NANO_END_NAMESPACE
 

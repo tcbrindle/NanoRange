@@ -70,7 +70,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::lower_bound_fn, lower_bound)
+NANO_DEFINE_CPO(detail::lower_bound_fn, lower_bound)
 
 NANO_END_NAMESPACE
 

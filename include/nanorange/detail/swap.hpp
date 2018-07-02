@@ -71,7 +71,7 @@ public:
 } // end namespace swap_
 } // end namespace detail
 
-NANO_INLINE_VAR(detail::swap_::fn, swap)
+NANO_DEFINE_CPO(detail::swap_::fn, swap)
 
 NANO_END_NAMESPACE
 

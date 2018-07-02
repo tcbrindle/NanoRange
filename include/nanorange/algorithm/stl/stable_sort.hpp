@@ -42,7 +42,7 @@ struct stable_sort_fn {
 
 }
 
-NANO_INLINE_VAR(detail::stable_sort_fn, stable_sort)
+NANO_DEFINE_CPO(detail::stable_sort_fn, stable_sort)
 
 NANO_END_NAMESPACE
 

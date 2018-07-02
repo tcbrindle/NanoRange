@@ -89,7 +89,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::partial_sort_copy_fn, partial_sort_copy)
+NANO_DEFINE_CPO(detail::partial_sort_copy_fn, partial_sort_copy)
 
 NANO_END_NAMESPACE
 

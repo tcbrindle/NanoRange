@@ -59,7 +59,7 @@ public:
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::reverse_fn, reverse)
+NANO_DEFINE_CPO(detail::reverse_fn, reverse)
 
 NANO_END_NAMESPACE
 

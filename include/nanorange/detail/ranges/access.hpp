@@ -70,7 +70,7 @@ public:
 } // namespace begin_
 } // namespace detail
 
-NANO_INLINE_VAR(detail::begin_::fn, begin)
+NANO_DEFINE_CPO(detail::begin_::fn, begin)
 
 namespace detail {
 namespace end_ {
@@ -126,7 +126,7 @@ public:
 } // namespace end_
 } // namespace detail
 
-NANO_INLINE_VAR(detail::end_::fn, end)
+NANO_DEFINE_CPO(detail::end_::fn, end)
 
 // [range.access.cbegin]
 
@@ -154,7 +154,7 @@ struct fn {
 } // namespace cbegin_
 } // namespace detail
 
-NANO_INLINE_VAR(detail::cbegin_::fn, cbegin)
+NANO_DEFINE_CPO(detail::cbegin_::fn, cbegin)
 
 // [ranges.access.cend]
 
@@ -182,7 +182,7 @@ struct fn {
 } // namespace cend_
 } // namespace detail
 
-NANO_INLINE_VAR(detail::cend_::fn, cend)
+NANO_DEFINE_CPO(detail::cend_::fn, cend)
 
 namespace detail {
 namespace rbegin_ {
@@ -239,7 +239,7 @@ public:
 } // namespace rbegin_
 } // namespace detail
 
-NANO_INLINE_VAR(detail::rbegin_::fn, rbegin)
+NANO_DEFINE_CPO(detail::rbegin_::fn, rbegin)
 
 namespace detail {
 namespace rend_ {
@@ -297,7 +297,7 @@ public:
 } // namespace rend_
 } // namespace detail
 
-NANO_INLINE_VAR(detail::rend_::fn, rend)
+NANO_DEFINE_CPO(detail::rend_::fn, rend)
 
 namespace detail {
 namespace crbegin_ {
@@ -322,7 +322,7 @@ struct fn {
 } // namespace crbegin_
 } // namespace detail
 
-NANO_INLINE_VAR(detail::crbegin_::fn, crbegin)
+NANO_DEFINE_CPO(detail::crbegin_::fn, crbegin)
 
 namespace detail {
 namespace crend_ {
@@ -347,7 +347,7 @@ struct fn {
 } // namespace crend_
 } // namespace detail
 
-NANO_INLINE_VAR(detail::crend_::fn, crend)
+NANO_DEFINE_CPO(detail::crend_::fn, crend)
 
 NANO_END_NAMESPACE
 

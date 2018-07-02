@@ -77,7 +77,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::set_intersection_fn, set_intersection)
+NANO_DEFINE_CPO(detail::set_intersection_fn, set_intersection)
 
 NANO_END_NAMESPACE
 

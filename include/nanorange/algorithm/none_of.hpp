@@ -41,7 +41,7 @@ struct none_of_fn {
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::none_of_fn, none_of)
+NANO_DEFINE_CPO(detail::none_of_fn, none_of)
 
 NANO_END_NAMESPACE
 

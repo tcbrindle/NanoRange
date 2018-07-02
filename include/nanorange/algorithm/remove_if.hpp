@@ -60,7 +60,7 @@ public:
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::remove_if_fn, remove_if)
+NANO_DEFINE_CPO(detail::remove_if_fn, remove_if)
 
 NANO_END_NAMESPACE
 

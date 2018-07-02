@@ -213,7 +213,7 @@ public:
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::is_permutation_fn, is_permutation)
+NANO_DEFINE_CPO(detail::is_permutation_fn, is_permutation)
 
 NANO_END_NAMESPACE
 

@@ -47,7 +47,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::is_partitioned_fn, is_partitioned)
+NANO_DEFINE_CPO(detail::is_partitioned_fn, is_partitioned)
 
 NANO_END_NAMESPACE
 

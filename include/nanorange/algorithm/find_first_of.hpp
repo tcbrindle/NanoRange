@@ -71,7 +71,7 @@ public:
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::find_first_of_fn, find_first_of)
+NANO_DEFINE_CPO(detail::find_first_of_fn, find_first_of)
 
 NANO_END_NAMESPACE
 

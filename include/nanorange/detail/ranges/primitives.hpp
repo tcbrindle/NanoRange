@@ -89,7 +89,7 @@ public:
 } // namespace size_
 } // namespace detail
 
-NANO_INLINE_VAR(detail::size_::fn, size)
+NANO_DEFINE_CPO(detail::size_::fn, size)
 
 // [range.primitives.empty]
 
@@ -139,7 +139,7 @@ public:
 } // namespace empty_
 } // namespace detail
 
-NANO_INLINE_VAR(detail::empty_::fn, empty)
+NANO_DEFINE_CPO(detail::empty_::fn, empty)
 
 namespace detail {
 
@@ -183,7 +183,7 @@ public:
 } // namespace data_
 } // namespace detail
 
-NANO_INLINE_VAR(detail::data_::fn, data)
+NANO_DEFINE_CPO(detail::data_::fn, data)
 
 NANO_END_NAMESPACE
 

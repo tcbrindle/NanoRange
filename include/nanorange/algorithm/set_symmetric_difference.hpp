@@ -106,7 +106,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::set_symmetric_difference_fn, set_symmetric_difference)
+NANO_DEFINE_CPO(detail::set_symmetric_difference_fn, set_symmetric_difference)
 
 NANO_END_NAMESPACE
 

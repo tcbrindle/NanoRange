@@ -62,7 +62,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::shuffle_fn, shuffle)
+NANO_DEFINE_CPO(detail::shuffle_fn, shuffle)
 
 NANO_END_NAMESPACE
 

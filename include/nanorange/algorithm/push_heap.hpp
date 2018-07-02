@@ -40,7 +40,7 @@ struct push_heap_fn {
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::push_heap_fn, push_heap)
+NANO_DEFINE_CPO(detail::push_heap_fn, push_heap)
 
 NANO_END_NAMESPACE
 

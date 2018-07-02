@@ -54,7 +54,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::binary_search_fn, binary_search)
+NANO_DEFINE_CPO(detail::binary_search_fn, binary_search)
 
 NANO_END_NAMESPACE
 

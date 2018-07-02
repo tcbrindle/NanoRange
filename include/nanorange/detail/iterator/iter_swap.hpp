@@ -96,7 +96,7 @@ public:
 }
 } // namespace detail
 
-NANO_INLINE_VAR(detail::iter_swap_::fn, iter_swap)
+NANO_DEFINE_CPO(detail::iter_swap_::fn, iter_swap)
 
 NANO_END_NAMESPACE
 

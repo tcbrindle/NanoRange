@@ -27,7 +27,7 @@ struct fill_n_fn {
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::fill_n_fn, fill_n)
+NANO_DEFINE_CPO(detail::fill_n_fn, fill_n)
 
 NANO_END_NAMESPACE
 

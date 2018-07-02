@@ -101,7 +101,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::set_difference_fn, set_difference)
+NANO_DEFINE_CPO(detail::set_difference_fn, set_difference)
 
 NANO_END_NAMESPACE
 

@@ -44,7 +44,7 @@ struct inplace_merge_fn {
 
 }
 
-NANO_INLINE_VAR(detail::inplace_merge_fn, inplace_merge)
+NANO_DEFINE_CPO(detail::inplace_merge_fn, inplace_merge)
 
 NANO_END_NAMESPACE
 

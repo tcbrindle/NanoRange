@@ -54,7 +54,7 @@ public:
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::pop_heap_fn, pop_heap)
+NANO_DEFINE_CPO(detail::pop_heap_fn, pop_heap)
 
 NANO_END_NAMESPACE
 

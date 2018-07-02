@@ -48,13 +48,13 @@ inline namespace ranges                                                        \
     }
 
 #ifdef NANO_HAVE_INLINE_VARS
-#define NANO_INLINE_VAR(type, name)                                            \
+#define NANO_DEFINE_CPO(type, name)                                            \
     inline namespace function_objects {                                        \
     inline constexpr type name{};                                              \
     }
 
 #else
-#define NANO_INLINE_VAR(type, name)                                            \
+#define NANO_DEFINE_CPO(type, name)                                            \
     inline namespace function_objects {                                        \
     inline namespace {                                                         \
     constexpr const auto& name =                                               \

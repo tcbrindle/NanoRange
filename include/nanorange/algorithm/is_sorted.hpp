@@ -40,7 +40,7 @@ struct is_sorted_fn {
 
 }
 
-NANO_INLINE_VAR(detail::is_sorted_fn, is_sorted)
+NANO_DEFINE_CPO(detail::is_sorted_fn, is_sorted)
 
 NANO_END_NAMESPACE
 

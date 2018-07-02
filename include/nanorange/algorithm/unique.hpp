@@ -65,7 +65,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::unique_fn, unique)
+NANO_DEFINE_CPO(detail::unique_fn, unique)
 
 NANO_END_NAMESPACE
 

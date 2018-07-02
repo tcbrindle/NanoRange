@@ -78,7 +78,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::lexicographical_compare_fn, lexicographical_compare)
+NANO_DEFINE_CPO(detail::lexicographical_compare_fn, lexicographical_compare)
 
 NANO_END_NAMESPACE
 

@@ -31,7 +31,7 @@ struct generate_n_fn {
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::generate_n_fn, generate_n)
+NANO_DEFINE_CPO(detail::generate_n_fn, generate_n)
 
 NANO_END_NAMESPACE
 

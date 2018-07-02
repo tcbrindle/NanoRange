@@ -68,7 +68,7 @@ public:
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::adjacent_find_fn, adjacent_find)
+NANO_DEFINE_CPO(detail::adjacent_find_fn, adjacent_find)
 
 NANO_END_NAMESPACE
 

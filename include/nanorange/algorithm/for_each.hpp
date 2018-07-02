@@ -59,7 +59,7 @@ public:
 };
 } // namespace detail
 
-NANO_INLINE_VAR(detail::for_each_fn, for_each)
+NANO_DEFINE_CPO(detail::for_each_fn, for_each)
 
 NANO_END_NAMESPACE
 

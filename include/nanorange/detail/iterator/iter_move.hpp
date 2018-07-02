@@ -61,7 +61,7 @@ public:
 } // namespace iter_move_
 } // namespace detail
 
-NANO_INLINE_VAR(detail::iter_move_::fn, iter_move)
+NANO_DEFINE_CPO(detail::iter_move_::fn, iter_move)
 
 NANO_END_NAMESPACE
 

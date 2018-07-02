@@ -91,7 +91,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::prev_permutation_fn, prev_permutation)
+NANO_DEFINE_CPO(detail::prev_permutation_fn, prev_permutation)
 
 NANO_END_NAMESPACE
 

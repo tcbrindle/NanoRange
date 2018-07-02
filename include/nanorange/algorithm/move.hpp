@@ -71,7 +71,7 @@ public:
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::move_fn, move)
+NANO_DEFINE_CPO(detail::move_fn, move)
 
 template <typename I1, typename I2>
 using move_backward_result = copy_result<I1, I2>;
@@ -119,7 +119,7 @@ public:
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::move_backward_fn, move_backward)
+NANO_DEFINE_CPO(detail::move_backward_fn, move_backward)
 
 NANO_END_NAMESPACE
 

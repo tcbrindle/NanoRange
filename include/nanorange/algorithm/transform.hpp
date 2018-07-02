@@ -177,7 +177,7 @@ public:
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::transform_fn, transform)
+NANO_DEFINE_CPO(detail::transform_fn, transform)
 
 NANO_END_NAMESPACE
 

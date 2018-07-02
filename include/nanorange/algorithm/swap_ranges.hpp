@@ -96,7 +96,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::swap_ranges_fn, swap_ranges)
+NANO_DEFINE_CPO(detail::swap_ranges_fn, swap_ranges)
 
 NANO_END_NAMESPACE
 

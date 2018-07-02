@@ -109,7 +109,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::set_union_fn, set_union)
+NANO_DEFINE_CPO(detail::set_union_fn, set_union)
 
 NANO_END_NAMESPACE
 

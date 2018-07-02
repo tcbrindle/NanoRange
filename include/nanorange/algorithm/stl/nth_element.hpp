@@ -44,7 +44,7 @@ struct nth_element_fn {
 
 }
 
-NANO_INLINE_VAR(detail::nth_element_fn, nth_element)
+NANO_DEFINE_CPO(detail::nth_element_fn, nth_element)
 
 NANO_END_NAMESPACE
 

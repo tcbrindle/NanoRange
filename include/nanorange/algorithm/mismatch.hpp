@@ -126,7 +126,7 @@ public:
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::mismatch_fn, mismatch)
+NANO_DEFINE_CPO(detail::mismatch_fn, mismatch)
 
 NANO_END_NAMESPACE
 

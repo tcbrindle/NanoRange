@@ -60,7 +60,7 @@ public:
 };
 } // namespace detail
 
-NANO_INLINE_VAR(detail::count_if_fn, count_if)
+NANO_DEFINE_CPO(detail::count_if_fn, count_if)
 
 namespace detail {
 
@@ -106,7 +106,7 @@ public:
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::count_fn, count)
+NANO_DEFINE_CPO(detail::count_fn, count)
 
 NANO_END_NAMESPACE
 

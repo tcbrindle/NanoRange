@@ -84,7 +84,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::search_fn, search)
+NANO_DEFINE_CPO(detail::search_fn, search)
 
 NANO_END_NAMESPACE
 

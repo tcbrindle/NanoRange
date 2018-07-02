@@ -89,7 +89,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::next_permutation_fn, next_permutation)
+NANO_DEFINE_CPO(detail::next_permutation_fn, next_permutation)
 
 NANO_END_NAMESPACE
 

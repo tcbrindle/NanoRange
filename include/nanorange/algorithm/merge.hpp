@@ -102,7 +102,7 @@ public:
 
 }
 
-NANO_INLINE_VAR(detail::merge_fn, merge)
+NANO_DEFINE_CPO(detail::merge_fn, merge)
 
 NANO_END_NAMESPACE
 

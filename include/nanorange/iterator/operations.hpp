@@ -163,7 +163,7 @@ public:
 } // namespace advance_
 } // namespace detail
 
-NANO_INLINE_VAR(detail::advance_::fn, advance)
+NANO_DEFINE_CPO(detail::advance_::fn, advance)
 
 namespace detail {
 namespace distance_ {
@@ -222,7 +222,7 @@ public:
 } // namespace distance_
 } // namespace detail
 
-NANO_INLINE_VAR(detail::distance_::fn, distance)
+NANO_DEFINE_CPO(detail::distance_::fn, distance)
 
 namespace detail {
 namespace next_ {
@@ -263,7 +263,7 @@ struct fn {
 } // namespace next_
 } // namespace detail
 
-NANO_INLINE_VAR(detail::next_::fn, next)
+NANO_DEFINE_CPO(detail::next_::fn, next)
 
 namespace detail {
 namespace prev_ {
@@ -297,7 +297,7 @@ struct fn {
 } // namespace prev_
 } // namespace detail
 
-NANO_INLINE_VAR(detail::prev_::fn, prev)
+NANO_DEFINE_CPO(detail::prev_::fn, prev)
 
 NANO_END_NAMESPACE
 

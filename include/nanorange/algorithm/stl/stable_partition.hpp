@@ -45,7 +45,7 @@ struct stable_partition_fn {
 
 }
 
-NANO_INLINE_VAR(detail::stable_partition_fn, stable_partition)
+NANO_DEFINE_CPO(detail::stable_partition_fn, stable_partition)
 
 NANO_END_NAMESPACE
 
