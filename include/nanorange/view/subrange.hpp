@@ -103,8 +103,7 @@ auto subrange_range_constructor_constraint_helper_fn(long) -> std::false_type;
 
 template <typename R, typename I, typename S, subrange_kind K>
 auto subrange_range_constructor_constraint_helper_fn(int) -> std::enable_if_t<
-        detail::NotSameAs<R, subrange<I, S, K>> &&
-                ForwardingRange<R>&&
+                ForwardingRange<R> &&
                 ConvertibleTo<iterator_t<R>, I> &&
                 ConvertibleTo<sentinel_t<R>, S>, std::true_type>;
 
@@ -147,12 +146,16 @@ public:
 
     template <typename R, bool SS = StoreSize,
             std::enable_if_t<
+                    detail::NotSameAs<R, subrange>, int> = 0,
+            std::enable_if_t<
                     detail::subrange_range_constructor_constraint_helper<R, I, S, K>
                     && SS && SizedRange<R>, int> = 0>
     constexpr subrange(R&& r)
             : subrange(ranges::begin(r), ranges::end(r), ranges::size(r)) {}
 
     template <typename R, bool SS = StoreSize,
+            std::enable_if_t<
+                    detail::NotSameAs<R, subrange>, int> = 0,
             std::enable_if_t<
                     detail::subrange_range_constructor_constraint_helper<R, I, S, K>
                      && !SS, int> = 0>
@@ -164,14 +167,14 @@ public:
             ConvertibleTo<iterator_t<R>, I>&&
             ConvertibleTo<sentinel_t<R>, S>&&
             KK == subrange_kind::sized, int> = 0>
-
     constexpr subrange(R&& r, iter_difference_t<I> n)
             : subrange(ranges::begin(r), ranges::end(r), n) {}
 
     template <typename PairLike_, bool SS = StoreSize,
             std::enable_if_t<
-                    detail::NotSameAs<PairLike_, subrange> &&
-                            detail::PairlikeConvertibleTo<PairLike_, I, S>
+                    detail::NotSameAs<PairLike_, subrange>, int> = 0,
+            std::enable_if_t<
+                    detail::PairlikeConvertibleTo<PairLike_, I, S>
                             && !SS,
                     int> = 0>
     constexpr subrange(PairLike_&& r)
@@ -187,8 +190,9 @@ public:
                        std::get<1>(std::forward<PairLike_>(r)), n} {}
 
     template <typename PairLike_,
-            std::enable_if_t<detail::NotSameAs<PairLike_, subrange> &&
-                    detail::PairLikeConvertibleFrom<
+            std::enable_if_t<
+                    detail::NotSameAs<PairLike_, subrange>, int> = 0,
+            std::enable_if_t<detail::PairLikeConvertibleFrom<
                             PairLike_, const I&, const S&>,
                     int> = 0>
     constexpr operator PairLike_() const
@@ -218,6 +222,10 @@ public:
     constexpr I begin() const { return data_.begin_; }
 
     constexpr S end() const { return data_.end_; }
+
+    friend constexpr I begin(subrange r) { return r.begin(); }
+
+    friend constexpr S end(subrange r) { return r.end(); }
 
     NANO_NODISCARD constexpr bool empty() const
     {
@@ -272,18 +280,6 @@ public:
         return *this;
     }
 };
-
-template <typename I, typename S, subrange_kind K>
-constexpr I begin(subrange<I, S, K>&& r)
-{
-    return r.begin();
-}
-
-template <typename I, typename S, subrange_kind K>
-constexpr S end(subrange<I, S, K>&& r)
-{
-    return r.end();
-}
 
 #ifdef NANO_HAVE_DEDUCTION_GUIDES
 
