@@ -103,7 +103,6 @@ auto subrange_range_constructor_constraint_helper_fn(long) -> std::false_type;
 
 template <typename R, typename I, typename S, subrange_kind K>
 auto subrange_range_constructor_constraint_helper_fn(int) -> std::enable_if_t<
-        detail::NotSameAs<R, subrange<I, S, K>> &&
                 ForwardingRange<R>&&
                 ConvertibleTo<iterator_t<R>, I> &&
                 ConvertibleTo<sentinel_t<R>, S>, std::true_type>;
@@ -146,6 +145,7 @@ public:
             : data_{std::move(i), std::move(s), n} {}
 
     template <typename R, bool SS = StoreSize,
+            std::enable_if_t<detail::NotSameAs<R, subrange>, int> = 0,
             std::enable_if_t<
                     detail::subrange_range_constructor_constraint_helper<R, I, S, K>
                     && SS && SizedRange<R>, int> = 0>
@@ -153,6 +153,7 @@ public:
             : subrange(ranges::begin(r), ranges::end(r), ranges::size(r)) {}
 
     template <typename R, bool SS = StoreSize,
+            std::enable_if_t<detail::NotSameAs<R, subrange>, int> = 0,
             std::enable_if_t<
                     detail::subrange_range_constructor_constraint_helper<R, I, S, K>
                      && !SS, int> = 0>
@@ -164,15 +165,13 @@ public:
             ConvertibleTo<iterator_t<R>, I>&&
             ConvertibleTo<sentinel_t<R>, S>&&
             KK == subrange_kind::sized, int> = 0>
-
     constexpr subrange(R&& r, iter_difference_t<I> n)
             : subrange(ranges::begin(r), ranges::end(r), n) {}
 
     template <typename PairLike_, bool SS = StoreSize,
+            std::enable_if_t<detail::NotSameAs<PairLike_, subrange>, int> = 0,
             std::enable_if_t<
-                    detail::NotSameAs<PairLike_, subrange> &&
-                            detail::PairlikeConvertibleTo<PairLike_, I, S>
-                            && !SS,
+                detail::PairlikeConvertibleTo<PairLike_, I, S> && !SS,
                     int> = 0>
     constexpr subrange(PairLike_&& r)
             : subrange{std::get<0>(std::forward<PairLike_>(r)),
@@ -187,6 +186,7 @@ public:
                        std::get<1>(std::forward<PairLike_>(r)), n} {}
 
     template <typename PairLike_,
+            std::enable_if_t<detail::NotSameAs<PairLike_, subrange>, int> = 0,
             std::enable_if_t<detail::NotSameAs<PairLike_, subrange> &&
                     detail::PairLikeConvertibleFrom<
                             PairLike_, const I&, const S&>,
@@ -200,10 +200,10 @@ public:
     // There doesn't seem to be any obvious syntax to bring it back into
     // scope, so we'll just reimplement it here
 
-    // FIXME: Clang 6 (C++17) doesn't like checking View<C>
     template <typename C, typename R = subrange,
+              std::enable_if_t<detail::NotSameAs<C, subrange>, int> = 0,
               typename = std::enable_if_t<
-                    ForwardRange<C> && /*!View<C> &&*/
+                    ForwardRange<C> && !View<C> &&
                     !detail::view_predicate_v<C> &&
                     ConvertibleTo<iter_reference_t<iterator_t<const R>>,
                                   iter_value_t<iterator_t<C>>> &&
