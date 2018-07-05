@@ -42,11 +42,30 @@ NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN
 #endif
 
 #ifdef __clang__
+#define NANO_DECLARE_CONSTEXPR_IN_CLASS_INIT(...)  constexpr __VA_ARGS__ = {}
+#define NANO_DEFINE_CONSTEXPR_IN_CLASS_INIT(...)  constexpr __VA_ARGS__
+#elif defined(__GNUC__) && __GNUC__ >= 8
+#define NANO_DECLARE_CONSTEXPR_IN_CLASS_INIT(...)  constexpr __VA_ARGS__ = {}
+#define NANO_DEFINE_CONSTEXPR_IN_CLASS_INIT(...)  constexpr __VA_ARGS__
+#else
+#define NANO_DECLARE_CONSTEXPR_IN_CLASS_INIT(...)  __VA_ARGS__
+#define NANO_DEFINE_CONSTEXPR_IN_CLASS_INIT(...)  __VA_ARGS__ {}
+#endif
+
+#ifdef __clang__
 #define NANO_PP_IS_SAME(...) __is_same(__VA_ARGS__)
-#elif defined(__GNUC__) && __GNUC__ >= 6
+#elif defined(__GNUC__) && __GNUC__ >= 6 && !defined(__NVCC__)
 #define NANO_PP_IS_SAME(...) __is_same_as(__VA_ARGS__)
 #else
 #define NANO_PP_IS_SAME(...) std::is_same<__VA_ARGS__>::value
+#endif
+
+#ifdef __clang__
+#define NANO_PP_IS_CONSTRUCTIBLE(...)  __is_constructible(__VA_ARGS__)
+#elif defined(__GNUC__) && __GNUC__ >= 8
+#define NANO_PP_IS_CONSTRUCTIBLE(...)  __is_constructible(__VA_ARGS__)
+#else
+#define NANO_PP_IS_CONSTRUCTIBLE(...) std::is_constructible<__VA_ARGS__>::value
 #endif
 
 #if __COUNTER__ != __COUNTER__
@@ -76,8 +95,6 @@ NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN
 
 #define NANO_PP_EVAL(X, ...) X(__VA_ARGS__)
 #define NANO_PP_EVAL2(X, ...) X(__VA_ARGS__)
-#define NANO_PP_EVAL3(X, ...) X(__VA_ARGS__)
-#define NANO_PP_EVAL4(X, ...) X(__VA_ARGS__)
 
 #define NANO_PP_EXPAND(...) __VA_ARGS__
 #define NANO_PP_EAT(...)
@@ -100,74 +117,9 @@ NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN
     N                                                                          \
     /**/
 
-#define NANO_PP_IS_EQUAL(X,Y) \
-    NANO_PP_CHECK(NANO_PP_CAT(NANO_PP_CAT(NANO_PP_IS_EQUAL_, X), Y))
-#define NANO_PP_IS_EQUAL_00 NANO_PP_PROBE(~)
-#define NANO_PP_IS_EQUAL_11 NANO_PP_PROBE(~)
-#define NANO_PP_IS_EQUAL_22 NANO_PP_PROBE(~)
-#define NANO_PP_IS_EQUAL_33 NANO_PP_PROBE(~)
-#define NANO_PP_IS_EQUAL_44 NANO_PP_PROBE(~)
-#define NANO_PP_IS_EQUAL_55 NANO_PP_PROBE(~)
-#define NANO_PP_IS_EQUAL_66 NANO_PP_PROBE(~)
-#define NANO_PP_IS_EQUAL_77 NANO_PP_PROBE(~)
-#define NANO_PP_IS_EQUAL_88 NANO_PP_PROBE(~)
-#define NANO_PP_IS_EQUAL_99 NANO_PP_PROBE(~)
-#define NANO_PP_IS_EQUAL_1010 NANO_PP_PROBE(~)
-#define NANO_PP_IS_EQUAL_1111 NANO_PP_PROBE(~)
-#define NANO_PP_IS_EQUAL_1212 NANO_PP_PROBE(~)
-#define NANO_PP_IS_EQUAL_1313 NANO_PP_PROBE(~)
-#define NANO_PP_IS_EQUAL_1414 NANO_PP_PROBE(~)
-#define NANO_PP_IS_EQUAL_1515 NANO_PP_PROBE(~)
-#define NANO_PP_IS_EQUAL_1616 NANO_PP_PROBE(~)
-
-#define NANO_PP_NOT(X) NANO_PP_CAT(NANO_PP_NOT_, X)
-#define NANO_PP_NOT_0 1
-#define NANO_PP_NOT_1 0
-
 #define NANO_PP_IIF(BIT) NANO_PP_CAT_(NANO_PP_IIF_, BIT)
 #define NANO_PP_IIF_0(TRUE, ...) __VA_ARGS__
 #define NANO_PP_IIF_1(TRUE, ...) TRUE
-#define NANO_PP_FIRST(X, ...) X
-#define NANO_PP_SECOND(X, ...) __VA_ARGS__
-
-#define NANO_PP_OR(X,Y) \
-    NANO_PP_NOT(NANO_PP_CHECK(NANO_PP_CAT(                               \
-        NANO_PP_CAT(NANO_PP_NOR_, X), Y)))
-#define NANO_PP_NOR_00 NANO_PP_PROBE(~)
-
-#if NANO_CXX_VA_OPT
-
-#define NANO_PP_IS_EMPTY_NON_FUNCTION(...) \
-    NANO_PP_CHECK(__VA_OPT__(, 0), 1)
-
-#else // RANGES_VA_OPT
-
-#define NANO_PP_SPLIT(i, ...)                                                \
-    NANO_PP_CAT_(NANO_PP_SPLIT_, i)(__VA_ARGS__)                           \
-    /**/
-#define NANO_PP_SPLIT_0(a, ...) a
-#define NANO_PP_SPLIT_1(a, ...) __VA_ARGS__
-
-#define NANO_PP_IS_VARIADIC(...)                                             \
-    NANO_PP_SPLIT(                                                           \
-        0,                                                                     \
-        NANO_PP_CAT(                                                         \
-            NANO_PP_IS_VARIADIC_R_,                                          \
-            NANO_PP_IS_VARIADIC_C __VA_ARGS__))                              \
-    /**/
-#define NANO_PP_IS_VARIADIC_C(...) 1
-#define NANO_PP_IS_VARIADIC_R_1 1,
-#define NANO_PP_IS_VARIADIC_R_NANO_PP_IS_VARIADIC_C 0,
-
-// emptiness detection macro...
-
-#define NANO_PP_IS_EMPTY_NON_FUNCTION(...)                                   \
-    NANO_PP_IIF(NANO_PP_IS_VARIADIC(__VA_ARGS__))                          \
-    (0, NANO_PP_IS_VARIADIC(NANO_PP_IS_EMPTY_NON_FUNCTION_C __VA_ARGS__()))\
-    /**/
-#define NANO_PP_IS_EMPTY_NON_FUNCTION_C() ()
-
-#endif // NANO_PP_VA_OPT
 
 #define NANO_PP_EMPTY()
 #define NANO_PP_COMMA() ,
@@ -188,7 +140,7 @@ NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN
 //         concept Assignable,
 //             requires (T t, U &&u) (
 //                 t = (U &&) u,
-//                 ::nano::concepts::requires_<Same<decltype(t = (U &&) u), T>>
+//                 ::nano::ranges::concepts::requires_<Same<decltype(t = (U &&) u), T>>
 //             ) &&
 //             std::is_lvalue_reference_v<T>
 //     );
@@ -199,7 +151,7 @@ NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN
         __VA_ARGS__)                                                           \
     /**/
 #define NANO_PP_DECL_DEF_NAME(...)                                           \
-    __VA_ARGS__,                                                               \
+    NANO_PP_CAT(NANO_PP_DEF_, __VA_ARGS__),                                \
     /**/
 #define NANO_PP_DECL_DEF(TPARAM, NAME, ...)                                  \
     NANO_PP_CAT(NANO_PP_DECL_DEF_, NANO_PP_IS_PAREN(NAME))(              \
@@ -212,7 +164,7 @@ NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN
 //   (concept Name)(A, B, Rest...),
 //      // requirements...
 #define NANO_PP_DECL_DEF_1(TPARAM, NAME, ...)                                \
-    NANO_PP_EVAL4(                                                           \
+    NANO_PP_EVAL2(                                                           \
         NANO_PP_DECL_DEF_IMPL,                                               \
         TPARAM,                                                                \
         NANO_PP_DECL_DEF_NAME NAME,                                          \
@@ -226,18 +178,18 @@ NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN
 #define NANO_PP_DECL_DEF_0(TPARAM, NAME, ...)                                \
     NANO_PP_DECL_DEF_IMPL(                                                   \
         TPARAM,                                                                \
-        NAME,                                                                  \
+        NANO_PP_CAT(NANO_PP_DEF_, NAME),                                   \
         (NANO_PP_CAT(NANO_PP_AUX_, TPARAM)),                               \
         __VA_ARGS__)                                                           \
     /**/
 // Expand the template definition into a struct and template alias like:
 //    struct NameConcept {
 //      template<class A, class B>
-//      static auto _concept_requires_(/* args (optional)*/) ->
+//      static auto Requires_(/* args (optional)*/) ->
 //          decltype(/*requirements...*/);
 //      template<class A, class B>
 //      static constexpr auto is_satisfied_by(int) ->
-//          decltype(bool(&_concept_requires_<A,B>)) { return true; }
+//          decltype(bool(&Requires_<A,B>)) { return true; }
 //      template<class A, class B>
 //      static constexpr bool is_satisfied_by(long) { return false; }
 //    };
@@ -262,21 +214,17 @@ NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN
     { __VA_ARGS__; }                                                           \
     /**/
 #define NANO_PP_DECL_DEF_IMPL(TPARAM, NAME, ARGS, ...)                       \
-    inline namespace nano_concept_eager {                                    \
+    inline namespace _eager_ {                                                 \
         NANO_PP_CAT(NANO_PP_DEF_, TPARAM)                                  \
-        concept bool NANO_PP_CAT(NANO_PP_DEF_, NAME) = NANO_PP_EVAL2(    \
-            NANO_PP_DEF_IMPL(__VA_ARGS__),                                   \
-            __VA_ARGS__);                                                      \
+        concept bool NAME = NANO_PP_DEF_IMPL(__VA_ARGS__)(__VA_ARGS__);      \
     }                                                                          \
-    namespace defer = nano_concept_eager;                                    \
+    namespace defer = _eager_;                                                 \
     namespace lazy {                                                           \
         NANO_PP_CAT(NANO_PP_DEF_, TPARAM)                                  \
-        struct NANO_PP_CAT(NANO_PP_CAT(NANO_PP_DEF_, NAME), Concept) {   \
-            using Concept =                                                    \
-                NANO_PP_CAT(NANO_PP_CAT(NANO_PP_DEF_, NAME), Concept);   \
+        struct NANO_PP_CAT(NAME, Concept) {                                  \
+            using Concept = NANO_PP_CAT(NAME, Concept);                      \
             explicit constexpr operator bool() const noexcept {                \
-                return (bool) defer::NANO_PP_CAT(NANO_PP_DEF_, NAME)<      \
-                    NANO_PP_EXPAND ARGS>;                                    \
+                return (bool) defer::NAME<NANO_PP_EXPAND ARGS>;              \
             }                                                                  \
             constexpr auto operator!() const noexcept {                        \
                 return ::nano::ranges::concepts::detail::Not<Concept>{};             \
@@ -287,9 +235,8 @@ NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN
             }                                                                  \
         };                                                                     \
         NANO_PP_CAT(NANO_PP_DEF_, TPARAM)                                  \
-        NANO_INLINE_VAR constexpr auto NANO_PP_CAT(NANO_PP_DEF_, NAME) = \
-            NANO_PP_CAT(NANO_PP_CAT(NANO_PP_DEF_, NAME), Concept)        \
-                <NANO_PP_EXPAND ARGS>{};                                     \
+        NANO_INLINE_VAR constexpr auto NAME =                                \
+            NANO_PP_CAT(NAME, Concept)<NANO_PP_EXPAND ARGS>{};             \
     }                                                                          \
     /**/
 #else
@@ -312,44 +259,40 @@ NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN
     <decltype(__VA_ARGS__, void())>()                                          \
     /**/
 #define NANO_PP_DECL_DEF_IMPL(TPARAM, NAME, ARGS, ...)                       \
-    struct NANO_PP_CAT(NANO_PP_CAT(NANO_PP_DEF_, NAME), Concept) {       \
-        using Concept =                                                        \
-            NANO_PP_CAT(NANO_PP_CAT(NANO_PP_DEF_, NAME), Concept);       \
+    struct NANO_PP_CAT(NAME, Concept) {                                      \
+        using Concept = NANO_PP_CAT(NAME, Concept);                          \
         NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN                                    \
         NANO_PP_CAT(NANO_PP_DEF_, TPARAM)                                  \
-        static auto _concept_requires_ NANO_PP_EVAL2(                        \
-            NANO_PP_DEF_IMPL(__VA_ARGS__),                                   \
-            __VA_ARGS__);                                                      \
+        static auto Requires_ NANO_PP_DEF_IMPL(__VA_ARGS__)(__VA_ARGS__) {   \
+            return 0;                                                          \
+        }                                                                      \
         NANO_PP_IGNORE_CXX2A_COMPAT_END                                      \
         NANO_PP_CAT(NANO_PP_DEF_, TPARAM)                                  \
-        struct _is_satisfied_by_ {                                             \
+        struct Eval {                                                          \
             template <class C_ = Concept>                                      \
             static constexpr decltype(                                         \
-                !&C_::template _concept_requires_<NANO_PP_EXPAND ARGS>)      \
+                !&C_::template Requires_<NANO_PP_EXPAND ARGS>)               \
             impl(int) noexcept { return true; }                                \
             static constexpr bool impl(long) noexcept { return false; }        \
             explicit constexpr operator bool() const noexcept {                \
-                return _is_satisfied_by_::impl(0);                             \
+                return Eval::impl(0);                                          \
             }                                                                  \
             constexpr auto operator!() const noexcept {                        \
-                return ::nano::ranges::concepts::detail::Not<_is_satisfied_by_>{};   \
+                return ::nano::ranges::concepts::detail::Not<Eval>{};                \
             }                                                                  \
             template <class That>                                              \
             constexpr auto operator&&(That) const noexcept {                   \
-                return ::nano::ranges::concepts::detail::And<                        \
-                    _is_satisfied_by_, That>{};                                \
+                return ::nano::ranges::concepts::detail::And<Eval, That>{};          \
             }                                                                  \
         };                                                                     \
     };                                                                         \
     NANO_PP_CAT(NANO_PP_DEF_, TPARAM)                                      \
-    NANO_INLINE_VAR constexpr bool NANO_PP_CAT(NANO_PP_DEF_, NAME) =     \
-        (bool)NANO_PP_CAT(NANO_PP_CAT(NANO_PP_DEF_, NAME), Concept)      \
-            ::_is_satisfied_by_<NANO_PP_EXPAND ARGS>{};                      \
+    NANO_INLINE_VAR constexpr bool NAME =                                    \
+        (bool)NANO_PP_CAT(NAME, Concept)::Eval<NANO_PP_EXPAND ARGS>{};     \
     namespace lazy {                                                           \
         NANO_PP_CAT(NANO_PP_DEF_, TPARAM)                                  \
-        NANO_INLINE_VAR constexpr auto NANO_PP_CAT(NANO_PP_DEF_, NAME) = \
-            NANO_PP_CAT(NANO_PP_CAT(NANO_PP_DEF_, NAME), Concept)        \
-                ::_is_satisfied_by_<NANO_PP_EXPAND ARGS>{};                  \
+        NANO_INLINE_VAR constexpr auto NAME =                                \
+            NANO_PP_CAT(NAME, Concept)::Eval<NANO_PP_EXPAND ARGS>{};       \
     }                                                                          \
     namespace defer = lazy;                                                    \
     /**/
@@ -465,9 +408,14 @@ NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN
 #if __cpp_concepts
 #define NANO_BROKEN_SUBSUMPTION(...)
 #define NANO_TYPE_CONSTRAINT(...) __VA_ARGS__
+#define NANO_EXP(...) __VA_ARGS__
+#define NANO_AND &&
 #else
 #define NANO_BROKEN_SUBSUMPTION(...) __VA_ARGS__
 #define NANO_TYPE_CONSTRAINT(...) class
+// bool() is used to prevent 'error: pasting "NANO_PP_REQUIRES_PROBE_" and "::" does not give a valid preprocessing token'
+#define NANO_EXP(...) bool(::nano::ranges::expAnd(__VA_ARGS__))
+#define NANO_AND ,
 #endif
 
 
@@ -491,66 +439,73 @@ using bool_ = std::integral_constant<bool, B>;
 namespace concepts {
 namespace detail {
 template <class>
-inline constexpr bool requires_()
-{
-    return true;
+inline constexpr bool requires_() {
+  return true;
 }
-
 template <class T, class U>
 struct And;
-
 template <class T>
 struct Not {
-    explicit constexpr operator bool() const noexcept
-    {
+    explicit constexpr operator bool() const noexcept {
         return !(bool) T{};
     }
-
-    constexpr auto operator!() const noexcept
-    {
+    constexpr auto operator!() const noexcept {
         return T{};
     }
-
     template <class That>
-    constexpr auto operator&&(That) const noexcept
-    {
+    constexpr auto operator&&(That) const noexcept {
         return And<Not, That>{};
     }
 };
-
 template <class T, class U>
 struct And {
     static constexpr bool impl(std::false_type) noexcept { return false; }
-
     static constexpr bool impl(std::true_type) noexcept { return (bool) U{}; }
-
-    explicit constexpr operator bool() const noexcept
-    {
+    explicit constexpr operator bool() const noexcept {
         return And::impl(bool_<(bool) T{}>{});
     }
-
-    constexpr auto operator!() const noexcept
-    {
+    constexpr auto operator!() const noexcept {
         return Not<And>{};
     }
-
     template <class That>
-    constexpr auto operator&&(That) const noexcept
-    {
+    constexpr auto operator&&(That) const noexcept {
         return detail::And<And, That>{};
     }
 };
+
 } // namespace detail
 } // namespace concepts
 
-template <class T>
-constexpr bool implicitly_convertible_to(T)
-{
-    return true;
+namespace isolated {
+
+template<class T0>
+constexpr auto expAnd(T0&& t0) {
+  return (T0&&)t0;
+}
+template<class T0, class... TN>
+constexpr auto expAnd(T0&& t0, TN&&... tn) {
+  return concepts::detail::And<T0, decltype(isolated::expAnd((TN&&)tn...))>{};
 }
 
+}
+
+template<class... TN>
+constexpr auto expAnd(TN&&... tn) {
+  return isolated::expAnd((TN&&)tn...);
+}
+
+template <class T>
+constexpr bool implicitly_convertible_to(T) {
+  return true;
+}
+#ifdef __clang__
 template <bool B>
-NANO_INLINE_VAR constexpr std::enable_if_t<B, bool> requires_ = true;
+std::enable_if_t<B> requires_()
+{}
+#else
+template <bool B>
+NANO_INLINE_VAR constexpr std::enable_if_t<B, int> requires_ = 0;
+#endif
 
 }} // namespace nano::ranges
 
