@@ -271,19 +271,17 @@ public:
         ranges::advance(data_.begin_, n, data_.end_);
         return *this;
     }
+
+    friend constexpr I begin(subrange r)
+    {
+        return r.begin();
+    }
+
+    friend constexpr S end(subrange r)
+    {
+        return r.end();
+    }
 };
-
-template <typename I, typename S, subrange_kind K>
-constexpr I begin(subrange<I, S, K>&& r)
-{
-    return r.begin();
-}
-
-template <typename I, typename S, subrange_kind K>
-constexpr S end(subrange<I, S, K>&& r)
-{
-    return r.end();
-}
 
 #ifdef NANO_HAVE_DEDUCTION_GUIDES
 
@@ -372,11 +370,15 @@ constexpr auto make_subrange(R&& r, iter_difference_t<R> n)
     return {std::forward<R>(r), n};
 }
 
+//template <typename R>
+//using safe_subrange_t =
+//    std::conditional_t<detail::ForwardingRange<R>,
+//        subrange<iterator_t<R>>,
+//        dangling<subrange<iterator_t<R>>>>;
+
 template <typename R>
 using safe_subrange_t =
-    std::conditional_t<detail::ForwardingRange<R>,
-        subrange<iterator_t<R>>,
-        dangling<subrange<iterator_t<R>>>>;
+    std::enable_if_t<detail::ForwardingRange<R>, subrange<iterator_t<R>>>;
 
 NANO_END_NAMESPACE
 
