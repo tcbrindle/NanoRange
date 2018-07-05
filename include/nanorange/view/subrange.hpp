@@ -271,19 +271,19 @@ public:
         ranges::advance(data_.begin_, n, data_.end_);
         return *this;
     }
+
+    // Work around ICE in GCC5 if these functions take a subrange by value,
+    // while still allowing them to be found by ADL for rvalues
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 6
+    friend constexpr I begin(subrange&& r) { return r.begin(); }
+
+    friend constexpr S end(subrange&& r) { return r.end(); }
+#else
+    friend constexpr I begin(subrange r) { return r.begin(); }
+
+    friend constexpr S end(subrange r) { return r.end(); }
+#endif
 };
-
-template <typename I, typename S, subrange_kind K>
-constexpr I begin(subrange<I, S, K> r)
-{
-    return r.begin();
-}
-
-template <typename I, typename S, subrange_kind K>
-constexpr S end(subrange<I, S, K> r)
-{
-    return r.end();
-}
 
 #ifdef NANO_HAVE_DEDUCTION_GUIDES
 
