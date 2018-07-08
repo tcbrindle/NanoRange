@@ -45,7 +45,7 @@ test_iter(Iter first, Sent last)
 	else
 		CHECK(i == last);
 
-	auto rng = stl2::ext::make_range(first, last);
+	auto rng = stl2::make_subrange(first, last);
 	i = stl2::min_element(rng);
 	if (first != last) {
 		for (Iter j = first; j != last; ++j)
@@ -57,10 +57,10 @@ test_iter(Iter first, Sent last)
 	auto res = stl2::min_element(std::move(rng));
 	if (first != last) {
 		for (Iter j = first; j != last; ++j)
-			CHECK(!(*j < *res.get_unsafe()));
+			CHECK(!(*j < *res));
 	}
 	else
-		CHECK(res.get_unsafe() == last);
+		CHECK(res == last);
 }
 
 template <class Iter, class Sent = Iter>
@@ -97,7 +97,7 @@ test_iter_comp(Iter first, Sent last)
 	else
 		CHECK(i == last);
 
-	auto rng = stl2::ext::make_range(first, last);
+	auto rng = stl2::make_subrange(first, last);
 	i = stl2::min_element(rng, std::greater<int>());
 	if (first != last) {
 		for (Iter j = first; j != last; ++j)
@@ -109,10 +109,10 @@ test_iter_comp(Iter first, Sent last)
 	auto res = stl2::min_element(std::move(rng), std::greater<int>());
 	if (first != last) {
 		for (Iter j = first; j != last; ++j)
-			CHECK(!std::greater<int>()(*j, *res.get_unsafe()));
+			CHECK(!std::greater<int>()(*j, *res));
 	}
 	else
-		CHECK(res.get_unsafe() == last);
+		CHECK(res == last);
 }
 
 template <class Iter, class Sent = Iter>

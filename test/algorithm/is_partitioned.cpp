@@ -79,31 +79,31 @@ test_range()
 {
 	{
 		const int ia[] = {1, 2, 3, 4, 5, 6};
-		CHECK(!stl2::is_partitioned(stl2::ext::make_range(Iter(stl2::begin(ia)),
+		CHECK(!stl2::is_partitioned(stl2::make_subrange(Iter(stl2::begin(ia)),
 														  Sent(stl2::end(ia))),
 									is_odd()));
 	}
 	{
 		const int ia[] = {1, 3, 5, 2, 4, 6};
-		CHECK(stl2::is_partitioned(stl2::ext::make_range(Iter(stl2::begin(ia)),
+		CHECK(stl2::is_partitioned(stl2::make_subrange(Iter(stl2::begin(ia)),
 														 Sent(stl2::end(ia))),
 								   is_odd()));
 	}
 	{
 		const int ia[] = {2, 4, 6, 1, 3, 5};
-		CHECK(!stl2::is_partitioned(stl2::ext::make_range(Iter(stl2::begin(ia)),
+		CHECK(!stl2::is_partitioned(stl2::make_subrange(Iter(stl2::begin(ia)),
 														  Sent(stl2::end(ia))),
 									is_odd()));
 	}
 	{
 		const int ia[] = {1, 3, 5, 2, 4, 6, 7};
-		CHECK(!stl2::is_partitioned(stl2::ext::make_range(Iter(stl2::begin(ia)),
+		CHECK(!stl2::is_partitioned(stl2::make_subrange(Iter(stl2::begin(ia)),
 														  Sent(stl2::end(ia))),
 									is_odd()));
 	}
 	{
 		const int ia[] = {1, 3, 5, 2, 4, 6, 7};
-		CHECK(stl2::is_partitioned(stl2::ext::make_range(Iter(stl2::begin(ia)),
+		CHECK(stl2::is_partitioned(stl2::make_subrange(Iter(stl2::begin(ia)),
 														 Sent(stl2::begin(ia))),
 								   is_odd()));
 	}

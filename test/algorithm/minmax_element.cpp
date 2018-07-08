@@ -49,7 +49,7 @@ test_iter(Iter first, Sent last)
 		CHECK(p.second == last);
 	}
 
-	auto rng = stl2::ext::make_range(first, last);
+	auto rng = stl2::make_subrange(first, last);
 	p = stl2::minmax_element(rng);
 	if (first != last) {
 		for (Iter j = first; j != last; ++j) {
@@ -65,13 +65,13 @@ test_iter(Iter first, Sent last)
 	auto res = stl2::minmax_element(std::move(rng));
 	if (first != last) {
 		for (Iter j = first; j != last; ++j) {
-			CHECK(!(*j < *res.first.get_unsafe()));
+			CHECK(!(*j < *res.first));
 			CHECK(!(*p.second < *j));
 		}
 	}
 	else {
-		CHECK(res.first.get_unsafe() == last);
-		CHECK(res.second.get_unsafe() == last);
+		CHECK(res.first == last);
+		CHECK(res.second == last);
 	}
 }
 
@@ -125,7 +125,7 @@ test_iter_comp(Iter first, Sent last)
 		CHECK(p.second == last);
 	}
 
-	auto rng = stl2::ext::make_range(first, last);
+	auto rng = stl2::make_subrange(first, last);
 	p = stl2::minmax_element(rng, comp);
 	if (first != last) {
 		for (Iter j = first; j != last; ++j) {

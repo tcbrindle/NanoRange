@@ -60,11 +60,11 @@ struct range_call {
 	template <class B, class E, class... Args>
 	auto operator()(B&& It, E&& e, Args&& ... args)
 	-> decltype(stl2::is_sorted_until(
-			::as_lvalue(stl2::ext::make_range(begin_t{It}, sentinel_t{e})),
+			::as_lvalue(stl2::make_subrange(begin_t{It}, sentinel_t{e})),
 			std::forward<Args>(args)...))
 	{
 		return stl2::is_sorted_until(
-				::as_lvalue(stl2::ext::make_range(begin_t{It}, sentinel_t{e})),
+				::as_lvalue(stl2::make_subrange(begin_t{It}, sentinel_t{e})),
 				std::forward<Args>(args)...);
 	}
 };

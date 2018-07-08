@@ -113,7 +113,7 @@ test_range()
 	int ia[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
 	Iter r = stl2::partition(
-			::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia + sa))),
+			::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))),
 			is_odd());
 	CHECK(base(r) == ia + 5);
 	for (int* i = ia; i < base(r); ++i)
@@ -121,21 +121,21 @@ test_range()
 	for (int* i = base(r); i < ia + sa; ++i)
 		CHECK(!is_odd()(*i));
 	// check empty
-	r = stl2::partition(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia))),
+	r = stl2::partition(::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia))),
 						is_odd());
 	CHECK(base(r) == ia);
 	// check all false
 	for (unsigned i = 0; i < sa; ++i)
 		ia[i] = 2 * i;
 	r = stl2::partition(
-			::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia + sa))),
+			::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))),
 			is_odd());
 	CHECK(base(r) == ia);
 	// check all true
 	for (unsigned i = 0; i < sa; ++i)
 		ia[i] = 2 * i + 1;
 	r = stl2::partition(
-			::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia + sa))),
+			::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))),
 			is_odd());
 	CHECK(base(r) == ia + sa);
 	// check all true but last
@@ -143,7 +143,7 @@ test_range()
 		ia[i] = 2 * i + 1;
 	ia[sa - 1] = 10;
 	r = stl2::partition(
-			::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia + sa))),
+			::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))),
 			is_odd());
 	CHECK(base(r) == ia + sa - 1);
 	for (int* i = ia; i < base(r); ++i)
@@ -155,7 +155,7 @@ test_range()
 		ia[i] = 2 * i + 1;
 	ia[0] = 10;
 	r = stl2::partition(
-			::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia + sa))),
+			::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))),
 			is_odd());
 	CHECK(base(r) == ia + sa - 1);
 	for (int* i = ia; i < base(r); ++i)
@@ -167,7 +167,7 @@ test_range()
 		ia[i] = 2 * i;
 	ia[sa - 1] = 11;
 	r = stl2::partition(
-			::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia + sa))),
+			::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))),
 			is_odd());
 	CHECK(base(r) == ia + 1);
 	for (int* i = ia; i < base(r); ++i)
@@ -179,7 +179,7 @@ test_range()
 		ia[i] = 2 * i;
 	ia[0] = 11;
 	r = stl2::partition(
-			::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia + sa))),
+			::as_lvalue(stl2::make_subrange(Iter(ia), Sent(ia + sa))),
 			is_odd());
 	CHECK(base(r) == ia + 1);
 	for (int* i = ia; i < base(r); ++i)

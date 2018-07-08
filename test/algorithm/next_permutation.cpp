@@ -81,7 +81,7 @@ void test_range()
 		do {
 			std::copy(ia, ia + e, prev);
 			x = ranges::next_permutation(
-					ranges::ext::make_range(Iter(ia), Sent(ia + e)));
+					ranges::make_subrange(Iter(ia), Sent(ia + e)));
 			if (e > 1) {
 				if (x)
 					CHECK(std::lexicographical_compare(prev, prev + e, ia,
@@ -138,7 +138,7 @@ void test_range_comp()
 		do {
 			std::copy(ia, ia + e, prev);
 			x = ranges::next_permutation(
-					ranges::ext::make_range(Iter(ia), Sent(ia + e)), C());
+					ranges::make_subrange(Iter(ia), Sent(ia + e)), C());
 			if (e > 1) {
 				if (x)
 					CHECK(std::lexicographical_compare(prev, prev + e, ia,

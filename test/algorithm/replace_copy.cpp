@@ -53,7 +53,7 @@ void test_rng() {
 	int ia[] = {0, 1, 2, 3, 4};
 	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
 	int ib[sa] = {0};
-	auto rng = stl2::make_range(InIter(ia), Sent(ia + sa));
+	auto rng = stl2::make_subrange(InIter(ia), Sent(ia + sa));
 	std::pair<InIter, OutIter> r = stl2::replace_copy(rng, OutIter(ib), 2, 5);
 	CHECK(base(r.first) == ia + sa);
 	CHECK(base(r.second) == ib + sa);

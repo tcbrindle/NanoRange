@@ -64,7 +64,7 @@ test_range() {
 	int ia[] = {0, 1, 2, 3, 4, 2, 3, 4, 2};
 	constexpr unsigned sa = stl2::size(ia);
 	int ib[sa];
-	std::pair<InIter, OutIter> r = stl2::remove_copy_if(::as_lvalue(stl2::make_range(InIter(ia), Sent(ia + sa))),
+	std::pair<InIter, OutIter> r = stl2::remove_copy_if(::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + sa))),
 														OutIter(ib), [](int i) { return i == 2; });
 	CHECK(base(r.first) == ia + sa);
 	CHECK(base(r.second) == ib + sa - 3);

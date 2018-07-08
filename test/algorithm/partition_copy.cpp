@@ -70,7 +70,7 @@ test_range()
 	int r2[10] = {0};
 	typedef std::tuple<Iter, output_iterator<int*>, int*> P;
 	P p = stl2::partition_copy(
-			::as_lvalue(stl2::ext::make_range(Iter(std::begin(ia)),
+			::as_lvalue(stl2::make_subrange(Iter(std::begin(ia)),
 											  Sent(std::end(ia)))),
 			output_iterator<int*>(r1), r2, is_odd());
 	CHECK(std::get<0>(p) == Iter(std::end(ia)));

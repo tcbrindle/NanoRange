@@ -397,8 +397,6 @@ struct sentinel_type
 	using type = It;
 };
 
-/*
-
 template <typename T, bool Sized>
 struct sentinel_type<T*, Sized>
 {
@@ -410,7 +408,5 @@ struct sentinel_type<I<It>, Sized>
 {
 	using type = sentinel<It, Sized>;
 };
-
- */
 
 #endif  // ITERATORS_H
