@@ -43,14 +43,47 @@ using subrange_::subrange;
 
 namespace detail {
 
+// libstdc++ < 7 does not have a SFINAE-friendly std::tuple_size,
+// meaning that doing virtually anything with it is a hard error, including
+// testing the PairLike concept below. As a workaround, we'll define our own
+// tuple_size (only for std::tuple and std::pair) if we're using libstdc++ v5 or
+// v6.
+//
+// FIXME: Do this better.
+//
+// Note:
+// __GNUC__ tells us we're using GCC or Clang
+// !_LIBCPP_VERSION tells us we're not using libc++
+// !_GLIBCXX_RELEASE tells us we're not using libstdc++ >= 7, which is when this
+// symbol was added
+#if defined(__GNUC__) && !defined(_LIBCPP_VERSION) && !defined(_GLIBCXX_RELEASE)
+template <typename, typename = void>
+struct sfinae_tuple_size {};
+
+template <typename T>
+struct sfinae_tuple_size<const T>
+    : sfinae_tuple_size<T> {};
+
+template <typename T, typename U>
+struct sfinae_tuple_size<std::pair<T, U>>
+    : std::integral_constant<std::size_t, 2> {};
+
+template <typename... Args>
+struct sfinae_tuple_size<std::tuple<Args...>>
+    : std::integral_constant<std::size_t, sizeof...(Args)> {};
+#else
+template <typename T>
+using sfinae_tuple_size = std::tuple_size<T>;
+#endif
+
 struct PairLike_req {
     template <std::size_t I, typename T>
     int test_func(const std::tuple_element_t<I, T>&);
 
     template <typename T>
     auto requires_(T t) -> decltype(
-        valid_expr(std::enable_if_t<Integral<std::tuple_size<T>::value>, int>{},
-                   std::enable_if_t<std::tuple_size<T>::value == 2, int>{},
+        valid_expr(std::enable_if_t<Integral<sfinae_tuple_size<T>::value>, int>{},
+                   std::enable_if_t<sfinae_tuple_size<T>::value == 2, int>{},
                    decltype(this->test_func<0, T>(std::get<0>(t))){},
                    decltype(this->test_func<1, T>(std::get<1>(t))){}));
 };
