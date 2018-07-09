@@ -233,8 +233,8 @@ public:
 
     template <typename C, typename R = subrange,
               std::enable_if_t<detail::NotSameAs<C, subrange>, int> = 0,
+              std::enable_if_t<ForwardRange<C> && !View<C>, int> = 0,
               typename = std::enable_if_t<
-                    ForwardRange<C> && !View<C> &&
                     ConvertibleTo<iter_reference_t<iterator_t<const R>>,
                                   iter_value_t<iterator_t<C>>> &&
                     Constructible<C, detail::range_common_iterator_t<const R>,
