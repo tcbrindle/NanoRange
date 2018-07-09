@@ -258,6 +258,7 @@ TEST_CASE("alg.search")
 		CHECK(it.count() == 0);
 	}
 
+#ifdef HAVE_RVALUE_RANGES
 	// Test rvalue ranges
 	{
 		int ib[] = {0, 1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 4};
@@ -269,4 +270,5 @@ TEST_CASE("alg.search")
 		CHECK(stl2::search(std::move(ib), ie) == ib+4);
 #endif
 	}
+#endif
 }

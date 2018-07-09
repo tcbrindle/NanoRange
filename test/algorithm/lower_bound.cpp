@@ -69,13 +69,9 @@ TEST_CASE("alg.lower_bound")
 	CHECK(stl2::lower_bound(a, 1, less<>(), &std::pair<int, int>::first) == &a[2]);
 	CHECK(stl2::lower_bound(c, 1, less<>(), &std::pair<int, int>::first) == &c[2]);
 
-	// FIXME: MSVC
-#ifndef _MSC_VER
+#ifdef HAVE_RVALUE_RANGES
 	CHECK(stl2::lower_bound(std::move(a), 1, less<>(), &std::pair<int, int>::first).get_unsafe() == &a[2]);
 	CHECK(stl2::lower_bound(std::move(c), 1, less<>(), &std::pair<int, int>::first).get_unsafe() == &c[2]);
-#else
-	CHECK(stl2::lower_bound(std::move(a), 1, less<>(), &std::pair<int, int>::first) == &a[2]);
-	CHECK(stl2::lower_bound(std::move(c), 1, less<>(), &std::pair<int, int>::first) == &c[2]);
 #endif
 
 #ifdef HAVE_VIEWS

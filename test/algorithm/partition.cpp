@@ -222,20 +222,13 @@ TEST_CASE("alg.partition")
 	for (S* i = r; i < ia+sa; ++i)
 		CHECK(!is_odd()(i->i));
 
+#ifdef HAVE_RVALUE_RANGES
 	// Test rvalue range
 	auto r2 = stl2::partition(std::move(ia), is_odd(), &S::i);
-	// FIXME: MSVC
-#ifndef _MSC_VER
 	CHECK(r2.get_unsafe() == ia + 5);
 	for (S* i = ia; i < r2.get_unsafe(); ++i)
 		CHECK(is_odd()(i->i));
 	for (S* i = r2.get_unsafe(); i < ia+sa; ++i)
-		CHECK(!is_odd()(i->i));
-#else
-	CHECK(r2 == ia + 5);
-	for (S* i = ia; i < r2; ++i)
-		CHECK(is_odd()(i->i));
-	for (S* i = r2; i < ia+sa; ++i)
 		CHECK(!is_odd()(i->i));
 #endif
 }

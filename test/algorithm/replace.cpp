@@ -98,6 +98,7 @@ TEST_CASE("alg.replace")
 		CHECK(i == stl2::end(ia));
 	}
 
+#ifdef HAVE_RVALUE_RANGES
 	// test rvalue range
 	{
 		using P = std::pair<int,std::string>;
@@ -115,4 +116,5 @@ TEST_CASE("alg.replace")
 		CHECK(i == stl2::end(ia));
 #endif
 	}
+#endif
 }

@@ -49,13 +49,10 @@ TEST_CASE("alg.find")
 	pi = find(ia, 10);
 	CHECK(pi == ia+s);
 
-// FIXME: MSVC
-#ifndef _MSC_VER
-	auto pj = find(std::move(ia), 3);
-	CHECK((pj.get_unsafe() != ia+s && *pj.get_unsafe() == 3));
-	pj = find(std::move(ia), 10);
-	CHECK(pj.get_unsafe() == ia+s);
-#endif
+	auto pj = find(ia, 3);
+	CHECK((pj != ia+s && *pj == 3));
+	pj = find(ia, 10);
+	CHECK(pj == ia+s);
 
 	S sa[] = {{0}, {1}, {2}, {3}, {4}, {5}};
 	S *ps = find(sa, 3, &S::i_);

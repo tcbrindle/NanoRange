@@ -56,13 +56,10 @@ TEST_CASE("alg.find_if")
 	pi = find_if(ia, [](int i){return i == 10;});
 	CHECK(pi == ia+s);
 
-// FIXME: MSVC
-#ifndef _MSC_VER
-	auto pj = find_if(std::move(ia), [](int i){return i == 3;});
-	CHECK(*pj.get_unsafe() == 3);
-	pj = find_if(std::move(ia), [](int i){return i == 10;});
-	CHECK(pj.get_unsafe() == ia+s);
-#endif
+	auto pj = find_if(ia, [](int i){return i == 3;});
+	CHECK(*pj == 3);
+	pj = find_if(ia, [](int i){return i == 10;});
+	CHECK(pj == ia+s);
 
 	S sa[] = {{0}, {1}, {2}, {3}, {4}, {5}};
 	S *ps = find_if(sa, [](int i){return i == 3;}, &S::i_);

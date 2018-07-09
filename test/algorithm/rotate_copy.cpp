@@ -346,6 +346,7 @@ TEST_CASE("alg.rotate_copy")
 	test<const int*, random_access_iterator<int*> >();
 	test<const int*, int*>();
 
+#ifdef HAVE_RVALUE_RANGES
 	// test rvalue range
 	{
 		int rgi[] = {0,1,2,3,4,5};
@@ -366,4 +367,5 @@ TEST_CASE("alg.rotate_copy")
 		CHECK(rgo[4] == 0);
 		CHECK(rgo[5] == 1);
 	}
+#endif
 }

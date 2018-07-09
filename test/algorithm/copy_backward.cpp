@@ -51,7 +51,7 @@ namespace {
 	void test_initializer_list() {
 		int target[8]{};
 		auto l1 = {1, 2, 3, 4};
-		auto result = ranges::copy_backward(std::move(l1), ranges::end(target));
+		auto result = ranges::copy_backward(l1, ranges::end(target));
 		CHECK(result.second == target + 4);
 		CHECK(std::count(target, target + 4, 0) == 4);
 		auto l2 = {1, 2, 3, 4};
@@ -83,13 +83,8 @@ TEST_CASE("alg.copy_backward")
 	CHECK(std::equal(a, a + size(a), out));
 
 	std::fill_n(out, size(out), std::make_pair(0, 0));
-	auto res2 = ranges::copy_backward(std::move(a), end(out));
-	// FIXME: Usual MSVC rvalue array weirdness
-#ifndef _MSC_VER
-	CHECK(res2.first.get_unsafe() == end(a));
-#else
+	auto res2 = ranges::copy_backward(a, end(out));
 	CHECK(res2.first == end(a));
-#endif
 	CHECK(res2.second == begin(out));
 	CHECK(std::equal(a, a + size(a), out));
 

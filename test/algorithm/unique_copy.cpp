@@ -294,6 +294,7 @@ TEST_CASE("alg.unique_copy")
 		check_equal(stl2::make_subrange(ib, ib+7), {S{1,1},S{2,2},S{3,3},S{4,5},S{5,6},S{6,9},S{7,10}});
 	}
 
+#ifdef HAVE_RVALUE_RANGES
 	// Test rvalue ranges:
 	{
 		S const ia[] = {{1,1},{2,2},{3,3},{3,4},{4,5},{5,6},{5,7},{5,8},{6,9},{7,10}};
@@ -308,4 +309,5 @@ TEST_CASE("alg.unique_copy")
 		CHECK(r.second == ib + 7);
 		check_equal(stl2::make_subrange(ib, ib+7), {S{1,1},S{2,2},S{3,3},S{4,5},S{5,6},S{6,9},S{7,10}});
 	}
+#endif
 }

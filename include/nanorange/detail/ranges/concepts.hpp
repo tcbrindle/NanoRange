@@ -287,6 +287,10 @@ template <typename R>
 NANO_CONCEPT ContiguousRange =
     decltype(detail::ContiguousRange_fn<R>(0))::value;
 
+template <typename R>
+using safe_iterator_t = std::enable_if_t<Range<R>,
+        decltype(ranges::begin(std::declval<R>()))>;
+
 NANO_END_NAMESPACE
 
 #endif

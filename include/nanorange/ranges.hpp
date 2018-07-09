@@ -16,7 +16,6 @@
 #include <nanorange/detail/iterator/traits.hpp>
 #include <nanorange/detail/ranges/access.hpp>
 #include <nanorange/detail/ranges/concepts.hpp>
-#include <nanorange/detail/ranges/dangling.hpp>
 #include <nanorange/detail/ranges/primitives.hpp>
 #include <nanorange/iterator/operations.hpp>
 #include <nanorange/functional.hpp>

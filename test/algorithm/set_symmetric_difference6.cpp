@@ -35,6 +35,7 @@ TEST_CASE("alg.set_symmetric_difference6")
 		CHECK_FALSE(stl2::lexicographical_compare(ic, std::get<2>(res2), ir, ir+sr, std::less<int>(), &U::k));
 	}
 
+#ifdef HAVE_RVALUE_RANGES
 	// Test rvalue ranges
 	{
 		S ia[] = {S{1}, S{2}, S{2}, S{3}, S{3}, S{3}, S{4}, S{4}, S{4}, S{4}};
@@ -69,4 +70,5 @@ TEST_CASE("alg.set_symmetric_difference6")
 		CHECK((std::get<2>(res2) - ic) == sr);
 		CHECK_FALSE(stl2::lexicographical_compare(ic, std::get<2>(res2), ir, ir+sr, std::less<int>(), &U::k));
 	}
+#endif
 }

@@ -39,6 +39,7 @@ TEST_CASE("alg.set_difference6")
 		CHECK_FALSE(stl2::lexicographical_compare(ic, res2.second, ir, irr+srr, std::less<int>(), &U::k));
 	}
 
+#ifdef HAVE_RVALUE_RANGES
 	// Test rvalue ranges
 	{
 		S ia[] = {S{1}, S{2}, S{2}, S{3}, S{3}, S{3}, S{4}, S{4}, S{4}, S{4}};
@@ -72,4 +73,5 @@ TEST_CASE("alg.set_difference6")
 		CHECK((res2.second - ic) == srr);
 		CHECK_FALSE(stl2::lexicographical_compare(ic, res2.second, ir, irr+srr, std::less<int>(), &U::k));
 	}
+#endif
 }

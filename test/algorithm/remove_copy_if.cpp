@@ -161,6 +161,7 @@ TEST_CASE("alg.remove_copy_if")
 		CHECK(ib[5].i == 4);
 	}
 
+#ifdef HAVE_RVALUE_RANGES
 	// Check rvalue range
 	{
 		S ia[] = {S{0}, S{1}, S{2}, S{3}, S{4}, S{2}, S{3}, S{4}, S{2}};
@@ -181,4 +182,5 @@ TEST_CASE("alg.remove_copy_if")
 		CHECK(ib[4].i == 3);
 		CHECK(ib[5].i == 4);
 	}
+#endif
 }

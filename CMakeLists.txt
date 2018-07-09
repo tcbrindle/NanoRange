@@ -113,7 +113,6 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/memory/concepts.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/access.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/concepts.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/dangling.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/primitives.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/common_reference.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/common_type.hpp
