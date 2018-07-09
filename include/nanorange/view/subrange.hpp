@@ -57,7 +57,7 @@ namespace detail {
 // !_GLIBCXX_RELEASE tells us we're not using libstdc++ >= 7, which is when this
 // symbol was added
 #if defined(__GNUC__) && !defined(_LIBCPP_VERSION) && !defined(_GLIBCXX_RELEASE)
-template <typename, typename = void>
+template <typename>
 struct sfinae_tuple_size {};
 
 template <typename T>
@@ -220,10 +220,8 @@ public:
 
     template <typename PairLike_,
             std::enable_if_t<detail::NotSameAs<PairLike_, subrange>, int> = 0,
-            std::enable_if_t<detail::NotSameAs<PairLike_, subrange> &&
-                    detail::PairLikeConvertibleFrom<
-                            PairLike_, const I&, const S&>,
-                    int> = 0>
+            std::enable_if_t<detail::PairLikeConvertibleFrom<
+                                PairLike_, const I&, const S&>, int> = 0>
     constexpr operator PairLike_() const
     {
         return PairLike_(begin(), end());
@@ -237,7 +235,6 @@ public:
               std::enable_if_t<detail::NotSameAs<C, subrange>, int> = 0,
               typename = std::enable_if_t<
                     ForwardRange<C> && !View<C> &&
-                    !detail::view_predicate_v<C> &&
                     ConvertibleTo<iter_reference_t<iterator_t<const R>>,
                                   iter_value_t<iterator_t<C>>> &&
                     Constructible<C, detail::range_common_iterator_t<const R>,
@@ -376,7 +373,7 @@ constexpr auto make_subrange(I i, S s)
 template <typename I, typename S>
 constexpr auto make_subrange(I i, S s, iter_difference_t<I> n)
     -> std::enable_if_t<Iterator<I> && Sentinel<S, I>,
-                        decltype(subrange<I, S>{std::move(i), std::move(s)}, n)>
+                        decltype(subrange<I, S>{std::move(i), std::move(s), n})>
 {
     return {std::move(i), std::move(s), n};
 }
@@ -404,12 +401,6 @@ constexpr auto make_subrange(R&& r, iter_difference_t<R> n)
 {
     return {std::forward<R>(r), n};
 }
-
-//template <typename R>
-//using safe_subrange_t =
-//    std::conditional_t<detail::ForwardingRange<R>,
-//        subrange<iterator_t<R>>,
-//        dangling<subrange<iterator_t<R>>>>;
 
 template <typename R>
 using safe_subrange_t =
