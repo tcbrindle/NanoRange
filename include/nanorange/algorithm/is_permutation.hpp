@@ -74,8 +74,8 @@ private:
         auto result = mismatch_fn::impl3(std::move(first1), last1,
                                          std::move(first2),
                                          pred, proj1, proj2);
-        first1 = std::move(result).first;
-        first2 = std::move(result).second;
+        first1 = std::move(result).in1;
+        first2 = std::move(result).in2;
 
         if (first1 == last1) {
             return true;
@@ -103,8 +103,8 @@ private:
         auto result = mismatch_fn::impl4(std::move(first1), last1,
                                          std::move(first2), last2,
                                          pred, proj1, proj2);
-        first1 = std::move(result).first;
-        first2 = std::move(result).second;
+        first1 = std::move(result).in1;
+        first2 = std::move(result).in2;
 
         // If we have reached the end of both ranges, they were the same
         if (first1 == last1 && first2 == last2) {

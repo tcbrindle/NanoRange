@@ -13,12 +13,18 @@ NANO_BEGIN_NAMESPACE
 
 // [range.alg.foreach]
 
+template <typename I, typename F>
+struct for_each_result {
+    I in;
+    F fun;
+};
+
 namespace detail {
 
 struct for_each_fn {
 private:
     template <typename I, typename S, typename Proj, typename Fun>
-    static constexpr std::pair<I, Fun> // FIXME: Used tagged pair
+    static constexpr for_each_result<I, Fun>
     impl(I first, S last, Fun& fun, Proj& proj)
     {
         while (first != last) {
@@ -33,7 +39,7 @@ public:
     constexpr std::enable_if_t<
         InputIterator<I> && Sentinel<S, I> &&
             IndirectUnaryInvocable<Fun, projected<I, Proj>>,
-        std::pair<I, Fun>> // FIXME: use tagged_pair
+        for_each_result<I, Fun>>
     operator()(I first, S last, Fun fun, Proj proj = Proj{}) const
     {
         return for_each_fn::impl(std::move(first), std::move(last),
@@ -44,7 +50,7 @@ public:
     constexpr std::enable_if_t<
         InputRange<Rng> &&
             IndirectUnaryInvocable<Fun, projected<iterator_t<Rng>, Proj>>,
-        std::pair<safe_iterator_t<Rng>, Fun>>
+        for_each_result<safe_iterator_t<Rng>, Fun>>
     operator()(Rng&& rng, Fun fun, Proj proj = Proj{}) const
     {
         return for_each_fn::impl(nano::begin(rng), nano::end(rng),
