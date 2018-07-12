@@ -13,14 +13,16 @@
 
 NANO_BEGIN_NAMESPACE
 
+template <typename I, typename O>
+using set_difference_result = copy_result<I, O>;
+
 namespace detail {
 
-// FIXME: Use tagged_pair
 struct set_difference_fn {
 private:
     template <typename I1, typename S1, typename I2, typename S2, typename O,
               typename Comp, typename Proj1, typename Proj2>
-    static constexpr std::pair<I1, O>
+    static constexpr set_difference_result<I1, O>
     impl(I1 first1, S1 last1, I2 first2, S2 last2, O result,
          Comp& comp, Proj1& proj1, Proj2& proj2)
     {
@@ -69,7 +71,7 @@ public:
         Sentinel<S2, I2> &&
         WeaklyIncrementable<O> &&
         Mergeable<I1, I2, O, Comp, Proj1, Proj2>,
-        std::pair<I1, O>>
+        set_difference_result<I1, O>>
     operator()(I1 first1, S1 last1, I2 first2, S2 last2, O result,
                Comp comp = Comp{}, Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
@@ -86,7 +88,7 @@ public:
         InputRange<Rng2> &&
         WeaklyIncrementable<O> &&
         Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp, Proj1, Proj2>,
-        std::pair<safe_iterator_t<Rng1>, O>>
+        set_difference_result<safe_iterator_t<Rng1>, O>>
     operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {

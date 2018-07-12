@@ -11,16 +11,21 @@
 
 NANO_BEGIN_NAMESPACE
 
+template <typename I, typename O1, typename O2>
+struct partition_copy_result {
+    I in;
+    O1 out1;
+    O2 out2;
+};
+
 namespace detail {
 
-// FIXME: Use tagged_tuple
 struct partition_copy_fn {
 private:
     template <typename I, typename S, typename O1, typename O2,
               typename Pred, typename Proj>
-    static constexpr std::tuple<I, O1, O2> impl(I first, S last,
-                                                O1 out_true, O2 out_false,
-                                                Pred& pred, Proj& proj)
+    static constexpr partition_copy_result<I, O1, O2>
+    impl(I first, S last, O1 out_true, O2 out_false, Pred& pred, Proj& proj)
     {
         while (first != last) {
             auto&& val = *first;
@@ -34,7 +39,7 @@ private:
             ++first;
         }
 
-        return std::tuple<I, O1, O2>{first, out_true, out_false};
+        return {std::move(first), std::move(out_true), std::move(out_false)};
     }
 
 public:
@@ -48,7 +53,7 @@ public:
         IndirectUnaryPredicate<Pred, projected<I, Proj>> &&
         IndirectlyCopyable<I, O1> &&
         IndirectlyCopyable<I, O2>,
-        std::tuple<I, O1, O2>>
+        partition_copy_result<I, O1, O2>>
     operator()(I first, S last, O1 out_true, O2 out_false, Pred pred,
                Proj proj = Proj{}) const
     {
@@ -66,7 +71,7 @@ public:
         IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>> &&
         IndirectlyCopyable<iterator_t<Rng>, O1> &&
         IndirectlyCopyable<iterator_t<Rng>, O2>,
-        std::tuple<safe_iterator_t<Rng>, O1, O2>>
+        partition_copy_result<safe_iterator_t<Rng>, O1, O2>>
     operator()(Rng&& rng, O1 out_true, O2 out_false, Pred pred,
             Proj proj = Proj{}) const
     {

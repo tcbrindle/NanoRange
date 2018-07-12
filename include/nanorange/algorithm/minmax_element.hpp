@@ -10,30 +10,29 @@
 #ifndef NANORANGE_ALGORITHM_MINMAX_ELEMENT_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_MINMAX_ELEMENT_HPP_INCLUDED
 
-#include <nanorange/ranges.hpp>
+#include <nanorange/algorithm/minmax.hpp>
 
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
-// FIXME: Use tagged_pair
 struct minmax_element_fn {
 private:
     template <typename I, typename S, typename Comp, typename Proj>
-    static constexpr std::pair<I, I> impl(I first, S last, Comp& comp, Proj& proj)
+    static constexpr minmax_result<I> impl(I first, S last, Comp& comp, Proj& proj)
     {
-        std::pair<I, I> result{first, first};
+        minmax_result<I> result{first, first};
 
         if (first == last || ++first == last) {
             return result;
         }
 
        if (nano::invoke(comp, nano::invoke(proj, *first),
-                        nano::invoke(proj, *result.first))) {
-           result.first = first;
+                        nano::invoke(proj, *result.min))) {
+           result.min = first;
        } else if (!nano::invoke(comp, nano::invoke(proj, *first),
-                                nano::invoke(proj, *result.second))){
-           result.second = first;
+                                nano::invoke(proj, *result.max))){
+           result.max = first;
        }
 
        while (++first != last) {
@@ -42,12 +41,12 @@ private:
            // Last iteration
            if (++first == last) {
                if (nano::invoke(comp, nano::invoke(proj, *it),
-                                nano::invoke(proj, *result.first))) {
-                   result.first = std::move(it);
+                                nano::invoke(proj, *result.min))) {
+                   result.min = std::move(it);
                }
                else if (!nano::invoke(comp, nano::invoke(proj, *it),
-                                      nano::invoke(proj, *result.second))) {
-                   result.second = std::move(it);
+                                      nano::invoke(proj, *result.max))) {
+                   result.max = std::move(it);
                }
                break;
            }
@@ -55,22 +54,22 @@ private:
            if (nano::invoke(comp, nano::invoke(proj, *first),
                             nano::invoke(proj, *it))) {
                if (nano::invoke(comp, nano::invoke(proj, *first),
-                                nano::invoke(proj, *result.first))) {
-                   result.first = first;
+                                nano::invoke(proj, *result.min))) {
+                   result.min = first;
                }
                if (!nano::invoke(comp, nano::invoke(proj, *it),
-                                 nano::invoke(proj, *result.second))) {
-                   result.second = it;
+                                 nano::invoke(proj, *result.max))) {
+                   result.max = it;
                }
            }
            else {
                if (nano::invoke(comp, nano::invoke(proj, *it),
-                                nano::invoke(proj, *result.first))) {
-                   result.first = it;
+                                nano::invoke(proj, *result.min))) {
+                   result.min = it;
                }
                if (!nano::invoke(comp, nano::invoke(proj, *first),
-                                 nano::invoke(proj, *result.second))) {
-                   result.second = first;
+                                 nano::invoke(proj, *result.max))) {
+                   result.max = first;
                }
            }
        }
@@ -86,7 +85,7 @@ public:
         ForwardIterator<I> &&
         Sentinel<S, I> &&
         IndirectStrictWeakOrder<Comp, projected<I, Proj>>,
-        std::pair<I, I>>
+        minmax_result<I>>
     operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return minmax_element_fn::impl(std::move(first), std::move(last),
@@ -97,7 +96,7 @@ public:
     constexpr std::enable_if_t<
         ForwardRange<Rng> &&
         IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
-        std::pair<safe_iterator_t<Rng>, safe_iterator_t<Rng>>>
+        minmax_result<safe_iterator_t<Rng>>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return minmax_element_fn::impl(nano::begin(rng), nano::end(rng),
