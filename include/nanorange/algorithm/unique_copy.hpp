@@ -7,9 +7,12 @@
 #ifndef NANORANGE_ALGORITHM_UNIQUE_COPY_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_UNIQUE_COPY_HPP_INCLUDED
 
-#include <nanorange/ranges.hpp>
+#include <nanorange/algorithm/copy.hpp>
 
 NANO_BEGIN_NAMESPACE
+
+template <typename I, typename O>
+using unique_copy_result = copy_result<I, O>;
 
 namespace detail {
 
@@ -17,7 +20,7 @@ struct unique_copy_fn {
 private:
     template <typename I, typename S, typename O,
               typename Comp, typename Proj>
-    static constexpr std::pair<I, O>
+    static constexpr unique_copy_result<I, O>
     impl(I first, S last, O result, Comp& comp, Proj& proj)
     {
         if (first != last) {
@@ -63,7 +66,7 @@ public:
                IndirectRelation<Comp, projected<I, Proj>> &&
                IndirectlyCopyable<I, O> &&
                decltype(constraint_helper<I, O>(priority_tag<2>{}))::value,
-        std::pair<I, O>>
+        unique_copy_result<I, O>>
     {
         return unique_copy_fn::impl(std::move(first), std::move(last),
                                     std::move(result), comp, proj);
@@ -79,7 +82,7 @@ public:
             IndirectRelation<Comp, projected<iterator_t<Rng>, Proj>> &&
             IndirectlyCopyable<iterator_t<Rng>, O> &&
             decltype(constraint_helper<iterator_t<Rng>, O>(priority_tag<2>{}))::value,
-            std::pair<safe_iterator_t<Rng>, O>>
+       unique_copy_result<safe_iterator_t<Rng>, O>>
     {
         return unique_copy_fn::impl(nano::begin(rng), nano::end(rng),
                                     std::move(result), comp, proj);

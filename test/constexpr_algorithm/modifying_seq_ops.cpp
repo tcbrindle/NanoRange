@@ -11,20 +11,20 @@ constexpr bool test_copy()
     {
         int dest[5] = {};
         auto res = nano::copy(src.begin(), src.end(), dest);
-        if (res.first != src.end()) {
+        if (res.in != src.end()) {
             return false;
         }
-        if (res.second != dest + 5) {
+        if (res.out != dest + 5) {
             return false;
         }
     }
     {
         int dest[5] = {};
         auto res = nano::copy(src, dest);
-        if (res.first != src.end()) {
+        if (res.in != src.end()) {
             return false;
         }
-        if (res.second != dest + 5) {
+        if (res.out != dest + 5) {
             return false;
         }
     }
@@ -42,10 +42,10 @@ constexpr bool test_unique_copy()
         carray<int, 3> out{};
 
         const auto r = nano::unique_copy(in.begin(), in.end(), out.begin());
-        if (r.first != in.end()) {
+        if (r.in != in.end()) {
             return false;
         }
-        if (r.second != out.end()) {
+        if (r.out != out.end()) {
             return false;
         }
         if (out != result) {
@@ -57,10 +57,10 @@ constexpr bool test_unique_copy()
         carray<int, 3> out{};
 
         const auto r = nano::unique_copy(in, out.begin());
-        if (r.first != in.end()) {
+        if (r.in != in.end()) {
             return false;
         }
-        if (r.second != out.end()) {
+        if (r.out != out.end()) {
             return false;
         }
         if (out != result) {

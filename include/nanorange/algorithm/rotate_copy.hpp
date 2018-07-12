@@ -12,17 +12,21 @@
 
 NANO_BEGIN_NAMESPACE
 
+template <typename I, typename O>
+using rotate_copy_result = copy_result<I, O>;
+
 namespace detail {
 
 // FIXME: Use tagged_pair
 struct rotate_copy_fn {
 private:
     template <typename I, typename S, typename O>
-    static constexpr std::pair<I, O> impl(I first, I middle, S last, O result)
+    static constexpr rotate_copy_result<I, O>
+    impl(I first, I middle, S last, O result)
     {
         auto ret = nano::copy(middle, std::move(last), std::move(result));
-        ret.second = nano::copy(std::move(first), std::move(middle),
-                                ret.second).second;
+        ret.out = nano::copy(std::move(first), std::move(middle),
+                                ret.out).out;
         return ret;
     }
 
@@ -33,7 +37,7 @@ public:
         Sentinel<S, I> &&
         WeaklyIncrementable<O> &&
         IndirectlyCopyable<I, O>,
-        std::pair<I, O>>
+        rotate_copy_result<I, O>>
     operator()(I first, I middle, S last, O result) const
     {
         return rotate_copy_fn::impl(std::move(first), std::move(middle),
@@ -45,7 +49,7 @@ public:
         ForwardRange<Rng> &&
         WeaklyIncrementable<O> &&
         IndirectlyCopyable<iterator_t<Rng>, O>,
-        std::pair<safe_iterator_t<Rng>, O>>
+        rotate_copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, iterator_t<Rng> middle, O result) const
     {
         return rotate_copy_fn::impl(nano::begin(rng), std::move(middle),

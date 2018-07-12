@@ -29,20 +29,16 @@ TEST_CASE("alg.copy")
     std::pair<int, int> out[size(a)] = {};
 
     auto res = ranges::copy(begin(a), end(a), out);
-    REQUIRE(res.first == end(a));
-    REQUIRE(res.second == out + size(out));
-#if HAVE_TAGGED_PAIR
-    REQUIRE(&res.first == &res.in());
-    REQUIRE(&res.second == &res.out());
-#endif
+    REQUIRE(res.in == end(a));
+    REQUIRE(res.out == out + size(out));
     REQUIRE(std::equal(a, a + size(a), out));
 
     std::fill_n(out, size(out), std::make_pair(0, 0));
     REQUIRE(!std::equal(a, a + size(a), out));
 
     res = ranges::copy(a, out);
-    REQUIRE(res.first == a + size(a));
-    REQUIRE(res.second == out + size(out));
+    REQUIRE(res.in == a + size(a));
+    REQUIRE(res.out == out + size(out));
     REQUIRE(std::equal(a, a + size(a), out));
 
     std::fill_n(out, size(out), std::make_pair(0, 0));
@@ -54,9 +50,9 @@ TEST_CASE("alg.copy")
         char buf[50];
         auto str = delimit(sz, '\0');
         auto res3 = ranges::copy(str, buf);
-        *res3.second = '\0';
-        REQUIRE(res3.first == std::next(begin(str), static_cast<std::ptrdiff_t>(std::strlen(sz))));
-        REQUIRE(res3.second == buf + std::strlen(sz));
+        *res3.out = '\0';
+        REQUIRE(res3.in == std::next(begin(str), static_cast<std::ptrdiff_t>(std::strlen(sz))));
+        REQUIRE(res3.out == buf + std::strlen(sz));
         REQUIRE(std::strcmp(sz, buf) == 0);
     }
 
@@ -65,8 +61,8 @@ TEST_CASE("alg.copy")
         char buf[50];
         auto str = delimit(sz, '\0');
         auto res3 = ranges::copy(std::move(str), buf);
-        *res3.second = '\0';
-        REQUIRE(res3.first.get_unsafe() == std::next(begin(str), static_cast<std::ptrdiff_t>(std::strlen(sz))));
+        *res3.out = '\0';
+        REQUIRE(res3.in.get_unsafe() == std::next(begin(str), static_cast<std::ptrdiff_t>(std::strlen(sz))));
         REQUIRE(res3 == buf + std::strlen(sz));
         REQUIRE(std::strcmp(sz, buf) == 0);
     }

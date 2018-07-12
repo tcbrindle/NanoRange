@@ -7,17 +7,19 @@
 #ifndef NANORANGE_ALGORITHM_REVERSE_COPY_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_REVERSE_COPY_HPP_INCLUDED
 
-#include <nanorange/ranges.hpp>
+#include <nanorange/algorithm/copy.hpp>
 
 NANO_BEGIN_NAMESPACE
 
+template <typename I, typename O>
+using reverse_copy_result = copy_result<I, O>;
+
 namespace detail {
 
-// FIXME: Use tagged_pair
 struct reverse_copy_fn {
 private:
     template <typename I, typename O>
-    static constexpr std::pair<I, O> impl(I first, I last, O result)
+    static constexpr reverse_copy_result<I, O> impl(I first, I last, O result)
     {
         auto ret = last;
         while (last != first) {
@@ -30,10 +32,10 @@ private:
 
     template <typename I, typename S, typename O>
     static constexpr std::enable_if_t<
-        !Same<I, S>, std::pair<I, O>>
+        !Same<I, S>, reverse_copy_result<I, O>>
     impl(I first, S bound, O result)
     {
-        I last = next(first, bound);
+        I last = nano::next(first, bound);
         return reverse_copy_fn::impl(std::move(first), std::move(last),
                                      std::move(result));
     }
@@ -45,7 +47,7 @@ public:
         Sentinel<S, I> &&
         WeaklyIncrementable<O> &&
         IndirectlyCopyable<I, O>,
-        std::pair<I, O>>
+        reverse_copy_result<I, O>>
     operator()(I first, S last, O result) const
     {
         return reverse_copy_fn::impl(std::move(first), std::move(last),
@@ -57,7 +59,7 @@ public:
         BidirectionalRange<Rng> &&
         WeaklyIncrementable<O> &&
         IndirectlyCopyable<iterator_t<Rng>, O>,
-        std::pair<safe_iterator_t<Rng>, O>>
+        reverse_copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
         return reverse_copy_fn::impl(nano::begin(rng), nano::end(rng),

@@ -28,9 +28,11 @@ private:
             if (first2 == last2) {
                 // We've reached the end of range2, so copy all the remaining
                 // elements from range1 and exit
-                std::tie(first1, result) = nano::copy(std::move(first1),
-                                                      std::move(last1),
-                                                      std::move(result));
+                auto res = nano::copy(std::move(first1),  std::move(last1),
+                                      std::move(result));
+                first1 = std::move(res.in);
+                result = std::move(res.out);
+
                 break;
             }
 

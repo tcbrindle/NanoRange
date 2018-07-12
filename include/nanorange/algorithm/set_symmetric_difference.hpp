@@ -24,21 +24,21 @@ private:
     {
         while (true) {
             if (first1 == last1) {
-                std::tie(first2, result) = nano::copy(std::move(first2),
-                                                      std::move(last2),
-                                                      std::move(result));
+                auto copy_res = nano::copy(std::move(first2), std::move(last2),
+                                           std::move(result));
+
+
                 return std::tuple<I1, I2, O>{std::move(first1),
-                                             std::move(first2),
-                                             std::move(result)};
+                                             std::move(copy_res.in),
+                                             std::move(copy_res.out)};
             }
 
             if (first2 == last2) {
-                std::tie(first1, result) = nano::copy(std::move(first1),
-                                                      std::move(last1),
-                                                      std::move(result));
-                return std::tuple<I1, I2, O>{std::move(first1),
+                auto copy_res = nano::copy(std::move(first1),  std::move(last1),
+                                           std::move(result));
+                return std::tuple<I1, I2, O>{std::move(copy_res.in),
                                              std::move(first2),
-                                             std::move(result)};
+                                             std::move(copy_res.out)};
             }
 
             // If r1 is less than r2, copy it to the output

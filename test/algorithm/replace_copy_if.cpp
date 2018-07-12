@@ -37,10 +37,10 @@ void test_iter() {
 	int ia[] = {0, 1, 2, 3, 4};
 	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
 	int ib[sa] = {0};
-	std::pair<InIter, OutIter> r = stl2::replace_copy_if(InIter(ia), Sent(ia + sa), OutIter(ib),
+	stl2::replace_copy_if_result<InIter, OutIter> r = stl2::replace_copy_if(InIter(ia), Sent(ia + sa), OutIter(ib),
 														 [](int i) { return 2 == i; }, 5);
-	CHECK(base(r.first) == ia + sa);
-	CHECK(base(r.second) == ib + sa);
+	CHECK(base(r.in) == ia + sa);
+	CHECK(base(r.out) == ib + sa);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 	CHECK(ib[2] == 5);
@@ -54,10 +54,10 @@ void test_rng() {
 	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
 	int ib[sa] = {0};
 	auto rng = stl2::make_subrange(InIter(ia), Sent(ia + sa));
-	std::pair<InIter, OutIter> r = stl2::replace_copy_if(rng, OutIter(ib),
+	stl2::replace_copy_if_result<InIter, OutIter> r = stl2::replace_copy_if(rng, OutIter(ib),
 														 [](int i) { return 2 == i; }, 5);
-	CHECK(base(r.first) == ia + sa);
-	CHECK(base(r.second) == ib + sa);
+	CHECK(base(r.in) == ia + sa);
+	CHECK(base(r.out) == ib + sa);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 	CHECK(ib[2] == 5);
@@ -113,10 +113,10 @@ TEST_CASE("alg.replace_copy_if")
 		using P = std::pair<int, std::string>;
 		P in[] = {{0, "0"}, {1, "1"}, {2, "2"}, {3, "3"}, {4, "4"}};
 		P out[stl2::size(in)] = {};
-		std::pair<P *, P *> r = stl2::replace_copy_if(in, out,
+		stl2::replace_copy_if_result<P *, P *> r = stl2::replace_copy_if(in, out,
 			[](int i){return 2==i;}, P{5, "5"}, &std::pair<int, std::string>::first);
-		CHECK(r.first == stl2::end(in));
-		CHECK(r.second == stl2::end(out));
+		CHECK(r.in == stl2::end(in));
+		CHECK(r.out == stl2::end(out));
 		CHECK((out[0] == P{0, "0"}));
 		CHECK((out[1] == P{1, "1"}));
 		CHECK((out[2] == P{5, "5"}));

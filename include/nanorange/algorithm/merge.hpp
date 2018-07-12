@@ -27,9 +27,11 @@ private:
             // If we've reached the end of the second range, copy any remaining
             // elements from the first range directly
             if (first2 == last2) {
-                std::tie(first1, result) = nano::copy(std::move(first1),
-                                                      std::move(last1),
-                                                      std::move(result));
+                auto res = nano::copy(std::move(first1),
+                                      std::move(last1),
+                                      std::move(result));
+                first1 = std::move(res.in);
+                result = std::move(res.out);
                 break;
             }
 
@@ -48,9 +50,10 @@ private:
 
         // We've reached the end of range1, so copy any remaining elements
         // from range2
-        std::tie(first2, result) = nano::copy(std::move(first2),
-                                              std::move(last2),
-                                              std::move(result));
+        auto res = nano::copy(std::move(first2), std::move(last2),
+                              std::move(result));
+        first2 = std::move(res.in);
+        result = std::move(res.out);
 
         return std::tuple<I1, I2, O>(std::move(first1), std::move(first2),
                                      std::move(result));

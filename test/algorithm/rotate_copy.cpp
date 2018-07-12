@@ -39,76 +39,76 @@ void test_iter()
 	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
 	int ib[sa] = {0};
 
-	std::pair<InIter, OutIter> r = stl2::rotate_copy(InIter(ia), InIter(ia),
+	auto r = stl2::rotate_copy(InIter(ia), InIter(ia),
 													 Sent(ia), OutIter(ib));
-	CHECK(base(r.first) == ia);
-	CHECK(base(r.second) == ib);
+	CHECK(base(r.in) == ia);
+	CHECK(base(r.out) == ib);
 
 	r = stl2::rotate_copy(InIter(ia), InIter(ia), Sent(ia + 1), OutIter(ib));
-	CHECK(base(r.first) == ia + 1);
-	CHECK(base(r.second) == ib + 1);
+	CHECK(base(r.in) == ia + 1);
+	CHECK(base(r.out) == ib + 1);
 	CHECK(ib[0] == 0);
 
 	r = stl2::rotate_copy(InIter(ia), InIter(ia + 1), Sent(ia + 1),
 						  OutIter(ib));
-	CHECK(base(r.first) == ia + 1);
-	CHECK(base(r.second) == ib + 1);
+	CHECK(base(r.in) == ia + 1);
+	CHECK(base(r.out) == ib + 1);
 	CHECK(ib[0] == 0);
 
 	r = stl2::rotate_copy(InIter(ia), InIter(ia), Sent(ia + 2), OutIter(ib));
-	CHECK(base(r.first) == ia + 2);
-	CHECK(base(r.second) == ib + 2);
+	CHECK(base(r.in) == ia + 2);
+	CHECK(base(r.out) == ib + 2);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 
 	r = stl2::rotate_copy(InIter(ia), InIter(ia + 1), Sent(ia + 2),
 						  OutIter(ib));
-	CHECK(base(r.first) == ia + 2);
-	CHECK(base(r.second) == ib + 2);
+	CHECK(base(r.in) == ia + 2);
+	CHECK(base(r.out) == ib + 2);
 	CHECK(ib[0] == 1);
 	CHECK(ib[1] == 0);
 
 	r = stl2::rotate_copy(InIter(ia), InIter(ia + 2), Sent(ia + 2),
 						  OutIter(ib));
-	CHECK(base(r.first) == ia + 2);
-	CHECK(base(r.second) == ib + 2);
+	CHECK(base(r.in) == ia + 2);
+	CHECK(base(r.out) == ib + 2);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 
 	r = stl2::rotate_copy(InIter(ia), InIter(ia), Sent(ia + 3), OutIter(ib));
-	CHECK(base(r.first) == ia + 3);
-	CHECK(base(r.second) == ib + 3);
+	CHECK(base(r.in) == ia + 3);
+	CHECK(base(r.out) == ib + 3);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 	CHECK(ib[2] == 2);
 
 	r = stl2::rotate_copy(InIter(ia), InIter(ia + 1), Sent(ia + 3),
 						  OutIter(ib));
-	CHECK(base(r.first) == ia + 3);
-	CHECK(base(r.second) == ib + 3);
+	CHECK(base(r.in) == ia + 3);
+	CHECK(base(r.out) == ib + 3);
 	CHECK(ib[0] == 1);
 	CHECK(ib[1] == 2);
 	CHECK(ib[2] == 0);
 
 	r = stl2::rotate_copy(InIter(ia), InIter(ia + 2), Sent(ia + 3),
 						  OutIter(ib));
-	CHECK(base(r.first) == ia + 3);
-	CHECK(base(r.second) == ib + 3);
+	CHECK(base(r.in) == ia + 3);
+	CHECK(base(r.out) == ib + 3);
 	CHECK(ib[0] == 2);
 	CHECK(ib[1] == 0);
 	CHECK(ib[2] == 1);
 
 	r = stl2::rotate_copy(InIter(ia), InIter(ia + 3), Sent(ia + 3),
 						  OutIter(ib));
-	CHECK(base(r.first) == ia + 3);
-	CHECK(base(r.second) == ib + 3);
+	CHECK(base(r.in) == ia + 3);
+	CHECK(base(r.out) == ib + 3);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 	CHECK(ib[2] == 2);
 
 	r = stl2::rotate_copy(InIter(ia), InIter(ia), Sent(ia + 4), OutIter(ib));
-	CHECK(base(r.first) == ia + 4);
-	CHECK(base(r.second) == ib + 4);
+	CHECK(base(r.in) == ia + 4);
+	CHECK(base(r.out) == ib + 4);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 	CHECK(ib[2] == 2);
@@ -116,8 +116,8 @@ void test_iter()
 
 	r = stl2::rotate_copy(InIter(ia), InIter(ia + 1), Sent(ia + 4),
 						  OutIter(ib));
-	CHECK(base(r.first) == ia + 4);
-	CHECK(base(r.second) == ib + 4);
+	CHECK(base(r.in) == ia + 4);
+	CHECK(base(r.out) == ib + 4);
 	CHECK(ib[0] == 1);
 	CHECK(ib[1] == 2);
 	CHECK(ib[2] == 3);
@@ -125,8 +125,8 @@ void test_iter()
 
 	r = stl2::rotate_copy(InIter(ia), InIter(ia + 2), Sent(ia + 4),
 						  OutIter(ib));
-	CHECK(base(r.first) == ia + 4);
-	CHECK(base(r.second) == ib + 4);
+	CHECK(base(r.in) == ia + 4);
+	CHECK(base(r.out) == ib + 4);
 	CHECK(ib[0] == 2);
 	CHECK(ib[1] == 3);
 	CHECK(ib[2] == 0);
@@ -134,8 +134,8 @@ void test_iter()
 
 	r = stl2::rotate_copy(InIter(ia), InIter(ia + 3), Sent(ia + 4),
 						  OutIter(ib));
-	CHECK(base(r.first) == ia + 4);
-	CHECK(base(r.second) == ib + 4);
+	CHECK(base(r.in) == ia + 4);
+	CHECK(base(r.out) == ib + 4);
 	CHECK(ib[0] == 3);
 	CHECK(ib[1] == 0);
 	CHECK(ib[2] == 1);
@@ -143,8 +143,8 @@ void test_iter()
 
 	r = stl2::rotate_copy(InIter(ia), InIter(ia + 4), Sent(ia + 4),
 						  OutIter(ib));
-	CHECK(base(r.first) == ia + 4);
-	CHECK(base(r.second) == ib + 4);
+	CHECK(base(r.in) == ia + 4);
+	CHECK(base(r.out) == ib + 4);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 	CHECK(ib[2] == 2);
@@ -158,55 +158,55 @@ void test_rng()
 	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
 	int ib[sa] = {0};
 
-	std::pair<InIter, OutIter> r = stl2::rotate_copy(
+	auto r = stl2::rotate_copy(
 			::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia))),
 			InIter(ia), OutIter(ib));
-	CHECK(base(r.first) == ia);
-	CHECK(base(r.second) == ib);
+	CHECK(base(r.in) == ia);
+	CHECK(base(r.out) == ib);
 
 	r = stl2::rotate_copy(
 			::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + 1))),
 			InIter(ia), OutIter(ib));
-	CHECK(base(r.first) == ia + 1);
-	CHECK(base(r.second) == ib + 1);
+	CHECK(base(r.in) == ia + 1);
+	CHECK(base(r.out) == ib + 1);
 	CHECK(ib[0] == 0);
 
 	r = stl2::rotate_copy(
 			::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + 1))),
 			InIter(ia + 1), OutIter(ib));
-	CHECK(base(r.first) == ia + 1);
-	CHECK(base(r.second) == ib + 1);
+	CHECK(base(r.in) == ia + 1);
+	CHECK(base(r.out) == ib + 1);
 	CHECK(ib[0] == 0);
 
 	r = stl2::rotate_copy(
 			::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + 2))),
 			InIter(ia), OutIter(ib));
-	CHECK(base(r.first) == ia + 2);
-	CHECK(base(r.second) == ib + 2);
+	CHECK(base(r.in) == ia + 2);
+	CHECK(base(r.out) == ib + 2);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 
 	r = stl2::rotate_copy(
 			::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + 2))),
 			InIter(ia + 1), OutIter(ib));
-	CHECK(base(r.first) == ia + 2);
-	CHECK(base(r.second) == ib + 2);
+	CHECK(base(r.in) == ia + 2);
+	CHECK(base(r.out) == ib + 2);
 	CHECK(ib[0] == 1);
 	CHECK(ib[1] == 0);
 
 	r = stl2::rotate_copy(
 			::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + 2))),
 			InIter(ia + 2), OutIter(ib));
-	CHECK(base(r.first) == ia + 2);
-	CHECK(base(r.second) == ib + 2);
+	CHECK(base(r.in) == ia + 2);
+	CHECK(base(r.out) == ib + 2);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 
 	r = stl2::rotate_copy(
 			::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + 3))),
 			InIter(ia), OutIter(ib));
-	CHECK(base(r.first) == ia + 3);
-	CHECK(base(r.second) == ib + 3);
+	CHECK(base(r.in) == ia + 3);
+	CHECK(base(r.out) == ib + 3);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 	CHECK(ib[2] == 2);
@@ -214,8 +214,8 @@ void test_rng()
 	r = stl2::rotate_copy(
 			::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + 3))),
 			InIter(ia + 1), OutIter(ib));
-	CHECK(base(r.first) == ia + 3);
-	CHECK(base(r.second) == ib + 3);
+	CHECK(base(r.in) == ia + 3);
+	CHECK(base(r.out) == ib + 3);
 	CHECK(ib[0] == 1);
 	CHECK(ib[1] == 2);
 	CHECK(ib[2] == 0);
@@ -223,8 +223,8 @@ void test_rng()
 	r = stl2::rotate_copy(
 			::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + 3))),
 			InIter(ia + 2), OutIter(ib));
-	CHECK(base(r.first) == ia + 3);
-	CHECK(base(r.second) == ib + 3);
+	CHECK(base(r.in) == ia + 3);
+	CHECK(base(r.out) == ib + 3);
 	CHECK(ib[0] == 2);
 	CHECK(ib[1] == 0);
 	CHECK(ib[2] == 1);
@@ -232,8 +232,8 @@ void test_rng()
 	r = stl2::rotate_copy(
 			::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + 3))),
 			InIter(ia + 3), OutIter(ib));
-	CHECK(base(r.first) == ia + 3);
-	CHECK(base(r.second) == ib + 3);
+	CHECK(base(r.in) == ia + 3);
+	CHECK(base(r.out) == ib + 3);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 	CHECK(ib[2] == 2);
@@ -241,8 +241,8 @@ void test_rng()
 	r = stl2::rotate_copy(
 			::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + 4))),
 			InIter(ia), OutIter(ib));
-	CHECK(base(r.first) == ia + 4);
-	CHECK(base(r.second) == ib + 4);
+	CHECK(base(r.in) == ia + 4);
+	CHECK(base(r.out) == ib + 4);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 	CHECK(ib[2] == 2);
@@ -251,8 +251,8 @@ void test_rng()
 	r = stl2::rotate_copy(
 			::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + 4))),
 			InIter(ia + 1), OutIter(ib));
-	CHECK(base(r.first) == ia + 4);
-	CHECK(base(r.second) == ib + 4);
+	CHECK(base(r.in) == ia + 4);
+	CHECK(base(r.out) == ib + 4);
 	CHECK(ib[0] == 1);
 	CHECK(ib[1] == 2);
 	CHECK(ib[2] == 3);
@@ -261,8 +261,8 @@ void test_rng()
 	r = stl2::rotate_copy(
 			::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + 4))),
 			InIter(ia + 2), OutIter(ib));
-	CHECK(base(r.first) == ia + 4);
-	CHECK(base(r.second) == ib + 4);
+	CHECK(base(r.in) == ia + 4);
+	CHECK(base(r.out) == ib + 4);
 	CHECK(ib[0] == 2);
 	CHECK(ib[1] == 3);
 	CHECK(ib[2] == 0);
@@ -271,8 +271,8 @@ void test_rng()
 	r = stl2::rotate_copy(
 			::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + 4))),
 			InIter(ia + 3), OutIter(ib));
-	CHECK(base(r.first) == ia + 4);
-	CHECK(base(r.second) == ib + 4);
+	CHECK(base(r.in) == ia + 4);
+	CHECK(base(r.out) == ib + 4);
 	CHECK(ib[0] == 3);
 	CHECK(ib[1] == 0);
 	CHECK(ib[2] == 1);
@@ -281,8 +281,8 @@ void test_rng()
 	r = stl2::rotate_copy(
 			::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + 4))),
 			InIter(ia + 4), OutIter(ib));
-	CHECK(base(r.first) == ia + 4);
-	CHECK(base(r.second) == ib + 4);
+	CHECK(base(r.in) == ia + 4);
+	CHECK(base(r.out) == ib + 4);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 	CHECK(ib[2] == 2);
@@ -354,11 +354,11 @@ TEST_CASE("alg.rotate_copy")
 		auto r = stl2::rotate_copy(std::move(rgi), rgi+2, rgo);
 		// FIXME MSVC
 #ifndef _MSC_VER
-		CHECK(r.first.get_unsafe() == stl2::end(rgi));
-		CHECK(r.second == stl2::end(rgo));
+		CHECK(r.in.get_unsafe() == stl2::end(rgi));
+		CHECK(r.out == stl2::end(rgo));
 #else
-		CHECK(r.first == stl2::end(rgi));
-		CHECK(r.second == stl2::end(rgo));
+		CHECK(r.in == stl2::end(rgi));
+		CHECK(r.out == stl2::end(rgo));
 #endif
 		CHECK(rgo[0] == 2);
 		CHECK(rgo[1] == 3);

@@ -7,18 +7,19 @@
 #ifndef NANORANGE_ALGORITHM_MOVE_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_MOVE_HPP_INCLUDED
 
-#include <nanorange/iterator/operations.hpp>
-#include <nanorange/ranges.hpp>
+#include <nanorange/algorithm/copy.hpp>
 
 NANO_BEGIN_NAMESPACE
+
+template <typename I, typename O>
+using move_result = copy_result<I, O>;
 
 namespace detail {
 
 struct move_fn {
 private:
-    // FIXME: Use tagged_pair
     template <typename I, typename S, typename O>
-    static constexpr std::enable_if_t<SizedSentinel<S, I>, std::pair<I, O>>
+    static constexpr std::enable_if_t<SizedSentinel<S, I>, move_result<I, O>>
     impl(I first, S last, O result, priority_tag<1>)
     {
         const auto dist = last - first;
@@ -33,8 +34,8 @@ private:
     }
 
     template <typename I, typename S, typename O>
-    static constexpr std::pair<I, O> impl(I first, S last, O result,
-                                          priority_tag<0>)
+    static constexpr move_result<I, O> impl(I first, S last, O result,
+                                            priority_tag<0>)
     {
         while (first != last) {
             *result = nano::iter_move(first);
@@ -50,7 +51,7 @@ public:
     constexpr std::enable_if_t<InputIterator<I> && Sentinel<S, I> &&
                                    WeaklyIncrementable<O> &&
                                    IndirectlyMovable<I, O>,
-                               std::pair<I, O>>
+                               move_result<I, O>>
     operator()(I first, S last, O result) const
     {
         return move_fn::impl(std::move(first), std::move(last),
@@ -60,7 +61,7 @@ public:
     template <typename Rng, typename O>
     constexpr std::enable_if_t<InputRange<Rng> && WeaklyIncrementable<O> &&
                                    IndirectlyMovable<iterator_t<Rng>, O>,
-                               std::pair<safe_iterator_t<Rng>, O>>
+                               move_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
         return move_fn::impl(nano::begin(rng), nano::end(rng),
@@ -72,12 +73,15 @@ public:
 
 NANO_INLINE_VAR(detail::move_fn, move)
 
+template <typename I1, typename I2>
+using move_backward_result = copy_result<I1, I2>;
+
 namespace detail {
 
 struct move_backward_fn {
 private:
     template <typename I, typename S, typename O>
-    static constexpr std::pair<I, O> impl(I first, S sent, O result)
+    static constexpr move_backward_result<I, O> impl(I first, S sent, O result)
     {
         auto last = nano::next(first, std::move(sent));
         auto it = last;
@@ -94,7 +98,7 @@ public:
     constexpr std::enable_if_t<BidirectionalIterator<I> && Sentinel<S, I> &&
                                    BidirectionalIterator<O> &&
                                    IndirectlyMovable<I, O>,
-                               std::pair<I, O>>
+                               move_backward_result<I, O>>
     operator()(I first, S last, O result) const
     {
         return move_backward_fn::impl(std::move(first), std::move(last),
@@ -105,7 +109,7 @@ public:
     constexpr std::enable_if_t<BidirectionalRange<Rng> &&
                                    BidirectionalIterator<O> &&
                                    IndirectlyMovable<iterator_t<Rng>, O>,
-                               std::pair<safe_iterator_t<Rng>, O>>
+                               move_backward_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
         return move_backward_fn::impl(nano::begin(rng), nano::end(rng),

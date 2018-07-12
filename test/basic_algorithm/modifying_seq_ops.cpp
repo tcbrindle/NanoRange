@@ -22,17 +22,17 @@ TEST_CASE("alg.basic.copy")
 
     SECTION("with iterators")
     {
-        auto it = rng::copy(src.begin(), src.end(), dest.begin());
-        REQUIRE(it.first == src.end());
-        REQUIRE(it.second == dest.end());
+        auto res = rng::copy(src.begin(), src.end(), dest.begin());
+        REQUIRE(res.in == src.end());
+        REQUIRE(res.out == dest.end());
         REQUIRE(src == dest);
     }
 
     SECTION("with range")
     {
-        const auto it = rng::copy(src, dest.begin());
-        REQUIRE(it.first == src.end());
-        REQUIRE(it.second == dest.end());
+        const auto res = rng::copy(src, dest.begin());
+        REQUIRE(res.in == src.end());
+        REQUIRE(res.out == dest.end());
         REQUIRE(src == dest);
     }
 }
@@ -71,15 +71,15 @@ TEST_CASE("alg.basic.copy_backward")
 
     SECTION("with iterators")
     {
-        const auto it = rng::copy_backward(src.begin(), src.end(), dest.end());
-        REQUIRE(it.second == dest.begin());
+        const auto res = rng::copy_backward(src.begin(), src.end(), dest.end());
+        REQUIRE(res.out == dest.begin());
         REQUIRE(rng::equal(src, dest));
     }
 
     SECTION("with ranges")
     {
-        const auto it = rng::copy_backward(src, dest.end());
-        REQUIRE(it.second == dest.begin());
+        const auto res = rng::copy_backward(src, dest.end());
+        REQUIRE(res.out == dest.begin());
         REQUIRE(rng::equal(src, dest));
     }
 }
@@ -136,14 +136,14 @@ TEST_CASE("alg.basic.move_backward")
 
     SECTION("with iterators") {
         const auto it = rng::move_backward(src.begin(), src.end(), dest.end());
-        REQUIRE(it.second == dest.begin());
+        REQUIRE(it.out == dest.begin());
         REQUIRE(rng::all_of(src, [](const auto& m) { return m.moved_from == true; }));
         REQUIRE(rng::all_of(dest, [] (const auto& m) { return m.moved_into == true; }));
     }
 
     SECTION("with range") {
         const auto it = rng::move_backward(src, dest.end());
-        REQUIRE(it.second == dest.begin());
+        REQUIRE(it.out == dest.begin());
         REQUIRE(rng::all_of(src, [](const auto& m) { return m.moved_from == true; }));
         REQUIRE(rng::all_of(dest, [] (const auto& m) { return m.moved_into == true; }));
     }
@@ -179,15 +179,15 @@ TEST_CASE("alg.basic.transform (unary)")
 
     SECTION("with iterators") {
         const auto it = rng::transform(src.begin(), src.end(), dest.begin(), square);
-        REQUIRE(it.first == src.end());
-        REQUIRE(it.second == dest.end());
+        REQUIRE(it.in == src.end());
+        REQUIRE(it.out == dest.end());
         REQUIRE(dest == (std::vector<int>{1, 4, 9, 16, 25}));
     }
 
     SECTION("with range") {
         const auto it = rng::transform(src, dest.begin(), square);
-        REQUIRE(it.first == src.end());
-        REQUIRE(it.second == dest.end());
+        REQUIRE(it.in == src.end());
+        REQUIRE(it.out == dest.end());
         REQUIRE(dest == (std::vector<int>{1, 4, 9, 16, 25}));
     }
 }
@@ -203,17 +203,21 @@ TEST_CASE("alg.basic.transform (binary)")
     const auto make_complex = [] (auto r, auto i) { return std::complex<float>{r, i}; };
 
     SECTION("with iterators") {
-        const auto it = rng::transform(real.begin(), real.end(),imag.begin(),
+        const auto res = rng::transform(real.begin(), real.end(),imag.begin(),
                                        cmplx.begin(), make_complex);
-        REQUIRE(std::get<2>(it) == cmplx.end());
+        REQUIRE(res.in1 == real.end());
+        REQUIRE(res.in2 == imag.end());
+        REQUIRE(res.out == cmplx.end());
         REQUIRE(cmplx[0] == std::complex<double>(1.0, -1.0));
         REQUIRE(cmplx[1] == std::complex<double>(0.0 , 0.0));
         REQUIRE(cmplx[2] == std::complex<double>(-1.0, 1.0));
     }
 
     SECTION("with ranges") {
-        const auto it = rng::transform(real, imag, cmplx.begin(), make_complex);
-        REQUIRE(std::get<2>(it) == cmplx.end());
+        const auto res = rng::transform(real, imag, cmplx.begin(), make_complex);
+        REQUIRE(res.in1 == real.end());
+        REQUIRE(res.in2 == imag.end());
+        REQUIRE(res.out == cmplx.end());
         REQUIRE(cmplx[0] == std::complex<double>(1.0, -1.0));
         REQUIRE(cmplx[1] == std::complex<double>(0.0 , 0.0));
         REQUIRE(cmplx[2] == std::complex<double>(-1.0, 1.0));
@@ -439,8 +443,8 @@ TEST_CASE("alg.basic.swap_ranges")
     SECTION("with iterators, 3-legged")
     {
         const auto p = rng::swap_ranges(vec.begin(), vec.end(), arr.begin());
-        REQUIRE(p.first == vec.end());
-        REQUIRE(p.second == arr.end());
+        REQUIRE(p.in1 == vec.end());
+        REQUIRE(p.in2 == arr.end());
         REQUIRE(vec == (std::vector<int>{4, 5, 6}));
         REQUIRE(arr == (std::array<int, 3>{{1, 2, 3}}));
     }
@@ -448,8 +452,8 @@ TEST_CASE("alg.basic.swap_ranges")
     SECTION("with iterators, 4-legged")
     {
         const auto p = rng::swap_ranges(vec.begin(), vec.end(), arr.begin(), arr.end());
-        REQUIRE(p.first == vec.end());
-        REQUIRE(p.second == arr.end());
+        REQUIRE(p.in1 == vec.end());
+        REQUIRE(p.in2 == arr.end());
         REQUIRE(vec == (std::vector<int>{4, 5, 6}));
         REQUIRE(arr == (std::array<int, 3>{{1, 2, 3}}));
     }
@@ -457,8 +461,8 @@ TEST_CASE("alg.basic.swap_ranges")
     SECTION("with ranges")
     {
         const auto p = rng::swap_ranges(vec, arr);
-        REQUIRE(p.first == vec.end());
-        REQUIRE(p.second == arr.end());
+        REQUIRE(p.in1 == vec.end());
+        REQUIRE(p.in2 == arr.end());
         REQUIRE(vec == (std::vector<int>{4, 5, 6}));
         REQUIRE(arr == (std::array<int, 3>{{1, 2, 3}}));
     }
