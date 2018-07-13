@@ -8,7 +8,7 @@
 #define NANORANGE_ALGORITHM_POP_HEAP_HPP_INCLUDED
 
 #include <nanorange/detail/algorithm/heap_sift.hpp>
-#include <nanorange/range.hpp>
+#include <nanorange/ranges.hpp>
 
 NANO_BEGIN_NAMESPACE
 

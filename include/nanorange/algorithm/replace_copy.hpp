@@ -7,22 +7,23 @@
 #ifndef NANORANGE_ALGORITHM_REPLACE_COPY_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_REPLACE_COPY_HPP_INCLUDED
 
-#include <nanorange/range.hpp>
+#include <nanorange/algorithm/copy.hpp>
 
 NANO_BEGIN_NAMESPACE
 
+template <typename I, typename O>
+using replace_copy_result = copy_result<I, O>;
+
 namespace detail {
 
-// FIXME: Use tagged pair
 struct replace_copy_fn {
 private:
     template <typename I, typename S, typename O, typename T1, typename T2,
               typename Proj>
-    static constexpr std::pair<I, O> impl(I first, S last, O result,
-                                          const T1& old_value,
-                                          const T2& new_value, Proj& proj)
+    static constexpr replace_copy_result<I, O>
+    impl(I first, S last, O result, const T1& old_value, const T2& new_value,
+         Proj& proj)
     {
-        // FIXME: wrong for input iters
         while (first != last) {
             if (nano::invoke(proj, *first) == old_value) {
                 *result = new_value;
@@ -43,7 +44,7 @@ public:
         InputIterator<I> && Sentinel<S, I> && OutputIterator<O, const T2&> &&
             IndirectlyCopyable<I, O> &&
             IndirectRelation<equal_to<>, projected<I, Proj>, const T1*>,
-        std::pair<I, O>>
+        replace_copy_result<I, O>>
     operator()(I first, S last, O result, const T1& old_value,
                const T2& new_value, Proj proj = Proj{}) const
     {
@@ -59,7 +60,7 @@ public:
             IndirectlyCopyable<iterator_t<Rng>, O> &&
             IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>,
                              const T1*>,
-        std::pair<safe_iterator_t<Rng>, O>>
+        replace_copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, const T1& old_value, const T2& new_value,
                Proj proj = Proj{}) const
     {

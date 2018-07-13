@@ -7,7 +7,7 @@
 #ifndef NANORANGE_ALGORITHM_ROTATE_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_ROTATE_HPP_INCLUDED
 
-#include <nanorange/range.hpp>
+#include <nanorange/ranges.hpp>
 #include <nanorange/view/subrange.hpp>
 
 NANO_BEGIN_NAMESPACE

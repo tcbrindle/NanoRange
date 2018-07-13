@@ -7,10 +7,13 @@
 #ifndef NANORANGE_ALGORITHM_SET_SYMMETRIC_DIFFERENCE_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_SET_SYMMETRIC_DIFFERENCE_HPP_INCLUDED
 
-#include <nanorange/range.hpp>
 #include <nanorange/algorithm/copy.hpp>
+#include <nanorange/algorithm/transform.hpp>
 
 NANO_BEGIN_NAMESPACE
+
+template <typename I1, typename I2, typename O>
+using set_symmetric_difference_result = binary_transform_result<I1, I2, O>;
 
 namespace detail {
 
@@ -18,27 +21,25 @@ struct set_symmetric_difference_fn {
 private:
     template <typename I1, typename S1, typename I2, typename S2, typename O,
             typename Comp, typename Proj1, typename Proj2>
-    static constexpr std::tuple<I1, I2, O>
+    static constexpr set_symmetric_difference_result<I1, I2, O>
     impl(I1 first1, S1 last1, I2 first2, S2 last2, O result,
          Comp& comp, Proj1& proj1, Proj2& proj2)
     {
         while (true) {
             if (first1 == last1) {
-                std::tie(first2, result) = nano::copy(std::move(first2),
-                                                      std::move(last2),
-                                                      std::move(result));
-                return std::tuple<I1, I2, O>{std::move(first1),
-                                             std::move(first2),
-                                             std::move(result)};
+                auto copy_res = nano::copy(std::move(first2), std::move(last2),
+                                           std::move(result));
+
+
+                return {std::move(first1), std::move(copy_res.in),
+                        std::move(copy_res.out)};
             }
 
             if (first2 == last2) {
-                std::tie(first1, result) = nano::copy(std::move(first1),
-                                                      std::move(last1),
-                                                      std::move(result));
-                return std::tuple<I1, I2, O>{std::move(first1),
-                                             std::move(first2),
-                                             std::move(result)};
+                auto copy_res = nano::copy(std::move(first1),  std::move(last1),
+                                           std::move(result));
+                return {std::move(copy_res.in), std::move(first2),
+                        std::move(copy_res.out)};
             }
 
             // If r1 is less than r2, copy it to the output
@@ -74,7 +75,7 @@ public:
         Sentinel<S2, I2> &&
         WeaklyIncrementable<O> &&
         Mergeable<I1, I2, O, Comp, Proj1, Proj2>,
-        std::tuple<I1, I2, O>>
+        set_symmetric_difference_result<I1, I2, O>>
     operator()(I1 first1, S1 last1, I2 first2, S2 last2, O result, Comp comp = Comp{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
@@ -91,7 +92,8 @@ public:
         InputRange<Rng2> &&
         WeaklyIncrementable<O> &&
         Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp, Proj1, Proj2>,
-        std::tuple<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>, O> >
+        set_symmetric_difference_result<safe_iterator_t<Rng1>,
+                                        safe_iterator_t<Rng2>, O>>
     operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {

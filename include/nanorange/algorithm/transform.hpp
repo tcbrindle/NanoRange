@@ -7,18 +7,28 @@
 #ifndef NANORANGE_ALGORITHM_TRANSFORM_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_TRANSFORM_HPP_INCLUDED
 
-#include <nanorange/range.hpp>
+#include <nanorange/algorithm/copy.hpp>
 
 NANO_BEGIN_NAMESPACE
 
+template <typename I, typename O>
+using unary_transform_result = copy_result<I, O>;
+
+template <typename I1, typename I2, typename O>
+struct binary_transform_result {
+    I1 in1;
+    I2 in2;
+    O out;
+};
+
+
 namespace detail {
 
-// FIXME: Use tagged_pair
 struct transform_fn {
 private:
     template <typename I, typename S, typename O, typename F, typename Proj>
-    static constexpr std::pair<I, O> unary_impl(I first, S last, O result,
-                                                F& op, Proj& proj)
+    static constexpr unary_transform_result<I, O>
+    unary_impl(I first, S last, O result, F& op, Proj& proj)
     {
         while (first != last) {
             *result = nano::invoke(op, nano::invoke(proj, *first));
@@ -31,7 +41,7 @@ private:
 
     template <typename I1, typename S1, typename I2, typename O, typename F,
               typename Proj1, typename Proj2>
-    static constexpr std::tuple<I1, I2, O>
+    static constexpr binary_transform_result<I1, I2, O>
     binary_impl3(I1 first1, S1 last1, I2 first2, O result, F& op, Proj1& proj1,
                  Proj2& proj2)
     {
@@ -43,13 +53,12 @@ private:
             ++result;
         }
 
-        return std::tuple<I1, I2, O>{std::move(first1), std::move(first2),
-                                     std::move(result)};
+        return {std::move(first1), std::move(first2), std::move(result)};
     }
 
     template <typename I1, typename S1, typename I2, typename S2, typename O,
               typename F, typename Proj1, typename Proj2>
-    static constexpr std::tuple<I1, I2, O>
+    static constexpr binary_transform_result<I1, I2, O>
     binary_impl4(I1 first1, S1 last1, I2 first2, S2 last2, O result, F& op,
                  Proj1& proj1, Proj2& proj2)
     {
@@ -61,8 +70,7 @@ private:
             ++result;
         }
 
-        return std::tuple<I1, I2, O>{std::move(first1), std::move(first2),
-                                     std::move(result)};
+        return {std::move(first1), std::move(first2), std::move(result)};
     }
 
 public:
@@ -73,7 +81,7 @@ public:
         InputIterator<I> && Sentinel<S, I> && WeaklyIncrementable<O> &&
             CopyConstructible<F> &&
             Writable<O, indirect_result_t<F&, projected<I, Proj>>>,
-        std::pair<I, O>>
+        unary_transform_result<I, O>>
     operator()(I first, S last, O result, F op, Proj proj = Proj{}) const
     {
         return transform_fn::unary_impl(std::move(first), std::move(last),
@@ -86,7 +94,7 @@ public:
         InputRange<Rng> && WeaklyIncrementable<O> && CopyConstructible<F> &&
             Writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng>, Proj>>>,
-        std::pair<safe_iterator_t<Rng>, O>>
+        unary_transform_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, F op, Proj proj = Proj{}) const
     {
         return transform_fn::unary_impl(nano::begin(rng), nano::end(rng),
@@ -102,7 +110,7 @@ public:
             CopyConstructible<F> &&
             Writable<O, indirect_result_t<F&, projected<I1, Proj1>,
                                           projected<I2, Proj2>>>,
-        std::tuple<I1, I2, O>>
+        binary_transform_result<I1, I2, O>>
     operator()(I1 first1, S1 last1, I2 first2, S2 last2, O result, F op,
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
@@ -120,7 +128,7 @@ public:
             Writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng1>, Proj1>,
                                        projected<iterator_t<Rng2>, Proj2>>>,
-        std::tuple<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>, O>>
+        binary_transform_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>, O>>
     operator()(Rng1&& rng1, Rng2&& rng2, O result, F op, Proj1 proj1 = Proj1{},
                Proj2 proj2 = Proj2{}) const
     {
@@ -138,7 +146,7 @@ public:
             WeaklyIncrementable<O> && CopyConstructible<F> &&
             Writable<O, indirect_result_t<F&, projected<I1, Proj1>,
                                           projected<std::decay_t<I2>, Proj2>>>,
-        std::tuple<I1, std::decay_t<I2>, O>>
+        binary_transform_result<I1, std::decay_t<I2>, O>>
     operator()(I1 first1, S1 last1, I2&& first2, O result, F op,
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
@@ -157,7 +165,7 @@ public:
             Writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng1>, Proj1>,
                                        projected<std::decay_t<I2>, Proj2>>>,
-        std::tuple<safe_iterator_t<Rng1>, std::decay_t<I2>, O>>
+        binary_transform_result<safe_iterator_t<Rng1>, std::decay_t<I2>, O>>
     operator()(Rng1&& rng1, I2&& first2, O result, F op, Proj1 proj1 = Proj1{},
                Proj2 proj2 = Proj2{}) const
     {

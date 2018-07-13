@@ -14,7 +14,7 @@
 #include <nanorange/algorithm/make_heap.hpp>
 #include <nanorange/algorithm/min.hpp>
 #include <nanorange/algorithm/sort_heap.hpp>
-#include <nanorange/range.hpp>
+#include <nanorange/ranges.hpp>
 
 NANO_BEGIN_NAMESPACE
 

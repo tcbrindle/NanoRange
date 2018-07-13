@@ -135,7 +135,7 @@ add_executable(test_nanorange
     concepts/fundamental.cpp
     concepts/iterator.cpp
     concepts/object.cpp
-    concepts/range.cpp
+        concepts/ranges.cpp
     concepts/swap.cpp
 
     functional/invoke.cpp
@@ -152,6 +152,13 @@ add_executable(test_nanorange
     iterator/ostreambuf_iterator.cpp
     iterator/reverse_iterator.cpp
     iterator/unreachable.cpp
+
+    memory/destroy.cpp
+    memory/uninitialized_copy.cpp
+    memory/uninitialized_default_construct.cpp
+    memory/uninitialized_fill.cpp
+    memory/uninitialized_move.cpp
+    memory/uninitialized_value_construct.cpp
 
     range_access.cpp
 

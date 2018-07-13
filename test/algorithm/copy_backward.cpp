@@ -51,11 +51,11 @@ namespace {
 	void test_initializer_list() {
 		int target[8]{};
 		auto l1 = {1, 2, 3, 4};
-		auto result = ranges::copy_backward(std::move(l1), ranges::end(target));
-		CHECK(result.second == target + 4);
+		auto result = ranges::copy_backward(l1, ranges::end(target));
+		CHECK(result.out == target + 4);
 		CHECK(std::count(target, target + 4, 0) == 4);
 		auto l2 = {1, 2, 3, 4};
-		CHECK(ranges::equal(ranges::make_range(target + 4, target + 8), std::move(l2)));
+		CHECK(ranges::equal(ranges::make_subrange(target + 4, target + 8), std::move(l2)));
 	}
 }
 
@@ -70,27 +70,22 @@ TEST_CASE("alg.copy_backward")
 	std::pair<int, int> out[size(a)] = {};
 
 	auto res = ranges::copy_backward(begin(a), end(a), end(out));
-	CHECK(res.first == end(a));
-	CHECK(res.second == begin(out));
+	CHECK(res.in == end(a));
+	CHECK(res.out == begin(out));
 	CHECK(std::equal(a, a + size(a), out));
 
 	std::fill_n(out, size(out), std::make_pair(0, 0));
 	CHECK(!std::equal(a, a + size(a), out));
 
 	res = ranges::copy_backward(a, end(out));
-	CHECK(res.first == end(a));
-	CHECK(res.second == begin(out));
+	CHECK(res.in == end(a));
+	CHECK(res.out == begin(out));
 	CHECK(std::equal(a, a + size(a), out));
 
 	std::fill_n(out, size(out), std::make_pair(0, 0));
-	auto res2 = ranges::copy_backward(std::move(a), end(out));
-	// FIXME: Usual MSVC rvalue array weirdness
-#ifndef _MSC_VER
-	CHECK(res2.first.get_unsafe() == end(a));
-#else
-	CHECK(res2.first == end(a));
-#endif
-	CHECK(res2.second == begin(out));
+	auto res2 = ranges::copy_backward(a, end(out));
+	CHECK(res2.in == end(a));
+	CHECK(res2.out == begin(out));
 	CHECK(std::equal(a, a + size(a), out));
 
 	//test_repeat_view();

@@ -119,8 +119,7 @@ public:
         return current_[-n - 1];
     }
 
-    // FIXME: Why doesn't GCC like rvalue_reference_t<I> return?
-    friend constexpr decltype(auto) //rvalue_reference_t<I>
+    friend constexpr iter_rvalue_reference_t<I>
     iter_move(const reverse_iterator& i) noexcept(
         noexcept(ranges::iter_move(std::declval<I&>())) &&
         noexcept(--std::declval<I&>()) &&

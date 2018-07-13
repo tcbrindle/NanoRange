@@ -35,8 +35,8 @@ TEST_CASE("alg.copy_if") {
 		};
 
 		auto res = ranges::copy_if(source, source + n, target, is_even);
-		REQUIRE(res.first == source + n);
-		REQUIRE(res.second == target + n / 2);
+		REQUIRE(res.in == source + n);
+		REQUIRE(res.out == target + n / 2);
 
 		REQUIRE(std::equal(target, target + n / 2, evens));
 		REQUIRE(std::count(target + n / 2, target + n, -1) == n / 2);
@@ -47,8 +47,8 @@ TEST_CASE("alg.copy_if") {
 		std::fill_n(target, n, -1);
 
 		auto res = ranges::copy_if(source, target, is_even);
-		REQUIRE(res.first == source + n);
-		REQUIRE(res.second == target + n / 2);
+		REQUIRE(res.in == source + n);
+		REQUIRE(res.out == target + n / 2);
 
 		REQUIRE(std::equal(target, target + n / 2, evens));
 		REQUIRE(std::count(target + n / 2, target + n, -1) == n / 2);
@@ -58,14 +58,9 @@ TEST_CASE("alg.copy_if") {
 		int target[n];
 		std::fill_n(target, n, -1);
 
-		auto res = ranges::copy_if(std::move(source), target, is_even);
-		// FIXME: Usual MSVC rvalue aray weirdness
-#ifndef _MSC_VER
-		REQUIRE(res.first.get_unsafe() == source + n);
-#else
-		REQUIRE(res.first == source + n);
-#endif
-		REQUIRE(res.second == target + n / 2);
+		auto res = ranges::copy_if(source, target, is_even);
+		REQUIRE(res.in == source + n);
+		REQUIRE(res.out == target + n / 2);
 
 		REQUIRE(std::equal(target, target + n / 2, evens));
 		REQUIRE(std::count(target + n / 2, target + n, -1) == n / 2);
@@ -84,9 +79,9 @@ TEST_CASE("alg.copy_if") {
 
 		auto res = ranges::copy_if(source, target, is_even, &S::value);
 		//REQUIRE(res.in() == source + n);
-		REQUIRE(res.first == source + n);
+		REQUIRE(res.in == source + n);
 		//REQUIRE(res.out() == target + n / 2);
-        REQUIRE(res.second == target + n / 2);
+        REQUIRE(res.out == target + n / 2);
 
 		for (auto i = n / 2; i-- > 0;) {
 			REQUIRE(target[i].value == source[2 * i].value);
@@ -103,8 +98,8 @@ TEST_CASE("alg.copy_if") {
 
 		{
 			auto l = {5,4,3,2,1,0};
-			auto res = ranges::copy_if(std::move(l), target, is_even);
-			REQUIRE(res.second == target + n / 2);
+			auto res = ranges::copy_if(l, target, is_even);
+			REQUIRE(res.out == target + n / 2);
 		}
 
 		REQUIRE(std::equal(target, target + n / 2, evens));

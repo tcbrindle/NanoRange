@@ -11,8 +11,9 @@
 #include <nanorange/concepts.hpp>
 #include <nanorange/functional.hpp>
 #include <nanorange/iterator.hpp>
+#include <nanorange/memory.hpp>
 #include <nanorange/random.hpp>
-#include <nanorange/range.hpp>
+#include <nanorange/ranges.hpp>
 #include <nanorange/type_traits.hpp>
 #include <nanorange/utility.hpp>
 

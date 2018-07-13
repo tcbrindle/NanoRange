@@ -27,10 +27,8 @@ TEST_CASE("alg.is_heap_until3")
             .check([&](S *r){ CHECK(r == i185+1); });
 
     // Test rvalue range
+#ifdef HAVE_RVALUE_RANGES
     auto res = stl2::is_heap_until(std::move(i185), std::greater<int>(), &S::i);
-#ifndef _MSC_VER
     CHECK(res.get_unsafe() == i185+1);
-#else
-    CHECK(res == i185+1);
 #endif
 }

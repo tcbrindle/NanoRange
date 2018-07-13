@@ -23,8 +23,8 @@ TEST_CASE("alg.copy_n") {
 	std::fill_n(target, n, 0);
 	static_assert(n >= 2, "");
 	auto res = stl2::copy_n(source, n - 2, target);
-	//REQUIRE(res.in() == source + n - 2);
-	REQUIRE(res.second == target + n - 2);
+	REQUIRE(res.in == source + n - 2);
+	REQUIRE(res.out == target + n - 2);
 
 	REQUIRE(std::equal(source, source + n - 2, target));
 	REQUIRE(target[n - 2] == 0);

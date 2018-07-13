@@ -7,7 +7,8 @@
 #ifndef NANORANGE_ALGORITHM_SEARCH_N_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_SEARCH_N_HPP_INCLUDED
 
-#include <nanorange/range.hpp>
+#include <nanorange/ranges.hpp>
+#include <nanorange/view/subrange.hpp>
 
 NANO_BEGIN_NAMESPACE
 
@@ -17,11 +18,12 @@ namespace detail {
 struct search_n_fn {
 private:
     template <typename I, typename S, typename T, typename Pred, typename Proj>
-    static constexpr I impl(I first, S last, iter_difference_t<I> count,
-                            const T& value, Pred pred, Proj& proj)
+    static constexpr subrange<I>
+    impl(I first, S last, iter_difference_t<I> count, const T& value, Pred pred,
+         Proj& proj)
     {
         if (count == iter_difference_t<I>{0}) {
-            return first;
+            return {first, first};
         }
 
         for (; first != last; ++first) {
@@ -35,12 +37,12 @@ private:
             while (true) {
                 if (running_count++ == count) {
                     // Success
-                    return save;
+                    return {save, nano::next(first)};
                 }
 
                 if (++first == last) {
                     // We have run out of elements
-                    return first;
+                    return {first, first};
                 }
 
                 if (!nano::invoke(pred, nano::invoke(proj, *first), value)) {
@@ -49,7 +51,7 @@ private:
             }
         }
 
-        return first;
+        return {first, first};
     }
 
 public:
@@ -60,7 +62,7 @@ public:
                               Proj proj = Proj{}) const
     -> std::enable_if_t<ForwardIterator<I> && Sentinel<S, I> &&
                         IndirectlyComparable<I, const T*, Pred, Proj>,
-        I>
+        subrange<I>>
     {
         return search_n_fn::impl(std::move(first), std::move(last), count,
                                  value, pred, proj);
@@ -74,7 +76,7 @@ public:
     -> std::enable_if_t<
         ForwardRange<Rng> &&
         IndirectlyComparable<iterator_t<Rng>, const T*, Pred, Proj>,
-        safe_iterator_t<Rng>>
+        safe_subrange_t<Rng>>
     {
         return search_n_fn::impl(nano::begin(rng), nano::end(rng), count, value, pred,
                                  proj);

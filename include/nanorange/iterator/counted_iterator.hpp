@@ -7,7 +7,10 @@
 #ifndef NANORANGE_ITERATOR_COUNTED_ITERATOR_HPP_INCLUDED
 #define NANORANGE_ITERATOR_COUNTED_ITERATOR_HPP_INCLUDED
 
+#include <nanorange/detail/iterator/algorithm_requirements.hpp>
 #include <nanorange/detail/iterator/concepts.hpp>
+#include <nanorange/detail/iterator/iter_move.hpp>
+#include <nanorange/detail/iterator/iter_swap.hpp>
 #include <nanorange/iterator/default_sentinel.hpp>
 
 NANO_BEGIN_NAMESPACE

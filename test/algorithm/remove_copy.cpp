@@ -44,9 +44,9 @@ test_iter() {
 	int ia[] = {0, 1, 2, 3, 4, 2, 3, 4, 2};
 	constexpr unsigned sa = stl2::size(ia);
 	int ib[sa];
-	std::pair<InIter, OutIter> r = stl2::remove_copy(InIter(ia), Sent(ia + sa), OutIter(ib), 2);
-	CHECK(base(r.first) == ia + sa);
-	CHECK(base(r.second) == ib + sa - 3);
+	stl2::remove_copy_result<InIter, OutIter> r = stl2::remove_copy(InIter(ia), Sent(ia + sa), OutIter(ib), 2);
+	CHECK(base(r.in) == ia + sa);
+	CHECK(base(r.out) == ib + sa - 3);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 	CHECK(ib[2] == 3);
@@ -61,10 +61,10 @@ test_range() {
 	int ia[] = {0, 1, 2, 3, 4, 2, 3, 4, 2};
 	constexpr unsigned sa = stl2::size(ia);
 	int ib[sa];
-	std::pair<InIter, OutIter> r = stl2::remove_copy(::as_lvalue(stl2::make_range(InIter(ia), Sent(ia + sa))),
+	stl2::remove_copy_result<InIter, OutIter> r = stl2::remove_copy(::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + sa))),
 													 OutIter(ib), 2);
-	CHECK(base(r.first) == ia + sa);
-	CHECK(base(r.second) == ib + sa - 3);
+	CHECK(base(r.in) == ia + sa);
+	CHECK(base(r.out) == ib + sa - 3);
 	CHECK(ib[0] == 0);
 	CHECK(ib[1] == 1);
 	CHECK(ib[2] == 3);
@@ -147,9 +147,9 @@ TEST_CASE("alg.remove_copy")
 		S ia[] = {S{0}, S{1}, S{2}, S{3}, S{4}, S{2}, S{3}, S{4}, S{2}};
 		constexpr unsigned sa = stl2::size(ia);
 		S ib[sa];
-		std::pair<S*, S*> r = stl2::remove_copy(ia, ib, 2, &S::i);
-		CHECK(r.first == ia + sa);
-		CHECK(r.second == ib + sa-3);
+		stl2::remove_copy_result<S*, S*> r = stl2::remove_copy(ia, ib, 2, &S::i);
+		CHECK(r.in == ia + sa);
+		CHECK(r.out == ib + sa-3);
 		CHECK(ib[0].i == 0);
 		CHECK(ib[1].i == 1);
 		CHECK(ib[2].i == 3);
@@ -158,19 +158,15 @@ TEST_CASE("alg.remove_copy")
 		CHECK(ib[5].i == 4);
 	}
 
+#ifdef HAVE_RVALUE_RANGES
 	// Check rvalue range
 	{
 		S ia[] = {S{0}, S{1}, S{2}, S{3}, S{4}, S{2}, S{3}, S{4}, S{2}};
 		constexpr unsigned sa = stl2::size(ia);
 		S ib[sa];
 		auto r = stl2::remove_copy(std::move(ia), ib, 2, &S::i);
-		// FIXME: MSVC rvalue arrays
-#ifndef _MSC_VER
-		CHECK(r.first.get_unsafe() == ia + sa);
-#else
-		CHECK(r.first == ia + sa);
-#endif
-		CHECK(r.second == ib + sa-3);
+		CHECK(r.in.get_unsafe() == ia + sa);
+		CHECK(r.out == ib + sa-3);
 		CHECK(ib[0].i == 0);
 		CHECK(ib[1].i == 1);
 		CHECK(ib[2].i == 3);
@@ -178,4 +174,5 @@ TEST_CASE("alg.remove_copy")
 		CHECK(ib[4].i == 3);
 		CHECK(ib[5].i == 4);
 	}
+#endif
 }

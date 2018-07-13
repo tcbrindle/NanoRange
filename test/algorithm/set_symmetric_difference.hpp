@@ -49,9 +49,9 @@ test_iter()
 
 	set_symmetric_difference(Iter1(ia), Iter1(ia + sa), Iter2(ib),
 							 Iter2(ib + sb), OutIter(ic)).
-			check([&](std::tuple<Iter1, Iter2, OutIter> res) {
-					  CHECK((base(std::get<2>(res)) - ic) == sr);
-					  CHECK_FALSE(std::lexicographical_compare(ic, base(std::get<2>(res)), ir,
+			check([&](stl2::set_symmetric_difference_result<Iter1, Iter2, OutIter> res) {
+					  CHECK((base(res.out) - ic) == sr);
+					  CHECK_FALSE(std::lexicographical_compare(ic, base(res.out), ir,
 														 ir + sr));
 					  stl2::fill(ic, 0);
 				  }
@@ -59,9 +59,9 @@ test_iter()
 
 	set_symmetric_difference(Iter1(ib), Iter1(ib + sb), Iter2(ia),
 							 Iter2(ia + sa), OutIter(ic)).
-			check([&](std::tuple<Iter1, Iter2, OutIter> res) {
-					  CHECK((base(std::get<2>(res)) - ic) == sr);
-					  CHECK_FALSE(std::lexicographical_compare(ic, base(std::get<2>(res)), ir,
+			check([&](stl2::set_symmetric_difference_result<Iter1, Iter2, OutIter> res) {
+					  CHECK((base(res.out) - ic) == sr);
+					  CHECK_FALSE(std::lexicographical_compare(ic, base(res.out), ir,
 														 ir + sr));
 					  stl2::fill(ic, 0);
 				  }
@@ -87,9 +87,9 @@ test_comp()
 
 	set_symmetric_difference(Iter1(ia), Iter1(ia + sa), Iter2(ib),
 							 Iter2(ib + sb), OutIter(ic), std::less<int>()).
-			check([&](std::tuple<Iter1, Iter2, OutIter> res) {
-					  CHECK((base(std::get<2>(res)) - ic) == sr);
-					  CHECK_FALSE(std::lexicographical_compare(ic, base(std::get<2>(res)), ir,
+			check([&](stl2::set_symmetric_difference_result<Iter1, Iter2, OutIter> res) {
+					  CHECK((base(res.out) - ic) == sr);
+					  CHECK_FALSE(std::lexicographical_compare(ic, base(res.out), ir,
 														 ir + sr));
 					  stl2::fill(ic, 0);
 				  }
@@ -97,9 +97,9 @@ test_comp()
 
 	set_symmetric_difference(Iter1(ib), Iter1(ib + sb), Iter2(ia),
 							 Iter2(ia + sa), OutIter(ic), std::less<int>()).
-			check([&](std::tuple<Iter1, Iter2, OutIter> res) {
-					  CHECK((base(std::get<2>(res)) - ic) == sr);
-					  CHECK_FALSE(std::lexicographical_compare(ic, base(std::get<2>(res)), ir,
+			check([&](stl2::set_symmetric_difference_result<Iter1, Iter2, OutIter> res) {
+					  CHECK((base(res.out) - ic) == sr);
+					  CHECK_FALSE(std::lexicographical_compare(ic, base(res.out), ir,
 														 ir + sr));
 					  stl2::fill(ic, 0);
 				  }

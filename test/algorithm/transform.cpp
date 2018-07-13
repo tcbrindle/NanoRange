@@ -33,13 +33,9 @@ TEST_CASE("alg.transform") {
 		{
 			int target[4]{};
 			auto result = ranges::transform(source1, ranges::begin(source2), target, sum);
-			// FIXME: tagged tuple
-			//CHECK(result.in1() == ranges::end(source1));
-			//CHECK(result.in2() == ranges::end(source2));
-			//CHECK(result.out() == ranges::end(target));
-            CHECK(std::get<0>(result) == ranges::end(source1));
-            CHECK(std::get<1>(result) == ranges::end(source2));
-            CHECK(std::get<2>(result) == ranges::end(target));
+			CHECK(result.in1 == ranges::end(source1));
+			CHECK(result.in2 == ranges::end(source2));
+			CHECK(result.out == ranges::end(target));
 			::check_equal(target, control);
 		}
 
@@ -47,13 +43,9 @@ TEST_CASE("alg.transform") {
 			int target[4]{};
 			auto result = ranges::transform(ranges::begin(source1), ranges::end(source1),
 				ranges::begin(source2), target, sum);
-			// FIXME: tagged tuple
-			//CHECK(result.in1() == ranges::end(source1));
-			//CHECK(result.in2() == ranges::end(source2));
-			//CHECK(result.out() == ranges::end(target));
-            CHECK(std::get<0>(result) == ranges::end(source1));
-            CHECK(std::get<1>(result) == ranges::end(source2));
-            CHECK(std::get<2>(result) == ranges::end(target));
+			CHECK(result.in1 == ranges::end(source1));
+			CHECK(result.in2 == ranges::end(source2));
+			CHECK(result.out == ranges::end(target));
 			::check_equal(target, control);
 		}
 	}

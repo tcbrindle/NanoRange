@@ -37,29 +37,6 @@ void check_equal(Rng && actual, Rng2&& expected)
     check_equal_(actual, expected);
 }
 
-namespace nano {
-inline namespace ranges {
-inline namespace ext {
-
-template <typename I, typename S>
-struct iterator_range {
-    I first;
-    S last;
-
-    I begin() const { return first; }
-    S end() const { return last; }
-};
-
-template <typename I, typename S>
-iterator_range<I, S> make_range(I i, S s)
-{
-    return {std::move(i), std::move(s)};
-}
-
-}
-}
-}
-
 template <typename T>
 struct checker
 {
@@ -98,14 +75,8 @@ public:
                               using S = typename sentinel_type<I>::type;
                               check(algo_(begin, end, rest...));
                               check(algo_(begin, S{base(end)}, rest...));
-// FIXME: GCC < 7 doesn't like subrange here, why?
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 7
-                              check(algo_(::rvalue_if<RvalueOK>(nano::ext::make_range(begin, end)), rest...));
-                              check(algo_(::rvalue_if<RvalueOK>(nano::ext::make_range(begin, S{base(end)})), rest...));
-#else
                               check(algo_(::rvalue_if<RvalueOK>(nano::make_subrange(begin, end)), rest...));
                               check(algo_(::rvalue_if<RvalueOK>(nano::make_subrange(begin, S{base(end)})), rest...));
-#endif
                           }};
     }
 };

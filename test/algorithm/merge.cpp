@@ -35,9 +35,9 @@ TEST_CASE("alg.merge")
 			ib[i] = 2 * i + 1;
 		auto r = stl2::merge(ia.get(), ia.get() + N,
 			ib.get(), ib.get() + N, ic.get());
-		CHECK(std::get<0>(r) == ia.get() + N);
-		CHECK(std::get<1>(r) == ib.get() + N);
-		CHECK(std::get<2>(r) == ic.get() + 2 * N);
+		CHECK(r.in1 == ia.get() + N);
+		CHECK(r.in2 == ib.get() + N);
+		CHECK(r.out == ic.get() + 2 * N);
 		CHECK(ic[0] == 0);
 		CHECK(ic[2 * N - 1] == (int)(2 * N - 1));
 		CHECK(std::is_sorted(ic.get(), ic.get() + 2 * N));
@@ -52,12 +52,12 @@ TEST_CASE("alg.merge")
 			ia[i] = 2 * i;
 		for(unsigned i = 0; i < N; ++i)
 			ib[i] = 2 * i + 1;
-		auto r0 = stl2::ext::make_range(ia.get(), ia.get() + N);
-		auto r1 = stl2::ext::make_range(ib.get(), ib.get() + N);
+		auto r0 = stl2::make_subrange(ia.get(), ia.get() + N);
+		auto r1 = stl2::make_subrange(ib.get(), ib.get() + N);
 		auto r = stl2::merge(r0, r1, ic.get());
-		CHECK(std::get<0>(r) == ia.get() + N);
-		CHECK(std::get<1>(r) == ib.get() + N);
-		CHECK(std::get<2>(r) == ic.get() + 2 * N);
+		CHECK(r.in1 == ia.get() + N);
+		CHECK(r.in2 == ib.get() + N);
+		CHECK(r.out == ic.get() + 2 * N);
 		CHECK(ic[0] == 0);
 		CHECK(ic[2 * N - 1] == (int)(2 * N - 1));
 		CHECK(std::is_sorted(ic.get(), ic.get() + 2 * N));
@@ -73,12 +73,12 @@ TEST_CASE("alg.merge")
 			ia[i] = 2 * i;
 		for(unsigned i = 0; i < N; ++i)
 			ib[i] = 2 * i + 1;
-		auto r0 = stl2::ext::make_range(ia.get(), ia.get() + N);
-		auto r1 = stl2::ext::make_range(ib.get(), ib.get() + N);
+		auto r0 = stl2::make_subrange(ia.get(), ia.get() + N);
+		auto r1 = stl2::make_subrange(ib.get(), ib.get() + N);
 		auto r = stl2::merge(std::move(r0), std::move(r1), ic.get());
-		CHECK(std::get<0>(r).get_unsafe() == ia.get() + N);
-		CHECK(std::get<1>(r).get_unsafe() == ib.get() + N);
-		CHECK(std::get<2>(r) == ic.get() + 2 * N);
+		CHECK(r.in1 == ia.get() + N);
+		CHECK(r.in2 == ib.get() + N);
+		CHECK(r.out == ic.get() + 2 * N);
 		CHECK(ic[0] == 0);
 		CHECK(ic[2 * N - 1] == (int)(2 * N - 1));
 		CHECK(std::is_sorted(ic.get(), ic.get() + 2 * N));

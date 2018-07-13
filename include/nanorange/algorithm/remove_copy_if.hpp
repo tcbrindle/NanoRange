@@ -7,20 +7,20 @@
 #ifndef NANORANGE_ALGORITHM_REMOVE_COPY_IF_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_REMOVE_COPY_IF_HPP_INCLUDED
 
-#include <nanorange/range.hpp>
-
-#include <nanorange/algorithm/find.hpp>
+#include <nanorange/algorithm/copy.hpp>
 
 NANO_BEGIN_NAMESPACE
 
+template <typename I, typename O>
+using remove_copy_if_result = copy_result<I, O>;
+
 namespace detail {
 
-// FIXME: Use tagged_pair
 struct remove_copy_if_fn {
 private:
     template <typename I, typename S, typename O, typename Pred, typename Proj>
-    static constexpr std::pair<I, O> impl(I first, S last, O result,
-                                          Pred& pred, Proj& proj)
+    static constexpr remove_copy_if_result<I, O>
+    impl(I first, S last, O result, Pred& pred, Proj& proj)
     {
         while (first != last) {
             auto&& ref = *first;
@@ -40,7 +40,7 @@ public:
         InputIterator<I> && Sentinel<S, I> && WeaklyIncrementable<O> &&
             IndirectlyCopyable<I, O> &&
             IndirectUnaryPredicate<Pred, projected<I, Proj>>,
-        std::pair<I, O>>
+        remove_copy_if_result<I, O>>
     operator()(I first, S last, O result, Pred pred,
                Proj proj = Proj{}) const
     {
@@ -53,7 +53,7 @@ public:
         InputRange<Rng> && WeaklyIncrementable<O> &&
             IndirectlyCopyable<iterator_t<Rng>, O> &&
             IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        std::pair<safe_iterator_t<Rng>, O>>
+        remove_copy_if_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, Pred pred, Proj proj = Proj{}) const
     {
         return remove_copy_if_fn::impl(nano::begin(rng), nano::end(rng),

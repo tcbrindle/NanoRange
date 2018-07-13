@@ -56,13 +56,11 @@ TEST_CASE("alg.find_if_not")
 	pi = find_if_not(ia, [](int i){return i != 10;});
 	CHECK(pi == ia+s);
 
-// FIXME: MSVC
-#ifndef _MSC_VER
-	auto pj = find_if_not(std::move(ia), [](int i){return i != 3;});
-	CHECK(*pj.get_unsafe() == 3);
-	pj = find_if_not(std::move(ia), [](int i){return i != 10;});
-	CHECK(pj.get_unsafe() == ia+s);
-#endif
+	auto pj = find_if_not(ia, [](int i){return i != 3;});
+	CHECK(*pj == 3);
+	pj = find_if_not(ia, [](int i){return i != 10;});
+	CHECK(pj == ia+s);
+
 	S sa[] = {{0}, {1}, {2}, {3}, {4}, {5}};
 	S *ps = find_if_not(sa, [](int i){return i != 3;}, &S::i_);
 	CHECK(ps->i_ == 3);

@@ -32,10 +32,10 @@ TEST_CASE("alg.basic.merge")
     }
 
     SECTION("with iterators") {
-        auto rng1 = nano::ext::make_range(
+        auto rng1 = nano::make_subrange(
             std::istream_iterator<int>{oss1},
             std::istream_iterator<int>{});
-        auto rng2 = nano::ext::make_range(
+        auto rng2 = nano::make_subrange(
             std::istream_iterator<int>{oss2},
             std::istream_iterator<int>{});
         auto result = nano::back_inserter(out);
@@ -85,10 +85,10 @@ TEST_CASE("alg.basic.set_difference")
     }
 
     SECTION("with ranges") {
-        auto rng1 = nano::ext::make_range(
+        auto rng1 = nano::make_subrange(
             std::istream_iterator<int>{iss1},
             std::istream_iterator<int>{});
-        auto rng2 = nano::ext::make_range(
+        auto rng2 = nano::make_subrange(
             std::istream_iterator<int>{iss2},
             std::istream_iterator<int>{});
         nano::set_difference(rng1, rng2, nano::back_inserter(vec), nano::greater<>{});
@@ -114,10 +114,10 @@ TEST_CASE("alg.basic.set_intersection")
     }
 
     SECTION("with ranges") {
-        auto rng1 = nano::ext::make_range(
+        auto rng1 = nano::make_subrange(
             std::istream_iterator<int>{iss1},
             std::istream_iterator<int>{});
-        auto rng2 = nano::ext::make_range(
+        auto rng2 = nano::make_subrange(
             std::istream_iterator<int>{iss2},
             std::istream_iterator<int>{});
         nano::set_intersection(rng1, rng2, nano::back_inserter(vec), nano::greater<>{});
@@ -143,10 +143,10 @@ TEST_CASE("alg.basic.set_symmetric_difference")
     }
 
     SECTION("with ranges") {
-        auto rng1 = nano::ext::make_range(
+        auto rng1 = nano::make_subrange(
             std::istream_iterator<int>{iss1},
             std::istream_iterator<int>{});
-        auto rng2 = nano::ext::make_range(
+        auto rng2 = nano::make_subrange(
             std::istream_iterator<int>{iss2},
             std::istream_iterator<int>{});
         nano::set_symmetric_difference(rng1, rng2, nano::back_inserter(vec), nano::greater<>{});
@@ -172,10 +172,10 @@ TEST_CASE("alg.basic.set_union")
     }
 
     SECTION("with ranges") {
-        auto rng1 = nano::ext::make_range(
+        auto rng1 = nano::make_subrange(
             std::istream_iterator<int>{iss1},
             std::istream_iterator<int>{});
-        auto rng2 = nano::ext::make_range(
+        auto rng2 = nano::make_subrange(
             std::istream_iterator<int>{iss2},
             std::istream_iterator<int>{});
         nano::set_union(rng1, rng2, nano::back_inserter(vec), nano::greater<>{});
@@ -206,13 +206,13 @@ TEST_CASE("alg.basic.includes")
     }
 
     SECTION("with ranges") {
-        auto rng1 = nano::ext::make_range(
+        auto rng1 = nano::make_subrange(
             std::istream_iterator<int>{iss1},
             std::istream_iterator<int>{});
-        auto rng2 = nano::ext::make_range(
+        auto rng2 = nano::make_subrange(
             std::istream_iterator<int>{iss2},
             std::istream_iterator<int>{});
-        auto rng3 = nano::ext::make_range(
+        auto rng3 = nano::make_subrange(
             std::istream_iterator<int>{iss3},
             std::istream_iterator<int>{});
         REQUIRE(nano::includes(rng1, rng2, nano::greater<>{}));

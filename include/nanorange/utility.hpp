@@ -9,6 +9,4 @@
 
 #include <nanorange/detail/swap.hpp>
 
-// TODO: Add tagged tuple machinery here once we've written it
-
 #endif

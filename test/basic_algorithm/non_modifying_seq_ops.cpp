@@ -63,8 +63,8 @@ TEST_CASE("alg.basic.for_each")
     const auto func = functor{sum};
 
     const auto func2 = rng::for_each(arr, func);
-    REQUIRE(func2.first == arr.end());
-    REQUIRE(func2.second.counter == 3);
+    REQUIRE(func2.in == arr.end());
+    REQUIRE(func2.fun.counter == 3);
     REQUIRE(sum == 6);
 }
 
@@ -89,8 +89,8 @@ TEST_CASE("alg.basic.mismatch (three-legged)")
 
 
     const auto p = rng::mismatch(arr1.begin(), arr1.end(), arr2.begin());
-    REQUIRE(p.first == std::prev(arr1.end()));
-    REQUIRE(p.second == std::prev(arr2.end()));
+    REQUIRE(p.in1 == std::prev(arr1.end()));
+    REQUIRE(p.in2 == std::prev(arr2.end()));
 }
 
 TEST_CASE("alg.basic.mismatch (three-legged with predicate)")
@@ -99,8 +99,8 @@ TEST_CASE("alg.basic.mismatch (three-legged with predicate)")
     constexpr std::array<int, 3> arr2 = {{1, 2, 4}};
 
     const auto p = rng::mismatch(arr1.begin(), arr1.end(), arr2.begin(), std::equal_to<>{});
-    REQUIRE(p.first == std::prev(arr1.end()));
-    REQUIRE(p.second == std::prev(arr2.end()));
+    REQUIRE(p.in1 == std::prev(arr1.end()));
+    REQUIRE(p.in2 == std::prev(arr2.end()));
 }
 
 
@@ -111,14 +111,14 @@ TEST_CASE("alg.basic.mismatch (four-legged)")
 
     SECTION("Iterators") {
         const auto p = rng::mismatch(arr1.begin(), arr1.end(), arr2.begin(), arr2.end());
-        REQUIRE(p.first == std::prev(arr1.end()));
-        REQUIRE(p.second == std::prev(arr2.end()));
+        REQUIRE(p.in1 == std::prev(arr1.end()));
+        REQUIRE(p.in2 == std::prev(arr2.end()));
     }
 
     SECTION("Ranges") {
         const auto p = rng::mismatch(arr1, arr2);
-        REQUIRE(p.first == std::prev(arr1.end()));
-        REQUIRE(p.second == std::prev(arr2.end()));
+        REQUIRE(p.in1 == std::prev(arr1.end()));
+        REQUIRE(p.in2 == std::prev(arr2.end()));
     }
 }
 
@@ -129,14 +129,14 @@ TEST_CASE("alg.basic.mismatch (four-legged with predicate)")
 
     SECTION("Iterators") {
         const auto p = rng::mismatch(arr1.begin(), arr1.end(), arr2.begin(), arr2.end(), std::equal_to<>{});
-        REQUIRE(p.first == std::prev(arr1.end()));
-        REQUIRE(p.second == std::prev(arr2.end()));
+        REQUIRE(p.in1 == std::prev(arr1.end()));
+        REQUIRE(p.in2 == std::prev(arr2.end()));
     }
 
     SECTION("Ranges") {
         const auto p = rng::mismatch(arr1, arr2, std::equal_to<>{});
-        REQUIRE(p.first == std::prev(arr1.end()));
-        REQUIRE(p.second == std::prev(arr2.end()));
+        REQUIRE(p.in1 == std::prev(arr1.end()));
+        REQUIRE(p.in2 == std::prev(arr2.end()));
     }
 }
 
@@ -253,13 +253,13 @@ TEST_CASE("alg.basic.find_end")
     const std::vector<int> vec = {1, 2, 3};
 
     SECTION("with iterators") {
-        const auto it = rng::find_end(arr.begin(), arr.end(), vec.begin(), vec.end());
-        REQUIRE(it == arr.end() - 3);
+        const auto sub = rng::find_end(arr.begin(), arr.end(), vec.begin(), vec.end());
+        REQUIRE(std::equal(sub.begin(), sub.end(), arr.end() - 3, arr.end()));
     }
 
     SECTION("with ranges") {
-        const auto it = rng::find_end(arr, vec);
-        REQUIRE(it == arr.end() - 3);
+        const auto sub = rng::find_end(arr, vec);
+        REQUIRE(std::equal(sub.begin(), sub.end(), arr.end() - 3, arr.end()));
     }
 }
 
@@ -269,13 +269,13 @@ TEST_CASE("alg.basic.find_end (with predicate)")
     const std::vector<int> vec = {1, 2, 3};
 
     SECTION("with iterators") {
-        const auto it = rng::find_end(arr.begin(), arr.end(), vec.begin(), vec.end(), std::equal_to<>{});
-        REQUIRE(it == arr.end() - 3);
+        const auto sub = rng::find_end(arr.begin(), arr.end(), vec.begin(), vec.end(), std::equal_to<>{});
+        REQUIRE(std::equal(sub.begin(), sub.end(), arr.end() - 3, arr.end()));
     }
 
     SECTION("with ranges") {
-        const auto it = rng::find_end(arr, vec, std::equal_to<>{});
-        REQUIRE(it == arr.end() - 3);
+        const auto sub = rng::find_end(arr, vec, std::equal_to<>{});
+        REQUIRE(std::equal(sub.begin(), sub.end(), arr.end() - 3, arr.end()));
     }
 }
 
@@ -348,13 +348,13 @@ TEST_CASE("alg.basic.search")
     constexpr std::array<int, 3> arr = {{3, 4, 5}};
 
     SECTION("with iterators") {
-        const auto it = rng::search(vec.begin(), vec.end(), arr.begin(), arr.end());
-        REQUIRE(it == vec.begin() + 2);
+        const auto sub = rng::search(vec.begin(), vec.end(), arr.begin(), arr.end());
+        REQUIRE(std::equal(sub.begin(), sub.end(), vec.begin() + 2, vec.begin() + 5));
     }
 
     SECTION("with ranges") {
-        const auto it = rng::search(vec, arr);
-        REQUIRE(it == vec.begin() + 2);
+        const auto sub = rng::search(vec, arr);
+        REQUIRE(std::equal(sub.begin(), sub.end(), vec.begin() + 2, vec.begin() + 5));
     }
 }
 
@@ -368,13 +368,13 @@ TEST_CASE("alg.basic.search (with predicate)")
     } pred;
 
     SECTION("with iterators") {
-        const auto it = rng::search(vec.begin(), vec.end(), arr.begin(), arr.end(), pred);
-        REQUIRE(it == vec.begin() + 2);
+        const auto sub = rng::search(vec.begin(), vec.end(), arr.begin(), arr.end(), pred);
+        REQUIRE(std::equal(sub.begin(), sub.end(), vec.begin() + 2, vec.begin() + 5));
     }
 
     SECTION("with ranges") {
-        const auto it = rng::search(vec, arr, pred);
-        REQUIRE(it == vec.begin() + 2);
+        const auto sub = rng::search(vec, arr, pred);
+        REQUIRE(std::equal(sub.begin(), sub.end(), vec.begin() + 2, vec.begin() + 5));
     }
 }
 
@@ -383,13 +383,14 @@ TEST_CASE("alg.basic.search_n")
     const std::vector<int> vec{1, 2, 3, 4, 1, 1, 1};
 
     SECTION("with iterators") {
-        const auto it = rng::search_n(vec.begin(), vec.end(), 3, 1);
-        REQUIRE(it == vec.begin() + 4);
+        const auto sub = rng::search_n(vec.begin(), vec.end(), 3, 1);
+        REQUIRE(nano::distance(sub) == 3);
+        REQUIRE(std::equal(sub.begin(), sub.end(), vec.begin() + 4, vec.end()));
     }
 
     SECTION("with range") {
-        const auto it = rng::search_n(vec, 3, 1);
-        REQUIRE(it == vec.begin() + 4);
+        const auto sub = rng::search_n(vec, 3, 1);
+        REQUIRE(std::equal(sub.begin(), sub.end(), vec.begin() + 4, vec.end()));
     }
 }
 
@@ -398,13 +399,13 @@ TEST_CASE("alg.basic.search_n (with predicate)")
     const std::vector<int> vec{1, 2, 3, 4, 1, 1, 1};
 
     SECTION("with iterators") {
-        const auto it = rng::search_n(vec.begin(), vec.end(), 3, 1, std::equal_to<>{});
-        REQUIRE(it == vec.begin() + 4);
+        const auto sub = rng::search_n(vec.begin(), vec.end(), 3, 1, std::equal_to<>{});
+        REQUIRE(std::equal(sub.begin(), sub.end(), vec.begin() + 4, vec.end()));
     }
 
     SECTION("with range") {
-        const auto it = rng::search_n(vec, 3, 1, std::equal_to<>{});
-        REQUIRE(it == vec.begin() + 4);
+        const auto sub = rng::search_n(vec, 3, 1, std::equal_to<>{});
+        REQUIRE(std::equal(sub.begin(), sub.end(), vec.begin() + 4, vec.end()));
     }
 }
 

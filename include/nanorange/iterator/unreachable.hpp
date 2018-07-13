@@ -14,35 +14,34 @@ NANO_BEGIN_NAMESPACE
 // [range.unreachable.sentinels]
 
 class unreachable {
+    template<typename I>
+    friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
+    operator==(const I &, unreachable) noexcept
+    {
+        return false;
+    }
+
+    template<typename I>
+    friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
+    operator==(unreachable, const I &) noexcept
+    {
+        return false;
+    }
+
+    template<typename I>
+    friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
+    operator!=(const I &, unreachable) noexcept
+    {
+        return true;
+    }
+
+    template<typename I>
+    friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
+    operator!=(unreachable, const I &) noexcept
+    {
+        return true;
+    }
 };
-
-template <typename I>
-constexpr std::enable_if_t<Iterator<I>, bool> operator==(const I&,
-                                                         unreachable) noexcept
-{
-    return false;
-}
-
-template <typename I>
-constexpr std::enable_if_t<Iterator<I>, bool> operator==(unreachable,
-                                                         const I&) noexcept
-{
-    return false;
-}
-
-template <typename I>
-constexpr std::enable_if_t<Iterator<I>, bool> operator!=(const I&,
-                                                         unreachable) noexcept
-{
-    return true;
-}
-
-template <typename I>
-constexpr std::enable_if_t<Iterator<I>, bool> operator!=(unreachable,
-                                                         const I&) noexcept
-{
-    return true;
-}
 
 NANO_END_NAMESPACE
 

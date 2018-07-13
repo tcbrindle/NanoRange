@@ -64,9 +64,6 @@ namespace detail {
 template <typename T, typename Deduced>
 auto same_lv(Deduced&) -> std::enable_if_t<Same<T, Deduced>, int>;
 
-template <typename T, typename Deduced>
-auto same_rv(Deduced &&) -> std::enable_if_t<Same<T, Deduced>, int>;
-
 struct WeaklyIncrementable_req {
     template <typename I>
     auto requires_(I i) -> decltype(
@@ -87,7 +84,7 @@ namespace detail {
 
 struct Incrementable_req {
     template <typename I>
-    auto requires_(I i) -> decltype(valid_expr(same_rv<I>(i++)));
+    auto requires_(I i) -> decltype(requires_expr<Same<decltype(i++), I>>{});
 };
 
 } // namespace detail
@@ -127,8 +124,8 @@ namespace detail {
 struct SizedSentinel_req {
     template <typename S, typename I>
     auto requires_(const S& s, const I& i)
-        -> decltype(valid_expr(same_rv<iter_difference_t<I>>(s - i),
-                               same_rv<iter_difference_t<I>>(i - s)));
+        -> decltype(requires_expr<Same<decltype(s - i), iter_difference_t<I>>>{},
+                    requires_expr<Same<decltype(i - s), iter_difference_t<I>>>{});
 };
 
 } // namespace detail
@@ -213,7 +210,7 @@ namespace detail {
 struct BidirectionalIterator_req {
     template <typename I>
     auto requires_(I i)
-        -> decltype(valid_expr(same_lv<I>(--i), same_rv<I>(i--)));
+        -> decltype(same_lv<I>(--i), requires_expr<Same<decltype(i--), I>>{});
 };
 
 template <typename>
@@ -239,10 +236,15 @@ namespace detail {
 struct RandomAccessIterator_req {
     template <typename I>
     auto requires_(I i, const I j, const iter_difference_t<I> n) -> decltype(
-        valid_expr(same_lv<I>(i += n), same_rv<I>(j + n),
-                   n + j, // same_rv<I>(n + j) -- FIXME: MSVC doesn't like this
-                          // with I = int*, find out why
-                   same_lv<I>(i -= n), same_rv<I>(j - n), j[n],
+        valid_expr(same_lv<I>(i += n),
+                   j + n, requires_expr<Same<decltype(j + n), I>>{},
+                   n + j,
+#ifndef _MSC_VER
+                   requires_expr<Same<decltype(n + j), I>>{}, // FIXME: MSVC doesn't like this when I = int*
+#endif
+                   same_lv<I>(i -= n),
+                   j - n, requires_expr<Same<decltype(j - n), I>>{},
+                   j[n],
                    requires_expr<Same<decltype(j[n]), iter_reference_t<I>>>{}));
 };
 

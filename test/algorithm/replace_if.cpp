@@ -49,7 +49,7 @@ template<typename Iter, typename Sent = Iter>
 void test_rng() {
 	int ia[] = {0, 1, 2, 3, 4};
 	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
-	auto rng = stl2::make_range(Iter(ia), Sent(ia + sa));
+	auto rng = stl2::make_subrange(Iter(ia), Sent(ia + sa));
 	Iter i = stl2::replace_if(rng, [](int i) { return i == 2; }, 5);
 	CHECK(ia[0] == 0);
 	CHECK(ia[1] == 1);
@@ -99,6 +99,7 @@ TEST_CASE("alg.replace_if")
 		CHECK(i == stl2::end(ia));
 	}
 
+#ifdef HAVE_RVALUE_RANGES
 	// test rvalue range
 	{
 		using P = std::pair<int,std::string>;
@@ -117,4 +118,5 @@ TEST_CASE("alg.replace_if")
 		CHECK(i == stl2::end(ia));
 #endif
 	}
+#endif
 }

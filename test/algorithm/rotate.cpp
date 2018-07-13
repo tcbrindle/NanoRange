@@ -265,6 +265,7 @@ TEST_CASE("alg.rotate")
 	test<random_access_iterator<int *>, sentinel<int*>>();
 
 	// test rvalue range
+	/*
 	{
 		int rgi[] = {0,1,2,3,4,5};
 		auto r = nano::rotate(std::move(rgi), rgi+2);
@@ -286,4 +287,5 @@ TEST_CASE("alg.rotate")
 		CHECK(rgi[4] == 0);
 		CHECK(rgi[5] == 1);
 	}
+	 */
 }

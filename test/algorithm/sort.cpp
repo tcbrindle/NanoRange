@@ -282,6 +282,7 @@ TEST_CASE("alg.sort")
 		}
 	}
 
+#ifdef HAVE_RVALUE_RANGES
 	// Check rvalue range
 	{
 		std::vector<S> v(1000, S{});
@@ -297,6 +298,7 @@ TEST_CASE("alg.sort")
 			CHECK((std::size_t)v[i].j == v.size() - i - 1);
 		}
 	}
+#endif
 
 #if 0
 	// Check sorting a zip view, which uses iter_move

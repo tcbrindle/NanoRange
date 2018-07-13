@@ -57,7 +57,7 @@ struct range_call {
 	template <class B, class E, class... Args>
 	auto operator()(B&& It, E&& e, Args&& ... args) const
 	{
-		auto rng = stl2::make_range(begin_t{It}, sentinel_t{e});
+		auto rng = stl2::make_subrange(begin_t{It}, sentinel_t{e});
 		return stl2::unique(rng, std::forward<Args>(args)...);
 	}
 };
@@ -149,6 +149,7 @@ TEST_CASE("alg.unique")
 	test<random_access_iterator<int*>, range_call>();
 	test<int*, range_call>();
 
+#ifdef HAVE_RVALUE_RANGES
 	// Test rvalue range
 	{
 		int a[] = {0, 1, 1, 1, 2, 2, 2};
@@ -163,4 +164,5 @@ TEST_CASE("alg.unique")
 		CHECK(a[1] == 1);
 		CHECK(a[2] == 2);
 	}
+#endif
 }
