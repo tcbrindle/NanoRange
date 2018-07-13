@@ -21,10 +21,6 @@ want to (or can't) use the full-blown
 NanoRange is compatible with all three major C++ compilers, including the
 latest version of Microsoft Visual C++.
 
-There is currently no reference documentation for NanoRange itself, but
-the Ranges TS on which it is based is partially documented
-[on cppreference](http://en.cppreference.com/w/cpp/experimental/ranges).
-
 ## Usage ##
 
 The easiest way to use NanoRange is to simply download the [latest, automatically-generated 
@@ -54,6 +50,12 @@ and newer. Older versions may work in some cases, but this is not guaranteed.
 In addition, NanoRange works with MSVC 2017 version 15.7. Note that
 the `/permissive-` switch is required for correct two-phase lookup.
 
+## Documentation ##
+
+There is currently no reference documentation for NanoRange itself, but
+the Ranges TS on which it is based is partially documented
+[on cppreference](http://en.cppreference.com/w/cpp/experimental/ranges).
+
 ## What it provides ##
 
 ### Concepts ###
@@ -78,11 +80,14 @@ void foo(Rng&& rng) {
 
 ### Iterator adaptors ###
 
-NanoRange provides implementations of most of the iterator adaptors from
-[P0896], specifically:
+The One Ranges proposal [P0896] adds two new iterator adaptors to the
+standard library, namely `common_iterator` and `counted_iterator`,
+which are both implemented in NanoRange.
 
- * `common_iterator`
- * `counted_iterator`
+Additionally, [P0896] modifies the existing iterator adaptors for
+compatibility with the new concepts. NanoRange therefore provides
+drop-in replacements for these, specifically:
+
  * `reverse_iterator`
  * `front_insert_iterator`
  * `back_insert_iterator`
@@ -92,8 +97,8 @@ NanoRange provides implementations of most of the iterator adaptors from
  * `istreambuf_iterator`
  * `ostreambuf_iterator`
 
-In addition, NanoRange provides an implementation of `subrange` from
-[P0789]. This can be used to turn an iterator/sentinel pair into in range,
+Lastly, NanoRange provides an implementation of `subrange` from
+[P0896]. This can be used to turn an iterator/sentinel pair into in range,
 or as a `span`-like view of a subset of another range.
 
 ### Algorithms ###
@@ -188,17 +193,24 @@ auto iter = nano::find(vec, 10, &S::i);
 
 #### `constexpr` support ####
 
-In C++20, most of the existing algorithms in `<algorithm>` will be marked
-`constexpr`, and so will be usable at compile time. While the ranges
-proposals do not currently feature `constexpr` support, it seems inevitable
-that this will be added at some point. As an extension therefore, all of the
-fully reimplemented algorithms in NanoRange (with the exception of those
-which can potentially allocate) are `constexpr`.
+In [P0896], almost all the algorithms are marked  as `constexpr` (the exceptions
+being those which can potentially allocate temporary storage). NanoRange fully supports
+this, meaning the vast majority of algorithms can be called at compile-time. For example
 
-(Note that `constexpr` support has not been well tested for all algorithms.
-You may run into bugs, particularly on MSVC, which tends to bail out if
-a `constexpr` function gets too complicated. More extensive testing is 
-planned for a future version.)
+```cpp
+auto sort_copy = [](auto rng) {
+    nano::sort(rng);
+    return rng;
+};
+
+int main()
+{
+    constexpr std::array a{5, 4, 3, 2, 1};
+    constexpr auto b = sort_copy(a);
+
+    static_assert(nano::is_sorted(b));
+}
+```
 
 #### Algorithms status ####
 
@@ -226,7 +238,7 @@ into the former category.
 
 NanoRange is a new library, and certain features haven't been implemented yet.
 
-In particular, NanoRange doesn't yet provide any of the Views from [P0789][P0789].
+In particular, NanoRange doesn't yet provide any of the Views from [P0896].
 These will be added as the library evolves.
 
 There is a [TODO list](TODO.md) which is gradually being migrated
@@ -255,21 +267,18 @@ Having said that, a couple of NanoRange selling points might be:
    changes you'll need to make to your code to upgrade to standard ranges when
    they arrive.
  
- * As an extension, NanoRange's reimplemented algorithms (see above) are all
-   `constexpr`. This is not currently the case for Range-V3.
-
  * There is still a lot to do and probably a lot of bugs to fix, so you might have
    more fun hacking on NanoRange ;-)
 
 ## Ranges papers ##
 
-NanoRange wholly or partially implements the following C++20 proposal papers:
+The Ranges proposals have been consolidated into two main papers:
 
- * [P0898R2][P0898] *Standard library concepts*
- * [P0896R1][P0896] *Merging the Ranges TS*
- * [P1037R0][P1037] *Deep Integration of the Ranges TS*
- * [P0970R1][P0970] *Better, safer range access customization points*
- * [P0789R3][P0789] *Range adaptors and utilities* (only `subrange` so far)
+ * [P0898R3][P0898] *Standard library concepts*
+ * [P0896R2][P0896] *The One Ranges Proposal*
+ 
+ NanoRange fully implements the first, and implements most of the second (except
+ for Views).
 
 ## Stability ##
 
@@ -299,10 +308,7 @@ Many thanks to the following:
 <!-- References -->
 
 [Range-V3]: https://github.com/ericniebler/range-v3/
-[P0898]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0898r2.pdf
-[P0896]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0896r1.pdf
-[P0970]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0970r1.pdf
-[P0789]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0789r3.pdf
-[P1037]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1037r0.pdf
+[P0898]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0898r3.pdf
+[P0896]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0896r2.pdf
 [pdqsort]: https://github.com/orlp/pdqsort
 [vcpkg]: https://github.com/Microsoft/vcpkg
