@@ -50,7 +50,7 @@ inline namespace ranges                                                        \
 #ifdef NANO_HAVE_INLINE_VARS
 #define NANO_INLINE_VAR(type, name)                                            \
     inline namespace function_objects {                                        \
-    inline constexpr type name{};                                              \
+    static inline constexpr type name{};                                       \
     }
 
 #else
