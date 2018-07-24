@@ -31,7 +31,7 @@ struct projected_helper<
 
     // We shouldn't need to define this, as we only need its return type,
     // but GCC gets stroppy sometimes.
-    indirect_result_t<Proj&, I> operator*() const { throw 0; };
+    indirect_result_t<Proj&, I> operator*() const { throw 0; }
 };
 
 template <typename, typename, typename = void>
