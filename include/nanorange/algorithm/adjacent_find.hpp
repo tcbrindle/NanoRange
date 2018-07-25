@@ -38,7 +38,7 @@ private:
             ++next;
         }
 
-        return first;
+        return next;
     }
 
 public:
