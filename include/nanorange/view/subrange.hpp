@@ -81,7 +81,7 @@ struct PairLike_req {
 
     template <typename T>
     auto requires_(T t) -> decltype(
-        valid_expr(std::enable_if_t<Integral<sfinae_tuple_size<T>::value>, int>{},
+        valid_expr(std::enable_if_t<Integral<decltype(sfinae_tuple_size<T>::value)>, int>{},
                    std::enable_if_t<sfinae_tuple_size<T>::value == 2, int>{},
                    decltype(this->test_func<0, T>(std::get<0>(t))){},
                    decltype(this->test_func<1, T>(std::get<1>(t))){}));
