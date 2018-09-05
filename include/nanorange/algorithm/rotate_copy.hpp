@@ -17,7 +17,6 @@ using rotate_copy_result = copy_result<I, O>;
 
 namespace detail {
 
-// FIXME: Use tagged_pair
 struct rotate_copy_fn {
 private:
     template <typename I, typename S, typename O>

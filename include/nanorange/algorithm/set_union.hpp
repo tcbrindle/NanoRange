@@ -17,7 +17,6 @@ using set_union_result = binary_transform_result<I1, I2, O>;
 
 namespace detail {
 
-// FIXME: Use tagged_tuple
 struct set_union_fn {
 private:
     template <typename I1, typename S1, typename I2, typename S2, typename O,
