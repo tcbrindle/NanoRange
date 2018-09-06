@@ -7,7 +7,7 @@
 #ifndef NANORANGE_DETAIL_RANGES_PRIMITIVES_HPP_INCLUDED
 #define NANORANGE_DETAIL_RANGES_PRIMITIVES_HPP_INCLUDED
 
-#include <nanorange/detail/ranges/access.hpp>
+#include <nanorange/detail/ranges/begin_end.hpp>
 
 NANO_BEGIN_NAMESPACE
 
