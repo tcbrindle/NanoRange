@@ -47,8 +47,26 @@ static_assert(InputRange<ranges::istream_range<moveonly>>, "");
 
 TEST_CASE("rng.istream_range")
 {
-    constexpr const char test[] = "abcd3210";
-    std::istringstream ss{test};
-    ::check_equal(ranges::istream_range<moveonly>(ss),
-                  ranges::make_subrange(test, test + sizeof(test) - 1));
+    {
+        constexpr const char test[] = "abcd3210";
+        std::istringstream ss{test};
+        ::check_equal(ranges::istream_range<moveonly>(ss),
+                      ranges::make_subrange(test, test + sizeof(test) - 1));
+    }
+
+    // Default-constructed istream_ranges are empty
+    {
+        ranges::istream_range<int> isr{};
+        CHECK(ranges::distance(isr) == 0);
+    }
+
+    // Default-constructed iterators can be compared
+    {
+        constexpr ranges::istream_range<int>::iterator iter{};
+        constexpr ranges::default_sentinel sent{};
+        CHECK(iter == sent);
+        CHECK(sent == iter);
+        CHECK_FALSE(iter != sent);
+        CHECK_FALSE(sent != iter);
+    }
 }
