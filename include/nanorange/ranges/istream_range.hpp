@@ -64,7 +64,7 @@ public:
 
         friend bool operator==(const iterator& lhs, default_sentinel)
         {
-            return lhs.rng_->done();
+            return lhs.done();
         }
 
         friend bool operator!=(const iterator& lhs, default_sentinel rhs)
@@ -74,7 +74,7 @@ public:
 
         friend bool operator==(default_sentinel, const iterator& rhs)
         {
-            return rhs.rng_->done();
+            return rhs.done();
         }
 
         friend bool operator!=(default_sentinel lhs, const iterator& rhs)
@@ -83,6 +83,11 @@ public:
         }
 
     private:
+        bool done() const
+        {
+            return rng_ == nullptr || rng_->in_stream_ == nullptr;
+        }
+
         istream_range* rng_ = nullptr;
     };
 
@@ -111,10 +116,7 @@ private:
         }
     }
 
-    bool done() const { return in_stream_ == nullptr; }
-
     istream_type* in_stream_ = nullptr;
-    // TODO: wrap this in semiregular once we have it
     T value_{};
 };
 
