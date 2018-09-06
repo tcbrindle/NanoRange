@@ -96,7 +96,7 @@ public:
 
     constexpr istream_range() = default;
 
-    istream_range(istream_type& s)
+    explicit istream_range(istream_type& s)
         : in_stream_(std::addressof(s))
     {
         next();
@@ -106,12 +106,10 @@ public:
 
     sentinel end() { return {}; }
 
-
 private:
     void next()
     {
-        *in_stream_ >> value_;
-        if (in_stream_->fail()) {
+        if (!(*in_stream_ >> value_)) {
             in_stream_ = nullptr;
         }
     }

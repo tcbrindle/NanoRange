@@ -204,7 +204,6 @@ static_assert(!ranges::BidirectionalIterator<int>, "");
 static_assert(ranges::RandomAccessIterator<int*>, "");
 static_assert(!ranges::RandomAccessIterator<int>, "");
 
-// FIXME: Re-enable when we have istream_range
 static_assert(ranges::View<ranges::istream_range<int>>, "");
 static_assert(ranges::InputIterator<ranges::iterator_t<ranges::istream_range<int>>>, "");
 static_assert(!ranges::View<int>, "");
