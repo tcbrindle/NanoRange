@@ -160,6 +160,8 @@ add_executable(test_nanorange
     memory/uninitialized_move.cpp
     memory/uninitialized_value_construct.cpp
 
+    ranges/istream_range.cpp
+
     range_access.cpp
 
     utility/common_type.cpp
