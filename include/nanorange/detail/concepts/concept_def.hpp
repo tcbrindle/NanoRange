@@ -12,6 +12,10 @@
 
 #include <type_traits>
 
+#ifndef __has_builtin
+#define __has_builtin(x) 0
+#endif
+
 // disable buggy compatibility warning about "requires" and "concept" being
 // C++20 keywords.
 #if defined(__clang__)
@@ -21,6 +25,7 @@
     _Pragma("GCC diagnostic ignored \"-Wpragmas\"") \
     _Pragma("GCC diagnostic ignored \"-Wc++2a-compat\"") \
     _Pragma("GCC diagnostic ignored \"-Wfloat-equal\"") \
+    _Pragma("GCC diagnostic ignored \"-Wgnu-zero-variadic-macro-arguments\"") \
     /**/
 #define NANO_PP_IGNORE_CXX2A_COMPAT_END \
     _Pragma("GCC diagnostic pop")
@@ -39,17 +44,6 @@ NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN
 #define NANO_INLINE_VAR inline
 #else
 #define NANO_INLINE_VAR
-#endif
-
-#ifdef __clang__
-#define NANO_DECLARE_CONSTEXPR_IN_CLASS_INIT(...)  constexpr __VA_ARGS__ = {}
-#define NANO_DEFINE_CONSTEXPR_IN_CLASS_INIT(...)  constexpr __VA_ARGS__
-#elif defined(__GNUC__) && __GNUC__ >= 8
-#define NANO_DECLARE_CONSTEXPR_IN_CLASS_INIT(...)  constexpr __VA_ARGS__ = {}
-#define NANO_DEFINE_CONSTEXPR_IN_CLASS_INIT(...)  constexpr __VA_ARGS__
-#else
-#define NANO_DECLARE_CONSTEXPR_IN_CLASS_INIT(...)  __VA_ARGS__
-#define NANO_DEFINE_CONSTEXPR_IN_CLASS_INIT(...)  __VA_ARGS__ {}
 #endif
 
 #ifdef __clang__
@@ -218,26 +212,7 @@ NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN
         NANO_PP_CAT(NANO_PP_DEF_, TPARAM)                                  \
         concept bool NAME = NANO_PP_DEF_IMPL(__VA_ARGS__)(__VA_ARGS__);      \
     }                                                                          \
-    namespace defer = _eager_;                                                 \
-    namespace lazy {                                                           \
-        NANO_PP_CAT(NANO_PP_DEF_, TPARAM)                                  \
-        struct NANO_PP_CAT(NAME, Concept) {                                  \
-            using Concept = NANO_PP_CAT(NAME, Concept);                      \
-            explicit constexpr operator bool() const noexcept {                \
-                return (bool) defer::NAME<NANO_PP_EXPAND ARGS>;              \
-            }                                                                  \
-            constexpr auto operator!() const noexcept {                        \
-                return ::nano::ranges::concepts::detail::Not<Concept>{};             \
-            }                                                                  \
-            template <class That>                                              \
-            constexpr auto operator&&(That) const noexcept {                   \
-                return ::nano::ranges::concepts::detail::And<Concept, That>{};       \
-            }                                                                  \
-        };                                                                     \
-        NANO_PP_CAT(NANO_PP_DEF_, TPARAM)                                  \
-        NANO_INLINE_VAR constexpr auto NAME =                                \
-            NANO_PP_CAT(NAME, Concept)<NANO_PP_EXPAND ARGS>{};             \
-    }                                                                          \
+    namespace lazy = _eager_;                                                  \
     /**/
 #else
 // No requires expression:
@@ -255,7 +230,7 @@ NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN
     (__VA_ARGS__) -> std::enable_if_t<bool(                                    \
         ::nano::ranges::concepts::detail::requires_  NANO_PP_DEF_REQUIRES_BODY     \
     /**/
- #define NANO_PP_DEF_REQUIRES_BODY(...)                                      \
+#define NANO_PP_DEF_REQUIRES_BODY(...)                                      \
     <decltype(__VA_ARGS__, void())>()                                          \
     /**/
 #define NANO_PP_DECL_DEF_IMPL(TPARAM, NAME, ARGS, ...)                       \
@@ -271,11 +246,17 @@ NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN
         struct Eval {                                                          \
             template <class C_ = Concept>                                      \
             static constexpr decltype(                                         \
-                !&C_::template Requires_<NANO_PP_EXPAND ARGS>)               \
+                ::nano::ranges::concepts::detail::gcc_bugs(                          \
+                    &C_::template Requires_<NANO_PP_EXPAND ARGS>))           \
             impl(int) noexcept { return true; }                                \
             static constexpr bool impl(long) noexcept { return false; }        \
             explicit constexpr operator bool() const noexcept {                \
                 return Eval::impl(0);                                          \
+            }                                                                  \
+            template <class PMThis = Concept, bool PMB,                        \
+              class = std::enable_if_t<PMB == (bool) PMThis{}>>                \
+            constexpr operator std::integral_constant<bool, PMB>() const noexcept {\
+                return {};                                                     \
             }                                                                  \
             constexpr auto operator!() const noexcept {                        \
                 return ::nano::ranges::concepts::detail::Not<Eval>{};                \
@@ -283,6 +264,10 @@ NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN
             template <class That>                                              \
             constexpr auto operator&&(That) const noexcept {                   \
                 return ::nano::ranges::concepts::detail::And<Eval, That>{};          \
+            }                                                                  \
+            template <class That>                                              \
+            constexpr auto operator||(That) const noexcept {                   \
+                return ::nano::ranges::concepts::detail::Or<Eval, That>{};           \
             }                                                                  \
         };                                                                     \
     };                                                                         \
@@ -294,7 +279,6 @@ NANO_PP_IGNORE_CXX2A_COMPAT_BEGIN
         NANO_INLINE_VAR constexpr auto NAME =                                \
             NANO_PP_CAT(NAME, Concept)::Eval<NANO_PP_EXPAND ARGS>{};       \
     }                                                                          \
-    namespace defer = lazy;                                                    \
     /**/
 #endif
 
@@ -438,41 +422,86 @@ using bool_ = std::integral_constant<bool, B>;
 
 namespace concepts {
 namespace detail {
+bool gcc_bugs(...);
+
 template <class>
 inline constexpr bool requires_() {
-  return true;
+return true;
 }
+
 template <class T, class U>
 struct And;
+template <class T, class U>
+struct Or;
+
 template <class T>
 struct Not {
-    explicit constexpr operator bool() const noexcept {
-        return !(bool) T{};
-    }
-    constexpr auto operator!() const noexcept {
-        return T{};
-    }
-    template <class That>
-    constexpr auto operator&&(That) const noexcept {
-        return And<Not, That>{};
-    }
-};
-template <class T, class U>
-struct And {
-    static constexpr bool impl(std::false_type) noexcept { return false; }
-    static constexpr bool impl(std::true_type) noexcept { return (bool) U{}; }
-    explicit constexpr operator bool() const noexcept {
-        return And::impl(bool_<(bool) T{}>{});
-    }
-    constexpr auto operator!() const noexcept {
-        return Not<And>{};
-    }
-    template <class That>
-    constexpr auto operator&&(That) const noexcept {
-        return detail::And<And, That>{};
-    }
+explicit constexpr operator bool() const noexcept {
+return !(bool) T{};
+}
+NANO_TEMPLATE (class This = Not, bool B)
+(requires B == (bool) This{})
+constexpr operator std::integral_constant<bool, B>() const noexcept {
+return {};
+}
+constexpr auto operator!() const noexcept {
+return T{};
+}
+template <class That>
+constexpr auto operator&&(That) const noexcept {
+return And<Not, That>{};
+}
+template <class That>
+constexpr auto operator||(That) const noexcept {
+return Or<Not, That>{};
+}
 };
 
+template <class T, class U>
+struct And {
+explicit constexpr operator bool() const noexcept {
+return (bool) std::conditional_t<(bool) T{}, U, std::false_type>{};
+}
+NANO_TEMPLATE (class This = And, bool B)
+(requires B == (bool) This{})
+constexpr operator std::integral_constant<bool, B>() const noexcept {
+return {};
+}
+constexpr auto operator!() const noexcept {
+return Not<And>{};
+}
+template <class That>
+constexpr auto operator&&(That) const noexcept {
+return And<And, That>{};
+}
+template <class That>
+constexpr auto operator||(That) const noexcept {
+return Or<And, That>{};
+}
+};
+
+template <class T, class U>
+struct Or {
+explicit constexpr operator bool() const noexcept {
+return (bool) std::conditional_t<(bool) T{}, std::true_type, U>{};
+}
+NANO_TEMPLATE (class This = Or, bool B)
+(requires B == (bool) This{})
+constexpr operator std::integral_constant<bool, B>() const noexcept {
+return {};
+}
+constexpr auto operator!() const noexcept {
+return Not<Or>{};
+}
+template <class That>
+constexpr auto operator&&(That) const noexcept {
+return And<Or, That>{};
+}
+template <class That>
+constexpr auto operator||(That) const noexcept {
+return Or<Or, That>{};
+}
+};
 } // namespace detail
 } // namespace concepts
 
@@ -480,23 +509,23 @@ namespace isolated {
 
 template<class T0>
 constexpr auto expAnd(T0&& t0) {
-  return (T0&&)t0;
+return (T0&&)t0;
 }
 template<class T0, class... TN>
-constexpr auto expAnd(T0&& t0, TN&&... tn) {
-  return concepts::detail::And<T0, decltype(isolated::expAnd((TN&&)tn...))>{};
+constexpr auto expAnd(T0&&, TN&&... tn) {
+return concepts::detail::And<T0, decltype(isolated::expAnd((TN&&)tn...))>{};
 }
 
 }
 
 template<class... TN>
 constexpr auto expAnd(TN&&... tn) {
-  return isolated::expAnd((TN&&)tn...);
+return isolated::expAnd((TN&&)tn...);
 }
 
 template <class T>
 constexpr bool implicitly_convertible_to(T) {
-  return true;
+return true;
 }
 #ifdef __clang__
 template <bool B>
@@ -506,7 +535,6 @@ std::enable_if_t<B> requires_()
 template <bool B>
 NANO_INLINE_VAR constexpr std::enable_if_t<B, int> requires_ = 0;
 #endif
-
 }} // namespace nano::ranges
 
 NANO_PP_IGNORE_CXX2A_COMPAT_END
