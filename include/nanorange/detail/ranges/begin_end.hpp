@@ -10,6 +10,10 @@
 #include <nanorange/detail/functional/decay_copy.hpp>
 #include <nanorange/detail/iterator/concepts.hpp>
 
+#ifdef NANO_HAVE_CPP17
+#include <string_view>
+#endif
+
 NANO_BEGIN_NAMESPACE
 
 // [range.access.begin]
@@ -34,6 +38,18 @@ private:
     {
         return (t) + 0;
     }
+
+    // Specialisation for rvalue string_views in C++17, as we can't add
+    // functions to namespace std
+#ifdef NANO_HAVE_CPP17
+    template <typename C, typename T>
+    static constexpr auto
+    impl(std::basic_string_view<C, T> sv, priority_tag<2>) noexcept
+        -> decltype(sv.begin())
+    {
+        return sv.begin();
+    }
+#endif
 
     template <typename T>
     static constexpr auto
@@ -89,6 +105,16 @@ private:
     {
         return t + N;
     }
+
+#ifdef NANO_HAVE_CPP17
+    template <typename C, typename T>
+    static constexpr auto
+    impl(std::basic_string_view<C, T> sv, priority_tag<2>) noexcept
+        -> decltype(sv.end())
+    {
+        return sv.end();
+    }
+#endif
 
     template <typename T,
               typename S = decltype(decay_copy(std::declval<T&>().end())),
