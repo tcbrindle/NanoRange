@@ -19,7 +19,7 @@ private:
     template <typename I1, typename S1, typename I2, typename S2, typename Pred,
               typename Proj1, typename Proj2>
     static constexpr bool impl4(I1 first1, S1 last1, I2 first2, S2 last2,
-                                Pred pred, Proj1 proj1, Proj2 proj2)
+                                Pred& pred, Proj1& proj1, Proj2& proj2)
     {
         while (first1 != last1 && first2 != last2) {
             if (!nano::invoke(pred, nano::invoke(proj1, *first1),
@@ -36,7 +36,7 @@ private:
     template <typename I1, typename S1, typename I2, typename Pred,
               typename Proj1, typename Proj2>
     static constexpr bool impl3(I1 first1, S1 last1, I2 first2, Pred pred,
-                                Proj1 proj1, Proj2 proj2)
+                                Proj1& proj1, Proj2& proj2)
     {
         while (first1 != last1) {
             if (!nano::invoke(pred, nano::invoke(proj1, *first1),
@@ -71,8 +71,8 @@ public:
         // Ranges are the same size, so call the 3-legged version
         // and save ourselves a comparison
         return equal_fn::impl3(std::move(first1), std::move(last1),
-                               std::move(first2), std::move(pred),
-                               std::move(proj1), std::move(proj2));
+                               std::move(first2), pred,
+                               proj1, proj2);
     }
 
     // Four-legged, unsized sentinels
@@ -90,8 +90,7 @@ public:
     {
         return equal_fn::impl4(std::move(first1), std::move(last1),
                                std::move(first2), std::move(last2),
-                               std::move(pred), std::move(proj1),
-                               std::move(proj2));
+                               pred, proj1, proj2);
     }
 
     // Three legged
@@ -106,8 +105,7 @@ public:
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
         return equal_fn::impl3(std::move(first1), std::move(last1),
-                               std::forward<I2>(first2), std::move(pred),
-                               std::move(proj1), std::move(proj2));
+                               std::forward<I2>(first2), pred, proj1, proj2);
     }
 
     // Two ranges, both sized
@@ -127,8 +125,7 @@ public:
         }
 
         return equal_fn::impl3(nano::begin(rng1), nano::end(rng1),
-                               nano::begin(rng2), std::move(pred),
-                               std::move(proj1), std::move(proj2));
+                               nano::begin(rng2), pred, proj1, proj2);
     }
 
     // Two ranges, not both sized
@@ -145,8 +142,7 @@ public:
     {
         return equal_fn::impl4(nano::begin(rng1), nano::end(rng1),
                                nano::begin(rng2), nano::end(rng2),
-                               std::move(pred), std::move(proj1),
-                               std::move(proj2));
+                               pred, proj1, proj2);
     }
 
     // Range and a half
@@ -161,8 +157,7 @@ public:
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
         return equal_fn::impl3(nano::begin(rng1), nano::end(rng1),
-                               std::forward<I2>(first2), std::move(pred),
-                               std::move(proj1), std::move(proj2));
+                               std::forward<I2>(first2), pred, proj1, proj2);
     }
 };
 

@@ -35,8 +35,7 @@ private:
         !Same<I, S>, reverse_copy_result<I, O>>
     impl(I first, S bound, O result)
     {
-        I last = nano::next(first, bound);
-        return reverse_copy_fn::impl(std::move(first), std::move(last),
+        return reverse_copy_fn::impl(std::move(first), nano::next(first, bound),
                                      std::move(result));
     }
 

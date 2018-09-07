@@ -24,8 +24,7 @@ private:
     impl(I first, I middle, S last, O result)
     {
         auto ret = nano::copy(middle, std::move(last), std::move(result));
-        ret.out = nano::copy(std::move(first), std::move(middle),
-                                ret.out).out;
+        ret.out = nano::copy(std::move(first), std::move(middle), ret.out).out;
         return ret;
     }
 

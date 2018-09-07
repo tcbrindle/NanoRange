@@ -24,7 +24,7 @@ private:
         using param_t = typename distr_t::param_type;
 
         distr_t D;
-        auto n = last - first; // OK, we have SizedSentinel
+        const auto n = last - first; // OK, we have SizedSentinel
 
         for (diff_t i = 0; i < n; i++) {
             nano::iter_swap(first + i, first + D(g, param_t(0, i)));

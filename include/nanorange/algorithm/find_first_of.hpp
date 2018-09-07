@@ -20,7 +20,7 @@ private:
     template <typename I1, typename S1, typename I2, typename S2, typename Pred,
               typename Proj1, typename Proj2>
     static constexpr I1 impl(I1 first1, S1 last1, I2 first2, S2 last2,
-                             Pred pred, Proj1 proj1, Proj2 proj2)
+                             Pred& pred, Proj1& proj1, Proj2& proj2)
     {
         for (; first1 != last1; ++first1) {
             for (I2 it = first2; it != last2; ++it) {
@@ -48,8 +48,7 @@ public:
     {
         return find_first_of_fn::impl(std::move(first1), std::move(last1),
                                       std::move(first2), std::move(last2),
-                                      std::move(pred), std::move(proj1),
-                                      std::move(proj2));
+                                      pred, proj1, proj2);
     }
 
     template <typename Rng1, typename Rng2, typename Proj1 = identity,
@@ -64,8 +63,7 @@ public:
     {
         return find_first_of_fn::impl(nano::begin(rng1), nano::end(rng1),
                                       nano::begin(rng2), nano::end(rng2),
-                                      std::move(pred), std::move(proj1),
-                                      std::move(proj2));
+                                      pred, proj1, proj2);
     }
 };
 
