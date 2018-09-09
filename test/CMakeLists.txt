@@ -167,18 +167,25 @@ add_executable(test_nanorange
     utility/common_type.cpp
     utility/concepts.cpp
 
-    #view/bounded_view.cpp
+    #view/common_view.cpp
     #view/counted_view.cpp
+    #view/drop_view.cpp
+    #view/drop_while_view.cpp
+    #view/empty_view.cpp
     #view/filter_view.cpp
+    #view/indirect_view.cpp
     #view/join_view.cpp
     #view/move_view.cpp
+    #view/ref_view.cpp
     #view/repeat_n_view.cpp
     #view/repeat_view.cpp
     #view/reverse_view.cpp
     #view/span.cpp
     #view/split_view.cpp
     view/subrange.cpp
+    #view/take_exactly_view.cpp
     #view/take_view.cpp
+    #view/take_while_view.cpp
     #view/transform_view.cpp
 )
 target_compile_definitions(test_nanorange PRIVATE "-DNANORANGE_NO_DEPRECATION_WARNINGS")
