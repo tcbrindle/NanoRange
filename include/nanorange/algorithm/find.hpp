@@ -21,7 +21,7 @@ private:
     friend struct find_if_not_fn;
 
     template <typename I, typename S, typename Pred, typename Proj>
-    static constexpr I impl(I first, S last, Pred pred, Proj proj)
+    static constexpr I impl(I first, S last, Pred& pred, Proj& proj)
     {
         while (first != last) {
             if (nano::invoke(pred, nano::invoke(proj, *first))) {
@@ -40,8 +40,7 @@ public:
         I>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
-        return find_if_fn::impl(std::move(first), std::move(last),
-                                std::move(pred), std::move(proj));
+        return find_if_fn::impl(std::move(first), std::move(last), pred, proj);
     }
 
     template <typename Rng, typename Proj = identity, typename Pred>
@@ -51,8 +50,7 @@ public:
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
-        return find_if_fn::impl(nano::begin(rng), nano::end(rng),
-                                std::move(pred), std::move(proj));
+        return find_if_fn::impl(nano::begin(rng), nano::end(rng), pred, proj);
     }
 };
 } // namespace detail
@@ -82,8 +80,8 @@ public:
         I>
     operator()(I first, S last, const T& value, Proj proj = Proj{}) const
     {
-        return find_if_fn::impl(std::move(first), std::move(last),
-                                equal_to_pred<T>{value}, std::move(proj));
+        const equal_to_pred<T> pred{value};
+        return find_if_fn::impl(std::move(first), std::move(last), pred, proj);
     }
 
     template <typename Rng, typename T, typename Proj = identity>
@@ -94,8 +92,8 @@ public:
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
     {
-        return find_if_fn::impl(nano::begin(rng), nano::end(rng),
-                                equal_to_pred<T>{value}, std::move(proj));
+        const equal_to_pred<T> pred{value};
+        return find_if_fn::impl(nano::begin(rng), nano::end(rng), pred, proj);
     }
 };
 } // namespace detail
@@ -125,8 +123,9 @@ public:
         I>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
+        const auto find_if_pred = not_pred<Pred>{pred};
         return find_if_fn::impl(std::move(first), std::move(last),
-                                not_pred<Pred>{pred}, std::move(proj));
+                                find_if_pred, proj);
     }
 
     template <typename Rng, typename Proj = identity, typename Pred>
@@ -136,8 +135,9 @@ public:
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
+        const auto find_if_pred = not_pred<Pred>{pred};
         return find_if_fn::impl(nano::begin(rng), nano::end(rng),
-                                not_pred<Pred>{pred}, std::move(proj));
+                                find_if_pred, proj);
     }
 };
 } // namespace detail

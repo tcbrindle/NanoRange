@@ -7,7 +7,7 @@
 #ifndef NANORANGE_DETAIL_RANGES_CONCEPTS_HPP_INCLUDED
 #define NANORANGE_DETAIL_RANGES_CONCEPTS_HPP_INCLUDED
 
-#include <nanorange/detail/ranges/access.hpp>
+#include <nanorange/detail/ranges/begin_end.hpp>
 #include <nanorange/detail/ranges/primitives.hpp>
 
 // These are, sadly, needed for view-predicate specialisations,

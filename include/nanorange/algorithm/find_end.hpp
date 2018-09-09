@@ -16,8 +16,6 @@ NANO_BEGIN_NAMESPACE
 // [ranges.alg.find.end]
 namespace detail {
 
-// FIXME: Update to P0896R2 (subrange, second projection)
-
 // TODO: For BiDir iterators, we can be smarter and search backwards
 struct find_end_fn {
 private:

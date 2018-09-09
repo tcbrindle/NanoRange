@@ -17,6 +17,7 @@
 
 #ifdef NANO_HAVE_CPP17
 #include <string_view>
+#include <nanorange/algorithm/find.hpp>
 #endif
 
 #include "catch.hpp"
@@ -26,8 +27,7 @@ namespace {
 namespace ranges = nano;
 
 void test_range_access_ambiguity() {
-//	std::vector<ranges::reverse_iterator<int*>> vri{};
-    std::vector<std::reverse_iterator<int*>> vri{};
+	std::vector<ranges::reverse_iterator<int*>> vri{};
 	using namespace ranges;
 	(void)begin(vri);
 	(void)end(vri);
@@ -185,8 +185,7 @@ static_assert(ranges::Iterator<I>, "");
 static_assert(ranges::Iterator<CI>, "");
 
 void test_string_view_p0970() {
-	// FIXME: P0970
-#if 0 && defined(NANO_HAVE_CPP17)
+#if defined(NANO_HAVE_CPP17)
 	// basic_string_views are non-dangling
 	using I = ranges::iterator_t<std::string_view>;
 	static_assert(ranges::Same<I, decltype(ranges::begin(std::declval<std::string_view>()))>);

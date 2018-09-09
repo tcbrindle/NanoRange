@@ -20,7 +20,7 @@ private:
     friend struct unique_fn;
 
     template <typename I, typename S, typename Proj, typename Pred>
-    static constexpr I impl(I first, S last, Pred pred, Proj proj)
+    static constexpr I impl(I first, S last, Pred& pred, Proj& proj)
     {
         if (first == last) {
             return first;
@@ -50,7 +50,7 @@ public:
     operator()(I first, S last, Pred pred = Pred{}, Proj proj = Proj{}) const
     {
         return adjacent_find_fn::impl(std::move(first), std::move(last),
-                                      std::move(pred), std::move(proj));
+                                      pred, proj);
     }
 
     template <typename Rng, typename Proj = identity,
@@ -62,7 +62,7 @@ public:
     operator()(Rng&& rng, Pred pred = Pred{}, Proj proj = Proj{}) const
     {
         return adjacent_find_fn::impl(nano::begin(rng), nano::end(rng),
-                                      std::move(pred), std::move(proj));
+                                      pred, proj);
     }
 };
 

@@ -18,7 +18,7 @@ namespace detail {
 struct all_of_fn {
 private:
     template <typename I, typename S, typename Proj, typename Pred>
-    static constexpr bool impl(I first, S last, Pred pred, Proj proj)
+    static constexpr bool impl(I first, S last, Pred& pred, Proj& proj)
     {
         while (first != last) {
             if (!nano::invoke(pred, nano::invoke(proj, *first))) {
@@ -38,7 +38,7 @@ public:
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
         return all_of_fn::impl(std::move(first), std::move(last),
-                               std::move(pred), std::move(proj));
+                               pred, proj);
     }
 
     template <typename Rng, typename Proj = identity, typename Pred>
@@ -49,7 +49,7 @@ public:
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return all_of_fn::impl(nano::begin(rng), nano::end(rng),
-                               std::move(pred), std::move(proj));
+                               pred, proj);
     }
 };
 
