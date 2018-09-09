@@ -7,6 +7,7 @@
 #ifndef NANORANGE_VIEW_HPP_INCLUDED
 #define NANORANGE_VIEW_HPP_INCLUDED
 
+#include <nanorange/view/all.hpp>
 #include <nanorange/view/interface.hpp>
 #include <nanorange/view/subrange.hpp>
 
