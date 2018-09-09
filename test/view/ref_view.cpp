@@ -10,24 +10,20 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <stl2/view/ref.hpp>
+#include <nanorange/detail/view/ref.hpp>
 #include <vector>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "../test_utils.hpp"
-#include <stl2/detail/algorithm/transform.hpp>
 
-namespace view = __stl2::view::ext;
-
-int main()
+TEST_CASE("view.ref")
 {
 	auto rng = std::vector<int>(10, 0);
 	auto iota = 0;
-	for (auto&& i : rng | view::ref) {
+	//for (auto&& i : rng | view::ref) {
+	for (auto&& i : nano::detail::make_ref_view(rng)) {
 		i += iota;
 		++iota;
 	}
-	CHECK_EQUAL(rng, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
-
-	return ::test_result();
+	::check_equal(rng, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
 }
 

@@ -176,7 +176,7 @@ add_executable(test_nanorange
     #view/indirect_view.cpp
     #view/join_view.cpp
     #view/move_view.cpp
-    #view/ref_view.cpp
+    view/ref_view.cpp
     #view/repeat_n_view.cpp
     #view/repeat_view.cpp
     #view/reverse_view.cpp
