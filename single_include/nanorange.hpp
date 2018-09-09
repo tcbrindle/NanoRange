@@ -2608,7 +2608,7 @@ struct projected_helper<
 
     // We shouldn't need to define this, as we only need its return type,
     // but GCC gets stroppy sometimes.
-    indirect_result_t<Proj&, I> operator*() const { throw 0; };
+    indirect_result_t<Proj&, I> operator*() const { throw 0; }
 };
 
 template <typename, typename, typename = void>
@@ -2700,6 +2700,15 @@ NANO_END_NAMESPACE
 #ifndef NANORANGE_DETAIL_RANGES_ACCESS_HPP_INCLUDED
 #define NANORANGE_DETAIL_RANGES_ACCESS_HPP_INCLUDED
 
+// nanorange/detail/ranges/begin_end.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_DETAIL_RANGES_BEGIN_END_HPP_INCLUDED
+#define NANORANGE_DETAIL_RANGES_BEGIN_END_HPP_INCLUDED
+
 // nanorange/detail/functional/decay_copy.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -2733,7 +2742,9 @@ NANO_END_NAMESPACE
 
 
 
-#include <iterator> // for make_reverse_iterator
+#ifdef NANO_HAVE_CPP17
+#include <string_view>
+#endif
 
 NANO_BEGIN_NAMESPACE
 
@@ -2742,7 +2753,6 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 namespace begin_ {
 
-// MSVC doesn't mind this for some reason
 template <typename T>
 void begin(T&&) = delete;
 
@@ -2752,7 +2762,7 @@ void begin(std::initializer_list<T>&&) = delete;
 struct fn {
 private:
     template <typename T, std::size_t N>
-    static constexpr void impl(T (&&)[N], priority_tag<2>) = delete;
+    static constexpr void impl(T(&&)[N], priority_tag<2>) = delete;
 
     template <typename T, std::size_t N>
     static constexpr auto impl(T (&t)[N], priority_tag<2>) noexcept
@@ -2760,6 +2770,18 @@ private:
     {
         return (t) + 0;
     }
+
+    // Specialisation for rvalue string_views in C++17, as we can't add
+    // functions to namespace std
+#ifdef NANO_HAVE_CPP17
+    template <typename C, typename T>
+    static constexpr auto
+    impl(std::basic_string_view<C, T> sv, priority_tag<2>) noexcept
+        -> decltype(sv.begin())
+    {
+        return sv.begin();
+    }
+#endif
 
     template <typename T>
     static constexpr auto
@@ -2807,7 +2829,7 @@ void end(std::initializer_list<T>&&) = delete;
 struct fn {
 private:
     template <typename T, std::size_t N>
-    static constexpr void impl(T (&&)[N], priority_tag<2>) = delete;
+    static constexpr void impl(T(&&)[N], priority_tag<2>) = delete;
 
     template <typename T, std::size_t N>
     static constexpr auto impl(T (&t)[N], priority_tag<2>) noexcept
@@ -2815,6 +2837,16 @@ private:
     {
         return t + N;
     }
+
+#ifdef NANO_HAVE_CPP17
+    template <typename C, typename T>
+    static constexpr auto
+    impl(std::basic_string_view<C, T> sv, priority_tag<2>) noexcept
+        -> decltype(sv.end())
+    {
+        return sv.end();
+    }
+#endif
 
     template <typename T,
               typename S = decltype(decay_copy(std::declval<T&>().end())),
@@ -2907,174 +2939,33 @@ struct fn {
 
 NANO_INLINE_VAR(detail::cend_::fn, cend)
 
-namespace detail {
-namespace rbegin_ {
-
-template <typename T>
-void rbegin(T&&) = delete;
-
-// second poison pill needed for MSVC
-template <typename T>
-void rbegin(const T&&) = delete;
-
-struct fn {
-private:
-    template <typename T,
-              typename I = decltype(decay_copy(std::declval<T&>().rbegin()))>
-    static constexpr auto
-    impl(T& t, priority_tag<2>) noexcept(noexcept(decay_copy(t.rbegin())))
-        -> std::enable_if_t<Iterator<I>, I>
-    {
-        return t.rbegin();
-    }
-
-    template <typename T,
-              typename I = decltype(decay_copy(rbegin(std::declval<T&&>())))>
-    static constexpr auto impl(T&& t, priority_tag<1>) noexcept(
-        noexcept(decay_copy(rbegin(std::forward<T>(t)))))
-        -> std::enable_if_t<Iterator<I>, I>
-    {
-        return rbegin(std::forward<T>(t));
-    }
-
-    template <typename T,
-              typename I = decltype(ranges::begin(std::declval<T&&>())),
-              typename S = decltype(ranges::end(std::declval<T&&>()))>
-    static constexpr auto impl(T&& t, priority_tag<0>) noexcept(
-        noexcept(std::make_reverse_iterator(ranges::end(std::forward<T>(t)))))
-        -> std::enable_if_t<Same<I, S> && BidirectionalIterator<I>,
-                            decltype(std::make_reverse_iterator(
-                                ranges::end(std::forward<T>(t))))>
-    {
-        return std::make_reverse_iterator(ranges::end(std::forward<T>(t)));
-    }
-
-public:
-    template <typename T>
-    constexpr auto operator()(T&& t) const
-        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<2>{})))
-            -> decltype(fn::impl(std::forward<T>(t), priority_tag<2>{}))
-    {
-        return fn::impl(std::forward<T>(t), priority_tag<2>{});
-    }
-};
-
-} // namespace rbegin_
-} // namespace detail
-
-NANO_INLINE_VAR(detail::rbegin_::fn, rbegin)
-
-namespace detail {
-namespace rend_ {
-
-template <typename T>
-void rend(T&&) = delete;
-
-template <typename T>
-void rend(const T&&) = delete;
-
-struct fn {
-private:
-    template <typename T,
-              typename I = decltype(ranges::begin(std::declval<T&>())),
-              typename S = decltype(decay_copy(std::declval<T&>().rend()))>
-    static constexpr auto
-    impl(T& t, priority_tag<2>) noexcept(noexcept(decay_copy(t.rend())))
-        -> std::enable_if_t<Sentinel<S, I>, S>
-    {
-        return t.rend();
-    }
-
-    template <typename T,
-              typename I = decltype(ranges::begin(std::declval<T&&>())),
-              typename S = decltype(decay_copy(rend(std::declval<T&&>())))>
-    static constexpr auto impl(T&& t, priority_tag<1>) noexcept(
-        noexcept(decay_copy(rend(std::forward<T>(t)))))
-        -> std::enable_if_t<Sentinel<S, I>, S>
-    {
-        return rend(std::forward<T>(t));
-    }
-
-    template <typename T,
-              typename I = decltype(ranges::begin(std::declval<T&&>())),
-              typename S = decltype(ranges::end(std::declval<T&&>()))>
-    static constexpr auto impl(T&& t, priority_tag<0>) noexcept(
-        noexcept(std::make_reverse_iterator(ranges::begin(std::forward<T>(t)))))
-        -> std::enable_if_t<Same<I, S> && BidirectionalIterator<I>,
-                            decltype(std::make_reverse_iterator(
-                                ranges::begin(std::forward<T>(t))))>
-    {
-        return std::make_reverse_iterator(ranges::begin(std::forward<T>(t)));
-    }
-
-public:
-    template <typename T>
-    constexpr auto operator()(T&& t) const
-        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<2>{})))
-            -> decltype(fn::impl(std::forward<T>(t), priority_tag<2>{}))
-    {
-        return fn::impl(std::forward<T>(t), priority_tag<2>{});
-    }
-};
-
-} // namespace rend_
-} // namespace detail
-
-NANO_INLINE_VAR(detail::rend_::fn, rend)
-
-namespace detail {
-namespace crbegin_ {
-
-struct fn {
-    template <typename T>
-    constexpr auto operator()(const T& t) const
-        noexcept(noexcept(ranges::rbegin(t))) -> decltype(ranges::rbegin(t))
-    {
-        return ranges::rbegin(t);
-    }
-
-    template <typename T>
-    constexpr auto operator()(const T&& t) const
-        noexcept(noexcept(ranges::rbegin(static_cast<const T&&>(t))))
-            -> decltype(ranges::rbegin(static_cast<const T&&>(t)))
-    {
-        return ranges::rbegin(static_cast<const T&&>(t));
-    }
-};
-
-} // namespace crbegin_
-} // namespace detail
-
-NANO_INLINE_VAR(detail::crbegin_::fn, crbegin)
-
-namespace detail {
-namespace crend_ {
-
-struct fn {
-    template <typename T>
-    constexpr auto operator()(const T& t) const
-        noexcept(noexcept(ranges::rend(t))) -> decltype(ranges::rend(t))
-    {
-        return ranges::rend(t);
-    }
-
-    template <typename T>
-    constexpr auto operator()(const T&& t) const
-        noexcept(noexcept(ranges::rend(static_cast<const T&&>(t))))
-            -> decltype(ranges::rend(static_cast<const T&&>(t)))
-    {
-        return ranges::rend(static_cast<const T&&>(t));
-    }
-};
-
-} // namespace crend_
-} // namespace detail
-
-NANO_INLINE_VAR(detail::crend_::fn, crend)
-
 NANO_END_NAMESPACE
 
 #endif
+
+// nanorange/iterator/reverse_iterator.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ITERATOR_REVERSE_ITERATOR_HPP_INCLUDED
+#define NANORANGE_ITERATOR_REVERSE_ITERATOR_HPP_INCLUDED
+
+
+
+
+
+// nanorange/iterator/operations.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ITERATOR_OPERATIONS_HPP_INCLUDED
+#define NANORANGE_ITERATOR_OPERATIONS_HPP_INCLUDED
+
+
 
 // nanorange/detail/ranges/concepts.hpp
 //
@@ -3563,19 +3454,6 @@ NANO_END_NAMESPACE
 #endif
 
 
-// nanorange/iterator/operations.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ITERATOR_OPERATIONS_HPP_INCLUDED
-#define NANORANGE_ITERATOR_OPERATIONS_HPP_INCLUDED
-
-
-
-
-
 
 NANO_BEGIN_NAMESPACE
 
@@ -3868,6 +3746,384 @@ NANO_END_NAMESPACE
 
 #endif
 
+
+NANO_BEGIN_NAMESPACE
+
+namespace reverse_iterator_ {
+
+template <typename I>
+class reverse_iterator {
+
+    static_assert(BidirectionalIterator<I>,
+                  "Template argument to reverse_iterator must model "
+                  "BidirectionalIterator");
+
+public:
+    using iterator_type = I;
+    using difference_type = iter_difference_t<I>;
+    using value_type = iter_value_t<I>;
+    using iterator_category = detail::legacy_iterator_category_t<I>;
+    using reference = iter_reference_t<I>;
+    using pointer = I;
+
+    constexpr reverse_iterator() = default;
+
+    explicit constexpr reverse_iterator(I x) : current_(std::move(x)) {}
+
+    template <typename U, std::enable_if_t<ConvertibleTo<U, I>, int> = 0>
+
+    constexpr reverse_iterator(const reverse_iterator<U>& i)
+        : current_(i.base())
+    {}
+
+    template <typename U, std::enable_if_t<ConvertibleTo<U, I>, int> = 0>
+
+    constexpr reverse_iterator& operator=(const reverse_iterator<U>& i)
+    {
+        current_ = i.base();
+        return *this;
+    }
+
+    constexpr I base() const { return current_; }
+
+    constexpr reference operator*() const { return *prev(current_); }
+
+    constexpr pointer operator->() const { return prev(current_); }
+
+    constexpr reverse_iterator& operator++()
+    {
+        --current_;
+        return *this;
+    }
+
+    constexpr reverse_iterator operator++(int)
+    {
+        reverse_iterator tmp = *this;
+        --current_;
+        return tmp;
+    }
+
+    constexpr reverse_iterator& operator--()
+    {
+        ++current_;
+        return *this;
+    }
+
+    constexpr reverse_iterator operator--(int)
+    {
+        reverse_iterator tmp = *this;
+        ++current_;
+        return tmp;
+    }
+
+    template <typename II = I>
+    constexpr std::enable_if_t<RandomAccessIterator<II>, reverse_iterator>
+    operator+(difference_type n) const
+    {
+        return reverse_iterator(current_ - n);
+    }
+
+    template <typename II = I>
+    constexpr std::enable_if_t<RandomAccessIterator<II>, reverse_iterator&>
+    operator+=(difference_type n)
+    {
+        current_ -= n;
+        return *this;
+    }
+
+    template <typename II = I>
+    constexpr std::enable_if_t<RandomAccessIterator<II>, reverse_iterator>
+    operator-(difference_type n) const
+    {
+        return reverse_iterator(current_ + n);
+    }
+
+    template <typename II = I>
+    constexpr std::enable_if_t<RandomAccessIterator<II>, reverse_iterator&>
+    operator-=(difference_type n)
+    {
+        current_ += n;
+        return *this;
+    }
+
+    template <typename II = I>
+    constexpr std::enable_if_t<RandomAccessIterator<II>, reference>
+    operator[](difference_type n) const
+    {
+        return current_[-n - 1];
+    }
+
+    friend constexpr iter_rvalue_reference_t<I>
+    iter_move(const reverse_iterator& i) noexcept(
+        noexcept(ranges::iter_move(std::declval<I&>())) &&
+        noexcept(--std::declval<I&>()) &&
+        std::is_nothrow_copy_constructible<I>::value)
+    {
+        return ranges::iter_move(prev(i.current_));
+    }
+
+    template <typename I2>
+    friend constexpr auto
+    iter_swap(const reverse_iterator& x,
+              const reverse_iterator<I2>&
+                  y) noexcept(noexcept(ranges::iter_swap(std::declval<I>(),
+                                                         std::declval<I>())) &&
+                              noexcept(--std::declval<I&>()))
+        -> std::enable_if_t<IndirectlySwappable<I2, I>>
+
+    {
+        ranges::iter_swap(prev(x.current_), prev(y.base()));
+    }
+
+private:
+    I current_{};
+};
+
+template <typename I1, typename I2>
+constexpr std::enable_if_t<EqualityComparableWith<I1, I2>, bool>
+operator==(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
+{
+    return x.base() == y.base();
+}
+
+template <typename I1, typename I2>
+constexpr std::enable_if_t<EqualityComparableWith<I1, I2>, bool>
+operator!=(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
+{
+    return x.base() != y.base();
+}
+
+template <typename I1, typename I2>
+constexpr std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+operator<(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
+{
+    return x.base() > y.base();
+}
+
+template <typename I1, typename I2>
+constexpr std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+operator>(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
+{
+    return x.base() < y.base();
+}
+
+template <typename I1, typename I2>
+constexpr std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+operator>=(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
+{
+    return x.base() <= y.base();
+}
+
+template <typename I1, typename I2>
+constexpr std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+operator<=(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
+{
+    return x.base() >= y.base();
+}
+
+template <typename I1, typename I2>
+constexpr std::enable_if_t<SizedSentinel<I1, I2>, iter_difference_t<I2>>
+operator-(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
+{
+    return y.base() - x.base();
+}
+
+template <typename I>
+constexpr std::enable_if_t<RandomAccessIterator<I>, reverse_iterator<I>>
+operator+(iter_difference_t<I> n, const reverse_iterator<I>& x)
+{
+    return reverse_iterator<I>(x.base() - n);
+}
+
+} // namespace reverse_iterator_
+
+using reverse_iterator_::reverse_iterator;
+
+template <typename I>
+constexpr std::enable_if_t<BidirectionalIterator<I>, reverse_iterator<I>>
+make_reverse_iterator(I i)
+{
+    return reverse_iterator<I>(std::move(i));
+}
+
+NANO_END_NAMESPACE
+
+#endif
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+namespace rbegin_ {
+
+template <typename T>
+void rbegin(T&&) = delete;
+
+template <typename T>
+void rbegin(std::initializer_list<T>) = delete;
+
+struct fn {
+private:
+    template <typename T,
+              typename I = decltype(decay_copy(std::declval<T&>().rbegin()))>
+    static constexpr auto
+    impl(T& t, priority_tag<2>) noexcept(noexcept(decay_copy(t.rbegin())))
+        -> std::enable_if_t<Iterator<I>, I>
+    {
+        return t.rbegin();
+    }
+
+    template <typename T,
+              typename I = decltype(decay_copy(rbegin(std::declval<T&&>())))>
+    static constexpr auto impl(T&& t, priority_tag<1>) noexcept(
+        noexcept(decay_copy(rbegin(std::forward<T>(t)))))
+        -> std::enable_if_t<Iterator<I>, I>
+    {
+        return rbegin(std::forward<T>(t));
+    }
+
+    template <typename T,
+              typename I = decltype(ranges::begin(std::declval<T&&>())),
+              typename S = decltype(ranges::end(std::declval<T&&>()))>
+    static constexpr auto impl(T&& t, priority_tag<0>) noexcept(
+        noexcept(ranges::make_reverse_iterator(ranges::end(std::forward<T>(t)))))
+        -> std::enable_if_t<Same<I, S> && BidirectionalIterator<I>,
+                            decltype(ranges::make_reverse_iterator(
+                                ranges::end(std::forward<T>(t))))>
+    {
+        return ranges::make_reverse_iterator(ranges::end(std::forward<T>(t)));
+    }
+
+public:
+    template <typename T>
+    constexpr auto operator()(T&& t) const
+        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<2>{})))
+            -> decltype(fn::impl(std::forward<T>(t), priority_tag<2>{}))
+    {
+        return fn::impl(std::forward<T>(t), priority_tag<2>{});
+    }
+};
+
+} // namespace rbegin_
+} // namespace detail
+
+NANO_INLINE_VAR(detail::rbegin_::fn, rbegin)
+
+namespace detail {
+namespace rend_ {
+
+template <typename T>
+void rend(T&&) = delete;
+
+template <typename T>
+void rend(std::initializer_list<T>) = delete;
+
+struct fn {
+private:
+    template <typename T,
+              typename I = decltype(ranges::begin(std::declval<T&>())),
+              typename S = decltype(decay_copy(std::declval<T&>().rend()))>
+    static constexpr auto
+    impl(T& t, priority_tag<2>) noexcept(noexcept(decay_copy(t.rend())))
+        -> std::enable_if_t<Sentinel<S, I>, S>
+    {
+        return t.rend();
+    }
+
+    template <typename T,
+              typename I = decltype(ranges::begin(std::declval<T&&>())),
+              typename S = decltype(decay_copy(rend(std::declval<T&&>())))>
+    static constexpr auto impl(T&& t, priority_tag<1>) noexcept(
+        noexcept(decay_copy(rend(std::forward<T>(t)))))
+        -> std::enable_if_t<Sentinel<S, I>, S>
+    {
+        return rend(std::forward<T>(t));
+    }
+
+    template <typename T,
+              typename I = decltype(ranges::begin(std::declval<T&&>())),
+              typename S = decltype(ranges::end(std::declval<T&&>()))>
+    static constexpr auto impl(T&& t, priority_tag<0>) noexcept(
+        noexcept(ranges::make_reverse_iterator(ranges::begin(std::forward<T>(t)))))
+        -> std::enable_if_t<Same<I, S> && BidirectionalIterator<I>,
+                            decltype(ranges::make_reverse_iterator(
+                                ranges::begin(std::forward<T>(t))))>
+    {
+        return ranges::make_reverse_iterator(ranges::begin(std::forward<T>(t)));
+    }
+
+public:
+    template <typename T>
+    constexpr auto operator()(T&& t) const
+        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<2>{})))
+            -> decltype(fn::impl(std::forward<T>(t), priority_tag<2>{}))
+    {
+        return fn::impl(std::forward<T>(t), priority_tag<2>{});
+    }
+};
+
+} // namespace rend_
+} // namespace detail
+
+NANO_INLINE_VAR(detail::rend_::fn, rend)
+
+namespace detail {
+namespace crbegin_ {
+
+struct fn {
+    template <typename T>
+    constexpr auto operator()(const T& t) const
+        noexcept(noexcept(ranges::rbegin(t))) -> decltype(ranges::rbegin(t))
+    {
+        return ranges::rbegin(t);
+    }
+
+    template <typename T>
+    constexpr auto operator()(const T&& t) const
+        noexcept(noexcept(ranges::rbegin(static_cast<const T&&>(t))))
+            -> decltype(ranges::rbegin(static_cast<const T&&>(t)))
+    {
+        return ranges::rbegin(static_cast<const T&&>(t));
+    }
+};
+
+} // namespace crbegin_
+} // namespace detail
+
+NANO_INLINE_VAR(detail::crbegin_::fn, crbegin)
+
+namespace detail {
+namespace crend_ {
+
+struct fn {
+    template <typename T>
+    constexpr auto operator()(const T& t) const
+        noexcept(noexcept(ranges::rend(t))) -> decltype(ranges::rend(t))
+    {
+        return ranges::rend(t);
+    }
+
+    template <typename T>
+    constexpr auto operator()(const T&& t) const
+        noexcept(noexcept(ranges::rend(static_cast<const T&&>(t))))
+            -> decltype(ranges::rend(static_cast<const T&&>(t)))
+    {
+        return ranges::rend(static_cast<const T&&>(t));
+    }
+};
+
+} // namespace crend_
+} // namespace detail
+
+NANO_INLINE_VAR(detail::crend_::fn, crend)
+
+NANO_END_NAMESPACE
+
+#endif
+
+
+
+
 // nanorange/functional.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -4039,7 +4295,7 @@ private:
     friend struct unique_fn;
 
     template <typename I, typename S, typename Proj, typename Pred>
-    static constexpr I impl(I first, S last, Pred pred, Proj proj)
+    static constexpr I impl(I first, S last, Pred& pred, Proj& proj)
     {
         if (first == last) {
             return first;
@@ -4069,7 +4325,7 @@ public:
     operator()(I first, S last, Pred pred = Pred{}, Proj proj = Proj{}) const
     {
         return adjacent_find_fn::impl(std::move(first), std::move(last),
-                                      std::move(pred), std::move(proj));
+                                      pred, proj);
     }
 
     template <typename Rng, typename Proj = identity,
@@ -4081,7 +4337,7 @@ public:
     operator()(Rng&& rng, Pred pred = Pred{}, Proj proj = Proj{}) const
     {
         return adjacent_find_fn::impl(nano::begin(rng), nano::end(rng),
-                                      std::move(pred), std::move(proj));
+                                      pred, proj);
     }
 };
 
@@ -4113,7 +4369,7 @@ namespace detail {
 struct all_of_fn {
 private:
     template <typename I, typename S, typename Proj, typename Pred>
-    static constexpr bool impl(I first, S last, Pred pred, Proj proj)
+    static constexpr bool impl(I first, S last, Pred& pred, Proj& proj)
     {
         while (first != last) {
             if (!nano::invoke(pred, nano::invoke(proj, *first))) {
@@ -4133,7 +4389,7 @@ public:
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
         return all_of_fn::impl(std::move(first), std::move(last),
-                               std::move(pred), std::move(proj));
+                               pred, proj);
     }
 
     template <typename Rng, typename Proj = identity, typename Pred>
@@ -4144,7 +4400,7 @@ public:
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return all_of_fn::impl(nano::begin(rng), nano::end(rng),
-                               std::move(pred), std::move(proj));
+                               pred, proj);
     }
 };
 
@@ -4826,7 +5082,7 @@ private:
     template <typename I1, typename S1, typename I2, typename S2, typename Pred,
               typename Proj1, typename Proj2>
     static constexpr bool impl4(I1 first1, S1 last1, I2 first2, S2 last2,
-                                Pred pred, Proj1 proj1, Proj2 proj2)
+                                Pred& pred, Proj1& proj1, Proj2& proj2)
     {
         while (first1 != last1 && first2 != last2) {
             if (!nano::invoke(pred, nano::invoke(proj1, *first1),
@@ -4843,7 +5099,7 @@ private:
     template <typename I1, typename S1, typename I2, typename Pred,
               typename Proj1, typename Proj2>
     static constexpr bool impl3(I1 first1, S1 last1, I2 first2, Pred pred,
-                                Proj1 proj1, Proj2 proj2)
+                                Proj1& proj1, Proj2& proj2)
     {
         while (first1 != last1) {
             if (!nano::invoke(pred, nano::invoke(proj1, *first1),
@@ -4878,8 +5134,8 @@ public:
         // Ranges are the same size, so call the 3-legged version
         // and save ourselves a comparison
         return equal_fn::impl3(std::move(first1), std::move(last1),
-                               std::move(first2), std::move(pred),
-                               std::move(proj1), std::move(proj2));
+                               std::move(first2), pred,
+                               proj1, proj2);
     }
 
     // Four-legged, unsized sentinels
@@ -4897,8 +5153,7 @@ public:
     {
         return equal_fn::impl4(std::move(first1), std::move(last1),
                                std::move(first2), std::move(last2),
-                               std::move(pred), std::move(proj1),
-                               std::move(proj2));
+                               pred, proj1, proj2);
     }
 
     // Three legged
@@ -4913,8 +5168,7 @@ public:
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
         return equal_fn::impl3(std::move(first1), std::move(last1),
-                               std::forward<I2>(first2), std::move(pred),
-                               std::move(proj1), std::move(proj2));
+                               std::forward<I2>(first2), pred, proj1, proj2);
     }
 
     // Two ranges, both sized
@@ -4934,8 +5188,7 @@ public:
         }
 
         return equal_fn::impl3(nano::begin(rng1), nano::end(rng1),
-                               nano::begin(rng2), std::move(pred),
-                               std::move(proj1), std::move(proj2));
+                               nano::begin(rng2), pred, proj1, proj2);
     }
 
     // Two ranges, not both sized
@@ -4952,8 +5205,7 @@ public:
     {
         return equal_fn::impl4(nano::begin(rng1), nano::end(rng1),
                                nano::begin(rng2), nano::end(rng2),
-                               std::move(pred), std::move(proj1),
-                               std::move(proj2));
+                               pred, proj1, proj2);
     }
 
     // Range and a half
@@ -4968,8 +5220,7 @@ public:
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
         return equal_fn::impl3(nano::begin(rng1), nano::end(rng1),
-                               std::forward<I2>(first2), std::move(pred),
-                               std::move(proj1), std::move(proj2));
+                               std::forward<I2>(first2), pred, proj1, proj2);
     }
 };
 
@@ -5532,7 +5783,7 @@ struct PairLike_req {
 
     template <typename T>
     auto requires_(T t) -> decltype(
-        valid_expr(std::enable_if_t<Integral<sfinae_tuple_size<T>::value>, int>{},
+        valid_expr(std::enable_if_t<Integral<decltype(sfinae_tuple_size<T>::value)>, int>{},
                    std::enable_if_t<sfinae_tuple_size<T>::value == 2, int>{},
                    decltype(this->test_func<0, T>(std::get<0>(t))){},
                    decltype(this->test_func<1, T>(std::get<1>(t))){}));
@@ -6043,7 +6294,7 @@ private:
     friend struct find_if_not_fn;
 
     template <typename I, typename S, typename Pred, typename Proj>
-    static constexpr I impl(I first, S last, Pred pred, Proj proj)
+    static constexpr I impl(I first, S last, Pred& pred, Proj& proj)
     {
         while (first != last) {
             if (nano::invoke(pred, nano::invoke(proj, *first))) {
@@ -6062,8 +6313,7 @@ public:
         I>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
-        return find_if_fn::impl(std::move(first), std::move(last),
-                                std::move(pred), std::move(proj));
+        return find_if_fn::impl(std::move(first), std::move(last), pred, proj);
     }
 
     template <typename Rng, typename Proj = identity, typename Pred>
@@ -6073,8 +6323,7 @@ public:
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
-        return find_if_fn::impl(nano::begin(rng), nano::end(rng),
-                                std::move(pred), std::move(proj));
+        return find_if_fn::impl(nano::begin(rng), nano::end(rng), pred, proj);
     }
 };
 } // namespace detail
@@ -6104,8 +6353,8 @@ public:
         I>
     operator()(I first, S last, const T& value, Proj proj = Proj{}) const
     {
-        return find_if_fn::impl(std::move(first), std::move(last),
-                                equal_to_pred<T>{value}, std::move(proj));
+        const equal_to_pred<T> pred{value};
+        return find_if_fn::impl(std::move(first), std::move(last), pred, proj);
     }
 
     template <typename Rng, typename T, typename Proj = identity>
@@ -6116,8 +6365,8 @@ public:
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
     {
-        return find_if_fn::impl(nano::begin(rng), nano::end(rng),
-                                equal_to_pred<T>{value}, std::move(proj));
+        const equal_to_pred<T> pred{value};
+        return find_if_fn::impl(nano::begin(rng), nano::end(rng), pred, proj);
     }
 };
 } // namespace detail
@@ -6147,8 +6396,9 @@ public:
         I>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
+        const auto find_if_pred = not_pred<Pred>{pred};
         return find_if_fn::impl(std::move(first), std::move(last),
-                                not_pred<Pred>{pred}, std::move(proj));
+                                find_if_pred, proj);
     }
 
     template <typename Rng, typename Proj = identity, typename Pred>
@@ -6158,8 +6408,9 @@ public:
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
+        const auto find_if_pred = not_pred<Pred>{pred};
         return find_if_fn::impl(nano::begin(rng), nano::end(rng),
-                                not_pred<Pred>{pred}, std::move(proj));
+                                find_if_pred, proj);
     }
 };
 } // namespace detail
@@ -6278,8 +6529,6 @@ NANO_BEGIN_NAMESPACE
 // [ranges.alg.find.end]
 namespace detail {
 
-// FIXME: Update to P0896R2 (subrange, second projection)
-
 // TODO: For BiDir iterators, we can be smarter and search backwards
 struct find_end_fn {
 private:
@@ -6376,7 +6625,7 @@ private:
     template <typename I1, typename S1, typename I2, typename S2, typename Pred,
               typename Proj1, typename Proj2>
     static constexpr I1 impl(I1 first1, S1 last1, I2 first2, S2 last2,
-                             Pred pred, Proj1 proj1, Proj2 proj2)
+                             Pred& pred, Proj1& proj1, Proj2& proj2)
     {
         for (; first1 != last1; ++first1) {
             for (I2 it = first2; it != last2; ++it) {
@@ -6404,8 +6653,7 @@ public:
     {
         return find_first_of_fn::impl(std::move(first1), std::move(last1),
                                       std::move(first2), std::move(last2),
-                                      std::move(pred), std::move(proj1),
-                                      std::move(proj2));
+                                      pred, proj1, proj2);
     }
 
     template <typename Rng1, typename Rng2, typename Proj1 = identity,
@@ -6420,8 +6668,7 @@ public:
     {
         return find_first_of_fn::impl(nano::begin(rng1), nano::end(rng1),
                                       nano::begin(rng2), nano::end(rng2),
-                                      std::move(pred), std::move(proj1),
-                                      std::move(proj2));
+                                      pred, proj1, proj2);
     }
 };
 
@@ -7993,7 +8240,6 @@ using merge_result = binary_transform_result<I1, I2, O>;
 
 namespace detail {
 
-// FIXME: Use tagged_tuple
 struct merge_fn {
 private:
     template <typename I1, typename S1, typename I2, typename S2, typename O,
@@ -10037,8 +10283,7 @@ private:
         !Same<I, S>, reverse_copy_result<I, O>>
     impl(I first, S bound, O result)
     {
-        I last = nano::next(first, bound);
-        return reverse_copy_fn::impl(std::move(first), std::move(last),
+        return reverse_copy_fn::impl(std::move(first), nano::next(first, bound),
                                      std::move(result));
     }
 
@@ -10180,7 +10425,6 @@ using rotate_copy_result = copy_result<I, O>;
 
 namespace detail {
 
-// FIXME: Use tagged_pair
 struct rotate_copy_fn {
 private:
     template <typename I, typename S, typename O>
@@ -10188,8 +10432,7 @@ private:
     impl(I first, I middle, S last, O result)
     {
         auto ret = nano::copy(middle, std::move(last), std::move(result));
-        ret.out = nano::copy(std::move(first), std::move(middle),
-                                ret.out).out;
+        ret.out = nano::copy(std::move(first), std::move(middle), ret.out).out;
         return ret;
     }
 
@@ -10649,7 +10892,6 @@ using set_union_result = binary_transform_result<I1, I2, O>;
 
 namespace detail {
 
-// FIXME: Use tagged_tuple
 struct set_union_fn {
 private:
     template <typename I1, typename S1, typename I2, typename S2, typename O,
@@ -10835,7 +11077,7 @@ private:
         using param_t = typename distr_t::param_type;
 
         distr_t D;
-        auto n = last - first; // OK, we have SizedSentinel
+        const auto n = last - first; // OK, we have SizedSentinel
 
         for (diff_t i = 0; i < n; i++) {
             nano::iter_swap(first + i, first + D(g, param_t(0, i)));
@@ -13318,223 +13560,6 @@ struct iterator_traits<::nano::ranges::ostreambuf_iterator<C, T>> {
 
 #endif
 
-// nanorange/iterator/reverse_iterator.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ITERATOR_REVERSE_ITERATOR_HPP_INCLUDED
-#define NANORANGE_ITERATOR_REVERSE_ITERATOR_HPP_INCLUDED
-
-
-
-
-
-
-
-NANO_BEGIN_NAMESPACE
-
-namespace reverse_iterator_ {
-
-template <typename I>
-class reverse_iterator {
-
-    static_assert(BidirectionalIterator<I>,
-                  "Template argument to reverse_iterator must model "
-                  "BidirectionalIterator");
-
-public:
-    using iterator_type = I;
-    using difference_type = iter_difference_t<I>;
-    using value_type = iter_value_t<I>;
-    using iterator_category = detail::legacy_iterator_category_t<I>;
-    using reference = iter_reference_t<I>;
-    using pointer = I;
-
-    constexpr reverse_iterator() = default;
-
-    explicit constexpr reverse_iterator(I x) : current_(std::move(x)) {}
-
-    template <typename U, std::enable_if_t<ConvertibleTo<U, I>, int> = 0>
-
-    constexpr reverse_iterator(const reverse_iterator<U>& i)
-        : current_(i.base())
-    {}
-
-    template <typename U, std::enable_if_t<ConvertibleTo<U, I>, int> = 0>
-
-    constexpr reverse_iterator& operator=(const reverse_iterator<U>& i)
-    {
-        current_ = i.base();
-        return *this;
-    }
-
-    constexpr I base() const { return current_; }
-
-    constexpr reference operator*() const { return *prev(current_); }
-
-    constexpr pointer operator->() const { return prev(current_); }
-
-    constexpr reverse_iterator& operator++()
-    {
-        --current_;
-        return *this;
-    }
-
-    constexpr reverse_iterator operator++(int)
-    {
-        reverse_iterator tmp = *this;
-        --current_;
-        return tmp;
-    }
-
-    constexpr reverse_iterator& operator--()
-    {
-        ++current_;
-        return *this;
-    }
-
-    constexpr reverse_iterator operator--(int)
-    {
-        reverse_iterator tmp = *this;
-        ++current_;
-        return tmp;
-    }
-
-    template <typename II = I>
-    constexpr std::enable_if_t<RandomAccessIterator<II>, reverse_iterator>
-    operator+(difference_type n) const
-    {
-        return reverse_iterator(current_ - n);
-    }
-
-    template <typename II = I>
-    constexpr std::enable_if_t<RandomAccessIterator<II>, reverse_iterator&>
-    operator+=(difference_type n)
-    {
-        current_ -= n;
-        return *this;
-    }
-
-    template <typename II = I>
-    constexpr std::enable_if_t<RandomAccessIterator<II>, reverse_iterator>
-    operator-(difference_type n) const
-    {
-        return reverse_iterator(current_ + n);
-    }
-
-    template <typename II = I>
-    constexpr std::enable_if_t<RandomAccessIterator<II>, reverse_iterator&>
-    operator-=(difference_type n)
-    {
-        current_ += n;
-        return *this;
-    }
-
-    template <typename II = I>
-    constexpr std::enable_if_t<RandomAccessIterator<II>, reference>
-    operator[](difference_type n) const
-    {
-        return current_[-n - 1];
-    }
-
-    friend constexpr iter_rvalue_reference_t<I>
-    iter_move(const reverse_iterator& i) noexcept(
-        noexcept(ranges::iter_move(std::declval<I&>())) &&
-        noexcept(--std::declval<I&>()) &&
-        std::is_nothrow_copy_constructible<I>::value)
-    {
-        return ranges::iter_move(prev(i.current_));
-    }
-
-    template <typename I2>
-    friend constexpr auto
-    iter_swap(const reverse_iterator& x,
-              const reverse_iterator<I2>&
-                  y) noexcept(noexcept(ranges::iter_swap(std::declval<I>(),
-                                                         std::declval<I>())) &&
-                              noexcept(--std::declval<I&>()))
-        -> std::enable_if_t<IndirectlySwappable<I2, I>>
-
-    {
-        ranges::iter_swap(prev(x.current_), prev(y.base()));
-    }
-
-private:
-    I current_{};
-};
-
-template <typename I1, typename I2>
-constexpr std::enable_if_t<EqualityComparableWith<I1, I2>, bool>
-operator==(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
-{
-    return x.base() == y.base();
-}
-
-template <typename I1, typename I2>
-constexpr std::enable_if_t<EqualityComparableWith<I1, I2>, bool>
-operator!=(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
-{
-    return x.base() != y.base();
-}
-
-template <typename I1, typename I2>
-constexpr std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
-operator<(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
-{
-    return x.base() > y.base();
-}
-
-template <typename I1, typename I2>
-constexpr std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
-operator>(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
-{
-    return x.base() < y.base();
-}
-
-template <typename I1, typename I2>
-constexpr std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
-operator>=(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
-{
-    return x.base() <= y.base();
-}
-
-template <typename I1, typename I2>
-constexpr std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
-operator<=(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
-{
-    return x.base() >= y.base();
-}
-
-template <typename I1, typename I2>
-constexpr std::enable_if_t<SizedSentinel<I1, I2>, iter_difference_t<I2>>
-operator-(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
-{
-    return y.base() - x.base();
-}
-
-template <typename I>
-constexpr std::enable_if_t<RandomAccessIterator<I>, reverse_iterator<I>>
-operator+(iter_difference_t<I> n, const reverse_iterator<I>& x)
-{
-    return reverse_iterator<I>(x.base() - n);
-}
-
-} // namespace reverse_iterator_
-
-using reverse_iterator_::reverse_iterator;
-
-template <typename I>
-constexpr std::enable_if_t<BidirectionalIterator<I>, reverse_iterator<I>>
-make_reverse_iterator(I i)
-{
-    return reverse_iterator<I>(std::move(i));
-}
-
-NANO_END_NAMESPACE
-
-#endif
 
 // nanorange/iterator/unreachable.hpp
 //
