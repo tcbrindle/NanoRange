@@ -171,7 +171,7 @@ add_executable(test_nanorange
     #view/counted_view.cpp
     #view/drop_view.cpp
     #view/drop_while_view.cpp
-    #view/empty_view.cpp
+    view/empty_view.cpp
     #view/filter_view.cpp
     #view/indirect_view.cpp
     #view/join_view.cpp

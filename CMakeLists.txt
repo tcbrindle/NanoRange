@@ -150,6 +150,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/ranges/istream_range.hpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/all.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/empty.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/interface.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/subrange.hpp
 

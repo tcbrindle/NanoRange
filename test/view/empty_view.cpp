@@ -9,12 +9,12 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <stl2/view/empty.hpp>
-#include "../simple_test.hpp"
+#include <nanorange/view/empty.hpp>
+#include "../catch.hpp"
 
-namespace ranges = __stl2;
+namespace ranges = nano::ranges;
 
-int main() {
+TEST_CASE("view.empty") {
 	using namespace ranges;
 
 	{
@@ -36,6 +36,4 @@ int main() {
 		CHECK(ranges::data(view::empty<int>) == nullptr);
 		CHECK(ranges::size(view::empty<int>) == 0);
 	}
-
-	return test_result();
 }
