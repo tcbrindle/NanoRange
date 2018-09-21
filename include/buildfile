@@ -4,3 +4,10 @@ lib{nanorange}: hxx{***}
 cxx.poptions =+ "-I$out_base" "-I$src_base"
 lib{nanorange}: cxx.export.poptions = "-I$out_base" "-I$src_base"
 hxx{*}: install.subdirs = true
+
+
+# If building with msvc, require the /permissive- switch
+if ($cxx.export.class == 'msvc')
+{
+    lib{nanorange}: cxx.export.coptions = "/permissive-"
+}

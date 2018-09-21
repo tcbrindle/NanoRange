@@ -31,3 +31,22 @@ exe{test-nanorange}: test = true
 
 cxx.coptions += "-DNANORANGE_NO_DEPRECATION_WARNINGS"
 cxx.poptions += "-I$src_root/include/"
+
+# Compiler-specific warnings
+if ($cxx.class == 'msvc')
+{
+    cxx.coptions += "/permissive-"
+    cxx.coptions += "/constexpr:steps1000000" "/wd4267" "/wd4244"
+}
+
+if ($cxx.id.type == 'gcc')
+{
+    cxx.coptions += "-Wall" "-Wextra" "-pedantic" "-Wno-attributes"
+}
+
+if ($cxx.id.type == 'clang')
+{
+    cxx.coptions += "-Wall" "-Wextra" "-pedantic"\
+        "-Wno-unneeded-internal-declaration" "-Wno-missing-braces" "-Wno-unused-function"\
+        "-Wno-mismatched-tags" "-Wno-undefined-internal"
+}
