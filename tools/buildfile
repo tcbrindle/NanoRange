@@ -1,0 +1,9 @@
+
+exe{make_single_header}: cxx{make_single_header}
+
+cxx.std = cpp17
+
+if ($cxx.class == 'gcc')
+{
+    cxx.libs += "-lstdc++fs"
+}

@@ -1,6 +1,13 @@
 
+
 # Common CMake build directories
-build*/
+build-/*
+
+# Build2 stuff
+build/*
+
+# Build2 bdep database
+.bdep/
 
 # QtCreator
 CMakeLists.txt.user

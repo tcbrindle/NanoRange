@@ -1,0 +1,6 @@
+
+
+lib{nanorange}: hxx{***}
+cxx.poptions =+ "-I$out_base" "-I$src_base"
+lib{nanorange}: cxx.export.poptions = "-I$out_base" "-I$src_base"
+hxx{*}: install.subdirs = true

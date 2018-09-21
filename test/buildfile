@@ -1,0 +1,32 @@
+
+#import libs = nanorange%lib{nanorange}
+
+include ../include/
+
+# Skip broken tests and things we haven't implemented yet
+exe{test-nanorange}: cxx{**\
+    -test_type_traits           \
+    -algorithm/inplace_merge    \
+    -algorithm/nth_element      \
+    -algorithm/sample           \
+    -algorithm/stable_partition \
+    -algorithm/stable_sort      \
+    -iterator/incomplete        \
+    -iterator/iterator          \
+    -view/bounded_view          \
+    -view/counted_view          \
+    -view/filter_view           \
+    -view/join_view             \
+    -view/move_view             \
+    -view/repeat_n_view         \
+    -view/repeat_view           \
+    -view/reverse_view          \
+    -view/span                  \
+    -view/split_view            \
+    -view/take_view             \
+    -view/transform_view        \
+}
+exe{test-nanorange}: test = true
+
+cxx.coptions += "-DNANORANGE_NO_DEPRECATION_WARNINGS"
+cxx.poptions += "-I$src_root/include/"
