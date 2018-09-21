@@ -26,6 +26,7 @@ exe{test-nanorange}: cxx{**\
     -view/take_view             \
     -view/transform_view        \
 }
+exe{test-nanorange}: hxx{**}
 exe{test-nanorange}: test = true
 
 cxx.coptions += "-DNANORANGE_NO_DEPRECATION_WARNINGS"
