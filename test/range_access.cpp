@@ -13,6 +13,7 @@
 #include <nanorange/ranges.hpp>
 #include <iostream>
 #include <vector>
+#include <utility>
 #include <nanorange/view/subrange.hpp>
 
 #ifdef NANO_HAVE_CPP17
