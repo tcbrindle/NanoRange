@@ -30,8 +30,8 @@ environment:
       standard: 14
 
 install:
-- mkdir build
-- cd build
+- mkdir cmake-build
+- cd cmake-build
 - cmake .. -G "%generator%" -DCMAKE_CXX_STANDARD=%standard%
 
 build_script:
