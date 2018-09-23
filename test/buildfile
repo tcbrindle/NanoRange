@@ -1,8 +1,6 @@
 
 #import libs = nanorange%lib{nanorange}
 
-include ../include/
-
 # Skip broken tests and things we haven't implemented yet
 exe{test-nanorange}: cxx{**\
     -test_type_traits           \
