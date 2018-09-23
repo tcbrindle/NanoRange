@@ -1,11 +1,10 @@
 : 1
 
 name: nanorange
-version: 0.1.0-a.1.z
-summary: MSVC-compatible C++14 implementation of the C++20 Ranges proposals
+version: 0.1.0-a.0.z
+summary: std::ranges implementation for C++14+
 license: BSL ; Boost software license
 url: https://github.com/tcbrindle/NanoRange
 depends: * build2 >= 0.8.0-
 requires: c++14
-requires: msvc_15u7
-requires: clang_3.8
+requires: msvc_15u7 | clang_3.8 | gcc_5.4
