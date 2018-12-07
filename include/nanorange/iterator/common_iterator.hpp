@@ -129,6 +129,46 @@ public:
         return tmp;
     }
 
+    template <typename I2, typename S2>
+    friend constexpr auto operator==(const common_iterator& x,
+                                     const common_iterator<I2, S2>& y)
+        -> std::enable_if_t<Sentinel<S2, I> && Sentinel<S, I2> &&
+                            !EqualityComparableWith<I, I2>, bool>
+    {
+        return x.is_sentinel_ ? (y.is_sentinel_ || y.iter_ == x.sentinel_)
+                              : (!y.is_sentinel_ || x.iter_ == y.sentinel_);
+    }
+
+    template <typename I2, typename S2>
+    friend constexpr auto operator==(const common_iterator& x,
+                                     const common_iterator<I2, S2>& y)
+        -> std::enable_if_t<Sentinel<S2, I> && Sentinel<S, I2> &&
+                            EqualityComparableWith<I, I2>, bool>
+    {
+        return x.is_sentinel_
+               ? (y.is_sentinel_ || y.iter_ == x.sentinel_)
+               : (y.is_sentinel_ ? x.iter_ == y.sentinel_ : x.iter_ == y.iter_);
+    }
+
+    template <typename I2, typename S2>
+    friend constexpr auto operator!=(const common_iterator& x,
+                                     const common_iterator<I2, S2>& y)
+        -> std::enable_if_t<Sentinel<S2, I> && Sentinel<S, I2>, bool>
+    {
+        return !(x == y);
+    }
+
+    template <typename I2, typename S2>
+    friend constexpr auto operator-(const common_iterator& x,
+                                    const common_iterator<I2, S2>& y)
+        -> std::enable_if_t<SizedSentinel<I, I2> && SizedSentinel<S, I2> &&
+                            SizedSentinel<S, I2>, iter_difference_t<I2>>
+    {
+        return x.is_sentinel_
+               ? (y.is_sentinel_ ? 0 : x.sentinel_ - y.iter_)
+               : (y.is_sentinel_ ? x.iter_ - y.sentinel_ : x.iter_ - y.iter_);
+    }
+
     friend constexpr iter_rvalue_reference_t<I> iter_move(const common_iterator& i)
     {
         return ranges::iter_move(i.iter_);
@@ -147,44 +187,6 @@ public:
     I iter_{};
     S sentinel_{};
 };
-
-template <typename I1, typename I2, typename S1, typename S2,
-          std::enable_if_t<!EqualityComparableWith<I1, I2>, int> = 0>
-constexpr bool operator==(const common_iterator<I1, S1>& x,
-                          const common_iterator<I2, S2>& y)
-{
-    return x.is_sentinel_ ? (y.is_sentinel_ || y.iter_ == x.sentinel_)
-                          : (!y.is_sentinel_ || x.iter_ == y.sentinel_);
-}
-
-template <typename I1, typename I2, typename S1, typename S2,
-          std::enable_if_t<EqualityComparableWith<I1, I2>, int> = 0>
-constexpr bool operator==(const common_iterator<I1, S1>& x,
-                          const common_iterator<I2, S2>& y)
-{
-    return x.is_sentinel_
-               ? (y.is_sentinel_ || y.iter_ == x.sentinel_)
-               : (y.is_sentinel_ ? x.iter_ == y.sentinel_ : x.iter_ == y.iter_);
-}
-
-template <typename I1, typename I2, typename S1, typename S2>
-constexpr bool operator!=(const common_iterator<I1, S1>& x,
-                          const common_iterator<I2, S2>& y)
-{
-    return !(x == y);
-}
-
-template <typename I2, typename I1, typename S1, typename S2>
-constexpr
-std::enable_if_t<SizedSentinel<I1, I2> && SizedSentinel<S1, I2> &&
-                     SizedSentinel<S2, I2>,
-                 iter_difference_t<I2>>
-operator-(const common_iterator<I1, S1>& x, const common_iterator<I2, S2>& y)
-{
-    return x.is_sentinel_
-               ? (y.is_sentinel_ ? 0 : x.sentinel_ - y.iter_)
-               : (y.is_sentinel_ ? x.iter_ - y.sentinel_ : x.iter_ - y.iter_);
-}
 
 } // namespace common_iterator_
 
