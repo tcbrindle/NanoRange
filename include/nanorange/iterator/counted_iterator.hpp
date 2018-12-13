@@ -268,13 +268,6 @@ private:
     iter_difference_t<I> cnt_{0};
 };
 
-//template <typename I>
-//constexpr auto operator+(iter_difference_t<I> n, const counted_iterator<I>& x)
-//    -> std::enable_if_t<RandomAccessIterator<I>, counted_iterator<I>>
-//{
-//    return x + n;
-//}
-
 }
 
 using counted_iterator_::counted_iterator;
