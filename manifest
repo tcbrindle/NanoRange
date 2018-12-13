@@ -8,3 +8,7 @@ url: https://github.com/tcbrindle/NanoRange
 depends: * build2 >= 0.8.0-
 requires: c++14
 requires: msvc_15u7 | clang_3.8 | gcc_5.4
+build-exclude: *-msvc_14* ; MSVC version too old
+build-exclude: linux-clang_5.0 ; Error in libstdc++ make_integer_sequence
+build-exclude: linux-clang_6.0 ; Same
+
