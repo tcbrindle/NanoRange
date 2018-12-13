@@ -30,8 +30,7 @@ private:
         O oit = ofirst;
         try {
             for (; ifirst != ilast && oit != olast; ++ifirst, (void) ++oit) {
-                ::new(const_cast<void*>(static_cast<const volatile void*>(std::addressof(
-                        *oit))))
+                ::new(detail::voidify(*oit))
                         std::remove_reference_t<iter_reference_t<O>>(*ifirst);
             }
             return {std::move(ifirst), std::move(oit)};

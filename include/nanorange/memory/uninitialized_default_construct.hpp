@@ -21,9 +21,7 @@ private:
         I it = first;
         try {
             for (; it != last; ++it) {
-                ::new(const_cast<void*>(static_cast<const volatile void*>(std::addressof(
-                        *it))))
-                        std::remove_reference_t<iter_reference_t<I>>;
+                ::new(detail::voidify(*it)) std::remove_reference_t<iter_reference_t<I>>;
             }
             return it;
         } catch (...) {
