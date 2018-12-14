@@ -25,27 +25,11 @@ void iter_swap(I, I) = delete;
 
 struct fn {
 private:
-    template <typename T1, typename T2>
-    static constexpr bool iter_exchange_move_noexcept =
-        std::is_nothrow_constructible<iter_value_t<T1>,
-                                      iter_rvalue_reference_t<T1>>::value&&
-            std::is_nothrow_assignable<iter_value_t<T1>&,
-                                       iter_rvalue_reference_t<T1>>::value&&
-                std::is_nothrow_assignable<iter_reference_t<T1>,
-                                           iter_rvalue_reference_t<T2>>::value&&
-                    std::is_nothrow_assignable<iter_reference_t<T1>,
-                                               iter_value_t<T2>>::value&&
-                        std::is_nothrow_move_constructible<iter_value_t<T1>>::
-                            value&& noexcept(
-                                ranges::iter_move(std::declval<T1&>()));
-
     template <typename X, typename Y>
     static constexpr iter_value_t<std::remove_reference_t<X>>
     iter_exchange_move(X&& x, Y&& y) noexcept(
-        iter_exchange_move_noexcept<std::remove_reference_t<X>,
-                                    std::remove_reference_t<Y>>&&
-            iter_exchange_move_noexcept<std::remove_reference_t<Y>,
-                                        std::remove_reference_t<X>>)
+        noexcept(iter_value_t<std::remove_reference_t<X>>(ranges::iter_move(x))) &&
+        noexcept(*x = ranges::iter_move(y)))
     {
         iter_value_t<std::remove_reference_t<X>> old_value(
             ranges::iter_move(x));
