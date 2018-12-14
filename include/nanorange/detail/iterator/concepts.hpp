@@ -99,7 +99,8 @@ namespace detail {
 
 struct Iterator_req {
     template <typename I>
-    auto requires_(I i) -> decltype(not_void(*i));
+    auto requires_(I i) -> decltype(*i,
+            requires_expr<CanReference<decltype(*i)>>{});
 };
 
 } // namespace detail

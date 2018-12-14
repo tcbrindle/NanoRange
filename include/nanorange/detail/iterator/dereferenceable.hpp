@@ -14,11 +14,20 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 template <typename T>
-auto not_void(T &&) -> int;
+using with_reference = T&;
+
+struct CanReference_req {
+    template <typename T>
+    auto requires_() -> with_reference<T>;
+};
+
+template <typename T>
+NANO_CONCEPT CanReference = requires_<CanReference_req, T>;
 
 struct Dereferenceable_req {
     template <typename T>
-    auto requires_(T& t) -> decltype(valid_expr(not_void(*t)));
+    auto requires_(T& t)
+        -> decltype(*t, requires_expr<CanReference<decltype(*t)>>{});
 };
 
 template <typename T>
