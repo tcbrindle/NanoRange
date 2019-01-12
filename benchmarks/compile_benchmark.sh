@@ -1,0 +1,1 @@
+clang++ --std=c++14 -O3 -lbenchmark benchmark_main.cpp $1
