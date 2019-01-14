@@ -73,7 +73,7 @@ void test_operator_arrow()
 	// I is a pointer type
 	{
 		int i = 42;
-		auto ci = ranges::common_iterator<int*, ranges::unreachable>{&i};
+		auto ci = ranges::common_iterator<int*, ranges::unreachable_sentinel_t>{&i};
 		static_assert(models::Same<int*, decltype(ci.operator->())>, "");
 		CHECK(ci.operator->() == &i);
 	}
@@ -88,13 +88,13 @@ void test_operator_arrow()
 #endif
 	// the expression *i is a glvalue [lvalue case]
 	{
-		auto ci = ranges::common_iterator<lvalue_iterator, ranges::unreachable>{};
+		auto ci = ranges::common_iterator<lvalue_iterator, ranges::unreachable_sentinel_t>{};
 		static_assert(models::Same<int*, decltype(ci.operator->())>, "");
 		CHECK(ci.operator->() == &forty_two);
 	}
 	// the expression *i is a glvalue [xvalue case]
 	{
-		auto ci = ranges::common_iterator<xvalue_iterator, ranges::unreachable>{};
+		auto ci = ranges::common_iterator<xvalue_iterator, ranges::unreachable_sentinel_t>{};
 		static_assert(models::Same<int*, decltype(ci.operator->())>, "");
 		CHECK(ci.operator->() == &forty_two);
 	}

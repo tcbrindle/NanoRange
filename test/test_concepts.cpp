@@ -396,10 +396,10 @@ static_assert(!rng::View<void>, "");
 static_assert(!rng::View<std::vector<int>&>, "");
 
 // common_iterator
-using I = rng::common_iterator<int*, rng::unreachable>;
-static_assert(rng::Iterator<rng::common_iterator<int*, rng::unreachable>>, "");
-static_assert(rng::InputIterator<rng::common_iterator<int*, rng::unreachable>>, "");
-static_assert(rng::ForwardIterator<rng::common_iterator<int*, rng::unreachable>>, "");
+using I = rng::common_iterator<int*, rng::unreachable_sentinel_t>;
+static_assert(rng::Iterator<rng::common_iterator<int*, rng::unreachable_sentinel_t>>, "");
+static_assert(rng::InputIterator<rng::common_iterator<int*, rng::unreachable_sentinel_t>>, "");
+static_assert(rng::ForwardIterator<rng::common_iterator<int*, rng::unreachable_sentinel_t>>, "");
 static_assert(rng::EqualityComparable<I>, "");
 using eq = decltype(std::declval<I const&>() == std::declval<I const&>());
 

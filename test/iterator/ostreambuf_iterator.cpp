@@ -50,7 +50,7 @@ TEST_CASE("iter.ostreambuf_iterator") {
 	//static_assert(Common<I, default_sentinel>);
 	//static_assert(std::is_same<I, common_type_t<I, default_sentinel>>());
 	// We'll use unreachable instead
-	static_assert(Sentinel<unreachable, I>, "");
+	static_assert(Sentinel<unreachable_sentinel_t, I>, "");
 
 	{
 		static const char hw[] = "Hello, world!";
@@ -58,7 +58,7 @@ TEST_CASE("iter.ostreambuf_iterator") {
 		std::ostringstream os;
 		auto r = ::copy(hw_range, I{os});
 		//CHECK(r.out() != default_sentinel{});
-		CHECK(r.second != unreachable{});
+		CHECK(r.second != unreachable_sentinel);
 		CHECK(equal(os.str(), hw_range));
 		//::check_equal(os.str(), hw_range);
 	}
