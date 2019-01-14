@@ -29,7 +29,7 @@ public:
 
     constexpr istream_iterator() = default;
 
-    constexpr istream_iterator(default_sentinel) {}
+    constexpr istream_iterator(default_sentinel_t) {}
 
     istream_iterator(istream_type& s)
         : in_stream_(std::addressof(s))
@@ -66,12 +66,12 @@ public:
         return x.in_stream_ == y.in_stream_;
     }
 
-    friend bool operator==(default_sentinel, const istream_iterator y)
+    friend bool operator==(default_sentinel_t, const istream_iterator y)
     {
         return nullptr == y.in_stream_;
     }
 
-    friend bool operator==(const istream_iterator& x, default_sentinel)
+    friend bool operator==(const istream_iterator& x, default_sentinel_t)
     {
         return x.in_stream_ == nullptr;
     }
@@ -81,12 +81,12 @@ public:
         return !(x == y);
     }
 
-    friend bool operator!=(default_sentinel x, const istream_iterator y)
+    friend bool operator!=(default_sentinel_t x, const istream_iterator y)
     {
         return !(x == y);
     }
 
-    friend bool operator!=(const istream_iterator& x, default_sentinel y)
+    friend bool operator!=(const istream_iterator& x, default_sentinel_t y)
     {
         return !(x == y);
     }

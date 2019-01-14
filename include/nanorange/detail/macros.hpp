@@ -52,7 +52,7 @@ inline namespace ranges                                                        \
     inline namespace function_objects {                                        \
     inline constexpr type name{};                                              \
     }
-
+#define NANO_INLINE_VARIABLE inline
 #else
 #define NANO_INLINE_VAR(type, name)                                            \
     inline namespace function_objects {                                        \
@@ -61,6 +61,7 @@ inline namespace ranges                                                        \
         ::nano::ranges::detail::static_const_<type>::value;                    \
     }                                                                          \
     }
+#define NANO_INLINE_VARIABLE
 #endif
 
 NANO_BEGIN_NAMESPACE

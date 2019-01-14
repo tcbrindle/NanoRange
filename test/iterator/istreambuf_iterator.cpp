@@ -45,9 +45,9 @@ namespace {
 		static_assert(nano::InputIterator<I>, "");
 		static_assert(!nano::ForwardIterator<I>, "");
 		static_assert(nano::Sentinel<I, I>, "");
-		static_assert(nano::Sentinel<default_sentinel, I>, "");
-		static_assert(nano::Common<I, default_sentinel>, "");
-		static_assert(nano::Same<I, common_type_t<I, default_sentinel>>, "");
+		static_assert(nano::Sentinel<default_sentinel_t, I>, "");
+		static_assert(nano::Common<I, default_sentinel_t>, "");
+		static_assert(nano::Same<I, common_type_t<I, default_sentinel_t>>, "");
 
 		static_assert(nano::Same<iter_value_t<I>, typename I::value_type>, "");
 		static_assert(nano::Same<iter_difference_t<I>, typename I::difference_type>, "");
@@ -63,16 +63,16 @@ namespace {
 		CHECK(ci.equal(i));
 		CHECK(ci == i);
 		CHECK(!(ci != i));
-		CHECK(ci == default_sentinel{});
-		CHECK(i == default_sentinel{});
-		CHECK(!(ci != default_sentinel{}));
-		CHECK(!(i != default_sentinel{}));
+		CHECK(ci == default_sentinel);
+		CHECK(i == default_sentinel);
+		CHECK(!(ci != default_sentinel));
+		CHECK(!(i != default_sentinel));
 
 		//static_assert(nano::Same<decltype(i.operator->()), typename C::pointer>, "");
 		//static_assert(nano::Same<decltype(i.operator++(0)), typename C::__proxy>, "");
 
-		static_assert(nano::Constructible<I, default_sentinel>, "");
-		static_assert(nano::ConvertibleTo<default_sentinel, I>, "");
+		static_assert(nano::Constructible<I, default_sentinel_t>, "");
+		static_assert(nano::ConvertibleTo<default_sentinel_t, I>, "");
 		static_assert(nano::Constructible<I, std::basic_istream<charT, traits>&>, "");
 		static_assert(nano::Constructible<I, std::basic_streambuf<charT, traits>*>, "");
 		static_assert(nano::Constructible<I, decltype(i++)>, "");
@@ -93,7 +93,7 @@ TEST_CASE("iter.istreambuf_iterator") {
 	{
 		static const char hw[] = "Hello, world!";
 		std::istringstream is(hw);
-		::check_equal(make_subrange(I{is}, default_sentinel{}),
+		::check_equal(make_subrange(I{is}, default_sentinel),
 									make_subrange(hw + 0, hw + size(hw) - 1));
 	}
 

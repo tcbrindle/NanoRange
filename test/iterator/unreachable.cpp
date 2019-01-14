@@ -37,13 +37,13 @@ namespace __stl2 = ::nano::ranges;
 
 static
 int strlen_test(const char* p) noexcept {
-	using C = __stl2::common_iterator<const char*, __stl2::unreachable>;
-	return __stl2::distance(C{p}, std::find(C{p}, C{__stl2::unreachable{}}, '\0'));
+	using C = __stl2::common_iterator<const char*, __stl2::unreachable_sentinel_t>;
+	return __stl2::distance(C{p}, std::find(C{p}, C{__stl2::unreachable_sentinel}, '\0'));
 }
 
 static constexpr int constexpr_strlen_test(const char* p) noexcept {
-	using C = __stl2::common_iterator<const char*, __stl2::unreachable>;
-	return __stl2::distance(C{p}, nano::find(C{p}, C{__stl2::unreachable{}}, '\0'));
+	using C = __stl2::common_iterator<const char*, __stl2::unreachable_sentinel_t>;
+	return __stl2::distance(C{p}, nano::find(C{p}, C{__stl2::unreachable_sentinel}, '\0'));
 }
 
 TEST_CASE("iter.unreachable") {

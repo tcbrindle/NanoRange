@@ -155,7 +155,7 @@ test_range()
 }
 
 template <typename I>
-stl2::subrange<stl2::counted_iterator<I>, stl2::default_sentinel>
+stl2::subrange<stl2::counted_iterator<I>, stl2::default_sentinel_t>
 make_counted_view(I i, stl2::iter_difference_t<I> n) {
   return {stl2::make_counted_iterator(std::move(i), n), {}};
 }

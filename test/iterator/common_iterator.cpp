@@ -73,7 +73,7 @@ void test_operator_arrow()
 	// I is a pointer type
 	{
 		int i = 42;
-		auto ci = ranges::common_iterator<int*, ranges::unreachable>{&i};
+		auto ci = ranges::common_iterator<int*, ranges::unreachable_sentinel_t>{&i};
 		static_assert(models::Same<int*, decltype(ci.operator->())>, "");
 		CHECK(ci.operator->() == &i);
 	}
@@ -88,13 +88,13 @@ void test_operator_arrow()
 #endif
 	// the expression *i is a glvalue [lvalue case]
 	{
-		auto ci = ranges::common_iterator<lvalue_iterator, ranges::unreachable>{};
+		auto ci = ranges::common_iterator<lvalue_iterator, ranges::unreachable_sentinel_t>{};
 		static_assert(models::Same<int*, decltype(ci.operator->())>, "");
 		CHECK(ci.operator->() == &forty_two);
 	}
 	// the expression *i is a glvalue [xvalue case]
 	{
-		auto ci = ranges::common_iterator<xvalue_iterator, ranges::unreachable>{};
+		auto ci = ranges::common_iterator<xvalue_iterator, ranges::unreachable_sentinel_t>{};
 		static_assert(models::Same<int*, decltype(ci.operator->())>, "");
 		CHECK(ci.operator->() == &forty_two);
 	}
@@ -116,14 +116,15 @@ void test_constexpr()
 	static int i = 42;
 	using ranges::common_iterator;
 	using ranges::counted_iterator;
+	using ranges::default_sentinel_t;
 	using ranges::default_sentinel;
 
-	using CI = common_iterator<counted_iterator<int*>, default_sentinel>;
+	using CI = common_iterator<counted_iterator<int*>, default_sentinel_t>;
 	constexpr CI foo{ranges::make_counted_iterator(&i, 1)};
 	(void) foo;
-	constexpr CI bar{default_sentinel{}};
+	constexpr CI bar{default_sentinel};
 	(void) bar;
-	using CCI = common_iterator<counted_iterator<const int*>, default_sentinel>;
+	using CCI = common_iterator<counted_iterator<const int*>, default_sentinel_t>;
 	constexpr CCI baz{foo};
 	constexpr CCI bang{bar};
 }

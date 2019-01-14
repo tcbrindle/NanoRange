@@ -264,7 +264,7 @@ void test_proxy_iterator() {
 		std::iota(vec.begin(), vec.end(), 0);
 		vec2.clear();
 		A::clear();
-		ranges::copy(first, ranges::move_sentinel<ranges::default_sentinel>{}, out);
+		ranges::copy(first, ranges::move_sentinel<ranges::default_sentinel_t>{}, out);
 
 		CHECK(ranges::size(vec2) == N);
 		CHECK(A::copy_count == std::size_t{0});
@@ -273,7 +273,7 @@ void test_proxy_iterator() {
 
 	{
 		auto first = ranges::make_counted_iterator(vec.begin(), vec.size());
-		auto last = ranges::default_sentinel{};
+		auto last = ranges::default_sentinel;
 		static_assert(ranges::SizedSentinel<decltype(last), decltype(first)>, "");
 		CHECK((static_cast<std::size_t>(last - first) == vec.size()));
 		auto mfirst = ranges::make_move_iterator(first);

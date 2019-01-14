@@ -21,9 +21,7 @@ private:
         I it = first;
         try {
             for (; it != last; ++it) {
-                ::new(const_cast<void*>(static_cast<const volatile void*>(std::addressof(
-                        *it))))
-                        std::remove_reference_t<iter_reference_t<I>>();
+                ::new(detail::voidify(*it)) std::remove_reference_t<iter_reference_t<I>>();
             }
             return it;
         } catch (...) {
@@ -72,7 +70,7 @@ struct uninitialized_value_construct_n_fn {
     {
         return nano::uninitialized_value_construct(
                     make_counted_iterator(std::move(first), n),
-                    default_sentinel{}).base();
+                    default_sentinel).base();
     }
 
 };

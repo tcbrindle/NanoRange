@@ -62,22 +62,22 @@ public:
             return !(lhs == rhs);
         }
 
-        friend bool operator==(const iterator& lhs, default_sentinel)
+        friend bool operator==(const iterator& lhs, default_sentinel_t)
         {
             return lhs.done();
         }
 
-        friend bool operator!=(const iterator& lhs, default_sentinel rhs)
+        friend bool operator!=(const iterator& lhs, default_sentinel_t rhs)
         {
             return !(lhs == rhs);
         }
 
-        friend bool operator==(default_sentinel, const iterator& rhs)
+        friend bool operator==(default_sentinel_t, const iterator& rhs)
         {
             return rhs.done();
         }
 
-        friend bool operator!=(default_sentinel lhs, const iterator& rhs)
+        friend bool operator!=(default_sentinel_t lhs, const iterator& rhs)
         {
             return !(lhs == rhs);
         }
@@ -91,7 +91,7 @@ public:
         istream_range* rng_ = nullptr;
     };
 
-    using sentinel = default_sentinel;
+    using sentinel = default_sentinel_t;
     using istream_type = std::basic_istream<CharT, Traits>;
 
     constexpr istream_range() = default;

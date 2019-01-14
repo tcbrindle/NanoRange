@@ -23,8 +23,7 @@ private:
         I it = first;
         try {
             for (; it != last; ++it) {
-                ::new(const_cast<void*>(static_cast<const volatile void*>(std::addressof(
-                        *it))))
+                ::new(detail::voidify(*it))
                         std::remove_reference_t<iter_reference_t<I>>(x);
             }
             return it;
@@ -73,7 +72,7 @@ struct uninitialized_fill_n_fn {
     {
         return uninitialized_fill_fn::impl(
                     make_counted_iterator(std::move(first), n),
-                    default_sentinel{}, x).base();
+                    default_sentinel, x).base();
     }
 };
 

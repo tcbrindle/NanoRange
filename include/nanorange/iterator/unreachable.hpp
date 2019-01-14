@@ -13,35 +13,37 @@ NANO_BEGIN_NAMESPACE
 
 // [range.unreachable.sentinels]
 
-class unreachable {
+struct unreachable_sentinel_t {
     template<typename I>
     friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
-    operator==(const I &, unreachable) noexcept
+    operator==(const I &, unreachable_sentinel_t) noexcept
     {
         return false;
     }
 
     template<typename I>
     friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
-    operator==(unreachable, const I &) noexcept
+    operator==(unreachable_sentinel_t, const I &) noexcept
     {
         return false;
     }
 
     template<typename I>
     friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
-    operator!=(const I &, unreachable) noexcept
+    operator!=(const I &, unreachable_sentinel_t) noexcept
     {
         return true;
     }
 
     template<typename I>
     friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
-    operator!=(unreachable, const I &) noexcept
+    operator!=(unreachable_sentinel_t, const I &) noexcept
     {
         return true;
     }
 };
+
+NANO_INLINE_VARIABLE constexpr unreachable_sentinel_t unreachable_sentinel{};
 
 NANO_END_NAMESPACE
 

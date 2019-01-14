@@ -63,6 +63,12 @@ template <typename Rng>
 NANO_CONCEPT NoThrowForwardRange =
     decltype(NoThrowForwardRange_fn<Rng>(0))::value;
 
+template <typename T>
+void* voidify(T& ptr) noexcept
+{
+    return const_cast<void*>(static_cast<const volatile void*>(std::addressof(ptr)));
+}
+
 }
 
 NANO_END_NAMESPACE

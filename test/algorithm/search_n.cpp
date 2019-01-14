@@ -189,7 +189,7 @@ TEST_CASE("alg.search_n")
 		int in[] = {0,1,2,2,4,5};
 		auto rng = stl2::make_subrange(
 					 stl2::make_counted_iterator(bidirectional_iterator<int*>(in), 6),
-					 stl2::default_sentinel{});
+					 stl2::default_sentinel);
 		auto it = stl2::search_n(rng, 2, 2).begin();
 		CHECK(base(it.base()) == in+2);
 		CHECK(it.count() == 4);

@@ -27,8 +27,7 @@ private:
         O oit = ofirst;
         try {
             for (; ifirst != ilast && oit != olast; ++ifirst, (void) ++oit) {
-                ::new(const_cast<void*>(static_cast<const volatile void*>(std::addressof(
-                        *oit))))
+                ::new(detail::voidify(*oit))
                         std::remove_reference_t<iter_reference_t<O>>(nano::iter_move(ifirst));
             }
             return {std::move(ifirst), std::move(oit)};
@@ -45,8 +44,7 @@ private:
         O oit = ofirst;
         try {
             for (; ifirst != ilast; ++ifirst, (void) ++oit) {
-                ::new(const_cast<void*>(static_cast<const volatile void*>(std::addressof(
-                        *oit))))
+                ::new(detail::voidify(*oit))
                         std::remove_reference_t<iter_reference_t<O>>(nano::iter_move(ifirst));
             }
             return {std::move(ifirst), std::move(oit)};
@@ -139,7 +137,7 @@ struct uninitialized_move_n_fn {
     {
         auto t = uninitialized_move_fn::impl4(
                     make_counted_iterator(std::move(ifirst), n),
-                    default_sentinel{}, std::move(ofirst), std::move(olast));
+                    default_sentinel, std::move(ofirst), std::move(olast));
         return {std::move(t).in.base(), std::move(t).out};
     }
 
@@ -154,7 +152,7 @@ struct uninitialized_move_n_fn {
     {
         auto t = uninitialized_move_fn::impl3(
                 make_counted_iterator(std::move(ifirst), n),
-                default_sentinel{}, std::move(ofirst));
+                default_sentinel, std::move(ofirst));
         return {std::move(t).in.base(), std::move(t).out};
     }
 

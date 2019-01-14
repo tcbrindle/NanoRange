@@ -13,22 +13,9 @@ NANO_BEGIN_NAMESPACE
 
 // [range.indirectcallable.indirectinvocable]
 
-namespace detail {
-
-template <typename, typename = void>
-struct iter_common_ref_helper {
-};
-
 template <typename T>
-struct iter_common_ref_helper<T, std::enable_if_t<Readable<T>>> {
-    using type = common_reference_t<iter_reference_t<T>, iter_value_t<T>&>;
-};
-
-} // namespace detail
-
-template <typename I>
-using iter_common_reference_t =
-    typename detail::iter_common_ref_helper<I>::type;
+using iter_common_reference_t = std::enable_if_t<Readable<T>,
+        common_reference_t<iter_reference_t<T>, iter_value_t<T>&>>;
 
 namespace detail {
 
@@ -144,45 +131,28 @@ template <typename F, typename I1, typename I2 = I1>
 NANO_CONCEPT IndirectStrictWeakOrder =
         decltype(detail::IndirectStrictWeakOrder_fn<F, I1, I2>(0))::value;
 
-template <typename, typename...>
-struct indirect_result;
-
 namespace detail {
-
-template <typename Void, typename, typename...>
-struct indirect_result_helper {
-};
 
 template <bool...>
 struct all_readable_helper;
 
 template <>
-struct all_readable_helper<> : std::true_type {
-};
+struct all_readable_helper<> : std::true_type {};
 
 template <bool First, bool... Rest>
 struct all_readable_helper<First, Rest...>
-    : std::conditional_t<First, all_readable_helper<Rest...>, std::false_type> {
-};
+    : std::conditional_t<First, all_readable_helper<Rest...>, std::false_type> {};
 
 template <typename... Is>
-constexpr bool all_readable = all_readable_helper<Readable<Is>...>::value;
-
-template <typename F, typename... Is>
-struct indirect_result_helper<
-    std::enable_if_t<all_readable<Is...> && Invocable<F, iter_reference_t<Is>...>>,
-    F, Is...> : invoke_result<F, iter_reference_t<Is>...> {
-    using type = invoke_result_t<F, iter_reference_t<Is>...>;
-};
+constexpr bool all_readable_v = all_readable_helper<Readable<Is>...>::value;
 
 } // namespace detail
 
 template <typename F, typename... Is>
-struct indirect_result : detail::indirect_result_helper<void, F, Is...> {
-};
-
-template <typename F, typename... Is>
-using indirect_result_t = typename indirect_result<F, Is...>::type;
+using indirect_result_t = std::enable_if_t<
+        detail::all_readable_v<Is...> &&
+        Invocable<F, iter_reference_t<Is>...>,
+        invoke_result_t<F, iter_reference_t<Is>...>>;
 
 // range.commonalgoreq.indirectlymovable]
 

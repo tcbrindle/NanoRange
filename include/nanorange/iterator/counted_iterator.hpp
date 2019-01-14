@@ -114,6 +114,13 @@ public:
         return counted_iterator(current_ + n, cnt_ - n);
     }
 
+    template <typename II = I, std::enable_if_t<RandomAccessIterator<II>, int> = 0>
+    friend constexpr counted_iterator operator+(iter_difference_t<II> n,
+                                                const counted_iterator<II>& x)
+    {
+        return x + n;
+    }
+
     template <typename II = I>
     constexpr auto operator+=(difference_type n)
         -> std::enable_if_t<RandomAccessIterator<II>, counted_iterator&>
@@ -130,6 +137,101 @@ public:
         return counted_iterator(current_ - n, cnt_ + n);
     }
 
+    template <typename II = I,
+              std::enable_if_t<RandomAccessIterator<II>, int> = 0>
+    constexpr decltype(auto) operator[](difference_type n) const
+    {
+        return current_[n];
+    }
+
+    template <typename I2>
+    friend constexpr auto operator==(const counted_iterator& x,
+                                     const counted_iterator<I2>& y)
+        -> std::enable_if_t<Common<I2, I>, bool>
+    {
+        return x.count() == y.count();
+    }
+
+    friend constexpr bool operator==(const counted_iterator& x, default_sentinel_t)
+    {
+        return x.count() == 0;
+    }
+
+    friend constexpr bool operator==(default_sentinel_t, const counted_iterator& x)
+    {
+        return x.count() == 0;
+    }
+
+    template <typename I2>
+    friend constexpr auto operator!=(const counted_iterator& x,
+                                     const counted_iterator<I2>& y)
+        -> std::enable_if_t<Common<I2, I>, bool>
+    {
+        return !(x == y);
+    }
+
+    friend constexpr bool operator!=(const counted_iterator& x, default_sentinel_t y)
+    {
+        return !(x == y);
+    }
+
+    friend constexpr bool operator!=(default_sentinel_t x, const counted_iterator& y)
+    {
+        return !(x == y);
+    }
+
+    template <typename I2>
+    friend constexpr auto operator<(const counted_iterator& x,
+                                    const counted_iterator<I2>& y)
+        -> std::enable_if_t<Common<I2, I>, bool>
+    {
+        return y.count() < x.count();
+    }
+
+    template <typename I2>
+    friend constexpr auto operator>(const counted_iterator& x,
+                                    const counted_iterator<I2>& y)
+        -> std::enable_if_t<Common<I2, I>, bool>
+    {
+        return y < x;
+    }
+
+    template <typename I2>
+    friend constexpr auto operator<=(const counted_iterator& x,
+                                     const counted_iterator<I2>& y)
+         -> std::enable_if_t<Common<I2, I>, bool>
+    {
+        return !(y < x);
+    }
+
+    template <typename I2>
+    friend constexpr auto operator>=(const counted_iterator& x,
+                                     const counted_iterator<I2>& y)
+        -> std::enable_if_t<Common<I2, I>, bool>
+    {
+        return !(x < y);
+    }
+
+    template <typename I2>
+    friend constexpr auto operator-(const counted_iterator& x,
+                                    const counted_iterator<I2>& y)
+        -> std::enable_if_t<Common<I2, I>, iter_difference_t<I2>>
+    {
+        return y.count() - x.count();
+    }
+
+    friend constexpr iter_difference_t<I>
+    operator-(const counted_iterator& x, default_sentinel_t)
+    {
+        return -x.cnt_;
+    }
+
+    friend constexpr iter_difference_t<I>
+    operator-(default_sentinel_t, const counted_iterator& y)
+    {
+        return y.cnt_;
+    }
+
     template <typename II = I>
     constexpr auto operator-=(difference_type n)
         -> std::enable_if_t<RandomAccessIterator<II>, counted_iterator&>
@@ -137,13 +239,6 @@ public:
         current_ -= n;
         cnt_ += n;
         return *this;
-    }
-
-    template <typename II = I,
-              std::enable_if_t<RandomAccessIterator<II>, int> = 0>
-    constexpr decltype(auto) operator[](difference_type n) const
-    {
-        return current_[n];
     }
 
 #ifndef _MSC_VER
@@ -172,107 +267,6 @@ private:
     I current_{};
     iter_difference_t<I> cnt_{0};
 };
-
-template <typename I1, typename I2>
-constexpr auto operator==(const counted_iterator<I1>& x,
-                          const counted_iterator<I2>& y)
-    -> std::enable_if_t<Common<I1, I2>, bool>
-{
-    return x.count() == y.count();
-}
-
-template <typename I>
-constexpr bool operator==(const counted_iterator<I>& x, default_sentinel)
-{
-    return x.count() == 0;
-}
-
-template <typename I>
-constexpr bool operator==(default_sentinel, const counted_iterator<I>& x)
-{
-    return x.count() == 0;
-}
-
-template <typename I1, typename I2>
-constexpr auto operator!=(const counted_iterator<I1>& x,
-                          const counted_iterator<I2>& y)
-    -> std::enable_if_t<Common<I1, I2>, bool>
-{
-    return !(x == y);
-}
-
-template <typename I>
-constexpr bool operator!=(const counted_iterator<I>& x, default_sentinel y)
-{
-    return !(x == y);
-}
-
-template <typename I>
-constexpr bool operator!=(default_sentinel x, const counted_iterator<I>& y)
-{
-    return !(x == y);
-}
-
-template <typename I1, typename I2>
-constexpr auto operator<(const counted_iterator<I1>& x,
-                         const counted_iterator<I2>& y)
-    -> std::enable_if_t<Common<I1, I2>, bool>
-{
-    return y.count() < x.count();
-}
-
-template <typename I1, typename I2>
-constexpr auto operator<=(const counted_iterator<I1>& x,
-                          const counted_iterator<I2>& y)
-    -> std::enable_if_t<Common<I1, I2>, bool>
-{
-    return !(y < x);
-}
-
-template <typename I1, typename I2>
-constexpr auto operator>(const counted_iterator<I1>& x,
-                         const counted_iterator<I2>& y)
-    -> std::enable_if_t<Common<I1, I2>, bool>
-{
-    return y < x;
-}
-
-template <typename I1, typename I2>
-constexpr auto operator>=(const counted_iterator<I1>& x,
-                          const counted_iterator<I2>& y)
-    -> std::enable_if_t<Common<I1, I2>, bool>
-{
-    return !(x < y);
-}
-
-template <typename I1, typename I2>
-constexpr auto operator-(const counted_iterator<I1>& x,
-                         const counted_iterator<I2>& y)
-    -> std::enable_if_t<Common<I1, I2>, iter_difference_t<I2>>
-{
-    return y.count() - x.count();
-}
-
-template <typename I>
-constexpr iter_difference_t<I> operator-(const counted_iterator<I>& x,
-                                         default_sentinel)
-{
-    return -x.count();
-}
-
-template <typename I>
-constexpr iter_difference_t<I> operator-(default_sentinel,
-                                         const counted_iterator<I>& y)
-{
-    return y.count();
-}
-
-template <typename I>
-constexpr auto operator+(iter_difference_t<I> n, const counted_iterator<I>& x)
-    -> std::enable_if_t<RandomAccessIterator<I>, counted_iterator<I>>
-{
-    return x + n;
-}
 
 }
 

@@ -42,7 +42,7 @@ public:
 
     constexpr istreambuf_iterator() noexcept = default;
 
-    constexpr istreambuf_iterator(default_sentinel) noexcept {}
+    constexpr istreambuf_iterator(default_sentinel_t) noexcept {}
 
     istreambuf_iterator(const istreambuf_iterator&) noexcept = default;
 
@@ -100,7 +100,7 @@ bool operator==(const istreambuf_iterator<CharT, Traits>& a,
 }
 
 template <typename CharT, typename Traits>
-bool operator==(default_sentinel,
+bool operator==(default_sentinel_t,
                 const istreambuf_iterator<CharT, Traits>& b)
 {
     return istreambuf_iterator<CharT, Traits>{}.equal(b);
@@ -108,7 +108,7 @@ bool operator==(default_sentinel,
 
 template <typename CharT, typename Traits>
 bool operator==(const istreambuf_iterator<CharT, Traits>& a,
-                default_sentinel)
+                default_sentinel_t)
 {
     return a.equal(istreambuf_iterator<CharT, Traits>{});
 }
@@ -121,7 +121,7 @@ bool operator!=(const istreambuf_iterator<CharT, Traits>& a,
 }
 
 template <typename CharT, typename Traits>
-bool operator!=(default_sentinel a,
+bool operator!=(default_sentinel_t a,
                 const istreambuf_iterator<CharT, Traits>& b)
 {
     return !(a == b);
@@ -129,7 +129,7 @@ bool operator!=(default_sentinel a,
 
 template <typename CharT, typename Traits>
 bool operator!=(const istreambuf_iterator<CharT, Traits>& a,
-                default_sentinel b)
+                default_sentinel_t b)
 {
     return !(a == b);
 }

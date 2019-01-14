@@ -250,7 +250,7 @@ TEST_CASE("alg.search")
 		auto rng = stl2::make_subrange(
 					 stl2::make_counted_iterator(
 					   bidirectional_iterator<int*>(in), 6),
-					 stl2::default_sentinel{});
+					 stl2::default_sentinel);
 		auto it = stl2::search(rng, std::initializer_list<int>{2,3}).begin();
 		CHECK(base(it.base()) == in+2);
 		CHECK(it.count() == 4);
