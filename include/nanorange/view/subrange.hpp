@@ -161,6 +161,13 @@ template <typename R, typename I, typename S, subrange_kind K>
 constexpr bool subrange_range_constructor_constraint_helper =
     decltype(subrange_range_constructor_constraint_helper_fn<R, I, S, K>(0))::value;
 
+template <typename R>
+constexpr subrange_kind subrange_deduction_guide_helper()
+{
+    return (SizedRange<R> || SizedSentinel<sentinel_t<R>, iterator_t<R>>)
+           ? subrange_kind::sized : subrange_kind::unsized;
+}
+
 } // namespace detail
 
 namespace subrange_ {
@@ -323,8 +330,7 @@ subrange(P, iter_difference_t<std::tuple_element_t<0, P>>) ->
 template <typename R, std::enable_if_t<detail::ForwardingRange<R>, int> = 0>
 subrange(R&&) ->
     subrange<iterator_t<R>, sentinel_t<R>,
-             (SizedRange<R> || SizedSentinel<sentinel_t<R>, iterator_t<R>>)
-             ? subrange_kind::sized : subrange_kind::unsized>;
+             detail::subrange_deduction_guide_helper<R>()>;
 
 template <typename R, std::enable_if_t<detail::ForwardingRange<R>, int> = 0>
 subrange(R&&, iter_difference_t<iterator_t<R>>) ->
