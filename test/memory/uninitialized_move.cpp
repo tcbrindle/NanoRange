@@ -38,7 +38,7 @@ namespace {
 	}*/
 	bool empty(const Rng& rng, const std::ptrdiff_t n, ranges::detail::priority_tag<1>)
 	{
-		return ranges::all_of(ranges::make_counted_iterator(rng.begin(), n), ranges::default_sentinel{},
+		return ranges::all_of(ranges::make_counted_iterator(rng.begin(), n), ranges::default_sentinel,
 			&ranges::iter_value_t<Rng>::empty);
 	}
 

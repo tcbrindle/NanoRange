@@ -54,7 +54,7 @@ constexpr bool test_constexpr() {
 		if (tmp - last != -n) return false;
 	}
 
-	auto end = ranges::default_sentinel{};
+	auto end = ranges::default_sentinel;
 
 	if (first == end) return false;
 	if (end == first) return false;
@@ -91,15 +91,15 @@ TEST_CASE("iter.counted_iterator")
 		int rgi[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 		auto i = make_counted_iterator(forward_iterator<int*>{rgi}, size(rgi));
 		static_assert(std::is_same<decltype(i),counted_iterator<forward_iterator<int*>>>(), "");
-		static_assert(SizedSentinel<default_sentinel, decltype(i)>, "");
-		CHECK(static_cast<std::size_t>(default_sentinel{} - i) == size(rgi));
+		static_assert(SizedSentinel<default_sentinel_t, decltype(i)>, "");
+		CHECK(static_cast<std::size_t>(default_sentinel - i) == size(rgi));
 		CHECK(&*i.base() == begin(rgi));
 		CHECK(std::size_t(i.count()) == size(rgi));
-		CHECK(std::size_t(distance(i, default_sentinel{})) == size(rgi));
+		CHECK(std::size_t(distance(i, default_sentinel)) == size(rgi));
 
 		counted_iterator<forward_iterator<const int*>> j{i};
-		using C = common_iterator<decltype(i), default_sentinel>;
-		CHECK(std::equal(C{i}, C{default_sentinel{}}, rgi));
+		using C = common_iterator<decltype(i), default_sentinel_t>;
+		CHECK(std::equal(C{i}, C{default_sentinel}, rgi));
 	}
 
 	{
@@ -127,7 +127,7 @@ TEST_CASE("iter.counted_iterator")
 		int rgi[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 		counted_iterator<output_iterator<int*>> e{output_iterator<int*>{rgi}, 10};
 //		fill(e, default_sentinel{}, 0);
-		for (auto i = e; i != default_sentinel{}; ++i) { *i = 0; }
+		for (auto i = e; i != default_sentinel; ++i) { *i = 0; }
 		int expected[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 		CHECK(std::equal(rgi, rgi + size(rgi), expected));
 		// Make sure advance compiles

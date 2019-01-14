@@ -68,7 +68,7 @@ struct destroy_n_fn {
     operator()(I first, iter_difference_t<I> n) const noexcept
     {
         return nano::destroy(make_counted_iterator(std::move(first), n),
-                             default_sentinel{}).base();
+                             default_sentinel).base();
     }
 
 

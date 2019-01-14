@@ -141,7 +141,7 @@ struct uninitialized_copy_n_fn {
     {
         auto t = uninitialized_copy_fn::impl4(
                     make_counted_iterator(std::move(ifirst), n),
-                    default_sentinel{}, std::move(ofirst), std::move(olast));
+                    default_sentinel, std::move(ofirst), std::move(olast));
         return {std::move(t).in.base(), std::move(t).out};
     }
 
@@ -156,7 +156,7 @@ struct uninitialized_copy_n_fn {
     {
         auto t = uninitialized_copy_fn::impl3(
                 make_counted_iterator(std::move(ifirst), n),
-                default_sentinel{}, std::move(ofirst));
+                default_sentinel, std::move(ofirst));
         return {std::move(t).in.base(), std::move(t).out};
     }
 

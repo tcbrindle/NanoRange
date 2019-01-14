@@ -77,7 +77,7 @@ void test2() {
 	std::vector<int> v;
 	auto rng = stl2::make_subrange(
 		stl2::make_counted_iterator(stl2::back_inserter(v), 5),
-		stl2::default_sentinel{});
+		stl2::default_sentinel);
 	stl2::generate(rng, gen_test(1));
 	CHECK(v.size() == 5u);
 	CHECK(v[0] == 1);

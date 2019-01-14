@@ -72,7 +72,7 @@ struct uninitialized_fill_n_fn {
     {
         return uninitialized_fill_fn::impl(
                     make_counted_iterator(std::move(first), n),
-                    default_sentinel{}, x).base();
+                    default_sentinel, x).base();
     }
 };
 

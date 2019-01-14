@@ -70,7 +70,7 @@ struct uninitialized_default_construct_n_fn {
     {
         return nano::uninitialized_default_construct(
                     make_counted_iterator(std::move(first), n),
-                    default_sentinel{}).base();
+                    default_sentinel).base();
     }
 
 };

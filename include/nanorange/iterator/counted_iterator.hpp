@@ -152,12 +152,12 @@ public:
         return x.count() == y.count();
     }
 
-    friend constexpr bool operator==(const counted_iterator& x, default_sentinel)
+    friend constexpr bool operator==(const counted_iterator& x, default_sentinel_t)
     {
         return x.count() == 0;
     }
 
-    friend constexpr bool operator==(default_sentinel, const counted_iterator& x)
+    friend constexpr bool operator==(default_sentinel_t, const counted_iterator& x)
     {
         return x.count() == 0;
     }
@@ -170,12 +170,12 @@ public:
         return !(x == y);
     }
 
-    friend constexpr bool operator!=(const counted_iterator& x, default_sentinel y)
+    friend constexpr bool operator!=(const counted_iterator& x, default_sentinel_t y)
     {
         return !(x == y);
     }
 
-    friend constexpr bool operator!=(default_sentinel x, const counted_iterator& y)
+    friend constexpr bool operator!=(default_sentinel_t x, const counted_iterator& y)
     {
         return !(x == y);
     }
@@ -221,13 +221,13 @@ public:
     }
 
     friend constexpr iter_difference_t<I>
-    operator-(const counted_iterator& x, default_sentinel)
+    operator-(const counted_iterator& x, default_sentinel_t)
     {
         return -x.cnt_;
     }
 
     friend constexpr iter_difference_t<I>
-    operator-(default_sentinel, const counted_iterator& y)
+    operator-(default_sentinel_t, const counted_iterator& y)
     {
         return y.cnt_;
     }

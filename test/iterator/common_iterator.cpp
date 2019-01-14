@@ -116,14 +116,15 @@ void test_constexpr()
 	static int i = 42;
 	using ranges::common_iterator;
 	using ranges::counted_iterator;
+	using ranges::default_sentinel_t;
 	using ranges::default_sentinel;
 
-	using CI = common_iterator<counted_iterator<int*>, default_sentinel>;
+	using CI = common_iterator<counted_iterator<int*>, default_sentinel_t>;
 	constexpr CI foo{ranges::make_counted_iterator(&i, 1)};
 	(void) foo;
-	constexpr CI bar{default_sentinel{}};
+	constexpr CI bar{default_sentinel};
 	(void) bar;
-	using CCI = common_iterator<counted_iterator<const int*>, default_sentinel>;
+	using CCI = common_iterator<counted_iterator<const int*>, default_sentinel_t>;
 	constexpr CCI baz{foo};
 	constexpr CCI bang{bar};
 }

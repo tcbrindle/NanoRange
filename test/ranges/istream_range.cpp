@@ -63,7 +63,7 @@ TEST_CASE("rng.istream_range")
     // Default-constructed iterators can be compared
     {
         constexpr ranges::istream_range<int>::iterator iter{};
-        constexpr ranges::default_sentinel sent{};
+        constexpr ranges::default_sentinel_t sent{};
         CHECK(iter == sent);
         CHECK(sent == iter);
         CHECK_FALSE(iter != sent);
