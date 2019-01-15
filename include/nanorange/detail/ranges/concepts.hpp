@@ -302,6 +302,17 @@ template <typename R>
 using safe_iterator_t = std::enable_if_t<Range<R>,
         decltype(ranges::begin(std::declval<R>()))>;
 
+// Helper concepts
+
+// TODO: Add SimpleView and HasArrow
+
+namespace detail {
+
+template <typename T, typename U>
+NANO_CONCEPT NotSameAs = !Same<remove_cvref_t<T>, remove_cvref_t<U>>;
+
+}
+
 NANO_END_NAMESPACE
 
 #endif

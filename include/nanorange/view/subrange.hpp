@@ -97,9 +97,6 @@ auto IteratorSentinelPair_fn(int) -> std::enable_if_t<
 template <typename T>
 NANO_CONCEPT IteratorSentinelPair = decltype(IteratorSentinelPair_fn<T>(0))::value;
 
-template <typename T, typename U>
-NANO_CONCEPT NotSameAs = !Same<remove_cvref_t<T>, remove_cvref_t<U>>;
-
 template <typename I, typename S, bool StoreSize = false>
 struct subrange_data {
     I begin_{};

@@ -13,78 +13,73 @@ NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
-template <typename Rng>
-class ref_view : public view_interface<ref_view<Rng>> {
+template <typename R>
+class ref_view : public view_interface<ref_view<R>> {
 
-    static_assert(Range<Rng> && std::is_object<Rng>::value && !View<Rng>, "");
+    static_assert(Range<R> && std::is_object<R>::value, "");
 
-    Rng* rng_ = nullptr;
+    R* r_ = nullptr;
+
+    struct constructor_req {
+        static void FUN(R&);
+        static void FUN(R&&) = delete;
+
+        template <typename T>
+        auto requires_() -> decltype(FUN(std::declval<T>()));
+    };
 
 public:
     constexpr ref_view() noexcept = default;
 
-    constexpr ref_view(Rng& rng) noexcept
-        : rng_(std::addressof(rng))
+    template <typename T, std::enable_if_t<
+            detail::NotSameAs<T, ref_view> &&
+            ConvertibleTo<T, R&> &&
+            detail::requires_<constructor_req, T>, int> = 0>
+    constexpr ref_view(T&& t)
+        : r_(std::addressof(static_cast<R&>(std::forward<T>(t))))
     {}
 
-    constexpr Rng& base() const { return *rng_; }
+    constexpr R& base() const { return *r_; }
 
-    constexpr iterator_t<Rng> begin() const
-        noexcept(noexcept(ranges::begin(*rng_)))
-    {
-        return ranges::begin(*rng_);
-    }
+    constexpr iterator_t<R> begin() const { return ranges::begin(*r_); }
 
-    constexpr sentinel_t<Rng> end() const
-        noexcept(noexcept(ranges::end(*rng_)))
-    {
-        return ranges::end(*rng_);
-    }
+    constexpr sentinel_t<R> end() const { return ranges::end(*r_); }
 
     constexpr auto empty() const
-        noexcept(noexcept(ranges::empty(*rng_)))
-        -> decltype(static_cast<bool>(ranges::empty(*rng_)))
+        -> decltype(static_cast<bool>(ranges::empty(*r_)))
     {
-        return ranges::empty(*rng_);
+        return ranges::empty(*r_);
     }
 
-    template <typename R = Rng, std::enable_if_t<SizedRange<R>, int> = 0>
+    template <typename RR = R, std::enable_if_t<SizedRange<RR>, int> = 0>
     constexpr auto size() const
-        noexcept(noexcept(ranges::size(*rng_)))
     {
-        return ranges::size(*rng_);
+        return ranges::size(*r_);
     }
 
-    template <typename R = Rng, std::enable_if_t<ContiguousRange<R>, int> = 0>
+    template <typename RR = R, std::enable_if_t<ContiguousRange<RR>, int> = 0>
     constexpr auto data() const
-        noexcept(noexcept(ranges::data(*rng_)))
     {
-        return ranges::data(*rng_);
+        return ranges::data(*r_);
     }
 
-    friend constexpr iterator_t<Rng> begin(ref_view&& r)
-        noexcept(noexcept(r.begin()))
-    {
-        return r.begin();
-    }
+    friend constexpr iterator_t<R> begin(ref_view r) { return r.begin(); }
 
-    friend constexpr sentinel_t<Rng> end(ref_view&& r)
-        noexcept(noexcept(r.end()))
-    {
-        return r.end();
-    }
+    friend constexpr sentinel_t<R> end(ref_view r) { return r.end(); }
 };
 
 template <typename Rng>
 constexpr std::enable_if_t<
     Range<Rng> &&
-    std::is_object<Rng>::value &&
-    !View<Rng>,
+    std::is_object<Rng>::value,
     ref_view<Rng>>
-make_ref_view(Rng& rng) noexcept
+make_ref_view(Rng& rng)
 {
     return ref_view<Rng>{rng};
 }
+
+template <typename T>
+void make_ref_view(const T&&) = delete;
 
 } // namespace detail
 
