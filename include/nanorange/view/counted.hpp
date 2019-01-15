@@ -17,24 +17,43 @@ namespace view {
 namespace detail {
 
 struct counted_fn {
-
-    template <typename T>
-    constexpr auto operator()(T* t, std::ptrdiff_t n) const
-        -> std::enable_if_t<std::is_object<T>::value, subrange<T*>>
+private:
+    template <typename I>
+    static constexpr auto impl(I i, iter_difference_t<I> n, nano::detail::priority_tag<1>)
+        noexcept(noexcept(nano::make_subrange(i, i + n)))
+        -> std::enable_if_t<RandomAccessIterator<I>, decltype(nano::make_subrange(i, i + n))>
     {
-        return nano::make_subrange(t, t + n);
+        return nano::make_subrange(i, i + n);
     }
 
     template <typename I>
-    constexpr auto operator()(I iter, iter_difference_t<I> n) const
-        -> std::enable_if_t<Iterator<I>, decltype(
-                nano::make_subrange(
-                  nano::make_counted_iterator(std::move(iter), n),
-                  default_sentinel{}))>
+    static constexpr auto impl(I i, iter_difference_t<I> n, nano::detail::priority_tag<0>)
+        noexcept(noexcept(nano::make_subrange(
+                nano::make_counted_iterator(std::move(i), n),
+                default_sentinel)))
+        -> decltype(nano::make_subrange(
+            nano::make_counted_iterator(std::move(i), n), default_sentinel))
     {
-        return nano::make_subrange(
-                  nano::make_counted_iterator(std::move(iter), n),
-                  default_sentinel{});
+        return nano::make_subrange(nano::make_counted_iterator(std::move(i), n),
+                                   default_sentinel);
+    }
+
+public:
+    template <typename E, typename F, typename T = std::decay_t<E>>
+    constexpr auto operator()(E&& e, F&& f) const
+        noexcept(noexcept(impl(std::forward<E>(e),
+                               static_cast<iter_difference_t<T>>(std::forward<F>(f)),
+                               nano::detail::priority_tag<1>{})))
+        -> std::enable_if_t<
+            Iterator<T> &&
+            ConvertibleTo<F, iter_difference_t<T>>,
+            decltype(impl(std::forward<E>(e),
+                          static_cast<iter_difference_t<T>>(std::forward<F>(f)),
+                          nano::detail::priority_tag<1>{}))>
+    {
+        return impl(std::forward<E>(e),
+                    static_cast<iter_difference_t<T>>(std::forward<F>(f)),
+                    nano::detail::priority_tag<1>{});
     }
 };
 
