@@ -24,6 +24,8 @@
 #include <nanorange/iterator/move_iterator.hpp>
 #include <nanorange/iterator/reverse_iterator.hpp>
 
+#include <nanorange/detail/memory/temporary_buffer.hpp>
+
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
@@ -128,12 +130,14 @@ private:
 
         const auto dist = nano::distance(first, last);
 
-        try {
-            std::vector<iter_value_t<I>> buf;
-            buf.reserve(dist);
-            return impl_buffered(first, last, buf, pred, proj);
-        } catch (const std::bad_alloc&) {
-            return impl_unbuffered(std::move(first), std::move(--last), dist, pred, proj);
+        detail::temporary_buffer<iter_value_t<I>> buf(dist);
+
+        if (buf) {
+            auto vec = detail::make_temporary_vector(buf);
+            vec.reserve(dist);
+            return impl_buffered(first, last, vec, pred, proj);
+        } else {
+            return impl_unbuffered(first, --last, dist, pred, proj);
         }
     }
 
