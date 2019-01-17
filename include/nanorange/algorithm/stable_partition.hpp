@@ -33,13 +33,23 @@ private:
     template <typename I, typename Buf, typename Pred, typename Proj>
     static I impl_buffered(I first, I last, Buf& buf, Pred& pred, Proj& proj)
     {
+        // first is known to be false, so pop it straight into the buffer
+        buf.push_back(nano::iter_move(first));
+
         const auto res = nano::partition_copy(
-                nano::make_move_iterator(first),
-                nano::make_move_sentinel(last),
+                nano::make_move_iterator(nano::next(first)),
+                nano::make_move_sentinel(--last),
                 first, nano::back_inserter(buf),
                 std::ref(pred), std::ref(proj));
-        nano::move(buf, res.out1);
-        return res.out1;
+
+        // last is known to be true, move that to the correct pos
+        first = std::move(res.out1);
+        *first = nano::iter_move(last);
+        ++first;
+
+        // Now move all the other elements from the buffer back into the sequence
+        nano::move(buf, first);
+        return first;
     }
 
     // Note to self: this is a closed range, last is NOT past-the-end!
