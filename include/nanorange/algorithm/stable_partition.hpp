@@ -16,7 +16,13 @@
 #ifndef NANORANGE_ALGORITHM_STABLE_PARTITION_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_STABLE_PARTITION_HPP_INCLUDED
 
+#include <nanorange/algorithm/find.hpp>
+#include <nanorange/algorithm/move.hpp>
+#include <nanorange/algorithm/partition_copy.hpp>
 #include <nanorange/algorithm/rotate.hpp>
+#include <nanorange/iterator/back_insert_iterator.hpp>
+#include <nanorange/iterator/move_iterator.hpp>
+#include <nanorange/iterator/reverse_iterator.hpp>
 
 NANO_BEGIN_NAMESPACE
 
@@ -24,6 +30,18 @@ namespace detail {
 
 struct stable_partition_fn {
 private:
+    template <typename I, typename Buf, typename Pred, typename Proj>
+    static I impl_buffered(I first, I last, Buf& buf, Pred& pred, Proj& proj)
+    {
+        const auto res = nano::partition_copy(
+                nano::make_move_iterator(first),
+                nano::make_move_sentinel(last),
+                first, nano::back_inserter(buf),
+                std::ref(pred), std::ref(proj));
+        nano::move(buf, res.out1);
+        return res.out1;
+    }
+
     // Note to self: this is a closed range, last is NOT past-the-end!
     template <typename I, typename Pred, typename Proj>
     static I impl_unbuffered(I first, I last, iter_difference_t<I> dist,
@@ -38,7 +56,7 @@ private:
         }
 
         if (dist == 3) {
-            // We know first is false and last-1 is true, so look at middle
+            // We know first is false and last is true, so look at middle
             I middle = nano::next(first);
 
             if (nano::invoke(pred, nano::invoke(proj, *middle))) {
@@ -85,30 +103,28 @@ private:
     static I impl(I first, I last, Pred& pred, Proj& proj)
     {
         // Find the first non-true value
-        while (true) {
-            if (first == last) {
-                return first;
-            }
-            if (!nano::invoke(pred, nano::invoke(proj, *first))) {
-                break;
-            }
-            ++first;
+        first = nano::find_if_not(std::move(first), last, std::ref(pred), std::ref(proj));
+        if (first == last) {
+            return first;
         }
 
         // Find the last true value
-        do {
-            --last;
-            if (last == first) {
-                return last;
-            }
-            if (nano::invoke(pred, nano::invoke(proj, *last))) {
-                break;
-            }
-        } while (true);
+        last = nano::find_if(nano::make_reverse_iterator(last),
+                             nano::make_reverse_iterator(first),
+                             std::ref(pred), std::ref(proj)).base();
+        if (last == first) {
+            return first;
+        }
 
-        const auto dist = nano::distance(first, last) + 1;
-        // Note to self: [first, last] is a CLOSED range here!
-        return impl_unbuffered(std::move(first), std::move(last), dist, pred, proj);
+        const auto dist = nano::distance(first, last);
+
+        try {
+            std::vector<iter_value_t<I>> buf;
+            buf.reserve(dist);
+            return impl_buffered(first, last, buf, pred, proj);
+        } catch (const std::bad_alloc&) {
+            return impl_unbuffered(std::move(first), std::move(--last), dist, pred, proj);
+        }
     }
 
     template <typename I, typename S, typename Pred, typename Proj>
