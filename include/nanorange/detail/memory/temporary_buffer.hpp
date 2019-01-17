@@ -70,6 +70,9 @@ struct buffer_allocator {
 
     explicit buffer_allocator(temporary_buffer<T>& buf) : buf_(buf) {}
 
+    buffer_allocator(const buffer_allocator&) = default;
+    buffer_allocator& operator=(const buffer_allocator&) = delete;
+
     T* allocate(std::size_t n) { return buf_.allocate(n); }
 
     void deallocate(T* ptr, std::size_t n) noexcept
