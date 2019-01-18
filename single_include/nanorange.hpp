@@ -12739,7 +12739,6 @@ public:
           end_(other.end_),
           end_cap_(other.end_cap_)
     {
-        other.start_.reset();
         other.end_ = nullptr;
         other.end_cap_ = nullptr;
     }
@@ -12754,7 +12753,7 @@ public:
 
     ~temporary_vector()
     {
-        clear();
+        nano::destroy(begin(), end());
     }
 
     std::size_t size() const { return end_ - start_.get(); }
@@ -12918,7 +12917,8 @@ public:
     std::enable_if_t<
         BidirectionalIterator<I> &&
         Sentinel<S, I> &&
-        IndirectUnaryPredicate<Pred, projected<I, Proj>>, I>
+        IndirectUnaryPredicate<Pred, projected<I, Proj>> &&
+        Permutable<I>, I>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
         return stable_partition_fn::impl(std::move(first), std::move(last),
@@ -12928,7 +12928,8 @@ public:
     template <typename Rng, typename Pred, typename Proj = identity>
     std::enable_if_t<
         BidirectionalRange<Rng> &&
-        IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
+        IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>> &&
+        Permutable<iterator_t<Rng>>,
     safe_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
