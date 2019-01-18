@@ -9,7 +9,9 @@
 
 #include <nanorange/detail/macros.hpp>
 
-#include <string> // for char_traits
+#include <iosfwd>
+#include <iterator>
+#include <memory>
 
 NANO_BEGIN_NAMESPACE
 

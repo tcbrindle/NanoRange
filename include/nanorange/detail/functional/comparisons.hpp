@@ -11,6 +11,7 @@
 #include <nanorange/detail/concepts/core.hpp>
 
 #include <functional>
+#include <utility>
 
 NANO_BEGIN_NAMESPACE
 

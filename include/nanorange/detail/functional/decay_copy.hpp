@@ -9,8 +9,8 @@
 
 #include <nanorange/detail/macros.hpp>
 
-#include <functional>
 #include <type_traits>
+#include <utility>
 
 NANO_BEGIN_NAMESPACE
 
