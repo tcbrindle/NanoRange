@@ -74,6 +74,7 @@
 #include <nanorange/algorithm/shuffle.hpp>
 #include <nanorange/algorithm/sort.hpp>
 #include <nanorange/algorithm/sort_heap.hpp>
+#include <nanorange/algorithm/stable_partition.hpp>
 #include <nanorange/algorithm/swap_ranges.hpp>
 #include <nanorange/algorithm/transform.hpp>
 #include <nanorange/algorithm/unique.hpp>
@@ -83,7 +84,6 @@
 // Algorithms which reuse the STL implementation
 #include <nanorange/algorithm/stl/inplace_merge.hpp>
 #include <nanorange/algorithm/stl/nth_element.hpp>
-#include <nanorange/algorithm/stl/stable_partition.hpp>
 #include <nanorange/algorithm/stl/stable_sort.hpp>
 
 #endif

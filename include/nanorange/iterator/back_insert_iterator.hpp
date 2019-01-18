@@ -7,8 +7,7 @@
 #ifndef NANORANGE_ITERATOR_BACK_INSERT_ITERATOR_HPP_INCLUDED
 #define NANORANGE_ITERATOR_BACK_INSERT_ITERATOR_HPP_INCLUDED
 
-#include <nanorange/detail/macros.hpp>
-
+#include <nanorange/detail/ranges/concepts.hpp>
 #include <iterator>
 
 NANO_BEGIN_NAMESPACE
@@ -22,13 +21,13 @@ struct back_insert_iterator {
 
     explicit back_insert_iterator(Container& x) : cont_(std::addressof(x)) {}
 
-    back_insert_iterator& operator=(const iter_value_t<Container>& value)
+    back_insert_iterator& operator=(const iter_value_t<iterator_t<Container>>& value)
     {
         cont_->push_back(value);
         return *this;
     }
 
-    back_insert_iterator& operator=(iter_value_t<Container>&& value)
+    back_insert_iterator& operator=(iter_value_t<iterator_t<Container>>&& value)
     {
         cont_->push_back(std::move(value));
         return *this;

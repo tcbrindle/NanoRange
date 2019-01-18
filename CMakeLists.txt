@@ -79,6 +79,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/shuffle.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/sort.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/sort_heap.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stable_partition.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/swap_ranges.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/transform.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/unique.hpp
@@ -87,7 +88,6 @@ target_sources(nanorange INTERFACE
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/inplace_merge.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/nth_element.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/stable_partition.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/stl/stable_sort.hpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/algorithm/heap_sift.hpp
@@ -111,6 +111,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/iterator/projected.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/iterator/traits.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/memory/concepts.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/memory/temporary_vector.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/access.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/begin_end.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/concepts.hpp
