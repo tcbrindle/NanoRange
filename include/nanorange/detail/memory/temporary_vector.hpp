@@ -38,7 +38,6 @@ public:
           end_(other.end_),
           end_cap_(other.end_cap_)
     {
-        other.start_.reset();
         other.end_ = nullptr;
         other.end_cap_ = nullptr;
     }
@@ -53,7 +52,7 @@ public:
 
     ~temporary_vector()
     {
-        clear();
+        nano::destroy(begin(), end());
     }
 
     std::size_t size() const { return end_ - start_.get(); }
