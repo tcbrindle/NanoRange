@@ -7,6 +7,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 enable_testing()
 
+option(ENABLE_BENCHMARKS "Build benchmarking support" Off)
+
 set(CMAKE_CXX_EXTENSIONS Off)
 
 add_library(nanorange INTERFACE)
@@ -168,5 +170,6 @@ if (MSVC)
     target_compile_options(nanorange INTERFACE /permissive-)
 endif()
 
+add_subdirectory(benchmarks)
 add_subdirectory(test)
 add_subdirectory(tools)
