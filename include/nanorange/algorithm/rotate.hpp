@@ -38,6 +38,39 @@ private:
         return {std::move(++first), std::move(last)};
     }
 
+    template <typename I, typename S>
+    static constexpr std::enable_if_t<
+            RandomAccessIterator<I> && SizedSentinel<S, I>,
+            subrange<I>>
+    do_rotate(I first, I middle, S last, priority_tag<2>)
+    {
+        constexpr bool is_tma = std::is_trivially_move_assignable<iter_value_t<I>>::value;
+
+        auto i = nano::distance(first, middle);
+        auto j = nano::distance(first, last) - i;
+        I out = first + (last - middle);
+
+        while (i != j) {
+            if (i > j) {
+                if (is_tma && j == 1) {
+                    do_rotate_one_right(middle - i, middle);
+                    return {std::move(out), nano::next(first, last)};
+                }
+                nano::swap_ranges(middle - i, unreachable_sentinel, middle, middle + j);
+                i -= j;
+            } else {
+                if (is_tma && i == 1) {
+                    do_rotate_one_left(middle - i, middle + j);
+                    return {std::move(out), nano::next(first, last)};
+                }
+                nano::swap_ranges(middle - i, middle, middle + j - i, unreachable_sentinel);
+                j -= i;
+            }
+        }
+        nano::swap_ranges(middle  - i, middle, middle, unreachable_sentinel);
+
+        return {std::move(out), nano::next(first, last)};
+    }
 
     template <typename I, typename S>
     static constexpr std::enable_if_t<BidirectionalIterator<I>, subrange<I>>
@@ -104,7 +137,7 @@ private:
         }
 
         return do_rotate(std::move(first), std::move(middle), std::move(last),
-                         priority_tag<1>{});
+                         priority_tag<2>{});
     }
 
 public:
