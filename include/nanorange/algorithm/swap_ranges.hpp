@@ -17,6 +17,8 @@ using swap_ranges_result = mismatch_result<I1, I2>;
 namespace detail {
 
 struct swap_ranges_fn {
+    friend struct rotate_fn;
+
     template <typename I1, typename S1, typename I2, typename S2>
     static constexpr swap_ranges_result<I1, I2>
     impl4(I1 first1 ,S1 last1, I2 first2, S2 last2)
