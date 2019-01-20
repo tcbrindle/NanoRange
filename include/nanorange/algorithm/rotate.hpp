@@ -9,6 +9,7 @@
 
 #include <nanorange/algorithm/move.hpp>
 #include <nanorange/algorithm/swap_ranges.hpp>
+#include <nanorange/iterator/unreachable.hpp>
 #include <nanorange/view/subrange.hpp>
 
 NANO_BEGIN_NAMESPACE
@@ -18,7 +19,7 @@ namespace detail {
 struct rotate_fn {
 private:
     template <typename I, typename S>
-    static constexpr subrange<I> impl_one_left(I first, S last)
+    static constexpr subrange<I> do_rotate_one_left(I first, S last)
     {
         // Stash the first element and move everything one place
         iter_value_t<I> val = nano::iter_move(first);
@@ -28,7 +29,7 @@ private:
     }
 
     template <typename I>
-    static constexpr subrange<I> impl_one_right(I first, I middle)
+    static constexpr subrange<I> do_rotate_one_right(I first, I middle)
     {
         I last = nano::next(middle);
         iter_value_t<I> val = nano::iter_move(middle);
@@ -37,9 +38,36 @@ private:
         return {std::move(++first), std::move(last)};
     }
 
+
     template <typename I, typename S>
-    static constexpr subrange<I> impl_general(I first, I middle, S last, std::false_type)
+    static constexpr std::enable_if_t<BidirectionalIterator<I>, subrange<I>>
+    do_rotate(I first, I middle, S last, priority_tag<1>)
     {
+        if (std::is_trivially_move_assignable<iter_value_t<I>>::value &&
+                nano::next(middle) == last) {
+            return do_rotate_one_right(std::move(first), std::move(middle));
+        }
+
+        return do_rotate(std::move(first), std::move(middle), std::move(last),
+                         priority_tag<0>{});
+    }
+
+    template <typename I, typename S>
+    static constexpr subrange<I>
+    do_rotate(I first, I middle, S last, priority_tag<0>)
+    {
+        if (std::is_trivially_move_assignable<iter_value_t<I>>::value &&
+                nano::next(first) == middle) {
+            return do_rotate_one_left(std::move(first), std::move(last));
+        }
+
+        if (SizedSentinel<I, I> && SizedSentinel<S, I> &&
+            nano::distance(first, middle) == nano::distance(middle, last))
+        {
+            auto ret = nano::swap_ranges(first, middle, middle, unreachable_sentinel);
+            return {std::move(ret.in1), std::move(ret.in2)};
+        }
+
         I next = middle;
 
         do {
@@ -64,18 +92,6 @@ private:
         return {std::move(ret), std::move(next)};
     }
 
-
-    template <typename I, typename S>
-    static constexpr subrange<I> impl_general(I first, I middle, S last, std::true_type /* isBiDir*/)
-    {
-        if (std::is_trivially_move_assignable<iter_value_t<I>>::value &&
-            nano::next(middle) == last) {
-            return impl_one_right(std::move(first), std::move(middle));
-        }
-        return impl_general(std::move(first), std::move(middle), std::move(last),
-                            std::false_type{});
-    }
-
     template <typename I, typename S>
     static constexpr subrange<I> impl(I first, I middle, S last)
     {
@@ -87,23 +103,8 @@ private:
             return {first, middle};
         }
 
-        if (std::is_trivially_move_assignable<iter_value_t<I>>::value &&
-            nano::next(first) == middle) {
-            return impl_one_left(std::move(first), std::move(last));
-        }
-
-        if (SizedSentinel<I, I> && SizedSentinel<S, I> &&
-            nano::distance(first, middle) == nano::distance(middle, last))
-        {
-            auto ret = swap_ranges_fn::impl3(first, middle, middle);
-            return {std::move(ret.in1), std::move(ret.in2)};
-        }
-
-        using is_bidir_t = std::conditional_t<BidirectionalIterator<I>,
-                std::true_type, std::false_type>;
-
-        return impl_general(std::move(first), std::move(middle), std::move(last),
-                            is_bidir_t{});
+        return do_rotate(std::move(first), std::move(middle), std::move(last),
+                         priority_tag<1>{});
     }
 
 public:
