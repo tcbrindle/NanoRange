@@ -80,10 +80,9 @@ namespace detail {
 
 struct move_backward_fn {
 private:
-    template <typename I, typename S, typename O>
-    static constexpr move_backward_result<I, O> impl(I first, S sent, O result)
+    template <typename I, typename O>
+    static constexpr move_backward_result<I, O> impl(I first, I last, O result)
     {
-        auto last = nano::next(first, std::move(sent));
         auto it = last;
 
         while (it != first) {
@@ -91,6 +90,14 @@ private:
         }
 
         return {std::move(last), std::move(result)};
+    }
+
+    template <typename I, typename S, typename O>
+    static constexpr std::enable_if_t<!Same<I, S>, move_backward_result<I, O>>
+    impl(I first, S sent, O result)
+    {
+        I last = nano::next(first, sent);
+        return impl(std::move(first), std::move(last), std::move(result));
     }
 
 public:
