@@ -15,6 +15,8 @@ namespace detail {
 
 struct min_element_fn {
 private:
+    friend struct nth_element_fn;
+
     template <typename I, typename S, typename Comp, typename Proj>
     static constexpr I impl(I first, S last, Comp& comp, Proj& proj)
     {

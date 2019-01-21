@@ -71,7 +71,7 @@ add_executable(test_nanorange
     algorithm/move_backward.cpp
     algorithm/next_permutation.cpp
     algorithm/none_of.cpp
-    #algorithm/nth_element.cpp
+    algorithm/nth_element.cpp
     algorithm/partial_sort.cpp
     algorithm/partial_sort_copy.cpp
     algorithm/partition.cpp
