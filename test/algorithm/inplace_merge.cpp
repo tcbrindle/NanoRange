@@ -18,17 +18,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/inplace_merge.hpp>
+#include <nanorange/algorithm/inplace_merge.hpp>
 #include <cassert>
 #include <algorithm>
 #include <random>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano::ranges;
 
-namespace { std::mt19937 gen; }
+namespace {
+
+std::mt19937 gen;
 
 template <class Iter, typename Sent = Iter>
 void
@@ -38,18 +40,17 @@ test_one_iter(unsigned N, unsigned M)
 	int* ia = new int[N];
 	for (unsigned i = 0; i < N; ++i)
 		ia[i] = i;
-	std::shuffle(ia, ia+N, gen);
-	std::sort(ia, ia+M);
-	std::sort(ia+M, ia+N);
-	auto res = stl2::inplace_merge(Iter(ia), Iter(ia+M), Sent(ia+N));
-	CHECK(res == Iter(ia+N));
-	if(N > 0)
-	{
+	std::shuffle(ia, ia + N, gen);
+	std::sort(ia, ia + M);
+	std::sort(ia + M, ia + N);
+	auto res = stl2::inplace_merge(Iter(ia), Iter(ia + M), Sent(ia + N));
+	CHECK(res == Iter(ia + N));
+	if (N > 0) {
 		CHECK(ia[0] == 0);
-		CHECK(ia[N-1] == (int)N-1);
-		CHECK(std::is_sorted(ia, ia+N));
+		CHECK(ia[N - 1] == (int) N - 1);
+		CHECK(std::is_sorted(ia, ia + N));
 	}
-	delete [] ia;
+	delete[] ia;
 }
 
 template <class Iter, typename Sent = Iter>
@@ -60,31 +61,32 @@ test_one_rng(unsigned N, unsigned M)
 	int* ia = new int[N];
 	for (unsigned i = 0; i < N; ++i)
 		ia[i] = i;
-	std::shuffle(ia, ia+N, gen);
-	std::sort(ia, ia+M);
-	std::sort(ia+M, ia+N);
-	auto res = stl2::inplace_merge(::as_lvalue(stl2::ext::make_range(Iter(ia), Sent(ia+N))), Iter(ia+M));
-	CHECK(res == Iter(ia+N));
-	if(N > 0)
-	{
+	std::shuffle(ia, ia + N, gen);
+	std::sort(ia, ia + M);
+	std::sort(ia + M, ia + N);
+	auto res = stl2::inplace_merge(
+			::as_lvalue(nano::make_subrange(Iter(ia), Sent(ia + N))),
+			Iter(ia + M));
+	CHECK(res == Iter(ia + N));
+	if (N > 0) {
 		CHECK(ia[0] == 0);
-		CHECK(ia[N-1] == (int)N-1);
-		CHECK(std::is_sorted(ia, ia+N));
+		CHECK(ia[N - 1] == (int) N - 1);
+		CHECK(std::is_sorted(ia, ia + N));
 	}
 
-	std::shuffle(ia, ia+N, gen);
-	std::sort(ia, ia+M);
-	std::sort(ia+M, ia+N);
-	auto res2 = stl2::inplace_merge(stl2::ext::make_range(Iter(ia), Sent(ia+N)), Iter(ia+M));
-	CHECK(res2.get_unsafe() == Iter(ia+N));
-	if(N > 0)
-	{
+	std::shuffle(ia, ia + N, gen);
+	std::sort(ia, ia + M);
+	std::sort(ia + M, ia + N);
+	auto res2 = stl2::inplace_merge(
+			nano::make_subrange(Iter(ia), Sent(ia + N)), Iter(ia + M));
+	CHECK(res2 == Iter(ia + N));
+	if (N > 0) {
 		CHECK(ia[0] == 0);
-		CHECK(ia[N-1] == (int)N-1);
-		CHECK(std::is_sorted(ia, ia+N));
+		CHECK(ia[N - 1] == (int) N - 1);
+		CHECK(std::is_sorted(ia, ia + N));
 	}
 
-	delete [] ia;
+	delete[] ia;
 }
 
 template <class Iter>
@@ -102,9 +104,9 @@ void
 test(unsigned N)
 {
 	test_one<Iter>(N, 0);
-	test_one<Iter>(N, N/4);
-	test_one<Iter>(N, N/2);
-	test_one<Iter>(N, 3*N/4);
+	test_one<Iter>(N, N / 4);
+	test_one<Iter>(N, N / 2);
+	test_one<Iter>(N, 3 * N / 4);
 	test_one<Iter>(N, N);
 }
 
@@ -127,12 +129,12 @@ test()
 	test<Iter>(1000);
 }
 
-int main()
+}
+
+TEST_CASE("alg.inplace_merge")
 {
 	// test<forward_iterator<int*> >();
 	test<bidirectional_iterator<int*> >();
 	test<random_access_iterator<int*> >();
 	test<int*>();
-
-	return ::test_result();
 }
