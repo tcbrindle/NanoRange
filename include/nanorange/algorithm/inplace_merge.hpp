@@ -23,8 +23,14 @@
 #define NANORANGE_ALGORITHM_INPLACE_MERGE_HPP_INCLUDED
 
 #include <nanorange/algorithm/lower_bound.hpp>
+#include <nanorange/algorithm/merge.hpp>
+#include <nanorange/algorithm/min.hpp>
+#include <nanorange/algorithm/move.hpp>
 #include <nanorange/algorithm/rotate.hpp>
 #include <nanorange/algorithm/upper_bound.hpp>
+#include <nanorange/detail/memory/temporary_vector.hpp>
+#include <nanorange/iterator/back_insert_iterator.hpp>
+#include <nanorange/iterator/move_iterator.hpp>
 
 NANO_BEGIN_NAMESPACE
 
@@ -122,6 +128,37 @@ private:
         }
     }
 
+    template <typename I, typename Buf, typename Comp, typename Proj>
+    static void impl_buffered(I first, I middle, I last,
+                              iter_difference_t<I> len1, iter_difference_t<I> len2,
+                              Buf& buf, Comp& comp, Proj& proj)
+    {
+        if (len1 <= len2) {
+            nano::move(first, middle, nano::back_inserter(buf));
+            nano::merge(
+                nano::make_move_iterator(buf.begin()),
+                nano::make_move_sentinel(buf.end()),
+                nano::make_move_iterator(std::move(middle)),
+                nano::make_move_sentinel(std::move(last)),
+                std::move(first), std::ref(comp), std::ref(proj), std::ref(proj));
+        } else {
+            nano::move(middle, last, nano::back_inserter(buf));
+            using ri_t = nano::reverse_iterator<I>;
+            // TODO: C++17's not_fn would be useful
+            auto not_comp = [&comp] (auto&& a, auto&& b) {
+                return !nano::invoke(comp, std::forward<decltype(a)>(a),
+                        std::forward<decltype(b)>(b));
+            };
+            nano::merge(
+                nano::make_move_iterator(ri_t{std::move(middle)}),
+                nano::make_move_sentinel(ri_t{std::move(first)}),
+                nano::make_move_iterator(nano::rbegin(buf)),
+                nano::make_move_sentinel(nano::rend(buf)),
+                nano::make_reverse_iterator(std::move(last)),
+                not_comp, std::ref(proj), std::ref(proj));
+        }
+    }
+
     template <typename I, typename S, typename Comp, typename Proj>
     static I impl(I first, I middle, S last, Comp& comp, Proj& proj)
     {
@@ -133,8 +170,16 @@ private:
             ++dist2;
         }
 
-        impl_slow(std::move(first), std::move(middle), std::move(ilast),
-                  dist1, dist2, comp, proj);
+        const auto sz = nano::min(dist1, dist2);
+        auto buf = detail::temporary_vector<iter_value_t<I>>(sz);
+
+        if (buf.capacity() >= static_cast<std::size_t>(sz)) {
+            impl_buffered(std::move(first), std::move(middle), std::move(ilast),
+                          dist1, dist2, buf, comp, proj);
+        } else {
+            impl_slow(std::move(first), std::move(middle), std::move(ilast),
+                      dist1, dist2, comp, proj);
+        }
 
         return ilast;
     }
