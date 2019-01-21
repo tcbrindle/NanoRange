@@ -123,7 +123,7 @@ add_executable(test_nanorange
     algorithm/sort.cpp
     algorithm/sort_heap.cpp
     algorithm/stable_partition.cpp
-    #algorithm/stable_sort.cpp
+    algorithm/stable_sort.cpp
     algorithm/swap_ranges.cpp
     algorithm/transform.cpp
     algorithm/unique.cpp

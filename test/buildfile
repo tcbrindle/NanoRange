@@ -4,11 +4,7 @@
 # Skip broken tests and things we haven't implemented yet
 exe{test-nanorange}: cxx{**\
     -test_type_traits           \
-    -algorithm/inplace_merge    \
-    -algorithm/nth_element      \
     -algorithm/sample           \
-    -algorithm/stable_partition \
-    -algorithm/stable_sort      \
     -iterator/incomplete        \
     -iterator/iterator          \
     -view/bounded_view          \

@@ -285,25 +285,6 @@ auto ContiguousIterator_fn(int) -> std::enable_if_t<
 template <typename I>
 NANO_CONCEPT ContiguousIterator = decltype(detail::ContiguousIterator_fn<I>(0))::value;
 
-
-// Extension: used for constraining iterators for existing STL algos
-
-namespace detail {
-
-template <typename I,
-          typename T = std::iterator_traits<I>,
-          typename = typename T::value_type,
-          typename = typename T::difference_type,
-          typename = typename T::reference,
-          typename = typename T::pointer,
-          typename = typename T::iterator_category>
-using legacy_iterator_traits_t = void;
-
-template <typename I>
-NANO_CONCEPT Cpp98Iterator = exists_v<legacy_iterator_traits_t, I>;
-
-}
-
 NANO_END_NAMESPACE
 
 #endif

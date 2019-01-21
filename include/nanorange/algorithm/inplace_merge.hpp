@@ -38,6 +38,8 @@ namespace detail {
 
 struct inplace_merge_fn {
 private:
+    friend struct stable_sort_fn;
+
     template <typename I, typename Pred, typename Proj>
     static void impl_slow(I first, I middle, I last,
                           iter_difference_t<I> len1, iter_difference_t<I> len2,
