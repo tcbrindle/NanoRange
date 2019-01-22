@@ -46,6 +46,7 @@
 #include <nanorange/algorithm/move.hpp>
 #include <nanorange/algorithm/next_permutation.hpp>
 #include <nanorange/algorithm/none_of.hpp>
+#include <nanorange/algorithm/nth_element.hpp>
 #include <nanorange/algorithm/partial_sort.hpp>
 #include <nanorange/algorithm/partial_sort_copy.hpp>
 #include <nanorange/algorithm/partition.hpp>
@@ -83,7 +84,6 @@
 #include <nanorange/algorithm/upper_bound.hpp>
 
 // Algorithms which reuse the STL implementation
-#include <nanorange/algorithm/stl/nth_element.hpp>
 #include <nanorange/algorithm/stl/stable_sort.hpp>
 
 #endif

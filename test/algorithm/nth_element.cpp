@@ -18,18 +18,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/nth_element.hpp>
+#include <nanorange/algorithm/nth_element.hpp>
 #include <cassert>
 #include <memory>
 #include <random>
 #include <algorithm>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano::ranges;
 
-namespace { std::mt19937 gen; }
+namespace {
+
+std::mt19937 gen;
 
 void
 test_one(unsigned N, unsigned M)
@@ -43,10 +45,10 @@ test_one(unsigned N, unsigned M)
 	CHECK(stl2::nth_element(array.get(), array.get()+M, array.get()+N) == array.get()+N);
 	CHECK((unsigned)array[M] == M);
 	std::shuffle(array.get(), array.get()+N, gen);
-	CHECK(stl2::nth_element(::as_lvalue(stl2::ext::make_range(array.get(), array.get()+N)), array.get()+M) == array.get()+N);
+	CHECK(stl2::nth_element(::as_lvalue(stl2::make_subrange(array.get(), array.get()+N)), array.get()+M) == array.get()+N);
 	CHECK((unsigned)array[M] == M);
 	std::shuffle(array.get(), array.get()+N, gen);
-	CHECK(stl2::nth_element(stl2::ext::make_range(array.get(), array.get()+N), array.get()+M).get_unsafe() == array.get()+N);
+	CHECK(stl2::nth_element(stl2::make_subrange(array.get(), array.get()+N), array.get()+M) == array.get()+N);
 	CHECK((unsigned)array[M] == M);
 	stl2::nth_element(array.get(), array.get()+N, array.get()+N); // begin, end, end
 }
@@ -71,7 +73,9 @@ struct S
 	int i,j;
 };
 
-int main()
+}
+
+TEST_CASE("alg.nth_element")
 {
 	int d = 0;
 	stl2::nth_element(&d, &d, &d);
@@ -94,6 +98,4 @@ int main()
 	stl2::nth_element(ia, ia+M, std::less<int>(), &S::i);
 	CHECK(ia[M].i == M);
 	CHECK(ia[M].j == M);
-
-	return test_result();
 }

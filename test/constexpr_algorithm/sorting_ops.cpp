@@ -27,4 +27,31 @@ constexpr bool test_sort()
 }
 static_assert(test_sort(), "");
 
+constexpr bool test_nth_element()
+{
+    {
+        carray<int, 9> arr{5, 8, 4, 7, 2, 1, 0, 6, 3};
+        const auto ret = nano::nth_element(arr, arr.begin() + 5);
+        if (ret != arr.end()) {
+            return false;
+        }
+        if (arr[5] != 5) {
+            return false;
+        }
+    }
+
+    {
+        carray<int, 9> arr{5, 8, 4, 7, 2, 1, 0, 6, 3};
+        const auto ret = nano::nth_element(arr.begin(), arr.begin() + 5, arr.end());
+        if (ret != arr.end()) {
+            return false;
+        }
+        if (arr[5] != 5) {
+            return false;
+        }
+    }
+    return true;
+}
+static_assert(test_nth_element(), "");
+
 }
