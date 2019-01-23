@@ -47,7 +47,7 @@ NanoRange requires a conforming C++14 compiler, and is
 [tested](https://travis-ci.org/tcbrindle/nanorange) with GCC 5.4 and Clang 3.8
 and newer. Older versions may work in some cases, but this is not guaranteed.
 
-In addition, NanoRange works with MSVC 2017 version 15.7. Note that
+In addition, NanoRange works with MSVC 2017 version 15.9. Note that
 the `/permissive-` switch is required for correct two-phase lookup.
 
 ## Documentation ##
@@ -212,63 +212,12 @@ int main()
 }
 ```
 
-#### Algorithms status ####
-
-Most of the STL algorithms have been fully reimplemented in NanoRange and
-provide all of the improvements from the ranges papers, including differing
-iterator/sentinel types and support for projections.
-
-A few of the more complex algorithms have not yet been fully reimplemented, 
-and instead function as constrained wrappers around a call to the existing
-STL implementation from your `<algorithm>` header.
-
-Because they call into the existing STL, these
-versions have additional constraints above what the Ranges papers require:
-in particular, the iterator and sentinel types must be the same (or for the
-range-based overloads, the range must model `CommonRange`). Iterators must also
-be STL-compatible, that is, a specialisation of `std::iterator_traits` must exist
-which provides all five required typedefs. In addition, projections are not
-supported, and the return types match those of the original STL versions.
-
-The file [algorithms.md](./algorithms.md) lists which algorithms have been fully reimplemented,
-and which are STL wrappers. The long-term goal is to move all the algorithms
-into the former category.
-
 ## What's missing ##
 
 NanoRange is a new library, and certain features haven't been implemented yet.
 
 In particular, NanoRange doesn't yet provide any of the Views from [P0896].
 These will be added as the library evolves.
-
-There is a [TODO list](TODO.md) which is gradually being migrated
-to Github issues.
-
-## Differences from Range-V3 ##
-
-One inevitable question is *"why should I use this, when Range-V3 exists?"*.
-The simple answer is that if you *can* use Range-V3, then go ahead and do so.
-You won't regret it.
-
-Having said that, a couple of NanoRange selling points might be:
-
- * It's very much smaller. Range-V3 provides a huge array of views and actions,
-   not all of which are (or will be) proposed for standardisation. By contrast,
-   while it's nowhere near as "nano" as it was when it started out, this library
-   aims to provide only those features that will (or are likely to) end up in
-   C++20.
-   
- * NanoRange works with the latest MSVC, while Range-V3 currently doesn't. (There
-   is an old fork of Range-V3 that is MSVC compatible, but it's buggy and
-   mostly unmaintained.)
-
- * NanoRange currently tracks the C++20 Ranges proposals more closely than
-   Range-V3. This means that if you use NanoRange today, there should be fewer
-   changes you'll need to make to your code to upgrade to standard ranges when
-   they arrive.
- 
- * There is still a lot to do and probably a lot of bugs to fix, so you might have
-   more fun hacking on NanoRange ;-)
 
 ## Ranges papers ##
 
