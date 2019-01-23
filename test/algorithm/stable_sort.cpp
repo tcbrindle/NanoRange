@@ -18,19 +18,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <stl2/detail/algorithm/stable_sort.hpp>
+#include <nanorange/algorithm/stable_sort.hpp>
 #include <cassert>
 #include <memory>
 #include <random>
 #include <vector>
 #include <algorithm>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
 #include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
-namespace stl2 = __stl2;
+namespace stl2 = nano::ranges;
 
-namespace { std::mt19937 gen; }
+namespace {
+
+std::mt19937 gen;
 
 struct indirect_less
 {
@@ -43,7 +45,7 @@ template <class RI>
 void
 test_sort_helper(RI f, RI l)
 {
-	using value_type = stl2::value_type_t<RI>;
+	using value_type = stl2::iter_value_t<RI>;
 	auto stable_sort = make_testable_1<false>([](auto&&... args) {
 		return stl2::stable_sort(std::forward<decltype(args)>(args)...);
 	});
@@ -165,7 +167,9 @@ struct S
 	int i, j;
 };
 
-int main()
+}
+
+TEST_CASE("alg.stable_sort")
 {
 	// test null range
 	int d = 0;
@@ -218,6 +222,7 @@ int main()
 		}
 	}
 
+#if 0
 	// Check rvalue range
 	{
 		std::vector<S> v(1000, S{});
@@ -233,6 +238,5 @@ int main()
 			CHECK((std::size_t)v[i].j == v.size() - i - 1);
 		}
 	}
-
-	return ::test_result();
+#endif
 }
