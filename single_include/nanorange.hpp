@@ -80,6 +80,8 @@
 #ifndef NANORANGE_DETAIL_MACROS_HPP_INCLUDED
 #define NANORANGE_DETAIL_MACROS_HPP_INCLUDED
 
+#include <ciso646>
+
 #if (__cplusplus >= 201703) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
 #define NANO_HAVE_CPP17
 #endif
@@ -152,6 +154,22 @@ constexpr T static_const_<T>::value;
 } // namespace detail
 
 NANO_END_NAMESPACE
+
+#if defined(_LIBCPP_VERSION)
+#define NANO_BEGIN_NAMESPACE_STD _LIBCPP_BEGIN_NAMESPACE_STD
+#define NANO_END_NAMESPACE_STD _LIBCPP_END_NAMESPACE_STD
+#elif defined(_MSVC_STL_VERSION)
+#define NANO_BEGIN_NAMESPACE_STD _STD_BEGIN
+#define NANO_END_NAMESPACE_STD _STD_END
+#elif defined(_GLIBCXX_DEBUG)
+#ifndef NANORANGE_NO_STD_FORWARD_DECLARATIONS
+#define NANORANGE_NO_STD_FORWARD_DECLARATIONS
+#endif
+#else
+#define NANO_BEGIN_NAMESPACE_STD namespace std {
+#define NANO_END_NAMESPACE_STD }
+#endif
+
 
 #endif
 
@@ -577,7 +595,7 @@ NANO_END_NAMESPACE
 #endif
 
 
-#include <functional>
+#include <utility>
 
 NANO_BEGIN_NAMESPACE
 
@@ -1043,6 +1061,7 @@ NANO_END_NAMESPACE
 
 
 #include <functional>
+#include <utility>
 
 NANO_BEGIN_NAMESPACE
 
@@ -1245,8 +1264,8 @@ NANO_END_NAMESPACE
 
 
 
-#include <functional>
 #include <type_traits>
+#include <utility>
 
 NANO_BEGIN_NAMESPACE
 
@@ -1303,10 +1322,10 @@ NANO_END_NAMESPACE
 #ifndef NANORANGE_DETAIL_FUNCTIONAL_INVOKE_HPP_INCLUDED
 #define NANORANGE_DETAIL_FUNCTIONAL_INVOKE_HPP_INCLUDED
 
+
+
+
 #include <functional>
-
-
-
 
 NANO_BEGIN_NAMESPACE
 
@@ -1791,9 +1810,7 @@ void iter_move();
 struct fn {
 private:
     template <typename T>
-    static constexpr auto impl(T&& t, priority_tag<2>) /*noexcept(
-        noexcept(static_cast<decltype(iter_move(t))>(iter_move(t))))
-        -> decltype(static_cast<decltype(iter_move(t))>(iter_move(t)))*/
+    static constexpr auto impl(T&& t, priority_tag<2>)
         noexcept(noexcept(iter_move(t)))
         -> decltype(iter_move(t))
     {
@@ -2666,8 +2683,8 @@ NANO_END_NAMESPACE
 
 
 
-#include <functional>
 #include <type_traits>
+#include <utility>
 
 NANO_BEGIN_NAMESPACE
 
@@ -3114,12 +3131,23 @@ NANO_END_NAMESPACE
 
 #endif
 
-// These are, sadly, needed for view-predicate specialisations,
-// because we're not allowed to forward-declare std classes
-
 #include <initializer_list>
+
+// Avoid dragging in the large <set> and <unordered_set> headers
+// This is technically undefined behaviour: define the symbol
+// NANORANGE_NO_STD_FORWARD_DECLARATIONS
+// to enforce standard-compliant mode
+#ifndef NANORANGE_NO_STD_FORWARD_DECLARATIONS
+NANO_BEGIN_NAMESPACE_STD
+template <typename, typename, typename> class set;
+template <typename, typename, typename> class multiset;
+template <typename, typename, typename, typename> class unordered_set;
+template <typename, typename, typename, typename> class unordered_multiset;
+NANO_END_NAMESPACE_STD
+#else
 #include <set>
 #include <unordered_set>
+#endif
 
 NANO_BEGIN_NAMESPACE
 
@@ -9332,9 +9360,6 @@ NANO_END_NAMESPACE
 
 
 
-
-#include <algorithm>
-
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
@@ -14336,7 +14361,9 @@ NANO_END_NAMESPACE
 
 
 
-#include <string> // for char_traits
+#include <iosfwd>
+#include <iterator>
+#include <memory>
 
 NANO_BEGIN_NAMESPACE
 
@@ -14400,7 +14427,7 @@ struct iterator_traits<::nano::ranges::ostream_iterator<T, C, Tr>> {
 
 
 #include <iosfwd> // for basic_streambuf
-#include <string> // for char_traits
+#include <iterator>
 
 NANO_BEGIN_NAMESPACE
 
