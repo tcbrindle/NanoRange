@@ -10,7 +10,7 @@
 #include <nanorange/detail/macros.hpp>
 #include <nanorange/type_traits.hpp>
 
-#include <functional>
+#include <utility>
 
 NANO_BEGIN_NAMESPACE
 

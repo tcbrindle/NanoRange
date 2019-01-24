@@ -10,12 +10,23 @@
 #include <nanorange/detail/ranges/begin_end.hpp>
 #include <nanorange/detail/ranges/primitives.hpp>
 
-// These are, sadly, needed for view-predicate specialisations,
-// because we're not allowed to forward-declare std classes
-
 #include <initializer_list>
+
+// Avoid dragging in the large <set> and <unordered_set> headers
+// This is technically undefined behaviour: define the symbol
+// NANORANGE_NO_STD_FORWARD_DECLARATIONS
+// to enforce standard-compliant mode
+#ifndef NANORANGE_NO_STD_FORWARD_DECLARATIONS
+NANO_BEGIN_NAMESPACE_STD
+template <typename, typename, typename> class set;
+template <typename, typename, typename> class multiset;
+template <typename, typename, typename, typename> class unordered_set;
+template <typename, typename, typename, typename> class unordered_multiset;
+NANO_END_NAMESPACE_STD
+#else
 #include <set>
 #include <unordered_set>
+#endif
 
 NANO_BEGIN_NAMESPACE
 

@@ -10,7 +10,7 @@
 #include <nanorange/detail/macros.hpp>
 
 #include <iosfwd> // for basic_streambuf
-#include <string> // for char_traits
+#include <iterator>
 
 NANO_BEGIN_NAMESPACE
 

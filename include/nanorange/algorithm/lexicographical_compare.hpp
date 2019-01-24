@@ -9,9 +9,6 @@
 
 #include <nanorange/ranges.hpp>
 
-
-#include <algorithm>
-
 NANO_BEGIN_NAMESPACE
 
 namespace detail {

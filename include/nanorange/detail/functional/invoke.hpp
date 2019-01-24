@@ -7,10 +7,10 @@
 #ifndef NANORANGE_DETAIL_FUNCTIONAL_INVOKE_HPP_INCLUDED
 #define NANORANGE_DETAIL_FUNCTIONAL_INVOKE_HPP_INCLUDED
 
-#include <functional>
-
 #include <nanorange/detail/macros.hpp>
 #include <nanorange/detail/type_traits.hpp>
+
+#include <functional>
 
 NANO_BEGIN_NAMESPACE
 

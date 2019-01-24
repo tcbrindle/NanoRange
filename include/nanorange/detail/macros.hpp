@@ -7,6 +7,8 @@
 #ifndef NANORANGE_DETAIL_MACROS_HPP_INCLUDED
 #define NANORANGE_DETAIL_MACROS_HPP_INCLUDED
 
+#include <ciso646>
+
 #if (__cplusplus >= 201703) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
 #define NANO_HAVE_CPP17
 #endif
@@ -79,5 +81,21 @@ constexpr T static_const_<T>::value;
 } // namespace detail
 
 NANO_END_NAMESPACE
+
+#if defined(_LIBCPP_VERSION)
+#define NANO_BEGIN_NAMESPACE_STD _LIBCPP_BEGIN_NAMESPACE_STD
+#define NANO_END_NAMESPACE_STD _LIBCPP_END_NAMESPACE_STD
+#elif defined(_MSVC_STL_VERSION)
+#define NANO_BEGIN_NAMESPACE_STD _STD_BEGIN
+#define NANO_END_NAMESPACE_STD _STD_END
+#elif defined(_GLIBCXX_DEBUG)
+#ifndef NANORANGE_NO_STD_FORWARD_DECLARATIONS
+#define NANORANGE_NO_STD_FORWARD_DECLARATIONS
+#endif
+#else
+#define NANO_BEGIN_NAMESPACE_STD namespace std {
+#define NANO_END_NAMESPACE_STD }
+#endif
+
 
 #endif
