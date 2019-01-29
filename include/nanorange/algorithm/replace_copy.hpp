@@ -40,7 +40,7 @@ private:
 public:
     template <typename I, typename S, typename O, typename T1, typename T2,
               typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputIterator<I> && Sentinel<S, I> && OutputIterator<O, const T2&> &&
             IndirectlyCopyable<I, O> &&
             IndirectRelation<equal_to<>, projected<I, Proj>, const T1*>,
@@ -55,7 +55,7 @@ public:
 
     template <typename Rng, typename O, typename T1, typename T2,
               typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputRange<Rng> && OutputIterator<O, const T2&> &&
             IndirectlyCopyable<iterator_t<Rng>, O> &&
             IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>,

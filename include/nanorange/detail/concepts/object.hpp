@@ -21,7 +21,7 @@ template <typename>
 auto Copyable_fn(long) -> std::false_type;
 
 template <typename T>
-auto Copyable_fn(int) -> std::enable_if_t<
+auto Copyable_fn(int) -> detail::enable_if_t<
         CopyConstructible<T> &&
         Movable<T> &&
         Assignable<T&, const T&>,
@@ -66,7 +66,7 @@ template <typename, typename...>
 auto Predicate_fn(long) -> std::false_type;
 
 template <typename F, typename... Args>
-auto Predicate_fn(int) -> std::enable_if_t<
+auto Predicate_fn(int) -> detail::enable_if_t<
         RegularInvocable<F, Args...> &&
         Boolean<invoke_result_t<F, Args...>>,
         std::true_type>;
@@ -82,7 +82,7 @@ template <typename, typename, typename>
 auto Relation_fn(long) -> std::false_type;
 
 template <typename R, typename T, typename U>
-auto Relation_fn(int) -> std::enable_if_t<
+auto Relation_fn(int) -> detail::enable_if_t<
         Predicate<R, T, T> && Predicate<R, U, U> &&
         CommonReference<const std::remove_reference_t<T>&,
                         const std::remove_reference_t<U>&> &&

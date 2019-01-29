@@ -61,7 +61,7 @@ template <typename>
 auto Range_fn(long) -> std::false_type;
 
 template <typename T>
-auto Range_fn(int) -> std::enable_if_t<RangeImpl<T&>, std::true_type>;
+auto Range_fn(int) -> detail::enable_if_t<RangeImpl<T&>, std::true_type>;
 
 } // namespace detail
 
@@ -81,7 +81,7 @@ namespace detail {
 
 template <typename T, typename Deduced>
 auto convertible_to_helper(Deduced)
-    -> std::enable_if_t<ConvertibleTo<Deduced, T>, int>;
+    -> detail::enable_if_t<ConvertibleTo<Deduced, T>, int>;
 
 struct SizedRange_req {
     template <typename T>
@@ -115,13 +115,13 @@ template <typename T>
 constexpr bool has_enable_view_v = exists_v<enable_view_t, T>;
 
 template <typename T>
-struct view_predicate<T, std::enable_if_t<has_enable_view_v<T>>> {
+struct view_predicate<T, detail::enable_if_t<has_enable_view_v<T>>> {
     static constexpr bool value = enable_view<T>::type::value;
 };
 
 template <typename T>
 struct view_predicate<
-    T, std::enable_if_t<!has_enable_view_v<T> && DerivedFrom<T, view_base>>>
+    T, detail::enable_if_t<!has_enable_view_v<T> && DerivedFrom<T, view_base>>>
     : std::true_type {};
 
 template <typename T>
@@ -143,7 +143,7 @@ template <typename>
 auto view_predicate_helper_fn(long) -> std::false_type;
 
 template <typename T>
-auto view_predicate_helper_fn(int) -> std::enable_if_t<
+auto view_predicate_helper_fn(int) -> detail::enable_if_t<
         !has_enable_view_v<T> &&
         !DerivedFrom<T, view_base> &&
         Range<T> &&
@@ -156,7 +156,7 @@ constexpr bool view_predicate_helper =
     decltype(view_predicate_helper_fn<T>(0))::value;
 
 template <typename T>
-struct view_predicate<T, std::enable_if_t<view_predicate_helper<T>>>
+struct view_predicate<T, detail::enable_if_t<view_predicate_helper<T>>>
    : std::false_type {};
 
 } // namespace detail
@@ -171,7 +171,7 @@ template <typename>
 auto CommonRange_fn(long) -> std::false_type;
 
 template <typename T>
-auto CommonRange_fn(int) -> std::enable_if_t<
+auto CommonRange_fn(int) -> detail::enable_if_t<
     Range<T> &&
     Same<iterator_t<T>, sentinel_t<T>>,
         std::true_type>;
@@ -195,7 +195,7 @@ template <typename>
 auto InputRange_fn(long) -> std::false_type;
 
 template <typename T>
-auto InputRange_fn(int) -> std::enable_if_t<
+auto InputRange_fn(int) -> detail::enable_if_t<
         Range<T> &&
         InputIterator<iterator_t<T>>,
     std::true_type>;
@@ -212,7 +212,7 @@ template <typename, typename >
 auto OutputRange_fn(long) -> std::false_type;
 
 template <typename R, typename T>
-auto OutputRange_fn(int) -> std::enable_if_t<
+auto OutputRange_fn(int) -> detail::enable_if_t<
         Range<R> && OutputIterator<iterator_t<R>, T>,
         std::true_type>;
 
@@ -228,7 +228,7 @@ template <typename>
 auto ForwardRange_fn(long) -> std::false_type;
 
 template <typename T>
-auto ForwardRange_fn(int) -> std::enable_if_t<
+auto ForwardRange_fn(int) -> detail::enable_if_t<
         InputRange<T> && ForwardIterator<iterator_t<T>>,
         std::true_type>;
 
@@ -244,7 +244,7 @@ template <typename>
 auto BidirectionalRange_fn(long) -> std::false_type;
 
 template <typename T>
-auto BidirectionalRange_fn(int) -> std::enable_if_t<
+auto BidirectionalRange_fn(int) -> detail::enable_if_t<
         ForwardRange<T> && BidirectionalIterator<iterator_t<T>>,
         std::true_type>;
 
@@ -260,7 +260,7 @@ template <typename>
 auto RandomAccessRange_fn(long) -> std::false_type;
 
 template <typename T>
-auto RandomAccessRange_fn(int) -> std::enable_if_t<
+auto RandomAccessRange_fn(int) -> detail::enable_if_t<
         BidirectionalRange<T> && RandomAccessIterator<iterator_t<T>>,
         std::true_type>;
 
@@ -287,7 +287,7 @@ template <typename>
 auto ContiguousRange_fn(long) -> std::false_type;
 
 template <typename R>
-auto ContiguousRange_fn(int) -> std::enable_if_t<
+auto ContiguousRange_fn(int) -> detail::enable_if_t<
         Range<R> && RandomAccessIterator<iterator_t<R>> &&
         requires_<ContiguousRange_req, R>,
                 std::true_type>;
@@ -299,7 +299,7 @@ NANO_CONCEPT ContiguousRange =
     decltype(detail::ContiguousRange_fn<R>(0))::value;
 
 template <typename R>
-using safe_iterator_t = std::enable_if_t<Range<R>,
+using safe_iterator_t = detail::enable_if_t<Range<R>,
         decltype(ranges::begin(std::declval<R>()))>;
 
 NANO_END_NAMESPACE

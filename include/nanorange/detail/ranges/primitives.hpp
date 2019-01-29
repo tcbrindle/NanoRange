@@ -45,7 +45,7 @@ private:
               typename I = decltype(decay_copy(std::declval<T>().size()))>
     static constexpr auto impl(T&& t, priority_tag<2>) noexcept(
         noexcept(decay_copy(std::forward<T>(t).size())))
-        -> std::enable_if_t<
+        -> detail::enable_if_t<
             Integral<I> && !disable_sized_range<remove_cvref_t<T>>, I>
     {
         return decay_copy(std::forward<T>(t).size());
@@ -55,7 +55,7 @@ private:
               typename I = decltype(decay_copy(size(std::declval<T>())))>
     static constexpr auto impl(T&& t, priority_tag<1>) noexcept(
         noexcept(decay_copy(size(std::forward<T>(t)))))
-        -> std::enable_if_t<
+        -> detail::enable_if_t<
             Integral<I> && !disable_sized_range<remove_cvref_t<T>>, I>
     {
         return decay_copy(size(std::forward<T>(t)));
@@ -68,7 +68,7 @@ private:
                                                std::declval<I>()))>
     static constexpr auto impl(T&& t, priority_tag<0>) noexcept(
         noexcept(decay_copy(ranges::end(t) - ranges::begin(t))))
-        -> std::enable_if_t<
+        -> detail::enable_if_t<
             !std::is_array<remove_cvref_t<T>>::value && // MSVC sillyness?
                 SizedSentinel<S, I> && ForwardIterator<I>,
             D>
@@ -120,7 +120,7 @@ private:
     static constexpr auto
     impl(T&& t,
          priority_tag<0>) noexcept(noexcept(ranges::begin(t) == ranges::end(t)))
-        -> std::enable_if_t<ForwardIterator<I>,
+        -> detail::enable_if_t<ForwardIterator<I>,
                             decltype(ranges::begin(t) == ranges::end(t))>
     {
         return ranges::begin(t) == ranges::end(t);
@@ -154,7 +154,7 @@ private:
     template <typename T, typename D = decltype(decay_copy(std::declval<T&>().data()))>
     static constexpr auto
     impl(T& t, priority_tag<1>) noexcept(noexcept(decay_copy(t.data())))
-        -> std::enable_if_t<is_object_pointer_v<D>, D>
+        -> detail::enable_if_t<is_object_pointer_v<D>, D>
     {
         return t.data();
     }
@@ -163,7 +163,7 @@ private:
     static constexpr auto
     impl(T&& t,
          priority_tag<0>) noexcept(noexcept(ranges::begin(std::forward<T>(t))))
-        -> std::enable_if_t<
+        -> detail::enable_if_t<
             is_object_pointer_v<decltype(ranges::begin(std::forward<T>(t)))>,
             decltype(ranges::begin(std::forward<T>(t)))>
     {

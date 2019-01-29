@@ -188,7 +188,7 @@ private:
 
 public:
     template <typename I, typename S, typename Comp = less<>, typename Proj = identity>
-    std::enable_if_t<
+    detail::enable_if_t<
         BidirectionalIterator<I> &&
         Sentinel<S, I> &&
         Sortable<I, Comp, Proj>, I>
@@ -199,7 +199,7 @@ public:
     }
 
     template <typename Rng, typename Comp = less<>, typename Proj = identity>
-    std::enable_if_t<
+    detail::enable_if_t<
         BidirectionalRange<Rng> &&
         Sortable<iterator_t<Rng>, Comp, Proj>,
         safe_iterator_t<Rng>>

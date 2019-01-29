@@ -15,7 +15,7 @@ namespace detail {
 
 struct fill_n_fn {
     template <typename T, typename O>
-    constexpr std::enable_if_t<OutputIterator<O, const T&>, O>
+    constexpr detail::enable_if_t<OutputIterator<O, const T&>, O>
     operator()(O first, iter_difference_t<O> n, const T& value) const
     {
         for (iter_difference_t<O> i{0}; i < n; ++i, ++first) {

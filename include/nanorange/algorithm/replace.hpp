@@ -32,7 +32,7 @@ private:
 public:
     template <typename I, typename S, typename T1, typename T2,
               typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputIterator<I> && Sentinel<S, I> && Writable<I, const T2&> &&
             IndirectRelation<equal_to<>, projected<I, Proj>, const T1*>,
         I>
@@ -44,7 +44,7 @@ public:
     }
 
     template <typename Rng, typename T1, typename T2, typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputRange<Rng> && Writable<iterator_t<Rng>, const T2&> &&
             IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>,
                              const T1*>,

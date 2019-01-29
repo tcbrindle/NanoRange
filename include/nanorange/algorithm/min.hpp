@@ -38,7 +38,7 @@ private:
 
 public:
     template <typename T, typename Comp = less<>, typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         IndirectStrictWeakOrder<Comp, projected<const T*, Proj>>,
         const T&>
     operator()(const T& a, const T& b, Comp comp = Comp{}, Proj proj = Proj{}) const
@@ -48,7 +48,7 @@ public:
     }
 
     template <typename T, typename Comp = less<>, typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         Copyable<T> &&
         IndirectStrictWeakOrder<Comp, projected<const T*, Proj>>,
         T>
@@ -59,7 +59,7 @@ public:
     }
 
     template <typename Rng, typename Comp = less<>, typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputRange<Rng> &&
         Copyable<iter_value_t<iterator_t<Rng>>> &&
         IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,

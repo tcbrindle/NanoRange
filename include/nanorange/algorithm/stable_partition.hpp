@@ -138,7 +138,7 @@ private:
     }
 
     template <typename I, typename S, typename Pred, typename Proj>
-    static std::enable_if_t<!Same<I, S>, I>
+    static detail::enable_if_t<!Same<I, S>, I>
     impl(I first, S last, Pred& pred, Proj& proj)
     {
         return impl(first, nano::next(first, last), pred, proj);
@@ -146,7 +146,7 @@ private:
 
 public:
     template <typename I, typename S, typename Pred, typename Proj = identity>
-    std::enable_if_t<
+    detail::enable_if_t<
         BidirectionalIterator<I> &&
         Sentinel<S, I> &&
         IndirectUnaryPredicate<Pred, projected<I, Proj>> &&
@@ -158,7 +158,7 @@ public:
     }
 
     template <typename Rng, typename Pred, typename Proj = identity>
-    std::enable_if_t<
+    detail::enable_if_t<
         BidirectionalRange<Rng> &&
         IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>> &&
         Permutable<iterator_t<Rng>>,

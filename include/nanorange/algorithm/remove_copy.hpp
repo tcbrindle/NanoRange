@@ -37,7 +37,7 @@ private:
 public:
     template <typename I, typename S, typename O, typename T,
               typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputIterator<I> && Sentinel<S, I> && WeaklyIncrementable<O> &&
             IndirectlyCopyable<I, O> &&
             IndirectRelation<equal_to<>, projected<I, Proj>, const T*>,
@@ -50,7 +50,7 @@ public:
     }
 
     template <typename Rng, typename O, typename T, typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputRange<Rng> && WeaklyIncrementable<O> &&
             IndirectlyCopyable<iterator_t<Rng>, O> &&
             IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>,

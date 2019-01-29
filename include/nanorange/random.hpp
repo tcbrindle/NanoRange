@@ -30,7 +30,7 @@ template <typename>
 auto UniformRandomBitGenerator_fn(long) -> std::false_type;
 
 template <typename G>
-auto UniformRandomBitGenerator_fn(int) -> std::enable_if_t<
+auto UniformRandomBitGenerator_fn(int) -> detail::enable_if_t<
         Invocable<G&> &&
         UnsignedIntegral<invoke_result_t<G&>> &&
         requires_<UniformRandomBitGenerator_req, G>,

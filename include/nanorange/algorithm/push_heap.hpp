@@ -17,7 +17,7 @@ namespace detail {
 struct push_heap_fn {
     template <typename I, typename S, typename Comp = less<>,
               typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         RandomAccessIterator<I> && Sentinel<S, I> && Sortable<I, Comp, Proj>, I>
     operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
@@ -27,7 +27,7 @@ struct push_heap_fn {
     }
 
     template <typename Rng, typename Comp = less<>, typename Proj = identity>
-    constexpr std::enable_if_t<RandomAccessRange<Rng> &&
+    constexpr detail::enable_if_t<RandomAccessRange<Rng> &&
                                    Sortable<iterator_t<Rng>, Comp, Proj>,
                                safe_iterator_t<Rng>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const

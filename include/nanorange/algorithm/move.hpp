@@ -19,7 +19,7 @@ namespace detail {
 struct move_fn {
 private:
     template <typename I, typename S, typename O>
-    static constexpr std::enable_if_t<SizedSentinel<S, I>, move_result<I, O>>
+    static constexpr detail::enable_if_t<SizedSentinel<S, I>, move_result<I, O>>
     impl(I first, S last, O result, priority_tag<1>)
     {
         const auto dist = last - first;
@@ -48,7 +48,7 @@ private:
 
 public:
     template <typename I, typename S, typename O>
-    constexpr std::enable_if_t<InputIterator<I> && Sentinel<S, I> &&
+    constexpr detail::enable_if_t<InputIterator<I> && Sentinel<S, I> &&
                                    WeaklyIncrementable<O> &&
                                    IndirectlyMovable<I, O>,
                                move_result<I, O>>
@@ -59,7 +59,7 @@ public:
     }
 
     template <typename Rng, typename O>
-    constexpr std::enable_if_t<InputRange<Rng> && WeaklyIncrementable<O> &&
+    constexpr detail::enable_if_t<InputRange<Rng> && WeaklyIncrementable<O> &&
                                    IndirectlyMovable<iterator_t<Rng>, O>,
                                move_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
@@ -95,7 +95,7 @@ private:
 
 public:
     template <typename I, typename S, typename O>
-    constexpr std::enable_if_t<BidirectionalIterator<I> && Sentinel<S, I> &&
+    constexpr detail::enable_if_t<BidirectionalIterator<I> && Sentinel<S, I> &&
                                    BidirectionalIterator<O> &&
                                    IndirectlyMovable<I, O>,
                                move_backward_result<I, O>>
@@ -106,7 +106,7 @@ public:
     }
 
     template <typename Rng, typename O>
-    constexpr std::enable_if_t<BidirectionalRange<Rng> &&
+    constexpr detail::enable_if_t<BidirectionalRange<Rng> &&
                                    BidirectionalIterator<O> &&
                                    IndirectlyMovable<iterator_t<Rng>, O>,
                                move_backward_result<safe_iterator_t<Rng>, O>>

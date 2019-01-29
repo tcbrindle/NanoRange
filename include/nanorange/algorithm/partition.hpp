@@ -39,7 +39,7 @@ private:
 
 public:
     template <typename I, typename S, typename Pred, typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         ForwardIterator<I> &&
         Sentinel<S, I> &&
         IndirectUnaryPredicate<Pred, projected<I, Proj>>, I>
@@ -50,7 +50,7 @@ public:
     }
 
     template <typename Rng, typename Pred, typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         ForwardRange<Rng> &&
         IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
         safe_iterator_t<Rng>>

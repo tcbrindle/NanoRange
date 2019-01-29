@@ -63,7 +63,7 @@ struct legacy_iterator_category
 
 template <typename T>
 struct legacy_iterator_category<T,
-        std::enable_if_t<std::is_same<iterator_category_t<T>, contiguous_iterator_tag>::value>>
+        detail::enable_if_t<std::is_same<iterator_category_t<T>, contiguous_iterator_tag>::value>>
 {
     using type = random_access_iterator_tag;
 };
@@ -74,7 +74,7 @@ using legacy_iterator_category_t = typename legacy_iterator_category<T>::type;
 }
 
 template <typename T>
-using iter_reference_t = std::enable_if_t<detail::Dereferenceable<T>,
+using iter_reference_t = detail::enable_if_t<detail::Dereferenceable<T>,
                                           decltype(*std::declval<T&>())>;
 
 namespace detail {
@@ -89,7 +89,7 @@ struct iter_rvalue_reference_req {
 }
 
 template <typename T>
-using iter_rvalue_reference_t = std::enable_if_t<
+using iter_rvalue_reference_t = detail::enable_if_t<
         detail::requires_<detail::iter_rvalue_reference_req, T>,
         decltype(ranges::iter_move(std::declval<T&>()))>;
 

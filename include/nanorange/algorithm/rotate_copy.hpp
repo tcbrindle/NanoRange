@@ -30,7 +30,7 @@ private:
 
 public:
     template <typename I, typename S, typename O>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         ForwardIterator<I> &&
         Sentinel<S, I> &&
         WeaklyIncrementable<O> &&
@@ -43,7 +43,7 @@ public:
     }
 
     template <typename Rng, typename O>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         ForwardRange<Rng> &&
         WeaklyIncrementable<O> &&
         IndirectlyCopyable<iterator_t<Rng>, O>,

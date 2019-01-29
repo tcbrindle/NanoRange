@@ -15,7 +15,7 @@ namespace detail {
 
 struct sort_fn {
     template <typename I, typename S, typename Comp = less<>, typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         RandomAccessIterator<I> &&
         Sentinel<S, I> &&
         Sortable<I, Comp, Proj>, I>
@@ -27,7 +27,7 @@ struct sort_fn {
     }
 
     template <typename Rng, typename Comp = less<>, typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         RandomAccessRange<Rng> &&
         Sortable<iterator_t<Rng>, Comp, Proj>,
     safe_iterator_t<Rng>>

@@ -14,7 +14,7 @@ NANO_BEGIN_NAMESPACE
 // [range.indirectcallable.indirectinvocable]
 
 template <typename T>
-using iter_common_reference_t = std::enable_if_t<Readable<T>,
+using iter_common_reference_t = detail::enable_if_t<Readable<T>,
         common_reference_t<iter_reference_t<T>, iter_value_t<T>&>>;
 
 namespace detail {
@@ -23,7 +23,7 @@ template <typename, typename>
 auto IndirectUnaryInvocable_fn(long) -> std::false_type;
 
 template <typename F, typename I>
-auto IndirectUnaryInvocable_fn(int) -> std::enable_if_t<
+auto IndirectUnaryInvocable_fn(int) -> detail::enable_if_t<
         Readable<I> &&
         CopyConstructible<F> &&
         Invocable<F&, iter_value_t<I>&> &&
@@ -46,7 +46,7 @@ template <typename, typename>
 auto IndirectRegularUnaryInvocable_fn(long) -> std::false_type;
 
 template <typename F, typename I>
-auto IndirectRegularUnaryInvocable_fn(int) -> std::enable_if_t<
+auto IndirectRegularUnaryInvocable_fn(int) -> detail::enable_if_t<
         Readable<I> &&
         CopyConstructible<F> &&
         RegularInvocable<F&, iter_value_t<I>&> &&
@@ -70,7 +70,7 @@ template <typename, typename>
 auto IndirectUnaryPredicate_fn(long) -> std::false_type;
 
 template <typename F, typename I>
-auto IndirectUnaryPredicate_fn(int) -> std::enable_if_t<
+auto IndirectUnaryPredicate_fn(int) -> detail::enable_if_t<
         Readable<I> &&
         CopyConstructible<F> &&
         Predicate<F&, iter_value_t<I>&> &&
@@ -90,7 +90,7 @@ template <typename F, typename I1, typename I2>
 auto IndirectRelation_fn(long) -> std::false_type;
 
 template <typename F, typename I1, typename I2>
-auto IndirectRelation_fn(int) -> std::enable_if_t<
+auto IndirectRelation_fn(int) -> detail::enable_if_t<
         Readable<I1> && Readable<I2> && CopyConstructible<F> &&
         Relation<F&, iter_value_t<I1>&, iter_value_t<I2>&>&&
         Relation<F&, iter_value_t<I1>&, iter_reference_t<I2>>&&
@@ -115,7 +115,7 @@ template <typename, typename, typename>
 auto IndirectStrictWeakOrder_fn(long) -> std::false_type;
 
 template <typename F, typename I1, typename I2>
-auto IndirectStrictWeakOrder_fn(int) -> std::enable_if_t<
+auto IndirectStrictWeakOrder_fn(int) -> detail::enable_if_t<
         Readable<I1> &&
         Readable<I2> &&
         StrictWeakOrder<F&, iter_value_t<I1>&, iter_value_t<I2>&> &&
@@ -149,7 +149,7 @@ constexpr bool all_readable_v = all_readable_helper<Readable<Is>...>::value;
 } // namespace detail
 
 template <typename F, typename... Is>
-using indirect_result_t = std::enable_if_t<
+using indirect_result_t = detail::enable_if_t<
         detail::all_readable_v<Is...> &&
         Invocable<F, iter_reference_t<Is>...>,
         invoke_result_t<F, iter_reference_t<Is>...>>;
@@ -162,7 +162,7 @@ template <typename, typename>
 auto IndirectlyMovable_fn(long) -> std::false_type;
 
 template <typename In, typename Out>
-auto IndirectlyMovable_fn(int) -> std::enable_if_t<
+auto IndirectlyMovable_fn(int) -> detail::enable_if_t<
         Readable<In> &&
         Writable<Out, iter_rvalue_reference_t<In>>,
     std::true_type>;
@@ -180,7 +180,7 @@ template <typename In, typename Out>
 auto IndirectlyMovableStorable_fn(long) -> std::false_type;
 
 template <typename In, typename Out>
-auto IndirectlyMovableStorable_fn(int) -> std::enable_if_t<
+auto IndirectlyMovableStorable_fn(int) -> detail::enable_if_t<
         IndirectlyMovable<In, Out> &&
         Writable<Out, iter_value_t<In>> &&
         Movable<iter_value_t<In>> &&
@@ -202,7 +202,7 @@ template <typename, typename>
 auto IndirectlyCopyable_fn(long) -> std::false_type;
 
 template <typename In, typename Out>
-auto IndirectlyCopyable_fn(int) -> std::enable_if_t<
+auto IndirectlyCopyable_fn(int) -> detail::enable_if_t<
         Readable<In> &&
         Writable<Out, iter_reference_t<In>>,
     std::true_type>;
@@ -219,7 +219,7 @@ template <typename, typename>
 auto IndirectlyCopyableStorable_fn(long) -> std::false_type;
 
 template <typename In, typename Out>
-auto IndirectlyCopyableStorable_fn(int) -> std::enable_if_t<
+auto IndirectlyCopyableStorable_fn(int) -> detail::enable_if_t<
         IndirectlyCopyable<In, Out> &&
         Writable<Out, const iter_value_t<In>&> &&
         Copyable<iter_value_t<In>> &&

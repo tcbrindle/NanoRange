@@ -57,7 +57,7 @@ private:
 public:
     // Four-legged
     template <typename I, typename S, typename O, typename S2>
-    std::enable_if_t<
+    detail::enable_if_t<
         InputIterator<I> &&
         Sentinel<S, I> &&
         NoThrowForwardIterator<O> &&
@@ -73,7 +73,7 @@ public:
 
     // Two ranges
     template <typename IRng, typename ORng>
-    std::enable_if_t<
+    detail::enable_if_t<
         InputRange<IRng> &&
         NoThrowForwardRange<ORng> &&
         Constructible<iter_value_t<iterator_t<ORng>>, iter_rvalue_reference_t<iterator_t<IRng>>>,
@@ -88,7 +88,7 @@ public:
     // Three-legged
     template <typename I, typename S, typename O>
     NANO_DEPRECATED
-    std::enable_if_t<
+    detail::enable_if_t<
         InputIterator<I> &&
         Sentinel<S, I> &&
         NoThrowForwardIterator<O> &&
@@ -103,7 +103,7 @@ public:
     // Range and a half
     template <typename IRng, typename O>
     NANO_DEPRECATED
-    std::enable_if_t<
+    detail::enable_if_t<
         InputRange<IRng> &&
         NoThrowForwardIterator<std::decay_t<O>> &&
         !NoThrowForwardRange<O> &&
@@ -127,7 +127,7 @@ namespace detail {
 
 struct uninitialized_move_n_fn {
     template <typename I, typename O, typename S>
-    std::enable_if_t<
+    detail::enable_if_t<
         InputIterator<I> &&
         NoThrowForwardIterator<O> &&
         NoThrowSentinel<S, O> &&
@@ -143,7 +143,7 @@ struct uninitialized_move_n_fn {
 
     template <typename I, typename O>
     NANO_DEPRECATED
-    std::enable_if_t<
+    detail::enable_if_t<
         InputIterator<I> &&
         NoThrowForwardIterator<O> &&
         Constructible<iter_value_t<O>, iter_rvalue_reference_t<I>>,

@@ -41,7 +41,7 @@ class common_iterator {
 
     template <typename II>
     static constexpr auto do_op_arrow(const II& i, detail::priority_tag<2>)
-        -> std::enable_if_t<
+        -> detail::enable_if_t<
             std::is_pointer<II>::value || detail::exists_v<op_arrow_t, II>, I>
     {
         return i;
@@ -49,7 +49,7 @@ class common_iterator {
 
     template <typename II>
     static constexpr auto do_op_arrow(const II& i, detail::priority_tag<1>)
-        -> std::enable_if_t<std::is_reference<iter_reference_t<const II>>::value,
+        -> detail::enable_if_t<std::is_reference<iter_reference_t<const II>>::value,
                             std::add_pointer_t<iter_reference_t<const II>>>
     {
         auto&& tmp = *i;
@@ -74,7 +74,7 @@ public:
 
     template <
         typename II, typename SS,
-        std::enable_if_t<ConvertibleTo<II, I> && ConvertibleTo<SS, S>, int> = 0>
+        detail::enable_if_t<ConvertibleTo<II, I> && ConvertibleTo<SS, S>, int> = 0>
     constexpr common_iterator(const common_iterator<II, SS>& other)
         : is_sentinel_{other.is_sentinel_},
           iter_(other.iter_),
@@ -82,7 +82,7 @@ public:
     {}
 
     template <typename II, typename SS>
-    constexpr std::enable_if_t<ConvertibleTo<II, I> && ConvertibleTo<SS, S>,
+    constexpr detail::enable_if_t<ConvertibleTo<II, I> && ConvertibleTo<SS, S>,
                                common_iterator&>
     operator=(const common_iterator<II, SS>& other)
     {
@@ -95,7 +95,7 @@ public:
     constexpr decltype(auto) operator*() { return *iter_; }
 
     template <typename II = I,
-              std::enable_if_t<detail::Dereferenceable<const I>, int> = 0>
+              detail::enable_if_t<detail::Dereferenceable<const I>, int> = 0>
     constexpr decltype(auto) operator*() const
     {
         return *iter_;
@@ -115,13 +115,13 @@ public:
         return *this;
     }
 
-    template <typename II = I, std::enable_if_t<!ForwardIterator<II>, int> = 0>
+    template <typename II = I, detail::enable_if_t<!ForwardIterator<II>, int> = 0>
     constexpr  decltype(auto) operator++(int)
     {
         return iter_++;
     }
 
-    template <typename II = I, std::enable_if_t<ForwardIterator<II>, int> = 0>
+    template <typename II = I, detail::enable_if_t<ForwardIterator<II>, int> = 0>
     constexpr common_iterator operator++(int)
     {
         common_iterator tmp = *this;
@@ -132,7 +132,7 @@ public:
     template <typename I2, typename S2>
     friend constexpr auto operator==(const common_iterator& x,
                                      const common_iterator<I2, S2>& y)
-        -> std::enable_if_t<Sentinel<S2, I> && Sentinel<S, I2> &&
+        -> detail::enable_if_t<Sentinel<S2, I> && Sentinel<S, I2> &&
                             !EqualityComparableWith<I, I2>, bool>
     {
         return x.is_sentinel_ ? (y.is_sentinel_ || y.iter_ == x.sentinel_)
@@ -142,7 +142,7 @@ public:
     template <typename I2, typename S2>
     friend constexpr auto operator==(const common_iterator& x,
                                      const common_iterator<I2, S2>& y)
-        -> std::enable_if_t<Sentinel<S2, I> && Sentinel<S, I2> &&
+        -> detail::enable_if_t<Sentinel<S2, I> && Sentinel<S, I2> &&
                             EqualityComparableWith<I, I2>, bool>
     {
         return x.is_sentinel_
@@ -153,7 +153,7 @@ public:
     template <typename I2, typename S2>
     friend constexpr auto operator!=(const common_iterator& x,
                                      const common_iterator<I2, S2>& y)
-        -> std::enable_if_t<Sentinel<S2, I> && Sentinel<S, I2>, bool>
+        -> detail::enable_if_t<Sentinel<S2, I> && Sentinel<S, I2>, bool>
     {
         return !(x == y);
     }
@@ -161,7 +161,7 @@ public:
     template <typename I2, typename S2>
     friend constexpr auto operator-(const common_iterator& x,
                                     const common_iterator<I2, S2>& y)
-        -> std::enable_if_t<SizedSentinel<I, I2> && SizedSentinel<S, I2> &&
+        -> detail::enable_if_t<SizedSentinel<I, I2> && SizedSentinel<S, I2> &&
                             SizedSentinel<S, I2>, iter_difference_t<I2>>
     {
         return x.is_sentinel_
@@ -175,7 +175,7 @@ public:
     }
 
     template <typename I2, typename S2>
-    friend constexpr std::enable_if_t<IndirectlySwappable<I2, I>>
+    friend constexpr detail::enable_if_t<IndirectlySwappable<I2, I>>
     iter_swap(const common_iterator& x, const common_iterator<I2, S2>& y)
     {
         return ranges::iter_swap(x.iter_, y.iter_);

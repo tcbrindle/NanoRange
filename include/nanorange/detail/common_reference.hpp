@@ -189,13 +189,13 @@ struct binary_common_ref : common_type<T, U> {
 };
 
 template <typename T, typename U>
-struct binary_common_ref<T, U, std::enable_if_t<has_simple_common_ref_v<T, U>>>
+struct binary_common_ref<T, U, detail::enable_if_t<has_simple_common_ref_v<T, U>>>
     : simple_common_reference<T, U> {
 };
 
 template <typename T, typename U>
 struct binary_common_ref<T, U,
-                         std::enable_if_t<has_basic_common_ref_v<T, U> &&
+                         detail::enable_if_t<has_basic_common_ref_v<T, U> &&
                                           !has_simple_common_ref_v<T, U>>>
 {
     using type = basic_common_ref_t<T, U>;
@@ -203,7 +203,7 @@ struct binary_common_ref<T, U,
 
 template <typename T, typename U>
 struct binary_common_ref<T, U,
-                         std::enable_if_t<has_cond_res_v<T, U> &&
+                         detail::enable_if_t<has_cond_res_v<T, U> &&
                                           !has_basic_common_ref_v<T, U> &&
                                           !has_simple_common_ref_v<T, U>>>
 {

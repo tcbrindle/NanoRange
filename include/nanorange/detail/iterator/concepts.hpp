@@ -28,7 +28,7 @@ template <typename>
 auto Readable_fn(long) -> std::false_type;
 
 template <typename In>
-auto Readable_fn(int) -> std::enable_if_t<
+auto Readable_fn(int) -> detail::enable_if_t<
      requires_<Readable_req, In> &&
      CommonReference<iter_reference_t<In>&&, iter_value_t<In>&> &&
      CommonReference<iter_reference_t<In>&&, iter_rvalue_reference_t<In>&&> &&
@@ -62,7 +62,7 @@ NANO_CONCEPT Writable = detail::requires_<detail::Writable_req, Out, T>;
 namespace detail {
 
 template <typename T, typename Deduced>
-auto same_lv(Deduced&) -> std::enable_if_t<Same<T, Deduced>, int>;
+auto same_lv(Deduced&) -> detail::enable_if_t<Same<T, Deduced>, int>;
 
 struct WeaklyIncrementable_req {
     template <typename I>
@@ -156,7 +156,7 @@ template <typename>
 auto InputIterator_fn(long) -> std::false_type;
 
 template <typename I>
-auto InputIterator_fn(int) -> std::enable_if_t<
+auto InputIterator_fn(int) -> detail::enable_if_t<
     Iterator<I> && Readable<I> &&
     exists_v<iterator_category_t, I> &&
     DerivedFrom<iterator_category_t<I>, input_iterator_tag>,
@@ -192,7 +192,7 @@ template <typename>
 auto ForwardIterator_fn(long) -> std::false_type;
 
 template <typename I>
-auto ForwardIterator_fn(int) -> std::enable_if_t<
+auto ForwardIterator_fn(int) -> detail::enable_if_t<
         InputIterator<I> &&
         DerivedFrom<iterator_category_t<I>, forward_iterator_tag> &&
         Incrementable<I> &&
@@ -218,7 +218,7 @@ template <typename>
 auto BidirectionalIterator_fn(long) -> std::false_type;
 
 template <typename I>
-auto BidirectionalIterator_fn(int) -> std::enable_if_t<
+auto BidirectionalIterator_fn(int) -> detail::enable_if_t<
         ForwardIterator<I> &&
         DerivedFrom<iterator_category_t<I>, bidirectional_iterator_tag> &&
         requires_<BidirectionalIterator_req, I>,
@@ -253,7 +253,7 @@ template <typename>
 auto RandomAccessIterator_fn(long) -> std::false_type;
 
 template <typename I>
-auto RandomAccessIterator_fn(int) -> std::enable_if_t<
+auto RandomAccessIterator_fn(int) -> detail::enable_if_t<
      BidirectionalIterator<I> &&
      DerivedFrom<iterator_category_t<I>, random_access_iterator_tag> &&
      StrictTotallyOrdered<I> &&
@@ -273,7 +273,7 @@ template <typename>
 auto ContiguousIterator_fn(long) -> std::false_type;
 
 template <typename I>
-auto ContiguousIterator_fn(int) -> std::enable_if_t<
+auto ContiguousIterator_fn(int) -> detail::enable_if_t<
     RandomAccessIterator<I> &&
     DerivedFrom<iterator_category_t<I>, contiguous_iterator_tag> &&
     std::is_lvalue_reference<iter_reference_t<I>>::value &&

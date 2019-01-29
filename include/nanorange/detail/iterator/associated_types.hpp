@@ -56,13 +56,13 @@ constexpr bool has_member_difference_type_v =
         has_member_difference_type<T>::value;
 
 template <typename T>
-struct incrementable_traits_helper<T, std::enable_if_t<has_member_difference_type_v<T>>> {
+struct incrementable_traits_helper<T, detail::enable_if_t<has_member_difference_type_v<T>>> {
     using difference_type = typename T::difference_type;
 };
 
 template <typename T>
 struct incrementable_traits_helper<
-    T, std::enable_if_t<!std::is_pointer<T>::value &&
+    T, detail::enable_if_t<!std::is_pointer<T>::value &&
                         !has_member_difference_type_v<T> &&
                         Integral<decltype(std::declval<const T&>() -
                                           std::declval<const T&>())>>>
@@ -100,11 +100,11 @@ struct readable_traits_helper<T*>
             empty> {};
 
 template <typename I>
-struct readable_traits_helper<I, std::enable_if_t<std::is_array<I>::value>>
+struct readable_traits_helper<I, detail::enable_if_t<std::is_array<I>::value>>
     : readable_traits<std::decay_t<I>> {};
 
 template <typename I>
-struct readable_traits_helper<const I, std::enable_if_t<!std::is_array<I>::value>>
+struct readable_traits_helper<const I, detail::enable_if_t<!std::is_array<I>::value>>
     : readable_traits<std::decay_t<I>> {};
 
 template <typename T, typename V = typename T::value_type>
@@ -130,13 +130,13 @@ template <typename T>
 constexpr bool has_member_element_type_v = exists_v<member_element_type_t, T>;
 
 template <typename T>
-struct readable_traits_helper<T, std::enable_if_t<
+struct readable_traits_helper<T, detail::enable_if_t<
     has_member_value_type_v<T> &&
     !has_member_element_type_v<T>>>
     : member_value_type<T> {};
 
 template <typename T>
-struct readable_traits_helper<T, std::enable_if_t<
+struct readable_traits_helper<T, detail::enable_if_t<
     has_member_element_type_v<T> &&
     !has_member_value_type_v<T>>>
     : member_element_type<T> {};
@@ -145,7 +145,7 @@ struct readable_traits_helper<T, std::enable_if_t<
 // readable_traits to tell us which one to prefer -- see
 // https://github.com/ericniebler/stl2/issues/562
 template <typename T>
-struct readable_traits_helper<T, std::enable_if_t<
+struct readable_traits_helper<T, detail::enable_if_t<
     has_member_element_type_v<T> &&
     has_member_value_type_v<T>>>
 {};

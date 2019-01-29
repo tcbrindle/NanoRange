@@ -55,7 +55,7 @@ public:
     template <typename I1, typename S1, typename I2, typename S2,
               typename Pred = equal_to<>, typename Proj1 = identity,
               typename Proj2 = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
             Sentinel<S2, I2> &&
             IndirectlyComparable<I1, I2, Pred, Proj1, Proj2> &&
@@ -79,7 +79,7 @@ public:
     template <typename I1, typename S1, typename I2, typename S2,
               typename Pred = equal_to<>, typename Proj1 = identity,
               typename Proj2 = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
             Sentinel<S2, I2> &&
             IndirectlyComparable<I1, I2, Pred, Proj1, Proj2> &&
@@ -96,7 +96,7 @@ public:
     // Three legged
     template <typename I1, typename S1, typename I2, typename Pred = equal_to<>,
               typename Proj1 = identity, typename Proj2 = identity>
-    NANO_DEPRECATED constexpr std::enable_if_t<
+    NANO_DEPRECATED constexpr detail::enable_if_t<
         InputIterator<I1> && Sentinel<S1, I1> && InputIterator<std::decay_t<I2>> &&
                 !InputRange<I2> &&
             IndirectlyComparable<I1, std::decay_t<I2>, Pred, Proj1, Proj2>,
@@ -111,7 +111,7 @@ public:
     // Two ranges, both sized
     template <typename Rng1, typename Rng2, typename Pred = equal_to<>,
               typename Proj1 = identity, typename Proj2 = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputRange<Rng1> && InputRange<Rng2> &&
             IndirectlyComparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred,
                                  Proj1, Proj2> &&
@@ -131,7 +131,7 @@ public:
     // Two ranges, not both sized
     template <typename Rng1, typename Rng2, typename Pred = equal_to<>,
               typename Proj1 = identity, typename Proj2 = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputRange<Rng1> && InputRange<Rng2> &&
             IndirectlyComparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred,
                                  Proj1, Proj2> &&
@@ -148,7 +148,7 @@ public:
     // Range and a half
     template <typename Rng1, typename I2, typename Pred = equal_to<>,
               typename Proj1 = identity, typename Proj2 = identity>
-    NANO_DEPRECATED constexpr std::enable_if_t<
+    NANO_DEPRECATED constexpr detail::enable_if_t<
         InputRange<Rng1> && InputIterator<std::decay_t<I2>> &&
                 !InputRange<I2> &&
             IndirectlyComparable<iterator_t<Rng1>, std::decay_t<I2>, Pred, Proj1, Proj2>,

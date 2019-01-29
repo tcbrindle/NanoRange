@@ -16,7 +16,7 @@ namespace detail {
 struct is_heap_fn {
     template <typename I, typename S, typename Comp = less<>,
               typename Proj = identity>
-    std::enable_if_t<RandomAccessIterator<I> && Sentinel<S, I> &&
+    detail::enable_if_t<RandomAccessIterator<I> && Sentinel<S, I> &&
                          IndirectStrictWeakOrder<Comp, projected<I, Proj>>,
                      bool>
     operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
@@ -26,7 +26,7 @@ struct is_heap_fn {
     }
 
     template <typename Rng, typename Comp = less<>, typename Proj = identity>
-    std::enable_if_t<
+    detail::enable_if_t<
         RandomAccessRange<Rng> &&
             IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
         bool>

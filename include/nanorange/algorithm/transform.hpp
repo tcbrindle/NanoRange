@@ -77,7 +77,7 @@ public:
     // Unary op, iterators
     template <typename I, typename S, typename O, typename F,
               typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputIterator<I> && Sentinel<S, I> && WeaklyIncrementable<O> &&
             CopyConstructible<F> &&
             Writable<O, indirect_result_t<F&, projected<I, Proj>>>,
@@ -90,7 +90,7 @@ public:
 
     // Unary op, range
     template <typename Rng, typename O, typename F, typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputRange<Rng> && WeaklyIncrementable<O> && CopyConstructible<F> &&
             Writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng>, Proj>>>,
@@ -104,7 +104,7 @@ public:
     // Binary op, four-legged
     template <typename I1, typename S1, typename I2, typename S2, typename O,
               typename F, typename Proj1 = identity, typename Proj2 = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
             Sentinel<S2, I2> && WeaklyIncrementable<O> &&
             CopyConstructible<F> &&
@@ -122,7 +122,7 @@ public:
     // Binary op, two ranges
     template <typename Rng1, typename Rng2, typename O, typename F,
               typename Proj1 = identity, typename Proj2 = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputRange<Rng1> && InputRange<Rng2> && WeaklyIncrementable<O> &&
             CopyConstructible<F> &&
             Writable<O,
@@ -140,7 +140,7 @@ public:
     // Binary op, three-legged
     template <typename I1, typename S1, typename I2, typename O, typename F,
               typename Proj1 = identity, typename Proj2 = identity>
-    NANO_DEPRECATED constexpr std::enable_if_t<
+    NANO_DEPRECATED constexpr detail::enable_if_t<
         InputIterator<I1> && Sentinel<S1, I1> && InputIterator<std::decay_t<I2>> &&
             !InputRange<I2> &&
             WeaklyIncrementable<O> && CopyConstructible<F> &&
@@ -158,7 +158,7 @@ public:
     // binary op, range-and-a-half
     template <typename Rng1, typename I2, typename O, typename F,
               typename Proj1 = identity, typename Proj2 = identity>
-    NANO_DEPRECATED constexpr std::enable_if_t<
+    NANO_DEPRECATED constexpr detail::enable_if_t<
         InputRange<Rng1> && InputIterator<std::decay_t<I2>> &&
                 !InputRange<I2> && WeaklyIncrementable<O> &&
             CopyConstructible<F> &&

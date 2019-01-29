@@ -25,7 +25,7 @@ private:
     // If we know the distance between first and last, we can use that
     // information to (potentially) allow better codegen
     template <typename I, typename S, typename O>
-    static constexpr std::enable_if_t<SizedSentinel<S, I>, copy_result<I, O>>
+    static constexpr detail::enable_if_t<SizedSentinel<S, I>, copy_result<I, O>>
     impl(I first, S last, O result, priority_tag<1>)
     {
         const auto dist = last - first;
@@ -54,7 +54,7 @@ private:
 
 public:
     template <typename I, typename S, typename O>
-    constexpr std::enable_if_t<InputIterator<I> && Sentinel<S, I> &&
+    constexpr detail::enable_if_t<InputIterator<I> && Sentinel<S, I> &&
                                    WeaklyIncrementable<O> &&
                                    IndirectlyCopyable<I, O>,
                                copy_result<I, O>>
@@ -65,7 +65,7 @@ public:
     }
 
     template <typename Rng, typename O>
-    constexpr std::enable_if_t<InputRange<Rng> && WeaklyIncrementable<O> &&
+    constexpr detail::enable_if_t<InputRange<Rng> && WeaklyIncrementable<O> &&
                                    IndirectlyCopyable<iterator_t<Rng>, O>,
                                copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
@@ -86,7 +86,7 @@ namespace detail {
 
 struct copy_n_fn {
     template <typename I, typename O>
-    constexpr std::enable_if_t<InputIterator<I> && WeaklyIncrementable<O> &&
+    constexpr detail::enable_if_t<InputIterator<I> && WeaklyIncrementable<O> &&
                                    IndirectlyCopyable<I, O>,
                                copy_n_result<I, O>>
     operator()(I first, iter_difference_t<I> n, O result) const
@@ -130,7 +130,7 @@ private:
 public:
     template <typename I, typename S, typename O, typename Proj = identity,
               typename Pred>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputIterator<I> && Sentinel<S, I> && WeaklyIncrementable<O> &&
             IndirectUnaryPredicate<Pred, projected<I, Proj>> &&
             IndirectlyCopyable<I, O>,
@@ -143,7 +143,7 @@ public:
     }
 
     template <typename Rng, typename O, typename Proj = identity, typename Pred>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputRange<Rng> && WeaklyIncrementable<O> &&
             IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
         copy_if_result<safe_iterator_t<Rng>, O>>
@@ -182,7 +182,7 @@ private:
 
 public:
     template <typename I1, typename S1, typename I2>
-    constexpr std::enable_if_t<BidirectionalIterator<I1> && Sentinel<S1, I1> &&
+    constexpr detail::enable_if_t<BidirectionalIterator<I1> && Sentinel<S1, I1> &&
                                    BidirectionalIterator<I2> &&
                                    IndirectlyCopyable<I1, I2>,
                                copy_backward_result<I1, I2>>
@@ -193,7 +193,7 @@ public:
     }
 
     template <typename Rng, typename I>
-    constexpr std::enable_if_t<BidirectionalRange<Rng> &&
+    constexpr detail::enable_if_t<BidirectionalRange<Rng> &&
                                    BidirectionalIterator<I> &&
                                    IndirectlyCopyable<iterator_t<Rng>, I>,
                                copy_backward_result<safe_iterator_t<Rng>, I>>

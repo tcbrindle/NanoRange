@@ -33,7 +33,7 @@ private:
     impl(T Base::*pmf, Derived&& ref,
          Args&&... args) noexcept(noexcept((std::forward<Derived>(ref).*
                                             pmf)(std::forward<Args>(args)...)))
-        -> std::enable_if_t<
+        -> detail::enable_if_t<
             std::is_function<T>::value &&
                 std::is_base_of<Base, std::decay_t<Derived>>::value,
             decltype((std::forward<Derived>(ref).*
@@ -46,7 +46,7 @@ private:
     static constexpr auto
     impl(T Base::*pmf, RefWrap&& ref, Args&&... args) noexcept(
         noexcept((ref.get().*pmf)(std::forward<Args>(args)...)))
-        -> std::enable_if_t<std::is_function<T>::value &&
+        -> detail::enable_if_t<std::is_function<T>::value &&
                                 is_reference_wrapper_v<std::decay_t<RefWrap>>,
                             decltype((ref.get().*
                                       pmf)(std::forward<Args>(args)...))>
@@ -59,7 +59,7 @@ private:
     impl(T Base::*pmf, Pointer&& ptr,
          Args&&... args) noexcept(noexcept(((*std::forward<Pointer>(ptr)).*
                                             pmf)(std::forward<Args>(args)...)))
-        -> std::enable_if_t<
+        -> detail::enable_if_t<
             std::is_function<T>::value &&
                 !is_reference_wrapper_v<std::decay_t<Pointer>> &&
                 !std::is_base_of<Base, std::decay_t<Pointer>>::value,
@@ -74,7 +74,7 @@ private:
     static constexpr auto
     impl(T Base::*pmd,
          Derived&& ref) noexcept(noexcept(std::forward<Derived>(ref).*pmd))
-        -> std::enable_if_t<
+        -> detail::enable_if_t<
             !std::is_function<T>::value &&
                 std::is_base_of<Base, std::decay_t<Derived>>::value,
             decltype(std::forward<Derived>(ref).*pmd)>
@@ -85,7 +85,7 @@ private:
     template <class Base, class T, class RefWrap>
     static constexpr auto impl(T Base::*pmd,
                                RefWrap&& ref) noexcept(noexcept(ref.get().*pmd))
-        -> std::enable_if_t<!std::is_function<T>::value &&
+        -> detail::enable_if_t<!std::is_function<T>::value &&
                                 is_reference_wrapper_v<std::decay_t<RefWrap>>,
                             decltype(ref.get().*pmd)>
     {
@@ -96,7 +96,7 @@ private:
     static constexpr auto
     impl(T Base::*pmd,
          Pointer&& ptr) noexcept(noexcept((*std::forward<Pointer>(ptr)).*pmd))
-        -> std::enable_if_t<
+        -> detail::enable_if_t<
             !std::is_function<T>::value &&
                 !is_reference_wrapper_v<std::decay_t<Pointer>> &&
                 !std::is_base_of<Base, std::decay_t<Pointer>>::value,
@@ -108,7 +108,7 @@ private:
     template <class F, class... Args>
     static constexpr auto impl(F&& f, Args&&... args) noexcept(
         noexcept(std::forward<F>(f)(std::forward<Args>(args)...)))
-        -> std::enable_if_t<
+        -> detail::enable_if_t<
             !std::is_member_pointer<std::decay_t<F>>::value,
             decltype(std::forward<F>(f)(std::forward<Args>(args)...))>
     {

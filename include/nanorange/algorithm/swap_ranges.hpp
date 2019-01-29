@@ -41,7 +41,7 @@ struct swap_ranges_fn {
 
 public:
     template <typename I1, typename S1, typename I2, typename S2>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         ForwardIterator<I1> &&
         Sentinel<S1, I1> &&
         ForwardIterator<I2> &&
@@ -56,7 +56,7 @@ public:
 
     template <typename I1, typename S1, typename I2>
     NANO_DEPRECATED
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
             ForwardIterator<I1> &&
             Sentinel<S1, I1> &&
             ForwardIterator<I2> &&
@@ -69,7 +69,7 @@ public:
     }
 
     template <typename Rng1, typename Rng2>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
             ForwardRange<Rng1> &&
             ForwardRange<Rng2> &&
             IndirectlySwappable<iterator_t<Rng1>, iterator_t<Rng2>>,
@@ -82,7 +82,7 @@ public:
 
     template <typename Rng1, typename I2>
     NANO_DEPRECATED
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
             ForwardRange<Rng1> &&
             ForwardIterator<I2> &&
             IndirectlySwappable<iterator_t<Rng1>, I2>,

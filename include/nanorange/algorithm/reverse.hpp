@@ -28,7 +28,7 @@ private:
     }
 
     template <typename I, typename S>
-    static constexpr std::enable_if_t<
+    static constexpr detail::enable_if_t<
         !Same<I, S>, I>
     impl(I first, S bound)
     {
@@ -38,7 +38,7 @@ private:
 
 public:
     template <typename I, typename S>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         BidirectionalIterator<I> &&
         Sentinel<S, I>,
         I>
@@ -48,7 +48,7 @@ public:
     }
 
     template <typename Rng>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         BidirectionalRange<Rng>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng) const

@@ -41,7 +41,7 @@ private:
 public:
     template <typename I, typename S, typename T, typename Comp = less<>,
               typename Proj = identity>
-    std::enable_if_t<
+    detail::enable_if_t<
         ForwardIterator<I> &&
         Sentinel<S, I> &&
         IndirectStrictWeakOrder<Comp, const T*, projected<I, Proj>>,
@@ -55,7 +55,7 @@ public:
 
     template <typename Rng, typename T, typename Comp = less<>,
               typename Proj = identity>
-    std::enable_if_t<
+    detail::enable_if_t<
         ForwardRange<Rng> &&
         IndirectStrictWeakOrder<Comp, const T*, projected<iterator_t<Rng>, Proj>>,
     safe_iterator_t<Rng>>

@@ -13,7 +13,7 @@
 NANO_BEGIN_NAMESPACE
 
 template <typename T>
-std::enable_if_t<Destructible<T>>
+detail::enable_if_t<Destructible<T>>
 destroy_at(T* location) noexcept
 {
     location->~T();
@@ -34,7 +34,7 @@ private:
 
 public:
     template <typename I, typename S>
-    std::enable_if_t<
+    detail::enable_if_t<
         NoThrowInputIterator<I> &&
         NoThrowSentinel<S, I> &&
         Destructible<iter_value_t<I>>, I>
@@ -44,7 +44,7 @@ public:
     }
 
     template <typename Rng>
-    std::enable_if_t<
+    detail::enable_if_t<
         NoThrowInputRange<Rng> &&
         Destructible<iter_value_t<iterator_t<Rng>>>,
         safe_iterator_t<Rng>>
@@ -62,7 +62,7 @@ namespace detail {
 
 struct destroy_n_fn {
     template <typename I>
-    std::enable_if_t<
+    detail::enable_if_t<
         NoThrowInputIterator<I> &&
         Destructible<iter_value_t<I>>, I>
     operator()(I first, iter_difference_t<I> n) const noexcept

@@ -36,13 +36,13 @@ public:
 
     explicit constexpr reverse_iterator(I x) : current_(std::move(x)) {}
 
-    template <typename U, std::enable_if_t<ConvertibleTo<U, I>, int> = 0>
+    template <typename U, detail::enable_if_t<ConvertibleTo<U, I>, int> = 0>
 
     constexpr reverse_iterator(const reverse_iterator<U>& i)
         : current_(i.base())
     {}
 
-    template <typename U, std::enable_if_t<ConvertibleTo<U, I>, int> = 0>
+    template <typename U, detail::enable_if_t<ConvertibleTo<U, I>, int> = 0>
 
     constexpr reverse_iterator& operator=(const reverse_iterator<U>& i)
     {
@@ -83,14 +83,14 @@ public:
     }
 
     template <typename II = I>
-    constexpr std::enable_if_t<RandomAccessIterator<II>, reverse_iterator>
+    constexpr detail::enable_if_t<RandomAccessIterator<II>, reverse_iterator>
     operator+(difference_type n) const
     {
         return reverse_iterator(current_ - n);
     }
 
     template <typename II = I>
-    constexpr std::enable_if_t<RandomAccessIterator<II>, reverse_iterator&>
+    constexpr detail::enable_if_t<RandomAccessIterator<II>, reverse_iterator&>
     operator+=(difference_type n)
     {
         current_ -= n;
@@ -98,14 +98,14 @@ public:
     }
 
     template <typename II = I>
-    constexpr std::enable_if_t<RandomAccessIterator<II>, reverse_iterator>
+    constexpr detail::enable_if_t<RandomAccessIterator<II>, reverse_iterator>
     operator-(difference_type n) const
     {
         return reverse_iterator(current_ + n);
     }
 
     template <typename II = I>
-    constexpr std::enable_if_t<RandomAccessIterator<II>, reverse_iterator&>
+    constexpr detail::enable_if_t<RandomAccessIterator<II>, reverse_iterator&>
     operator-=(difference_type n)
     {
         current_ += n;
@@ -113,7 +113,7 @@ public:
     }
 
     template <typename II = I>
-    constexpr std::enable_if_t<RandomAccessIterator<II>, reference>
+    constexpr detail::enable_if_t<RandomAccessIterator<II>, reference>
     operator[](difference_type n) const
     {
         return current_[-n - 1];
@@ -135,7 +135,7 @@ public:
                   y) noexcept(noexcept(ranges::iter_swap(std::declval<I>(),
                                                          std::declval<I>())) &&
                               noexcept(--std::declval<I&>()))
-        -> std::enable_if_t<IndirectlySwappable<I2, I>>
+        -> detail::enable_if_t<IndirectlySwappable<I2, I>>
 
     {
         ranges::iter_swap(prev(x.current_), prev(y.base()));
@@ -146,56 +146,56 @@ private:
 };
 
 template <typename I1, typename I2>
-constexpr std::enable_if_t<EqualityComparableWith<I1, I2>, bool>
+constexpr detail::enable_if_t<EqualityComparableWith<I1, I2>, bool>
 operator==(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 {
     return x.base() == y.base();
 }
 
 template <typename I1, typename I2>
-constexpr std::enable_if_t<EqualityComparableWith<I1, I2>, bool>
+constexpr detail::enable_if_t<EqualityComparableWith<I1, I2>, bool>
 operator!=(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 {
     return x.base() != y.base();
 }
 
 template <typename I1, typename I2>
-constexpr std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+constexpr detail::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
 operator<(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 {
     return x.base() > y.base();
 }
 
 template <typename I1, typename I2>
-constexpr std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+constexpr detail::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
 operator>(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 {
     return x.base() < y.base();
 }
 
 template <typename I1, typename I2>
-constexpr std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+constexpr detail::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
 operator>=(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 {
     return x.base() <= y.base();
 }
 
 template <typename I1, typename I2>
-constexpr std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+constexpr detail::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
 operator<=(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 {
     return x.base() >= y.base();
 }
 
 template <typename I1, typename I2>
-constexpr std::enable_if_t<SizedSentinel<I1, I2>, iter_difference_t<I2>>
+constexpr detail::enable_if_t<SizedSentinel<I1, I2>, iter_difference_t<I2>>
 operator-(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 {
     return y.base() - x.base();
 }
 
 template <typename I>
-constexpr std::enable_if_t<RandomAccessIterator<I>, reverse_iterator<I>>
+constexpr detail::enable_if_t<RandomAccessIterator<I>, reverse_iterator<I>>
 operator+(iter_difference_t<I> n, const reverse_iterator<I>& x)
 {
     return reverse_iterator<I>(x.base() - n);
@@ -206,7 +206,7 @@ operator+(iter_difference_t<I> n, const reverse_iterator<I>& x)
 using reverse_iterator_::reverse_iterator;
 
 template <typename I>
-constexpr std::enable_if_t<BidirectionalIterator<I>, reverse_iterator<I>>
+constexpr detail::enable_if_t<BidirectionalIterator<I>, reverse_iterator<I>>
 make_reverse_iterator(I i)
 {
     return reverse_iterator<I>(std::move(i));

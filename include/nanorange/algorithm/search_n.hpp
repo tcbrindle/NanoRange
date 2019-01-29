@@ -60,7 +60,7 @@ public:
     constexpr auto operator()(I first, S last, iter_difference_t<I> count,
                               const T& value, Pred pred = Pred{},
                               Proj proj = Proj{}) const
-    -> std::enable_if_t<ForwardIterator<I> && Sentinel<S, I> &&
+    -> detail::enable_if_t<ForwardIterator<I> && Sentinel<S, I> &&
                         IndirectlyComparable<I, const T*, Pred, Proj>,
         subrange<I>>
     {
@@ -73,7 +73,7 @@ public:
     constexpr auto
     operator()(Rng&& rng, iter_difference_t<iterator_t<Rng>> count,
                const T& value, Pred pred = Pred{}, Proj proj = Proj{}) const
-    -> std::enable_if_t<
+    -> detail::enable_if_t<
         ForwardRange<Rng> &&
         IndirectlyComparable<iterator_t<Rng>, const T*, Pred, Proj>,
         safe_subrange_t<Rng>>

@@ -17,7 +17,7 @@ template <typename>
 auto NoThrowInputIterator_fn(long) -> std::false_type;
 
 template <typename I>
-auto NoThrowInputIterator_fn(int) -> std::enable_if_t<
+auto NoThrowInputIterator_fn(int) -> detail::enable_if_t<
     InputIterator<I> &&
     std::is_lvalue_reference<iter_reference_t<I>>::value &&
     Same<remove_cvref_t<iter_reference_t<I>>, iter_value_t<I>>,
@@ -34,7 +34,7 @@ template <typename>
 auto NoThrowInputRange_fn(long) -> std::false_type;
 
 template <typename Rng>
-auto NoThrowInputRange_fn(int) -> std::enable_if_t<
+auto NoThrowInputRange_fn(int) -> detail::enable_if_t<
     Range<Rng> &&
     NoThrowInputIterator<iterator_t<Rng>> &&
     NoThrowSentinel<sentinel_t<Rng>, iterator_t<Rng>>,
@@ -54,7 +54,7 @@ template <typename>
 auto NoThrowForwardRange_fn(long) -> std::false_type;
 
 template <typename Rng>
-auto NoThrowForwardRange_fn(int) -> std::enable_if_t<
+auto NoThrowForwardRange_fn(int) -> detail::enable_if_t<
     NoThrowInputRange<Rng> &&
     NoThrowForwardIterator<iterator_t<Rng>>,
     std::true_type>;

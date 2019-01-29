@@ -48,7 +48,7 @@ template <typename T, typename U>
 auto CommonReference_fn(long) -> std::false_type;
 
 template <typename T, typename U>
-auto CommonReference_fn(int) -> std::enable_if_t<
+auto CommonReference_fn(int) -> detail::enable_if_t<
         Same<common_reference_t<T, U>, common_reference_t<U, T>> &&
         ConvertibleTo<T, common_reference_t<T, U>> &&
         ConvertibleTo<U, common_reference_t<T, U>>,
@@ -66,7 +66,7 @@ template <typename T, typename U>
 auto Common_fn(long) -> std::false_type;
 
 template <typename T, typename U>
-auto Common_fn(int) -> std::enable_if_t<
+auto Common_fn(int) -> detail::enable_if_t<
     Same<common_type_t<T, U>, common_type_t<U, T>> &&
     ConvertibleTo<T, common_type_t<T, U>> &&
     ConvertibleTo<U, common_type_t<T, U>> &&
@@ -113,7 +113,7 @@ template <typename LHS, typename RHS>
 auto Assignable_fn(long) -> std::false_type;
 
 template <typename LHS, typename RHS>
-auto Assignable_fn(int) -> std::enable_if_t<
+auto Assignable_fn(int) -> detail::enable_if_t<
         std::is_lvalue_reference<LHS>::value &&
         CommonReference<const std::remove_reference_t<LHS>&,
                         const std::remove_reference_t<RHS>&> &&
@@ -149,7 +149,7 @@ template <typename T>
 auto CopyConstructible_fn(long) -> std::false_type;
 
 template <typename T>
-auto CopyConstructible_fn(int) -> std::enable_if_t<
+auto CopyConstructible_fn(int) -> detail::enable_if_t<
         MoveConstructible<T> &&
         Constructible<T, T&> && ConvertibleTo<T&, T> &&
         Constructible<T, const T&> && ConvertibleTo<const T&, T> &&

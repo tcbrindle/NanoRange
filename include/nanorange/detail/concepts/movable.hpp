@@ -21,7 +21,7 @@ template <typename T>
 auto Movable_fn(long) -> std::false_type;
 
 template <typename T>
-auto Movable_fn(int) -> std::enable_if_t<
+auto Movable_fn(int) -> detail::enable_if_t<
         std::is_object<T>::value &&
         MoveConstructible<T> &&
         Assignable<T&, T> &&

@@ -27,7 +27,7 @@ private:
               typename I = decltype(decay_copy(std::declval<T&>().rbegin()))>
     static constexpr auto
     impl(T& t, priority_tag<2>) noexcept(noexcept(decay_copy(t.rbegin())))
-        -> std::enable_if_t<Iterator<I>, I>
+        -> detail::enable_if_t<Iterator<I>, I>
     {
         return t.rbegin();
     }
@@ -36,7 +36,7 @@ private:
               typename I = decltype(decay_copy(rbegin(std::declval<T&&>())))>
     static constexpr auto impl(T&& t, priority_tag<1>) noexcept(
         noexcept(decay_copy(rbegin(std::forward<T>(t)))))
-        -> std::enable_if_t<Iterator<I>, I>
+        -> detail::enable_if_t<Iterator<I>, I>
     {
         return rbegin(std::forward<T>(t));
     }
@@ -46,7 +46,7 @@ private:
               typename S = decltype(ranges::end(std::declval<T&&>()))>
     static constexpr auto impl(T&& t, priority_tag<0>) noexcept(
         noexcept(ranges::make_reverse_iterator(ranges::end(std::forward<T>(t)))))
-        -> std::enable_if_t<Same<I, S> && BidirectionalIterator<I>,
+        -> detail::enable_if_t<Same<I, S> && BidirectionalIterator<I>,
                             decltype(ranges::make_reverse_iterator(
                                 ranges::end(std::forward<T>(t))))>
     {
@@ -84,7 +84,7 @@ private:
               typename S = decltype(decay_copy(std::declval<T&>().rend()))>
     static constexpr auto
     impl(T& t, priority_tag<2>) noexcept(noexcept(decay_copy(t.rend())))
-        -> std::enable_if_t<Sentinel<S, I>, S>
+        -> detail::enable_if_t<Sentinel<S, I>, S>
     {
         return t.rend();
     }
@@ -94,7 +94,7 @@ private:
               typename S = decltype(decay_copy(rend(std::declval<T&&>())))>
     static constexpr auto impl(T&& t, priority_tag<1>) noexcept(
         noexcept(decay_copy(rend(std::forward<T>(t)))))
-        -> std::enable_if_t<Sentinel<S, I>, S>
+        -> detail::enable_if_t<Sentinel<S, I>, S>
     {
         return rend(std::forward<T>(t));
     }
@@ -104,7 +104,7 @@ private:
               typename S = decltype(ranges::end(std::declval<T&&>()))>
     static constexpr auto impl(T&& t, priority_tag<0>) noexcept(
         noexcept(ranges::make_reverse_iterator(ranges::begin(std::forward<T>(t)))))
-        -> std::enable_if_t<Same<I, S> && BidirectionalIterator<I>,
+        -> detail::enable_if_t<Same<I, S> && BidirectionalIterator<I>,
                             decltype(ranges::make_reverse_iterator(
                                 ranges::begin(std::forward<T>(t))))>
     {

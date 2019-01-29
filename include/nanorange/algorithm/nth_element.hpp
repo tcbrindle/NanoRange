@@ -260,7 +260,7 @@ private:
 
 public:
     template <typename I, typename S, typename Comp = less<>, typename Proj = identity>
-    std::enable_if_t<
+    detail::enable_if_t<
         RandomAccessIterator<I> &&
         Sentinel<S, I> &&
         Sortable<I, Comp, Proj>, I>
@@ -273,7 +273,7 @@ public:
     }
 
     template <typename Rng, typename Comp = less<>, typename Proj = identity>
-    std::enable_if_t<
+    detail::enable_if_t<
         RandomAccessRange<Rng> &&
         Sortable<iterator_t<Rng>, Comp, Proj>,
     safe_iterator_t<Rng>>

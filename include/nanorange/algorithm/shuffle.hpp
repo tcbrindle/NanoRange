@@ -35,7 +35,7 @@ private:
 
 public:
     template <typename I, typename S, typename Gen>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         RandomAccessIterator<I> &&
         Sentinel<S, I> &&
         UniformRandomBitGenerator<std::remove_reference_t<Gen>> &&
@@ -48,7 +48,7 @@ public:
     }
 
     template <typename Rng, typename Gen>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
             RandomAccessRange<Rng> &&
             UniformRandomBitGenerator<std::remove_reference_t<Gen>> &&
             ConvertibleTo<invoke_result_t<Gen&>, iter_difference_t<iterator_t<Rng>>>,

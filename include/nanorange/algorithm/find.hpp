@@ -34,7 +34,7 @@ private:
 
 public:
     template <typename I, typename S, typename Proj = identity, typename Pred>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputIterator<I> && Sentinel<S, I> &&
             IndirectUnaryPredicate<Pred, projected<I, Proj>>,
         I>
@@ -44,7 +44,7 @@ public:
     }
 
     template <typename Rng, typename Proj = identity, typename Pred>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputRange<Rng> &&
             IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
         safe_iterator_t<Rng>>
@@ -74,7 +74,7 @@ private:
 
 public:
     template <typename I, typename S, typename T, typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputIterator<I> && Sentinel<S, I> &&
             IndirectRelation<equal_to<>, projected<I, Proj>, const T*>,
         I>
@@ -85,7 +85,7 @@ public:
     }
 
     template <typename Rng, typename T, typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputRange<Rng> &&
             IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>,
                              const T*>,
@@ -117,7 +117,7 @@ private:
 
 public:
     template <typename I, typename S, typename Proj = identity, typename Pred>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputIterator<I> && Sentinel<S, I> &&
             IndirectUnaryPredicate<Pred, projected<I, Proj>>,
         I>
@@ -129,7 +129,7 @@ public:
     }
 
     template <typename Rng, typename Proj = identity, typename Pred>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputRange<Rng> &&
             IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
         safe_iterator_t<Rng>>

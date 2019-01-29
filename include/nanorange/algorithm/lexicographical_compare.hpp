@@ -39,7 +39,7 @@ public:
     template <typename I1, typename S1, typename I2, typename S2,
               typename Comp = less<>, typename Proj1 = identity,
               typename Proj2 = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputIterator<I1> &&
         Sentinel<S1, I1> &&
         InputIterator<I2> &&
@@ -57,7 +57,7 @@ public:
 
     template <typename Rng1, typename Rng2, typename Comp = less<>,
               typename Proj1 = identity, typename Proj2 = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputRange<Rng1> &&
         InputRange<Rng2> &&
         IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng1>, Proj1>,

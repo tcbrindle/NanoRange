@@ -65,8 +65,24 @@ using test_requires_t = decltype(test_requires<R, Args...>(std::declval<R&>()));
 template <typename R, typename... Args>
 constexpr bool requires_ = exists_v<test_requires_t, R, Args...>;
 
+template <bool B>
+struct enable_if {
+    template <typename T>
+    using type = T;
+};
+
+template <>
+struct enable_if<false> {};
+
+#if !defined(__clang__)
+template <bool B, typename T = void>
+using enable_if_t = typename enable_if<B>::template type<T>;
+#else // Clang
+using std::enable_if_t;
+#endif
+
 template <bool Expr>
-using requires_expr = std::enable_if_t<Expr, int>;
+using requires_expr = detail::enable_if_t<Expr, int>;
 
 template <std::size_t I>
 struct priority_tag : priority_tag<I - 1> {

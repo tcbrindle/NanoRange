@@ -15,7 +15,7 @@ namespace detail {
 
 struct generate_n_fn {
     template <typename O, typename F>
-    constexpr std::enable_if_t<Iterator<O> && CopyConstructible<F> &&
+    constexpr detail::enable_if_t<Iterator<O> && CopyConstructible<F> &&
                                    Invocable<F&> &&
                                    Writable<O, invoke_result_t<F&>>,
                                O>

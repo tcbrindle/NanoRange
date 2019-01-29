@@ -36,7 +36,7 @@ private:
 
 public:
     template <typename I, typename S, typename Proj = identity, typename Fun>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputIterator<I> && Sentinel<S, I> &&
             IndirectUnaryInvocable<Fun, projected<I, Proj>>,
         for_each_result<I, Fun>>
@@ -47,7 +47,7 @@ public:
     }
 
     template <typename Rng, typename Proj = identity, typename Fun>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputRange<Rng> &&
             IndirectUnaryInvocable<Fun, projected<iterator_t<Rng>, Proj>>,
         for_each_result<safe_iterator_t<Rng>, Fun>>

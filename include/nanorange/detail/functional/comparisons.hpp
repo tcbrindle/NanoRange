@@ -28,7 +28,7 @@ struct equal_to_helper<void> {
     constexpr auto operator()(T&& t, U&& u) const
         noexcept(noexcept(std::equal_to<>{}(std::forward<T>(t),
                                             std::forward<U>(u))))
-            -> std::enable_if_t<EqualityComparableWith<T, U>, bool>
+            -> detail::enable_if_t<EqualityComparableWith<T, U>, bool>
     {
         return std::equal_to<>{}(std::forward<T>(t), std::forward<U>(u));
     }
@@ -37,7 +37,7 @@ struct equal_to_helper<void> {
 };
 
 template <typename T>
-struct equal_to_helper<T, std::enable_if_t<EqualityComparable<T>>> {
+struct equal_to_helper<T, detail::enable_if_t<EqualityComparable<T>>> {
     constexpr bool operator()(const T& t, const T& u) const
         noexcept(noexcept(equal_to_helper<>{}(t, u)))
     {
@@ -54,7 +54,7 @@ struct not_equal_to_helper<void> {
     constexpr auto operator()(T&& t, U&& u) const
         noexcept(noexcept(!equal_to_helper<>{}(std::forward<T>(t),
                                                std::forward<U>(u))))
-            -> std::enable_if_t<EqualityComparableWith<T, U>, bool>
+            -> detail::enable_if_t<EqualityComparableWith<T, U>, bool>
     {
         return !equal_to_helper<>{}(std::forward<T>(t), std::forward<U>(u));
     }
@@ -63,7 +63,7 @@ struct not_equal_to_helper<void> {
 };
 
 template <typename T>
-struct not_equal_to_helper<T, std::enable_if_t<EqualityComparable<T>>> {
+struct not_equal_to_helper<T, detail::enable_if_t<EqualityComparable<T>>> {
     constexpr bool operator()(const T& t, const T& u) const
         noexcept(noexcept(!equal_to_helper<>{}(t, u)))
     {
@@ -79,7 +79,7 @@ struct less_helper<void> {
     template <typename T, typename U>
     constexpr auto operator()(T&& t, U&& u) const
         noexcept(noexcept(std::less<>{}(std::forward<T>(t), std::forward<U>(u))))
-            -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
+            -> detail::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
     {
         return std::less<>{}(std::forward<T>(t), std::forward<U>(u));
     }
@@ -88,7 +88,7 @@ struct less_helper<void> {
 };
 
 template <typename T>
-struct less_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
+struct less_helper<T, detail::enable_if_t<StrictTotallyOrdered<T>>> {
     constexpr bool operator()(const T& t, const T& u) const
         noexcept(noexcept(less_helper<>{}(t, u)))
     {
@@ -105,7 +105,7 @@ struct greater_helper<void> {
     constexpr auto operator()(T&& t, U&& u) const
         noexcept(noexcept(less_helper<>{}(std::forward<T>(t),
                                           std::forward<U>(u))))
-            -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
+            -> detail::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
     {
         return less_helper<>{}(std::forward<U>(u), std::forward<T>(t));
     }
@@ -114,7 +114,7 @@ struct greater_helper<void> {
 };
 
 template <typename T>
-struct greater_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
+struct greater_helper<T, detail::enable_if_t<StrictTotallyOrdered<T>>> {
     constexpr bool operator()(const T& t, const T& u) const
         noexcept(noexcept(less_helper<>{}(u, t)))
     {
@@ -131,7 +131,7 @@ struct less_equal_helper<void> {
     constexpr auto operator()(T&& t, U&& u) const
         noexcept(noexcept(!less_helper<>{}(std::forward<U>(u),
                                            std::forward<T>(t))))
-            -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
+            -> detail::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
     {
         return !less_helper<>{}(std::forward<U>(u), std::forward<T>(t));
     }
@@ -140,7 +140,7 @@ struct less_equal_helper<void> {
 };
 
 template <typename T>
-struct less_equal_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
+struct less_equal_helper<T, detail::enable_if_t<StrictTotallyOrdered<T>>> {
     constexpr bool operator()(const T& t, const T& u) const
         noexcept(noexcept(!less_helper<>{}(u, t)))
     {
@@ -157,7 +157,7 @@ struct greater_equal_helper<void> {
     constexpr auto operator()(T&& t, U&& u) const
         noexcept(noexcept(less_helper<>{}(std::forward<T>(t),
                                           std::forward<U>(u))))
-            -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
+            -> detail::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
     {
         return !less_helper<>{}(std::forward<T>(t), std::forward<U>(u));
     }
@@ -166,7 +166,7 @@ struct greater_equal_helper<void> {
 };
 
 template <typename T>
-struct greater_equal_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
+struct greater_equal_helper<T, detail::enable_if_t<StrictTotallyOrdered<T>>> {
     constexpr bool operator()(const T& t, const T& u) const
         noexcept(noexcept(!less_helper<>{}(t, u)))
     {

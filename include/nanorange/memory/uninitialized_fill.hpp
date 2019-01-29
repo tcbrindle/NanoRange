@@ -35,7 +35,7 @@ private:
 
 public:
     template <typename I, typename S, typename T>
-    std::enable_if_t<
+    detail::enable_if_t<
         NoThrowForwardIterator<I> &&
         NoThrowSentinel<S, I> &&
         Constructible<iter_value_t<I>, const T&>,
@@ -46,7 +46,7 @@ public:
     }
 
     template <typename Rng, typename T>
-    std::enable_if_t<
+    detail::enable_if_t<
         NoThrowForwardRange<Rng> &&
         Constructible<iter_value_t<iterator_t<Rng>>, const T&>,
         safe_iterator_t<Rng>>
@@ -64,7 +64,7 @@ namespace detail {
 
 struct uninitialized_fill_n_fn {
     template <typename I, typename T>
-    std::enable_if_t<
+    detail::enable_if_t<
         NoThrowForwardIterator<I> &&
         Constructible<iter_value_t<I>, const T&>,
         I>

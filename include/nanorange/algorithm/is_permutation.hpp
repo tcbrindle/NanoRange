@@ -128,7 +128,7 @@ public:
               typename Pred = equal_to<>, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr
-        std::enable_if_t<ForwardIterator<I1> && Sentinel<S1, I1> &&
+        detail::enable_if_t<ForwardIterator<I1> && Sentinel<S1, I1> &&
                              ForwardIterator<I2> && Sentinel<S2, I2> &&
                              IndirectlyComparable<I1, I2, Pred, Proj1, Proj2>,
                          bool>
@@ -155,7 +155,7 @@ public:
         typename Proj2 = identity>
     NANO_DEPRECATED
     constexpr
-    std::enable_if_t<ForwardIterator<I1> && Sentinel<S1, I1> &&
+    detail::enable_if_t<ForwardIterator<I1> && Sentinel<S1, I1> &&
                      ForwardIterator<I2> &&
                      IndirectlyComparable<I1, I2, Pred, Proj1, Proj2>,
         bool>
@@ -171,7 +171,7 @@ public:
     // Two ranges
     template <typename Rng1, typename Rng2, typename Pred = equal_to<>,
               typename Proj1 = identity, typename Proj2 = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         ForwardRange<Rng1> && ForwardRange<Rng2> &&
             IndirectlyComparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred,
                                  Proj1, Proj2>,
@@ -198,7 +198,7 @@ public:
     template <typename Rng1, typename I2, typename Pred = equal_to<>,
         typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         ForwardRange<Rng1> && ForwardIterator<std::decay_t<I2>> &&
         !Range<I2> &&
         IndirectlyComparable<iterator_t<Rng1>, I2, Pred, Proj1, Proj2>,

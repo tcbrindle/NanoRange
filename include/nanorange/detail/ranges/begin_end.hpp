@@ -54,7 +54,7 @@ private:
     template <typename T>
     static constexpr auto
     impl(T& t, priority_tag<1>) noexcept(noexcept(decay_copy(t.begin())))
-        -> std::enable_if_t<Iterator<decltype(decay_copy(t.begin()))>,
+        -> detail::enable_if_t<Iterator<decltype(decay_copy(t.begin()))>,
                             decltype(decay_copy(t.begin()))>
     {
         return decay_copy(t.begin());
@@ -63,7 +63,7 @@ private:
     template <typename T>
     static constexpr auto impl(T&& t, priority_tag<0>) noexcept(
         noexcept(decay_copy(begin(std::forward<T>(t)))))
-        -> std::enable_if_t<
+        -> detail::enable_if_t<
             Iterator<decltype(decay_copy(begin(std::forward<T>(t))))>,
             decltype(decay_copy(begin(std::forward<T>(t))))>
     {
@@ -121,7 +121,7 @@ private:
               typename I = decltype(ranges::begin(std::declval<T&>()))>
     static constexpr auto
     impl(T& t, priority_tag<1>) noexcept(noexcept(decay_copy(t.end())))
-        -> std::enable_if_t<Sentinel<S, I>, decltype(decay_copy(t.end()))>
+        -> detail::enable_if_t<Sentinel<S, I>, decltype(decay_copy(t.end()))>
     {
         return decay_copy(t.end());
     }
@@ -131,7 +131,7 @@ private:
               typename I = decltype(ranges::begin(std::declval<T>()))>
     static constexpr auto impl(T&& t, priority_tag<0>) noexcept(
         noexcept(decay_copy(end(std::forward<T>(t)))))
-        -> std::enable_if_t<Sentinel<S, I>, S>
+        -> detail::enable_if_t<Sentinel<S, I>, S>
     {
         return decay_copy(end(std::forward<T>(t)));
     }

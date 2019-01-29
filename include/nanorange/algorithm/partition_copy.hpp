@@ -45,7 +45,7 @@ private:
 public:
     template <typename I, typename S, typename O1, typename O2,
               typename Pred, typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputIterator<I> &&
         Sentinel<S, I> &&
         WeaklyIncrementable<O1> &&
@@ -64,7 +64,7 @@ public:
 
     template <typename Rng, typename O1, typename O2,
             typename Pred, typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         InputRange<Rng> &&
         WeaklyIncrementable<O1> &&
         WeaklyIncrementable<O2> &&

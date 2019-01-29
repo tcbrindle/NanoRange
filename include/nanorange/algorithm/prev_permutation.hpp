@@ -68,7 +68,7 @@ private:
 public:
     template <typename I, typename S, typename Comp = less<>,
               typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         BidirectionalIterator<I> &&
         Sentinel<S, I> &&
         Sortable<I, Comp, Proj>, bool>
@@ -79,7 +79,7 @@ public:
     }
 
     template <typename Rng, typename Comp = less<>, typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         BidirectionalRange<Rng> &&
         Sortable<iterator_t<Rng>, Comp, Proj>, bool>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const

@@ -48,7 +48,7 @@ private:
     static constexpr auto impl(T& a, T& b, priority_tag<0>) noexcept(
         std::is_nothrow_move_constructible<T>::value&&
             std::is_nothrow_assignable<T&, T>::value)
-        -> std::enable_if_t<MoveConstructible<T> && Assignable<T&, T>>
+        -> detail::enable_if_t<MoveConstructible<T> && Assignable<T&, T>>
     {
         T temp = std::move(a);
         a = std::move(b);

@@ -75,7 +75,7 @@ template <typename, typename>
 auto EqualityComparableWith_fn(long) -> std::false_type;
 
 template <typename T, typename U>
-auto EqualityComparableWith_fn(int) -> std::enable_if_t<
+auto EqualityComparableWith_fn(int) -> detail::enable_if_t<
     EqualityComparable<T> && EqualityComparable<U> &&
     CommonReference<const std::remove_reference_t<T>&,
                     const std::remove_reference_t<U>&> &&
@@ -134,7 +134,7 @@ template <typename, typename>
 auto StrictTotallyOrderedWith_fn(long) -> std::false_type;
 
 template <typename T, typename U>
-auto StrictTotallyOrderedWith_fn(int) -> std::enable_if_t<
+auto StrictTotallyOrderedWith_fn(int) -> detail::enable_if_t<
         StrictTotallyOrdered<T> && StrictTotallyOrdered<U> &&
         CommonReference<const std::remove_reference_t<T>&,
                         const std::remove_reference_t<U>&> &&

@@ -39,7 +39,7 @@ private:
 public:
     template <typename I, typename S, typename R = equal_to<>,
               typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
         ForwardIterator<I> &&
         Sentinel<S, I> &&
         IndirectRelation<R, projected<I, Proj>> &&
@@ -51,7 +51,7 @@ public:
     }
 
     template <typename Rng, typename R = equal_to<>, typename Proj = identity>
-    constexpr std::enable_if_t<
+    constexpr detail::enable_if_t<
             ForwardRange<Rng> &&
             IndirectRelation<R, projected<iterator_t<Rng>, Proj>> &&
             Permutable<iterator_t<Rng>>,
