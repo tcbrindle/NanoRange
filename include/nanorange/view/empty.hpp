@@ -35,13 +35,8 @@ using empty_view_::empty_view;
 
 namespace view {
 
-#ifdef NANO_HAVE_INLINE_VARS
 template <typename T, typename = std::enable_if_t<std::is_object<T>::value>>
 inline constexpr empty_view<T> empty{};
-#else
-template <typename T, typename = std::enable_if_t<std::is_object<T>::value>>
-constexpr const auto& empty = nano::detail::static_const_<empty_view<T>>::value;
-#endif // NANO_HAVE_INLINE_VARS
 
 }
 

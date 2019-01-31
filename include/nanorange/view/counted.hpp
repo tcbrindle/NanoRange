@@ -20,22 +20,22 @@ struct counted_fn {
 private:
     template <typename I>
     static constexpr auto impl(I i, iter_difference_t<I> n, nano::detail::priority_tag<1>)
-        noexcept(noexcept(nano::make_subrange(i, i + n)))
-        -> std::enable_if_t<RandomAccessIterator<I>, decltype(nano::make_subrange(i, i + n))>
+        noexcept(noexcept(nano::subrange{i, i + n}))
+        -> std::enable_if_t<RandomAccessIterator<I>, decltype(nano::subrange{i, i + n})>
     {
-        return nano::make_subrange(i, i + n);
+        return nano::subrange{i, i + n};
     }
 
     template <typename I>
     static constexpr auto impl(I i, iter_difference_t<I> n, nano::detail::priority_tag<0>)
-        noexcept(noexcept(nano::make_subrange(
+        noexcept(noexcept(nano::subrange{
                 nano::make_counted_iterator(std::move(i), n),
-                default_sentinel)))
-        -> decltype(nano::make_subrange(
-            nano::make_counted_iterator(std::move(i), n), default_sentinel))
+                default_sentinel}))
+        -> decltype(nano::subrange{
+            nano::make_counted_iterator(std::move(i), n), default_sentinel})
     {
-        return nano::make_subrange(nano::make_counted_iterator(std::move(i), n),
-                                   default_sentinel);
+        return nano::subrange{nano::make_counted_iterator(std::move(i), n),
+                                   default_sentinel};
     }
 
 public:

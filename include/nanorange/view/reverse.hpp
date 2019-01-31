@@ -109,12 +109,8 @@ private:
     V base_ = V{};
 };
 
-#ifdef NANO_HAVE_DEDUCTION_GUIDES
-
 template <typename R>
 reverse_view(R&&) -> reverse_view<all_view<R>>;
-
-#endif // NANO_HAVE_DEDUCTION_GUIDES
 
 namespace view {
 

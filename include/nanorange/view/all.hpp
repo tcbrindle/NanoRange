@@ -35,10 +35,10 @@ private:
 
     template <typename T>
     static constexpr auto impl(T&& t, priority_tag<0>)
-        noexcept(noexcept(nano::make_subrange(std::forward<T>(t))))
-        -> decltype(nano::make_subrange(std::forward<T>(t)))
+        noexcept(noexcept(nano::subrange{std::forward<T>(t)}))
+        -> decltype(nano::subrange{std::forward<T>(t)})
     {
-        return nano::make_subrange(std::forward<T>(t));
+        return nano::subrange{std::forward<T>(t)};
     }
 
 public:
