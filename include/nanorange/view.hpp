@@ -9,6 +9,7 @@
 
 #include <nanorange/view/all.hpp>
 #include <nanorange/view/interface.hpp>
+#include <nanorange/view/reverse.hpp>
 #include <nanorange/view/subrange.hpp>
 
 #endif

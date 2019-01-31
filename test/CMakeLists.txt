@@ -179,7 +179,7 @@ add_executable(test_nanorange
     view/ref_view.cpp
     #view/repeat_n_view.cpp
     #view/repeat_view.cpp
-    #view/reverse_view.cpp
+    view/reverse_view.cpp
     #view/span.cpp
     #view/split_view.cpp
     view/subrange.cpp
@@ -192,12 +192,15 @@ target_compile_definitions(test_nanorange PRIVATE "-DNANORANGE_NO_DEPRECATION_WA
 target_link_libraries(test_nanorange PRIVATE nanorange)
 
 if (CMAKE_COMPILER_IS_GNUCXX)
-    target_compile_options(test_nanorange PRIVATE -Wall -Wextra -pedantic -Wno-noexcept-type -Wno-attributes)
+    target_compile_options(test_nanorange PRIVATE -Wall -Wextra -pedantic
+        -Wno-noexcept-type -Wno-attributes
+        -ftemplate-backtrace-limit=0)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(test_nanorange PRIVATE -Wall -Wextra -pedantic
-        -Wno-unused-function -Wno-unneeded-internal-declaration -Wno-missing-braces)
+        -Wno-unused-function -Wno-unneeded-internal-declaration -Wno-missing-braces
+        -ftemplate-backtrace-limit=0)
 endif()
 
 if (MSVC)

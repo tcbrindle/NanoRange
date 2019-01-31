@@ -8,7 +8,6 @@ exe{test-nanorange}: cxx{**\
     -iterator/incomplete        \
     -iterator/iterator          \
     -view/common_view           \
-    -view/counted_view          \
     -view/drop_view             \
     -view/drop_while_view       \
     -view/filter_view           \
@@ -17,7 +16,6 @@ exe{test-nanorange}: cxx{**\
     -view/move_view             \
     -view/repeat_n_view         \
     -view/repeat_view           \
-    -view/reverse_view          \
     -view/span                  \
     -view/split_view            \
     -view/take_exactly_view     \
