@@ -167,7 +167,7 @@ add_executable(test_nanorange
     utility/common_type.cpp
     utility/concepts.cpp
 
-    #view/common_view.cpp
+    view/common_view.cpp
     view/counted_view.cpp
     #view/drop_view.cpp
     #view/drop_while_view.cpp
