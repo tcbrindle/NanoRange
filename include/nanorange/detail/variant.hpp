@@ -21,8 +21,16 @@ namespace detail {
 
 #ifdef NANO_HAVE_CPP17
 using std::variant;
+using std::in_place_type;
+using std::in_place_index;
+using std::get;
+using std::visit;
 #else
 using mpark::variant;
+using mpark::in_place_type;
+using mpark::in_place_index;
+using mpark::get;
+using mpark::visit;
 #endif
 
 }
