@@ -9,19 +9,37 @@
 
 #include <nanorange/detail/macros.hpp>
 
+#include <cassert>
+
 #ifdef NANO_HAVE_CPP17
+// MSVC is fine (for all versions we support, at least)
+#if defined(_MSC_VER)
+#define NANO_USE_STD_VARIANT
+#endif
+
+// libstdc++ < 8 is insufficiently constexpr
+#if defined(_GLIBCXX_RELEASE) && (_GLIBCXX_RELEASE >= 8)
+#define NANO_USE_STD_VARIANT
+#endif
+
+// AppleClang's libc++ lies about C++17 support
+#if defined(_LIBCXX_VERSION) && !defined(__apple_build_version__)
+#define NANO_USE_STD_VARIANT
+#endif
+
+#endif
+
+#ifdef NANO_USE_STD_VARIANT
 #include <variant>
 #else
 #include <nanorange/detail/thirdparty/mpark_variant.hpp>
 #endif
 
-#include <cassert>
-
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
-#ifdef NANO_HAVE_CPP17
+#ifdef NANO_USE_STD_VARIANT
 using std::variant;
 using std::in_place_type;
 using std::in_place_index;
