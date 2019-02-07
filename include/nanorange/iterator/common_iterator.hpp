@@ -240,8 +240,8 @@ public:
     }
 
 private:
-    constexpr I& iter() { return detail::get<I>(v_); }
-    constexpr const I& iter() const { return detail::get<I>(v_); }
+    constexpr I& iter() { return detail::unsafe_get<I>(v_); }
+    constexpr const I& iter() const { return detail::unsafe_get<I>(v_); }
 
     detail::variant<I, S> v_;
 };
