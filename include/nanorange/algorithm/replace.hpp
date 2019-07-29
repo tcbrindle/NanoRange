@@ -26,7 +26,7 @@ private:
             ++first;
         }
 
-        return std::move(first);
+        return first;
     }
 
 public:
