@@ -72,4 +72,21 @@ constexpr bool test_unique_copy()
 }
 static_assert(test_unique_copy(), "");
 
+constexpr bool test_rotate()
+{
+    carray<int, 5> in{1, 2, 3, 4, 5};
+    constexpr carray<int, 5> out{3, 4, 5, 1, 2};
+    constexpr carray<int, 2> res_out{1, 2};
+
+    const auto res = nano::rotate(in, in.begin() + 2);
+    if (in != out) {
+        return false;
+    }
+    if (!nano::equal(res, res_out)) {
+        return false;
+    }
+    return true;
+}
+static_assert(test_rotate(), "");
+
 }
