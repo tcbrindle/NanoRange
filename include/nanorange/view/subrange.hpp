@@ -289,30 +289,15 @@ subrange(R&&, iter_difference_t<iterator_t<R>>) ->
 
 } // namespace subrange_
 
-namespace detail {
-
-template <typename I, typename S, subrange_kind K>
-constexpr I subrange_get_helper(std::integral_constant<std::size_t, 0>,
-                                const subrange<I, S, K>& s)
-{
-    return s.begin();
-}
-
-template <typename I, typename S, subrange_kind K>
-constexpr S subrange_get_helper(std::integral_constant<std::size_t, 1>,
-                                const subrange<I, S, K>& s)
-{
-    return s.end();
-}
-
-} // namespace detail
-
-template <std::size_t N, typename I, typename S, subrange_kind K>
+template <std::size_t N, typename I, typename S, subrange_kind K,
+          std::enable_if_t<(N < 2), int> = 0>
 constexpr auto get(const subrange<I, S, K>& r)
-    -> std::enable_if_t<N < 2,
-           decltype(detail::subrange_get_helper(std::integral_constant<size_t, N>{}, r))>
 {
-    return detail::subrange_get_helper(std::integral_constant<size_t, N>{}, r);
+    if constexpr (N == 0) {
+        return r.begin();
+    } else {
+        return r.end();
+    }
 }
 
 // Extensions for C++14 compilers without CTAD
