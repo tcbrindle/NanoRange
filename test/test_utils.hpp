@@ -70,13 +70,13 @@ public:
     checker<decltype(algo_(begin, end, rest...))>
     {
         using R = decltype(algo_(begin, end, rest...));
-        return checker<R>{[=](std::function<void(R)> const & check)
+        return checker<R>{[algo = algo_, begin, end, rest...](std::function<void(R)> const & check)
                           {
                               using S = typename sentinel_type<I>::type;
-                              check(algo_(begin, end, rest...));
-                              check(algo_(begin, S{base(end)}, rest...));
-                              check(algo_(::rvalue_if<RvalueOK>(nano::make_subrange(begin, end)), rest...));
-                              check(algo_(::rvalue_if<RvalueOK>(nano::make_subrange(begin, S{base(end)})), rest...));
+                              check(algo(begin, end, rest...));
+                              check(algo(begin, S{base(end)}, rest...));
+                              check(algo(::rvalue_if<RvalueOK>(nano::make_subrange(begin, end)), rest...));
+                              check(algo(::rvalue_if<RvalueOK>(nano::make_subrange(begin, S{base(end)})), rest...));
                           }};
     }
 };
@@ -101,16 +101,16 @@ public:
     checker<decltype(algo_(begin1, end1, begin2, end2, rest...))>
     {
         using R = decltype(algo_(begin1, end1, begin2, end2, rest...));
-        return checker<R>{[=](std::function<void(R)> const & check)
+        return checker<R>{[algo = algo_, begin1, end1, begin2, end2, rest...](std::function<void(R)> const & check)
                           {
                               using S1 = typename sentinel_type<I1>::type;
                               using S2 = typename sentinel_type<I2>::type;
-                              check(algo_(begin1, end1, begin2, end2, rest...));
-                              check(algo_(begin1, S1{base(end1)}, begin2, S2{base(end2)}, rest...));
-                              check(algo_(::rvalue_if<RvalueOK1>(nano::make_subrange(begin1, end1)),
+                              check(algo(begin1, end1, begin2, end2, rest...));
+                              check(algo(begin1, S1{base(end1)}, begin2, S2{base(end2)}, rest...));
+                              check(algo(::rvalue_if<RvalueOK1>(nano::make_subrange(begin1, end1)),
                                           ::rvalue_if<RvalueOK2>(nano::make_subrange(begin2, end2)),
                                           rest...));
-                              check(algo_(::rvalue_if<RvalueOK1>(nano::make_subrange(begin1, S1{base(end1)})),
+                              check(algo(::rvalue_if<RvalueOK1>(nano::make_subrange(begin1, S1{base(end1)})),
                                           ::rvalue_if<RvalueOK2>(nano::make_subrange(begin2, S2{base(end2)})),
                                           rest...));
                           }};
