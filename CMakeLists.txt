@@ -163,7 +163,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view.hpp
 )
 target_include_directories(nanorange INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_compile_features(nanorange INTERFACE cxx_std_14)
+target_compile_features(nanorange INTERFACE cxx_std_17)
 
 
 if (MSVC)
