@@ -152,27 +152,6 @@ private:
 
     detail::subrange_data<I, S, StoreSize> data_{};
 
-
-    constexpr iter_difference_t<I> do_size(std::true_type) const
-    {
-        return data_.size_;
-    }
-
-    constexpr iter_difference_t<I> do_size(std::false_type) const
-    {
-        return data_.end_ - data_.begin_;
-    }
-
-    constexpr void do_advance(std::true_type, iter_difference_t<I> n)
-    {
-        data_.size_ -= n - ranges::advance(data_.begin_, n, data_.end_);
-    }
-
-    constexpr void do_advance(std::false_type, iter_difference_t<I> n)
-    {
-        ranges::advance(data_.begin_, n, data_.end_);
-    }
-
 public:
     using iterator = I;
     using sentinel = S;
@@ -251,8 +230,11 @@ public:
     constexpr auto size() const
         -> std::enable_if_t<KK == subrange_kind::sized, iter_difference_t<I>>
     {
-        using SS_t = std::conditional_t<StoreSize, std::true_type, std::false_type>;
-        return do_size(SS_t{});
+        if constexpr (StoreSize) {
+            return data_.size_;
+        } else {
+            return data_.end_ - data_.begin_;
+        }
     }
 
     [[nodiscard]] constexpr subrange next(iter_difference_t<I> n = 1) const
@@ -273,8 +255,11 @@ public:
 
     constexpr subrange& advance(iter_difference_t<I> n)
     {
-        using SS_t = std::conditional_t<StoreSize, std::true_type, std::false_type>;
-        do_advance(SS_t{}, n);
+        if constexpr (StoreSize) {
+            data_.size_ -= n - ranges::advance(data_.begin_, n, data_.end_);
+        } else {
+            ranges::advance(data_.begin_, n, data_.end_);
+        }
         return *this;
     }
 
