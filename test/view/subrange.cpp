@@ -51,7 +51,6 @@ TEST_CASE("view.subrange") {
 	}
 
 	// Deduction guides and tuple interface
-#ifdef NANO_HAVE_CPP17
 	{
 		std::vector vec{1, 2, 3, 4, 5};
 		auto r = subrange{vec};
@@ -59,5 +58,4 @@ TEST_CASE("view.subrange") {
 		CHECK(i == vec.begin());
 		CHECK(s == vec.end());
 	}
-#endif
 }

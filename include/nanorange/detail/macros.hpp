@@ -9,14 +9,6 @@
 
 #include <ciso646>
 
-#if (__cplusplus >= 201703) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
-#define NANO_HAVE_CPP17
-#endif
-
-#if defined(NANO_HAVE_CPP17) || defined(__cpp_inline_variables)
-#define NANO_HAVE_INLINE_VARS
-#endif
-
 #ifdef NANORANGE_NO_DEPRECATION_WARNINGS
 #define NANO_DEPRECATED
 #define NANO_DEPRECATED_FOR(x)
@@ -25,17 +17,7 @@
 #define NANO_DEPRECATED_FOR(x) [[deprecated(x)]]
 #endif
 
-#ifdef NANO_HAVE_CPP17
-#define NANO_NODISCARD [[nodiscard]]
-#else
-#define NANO_NODISCARD
-#endif
-
-#if defined(NANO_HAVE_CPP17) || defined(__cpp_deduction_guides)
-#define NANO_HAVE_DEDUCTION_GUIDES
-#endif
-
-#define NANO_CONCEPT constexpr bool
+#define NANO_CONCEPT inline constexpr bool
 
 #define NANO_BEGIN_NAMESPACE                                                   \
     \
@@ -49,38 +31,10 @@ inline namespace ranges                                                        \
     }                                                                          \
     }
 
-#ifdef NANO_HAVE_INLINE_VARS
 #define NANO_INLINE_VAR(type, name)                                            \
     inline namespace function_objects {                                        \
     inline constexpr type name{};                                              \
     }
-#define NANO_INLINE_VARIABLE inline
-#else
-#define NANO_INLINE_VAR(type, name)                                            \
-    inline namespace function_objects {                                        \
-    inline namespace {                                                         \
-    constexpr const auto& name =                                               \
-        ::nano::ranges::detail::static_const_<type>::value;                    \
-    }                                                                          \
-    }
-#define NANO_INLINE_VARIABLE
-#endif
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-template <typename T>
-struct static_const_ {
-    static constexpr T value{};
-};
-
-template <typename T>
-constexpr T static_const_<T>::value;
-
-} // namespace detail
-
-NANO_END_NAMESPACE
 
 #if defined(_LIBCPP_VERSION)
 #define NANO_BEGIN_NAMESPACE_STD _LIBCPP_BEGIN_NAMESPACE_STD

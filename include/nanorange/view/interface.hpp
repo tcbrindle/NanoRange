@@ -51,14 +51,14 @@ private:
 
 public:
     template <typename R = D>
-    NANO_NODISCARD constexpr auto empty()
+    [[nodiscard]] constexpr auto empty()
         -> std::enable_if_t<ForwardRange<R>, bool>
     {
         return ranges::begin(derived()) == ranges::end(derived());
     }
 
     template <typename R = D>
-    NANO_NODISCARD constexpr auto empty() const
+    [[nodiscard]] constexpr auto empty() const
         -> std::enable_if_t<ForwardRange<const R>, bool>
     {
         return ranges::begin(derived()) == ranges::end(derived());

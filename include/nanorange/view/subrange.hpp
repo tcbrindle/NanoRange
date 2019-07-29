@@ -274,7 +274,7 @@ public:
 
     constexpr S end() const { return data_.end_; }
 
-    NANO_NODISCARD constexpr bool empty() const
+    [[nodiscard]] constexpr bool empty() const
     {
         return data_.begin_ == data_.end_;
     }
@@ -287,7 +287,7 @@ public:
         return do_size(SS_t{});
     }
 
-    NANO_NODISCARD constexpr subrange next(iter_difference_t<I> n = 1) const
+    [[nodiscard]] constexpr subrange next(iter_difference_t<I> n = 1) const
     {
         auto tmp = *this;
         tmp.advance(n);
@@ -295,7 +295,7 @@ public:
     }
 
     template <typename II = I>
-    NANO_NODISCARD constexpr auto prev(iter_difference_t<I> n = 1) const
+    [[nodiscard]] constexpr auto prev(iter_difference_t<I> n = 1) const
         -> std::enable_if_t<BidirectionalIterator<II>, subrange>
     {
         auto tmp = *this;
@@ -315,8 +315,6 @@ public:
     friend constexpr S end(subrange&& r) { return r.end(); }
 };
 
-#ifdef NANO_HAVE_DEDUCTION_GUIDES
-
 template <typename I, typename S, std::enable_if_t<Iterator<I> && Sentinel<S, I>, int> = 0>
 subrange(I, S, iter_difference_t<I>) -> subrange<I, S, subrange_kind::sized>;
 
@@ -335,8 +333,6 @@ subrange(R&&) ->
 template <typename R, std::enable_if_t<detail::ForwardingRange<R>, int> = 0>
 subrange(R&&, iter_difference_t<iterator_t<R>>) ->
     subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>;
-
-#endif
 
 } // namespace subrange_
 
