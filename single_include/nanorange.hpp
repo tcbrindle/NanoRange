@@ -7411,10 +7411,9 @@ namespace detail {
 
 struct move_backward_fn {
 private:
-    template <typename I, typename S, typename O>
-    static constexpr move_backward_result<I, O> impl(I first, S sent, O result)
+    template <typename I, typename O>
+    static constexpr move_backward_result<I, O> impl(I first, I last, O result)
     {
-        auto last = nano::next(first, std::move(sent));
         auto it = last;
 
         while (it != first) {
@@ -7422,6 +7421,14 @@ private:
         }
 
         return {std::move(last), std::move(result)};
+    }
+
+    template <typename I, typename S, typename O>
+    static constexpr std::enable_if_t<!Same<I, S>, move_backward_result<I, O>>
+    impl(I first, S sent, O result)
+    {
+        I last = nano::next(first, sent);
+        return impl(std::move(first), std::move(last), std::move(result));
     }
 
 public:
@@ -7466,6 +7473,294 @@ NANO_END_NAMESPACE
 #define NANORANGE_ALGORITHM_ROTATE_HPP_INCLUDED
 
 
+// nanorange/algorithm/swap_ranges.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_SWAP_RANGES_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_SWAP_RANGES_HPP_INCLUDED
+
+// nanorange/algorithm/mismatch.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_MISMATCH_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_MISMATCH_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+// [range.mismatch]
+
+template <typename I1, typename I2>
+struct mismatch_result {
+    I1 in1;
+    I2 in2;
+};
+
+namespace detail {
+
+struct mismatch_fn {
+private:
+    friend struct is_permutation_fn;
+
+    template <typename I1, typename S1, typename I2, typename Proj1,
+              typename Proj2, typename Pred>
+    static constexpr mismatch_result<I1, I2>
+    impl3(I1 first1, S1 last1, I2 first2, Pred& pred, Proj1& proj1, Proj2& proj2)
+    {
+        while (first1 != last1 &&
+               nano::invoke(pred, nano::invoke(proj1, *first1),
+                            nano::invoke(proj2, *first2))) {
+            ++first1;
+            ++first2;
+        }
+
+        return {first1, first2};
+    }
+
+    template <typename I1, typename S1, typename I2, typename S2,
+              typename Proj1, typename Proj2, typename Pred>
+    static constexpr mismatch_result<I1, I2>
+    impl4(I1 first1, S1 last1, I2 first2, S2 last2, Pred& pred, Proj1& proj1,
+          Proj2& proj2)
+    {
+        while (first1 != last1 && first2 != last2 &&
+               nano::invoke(pred, nano::invoke(proj1, *first1),
+                            nano::invoke(proj2, *first2))) {
+            ++first1;
+            ++first2;
+        }
+
+        return {first1, first2};
+    }
+
+public:
+    // three legged
+    template <typename I1, typename S1, typename I2, typename Proj1 = identity,
+              typename Proj2 = identity, typename Pred = equal_to<>>
+    NANO_DEPRECATED constexpr std::enable_if_t<
+        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<std::decay_t<I2>> &&
+        !InputRange<I1> &&
+        IndirectRelation<Pred, projected<I1, Proj1>, projected<std::decay_t<I2>, Proj2>>,
+        mismatch_result<I1, std::decay_t<I2>>>
+    operator()(I1 first1, S1 last1, I2&& first2, Pred pred = Pred{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return mismatch_fn::impl3(std::move(first1), std::move(last1),
+                                  std::forward<I2>(first2), pred,
+                                  proj1, proj2);
+    }
+
+    // range and a half
+    template <typename Rng1, typename I2, typename Proj1 = identity,
+              typename Proj2 = identity, typename Pred = equal_to<>>
+    NANO_DEPRECATED constexpr std::enable_if_t<
+        InputRange<Rng1> && InputIterator<std::decay_t<I2>> &&
+                !InputRange<I2> &&
+            IndirectRelation<Pred, projected<iterator_t<Rng1>, Proj1>,
+                             projected<std::decay_t<I2>, Proj2>>,
+        mismatch_result<safe_iterator_t<Rng1>, std::decay_t<I2>>>
+    operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return mismatch_fn::impl3(nano::begin(rng1), nano::end(rng1),
+                                  std::forward<I2>(first2), pred,
+                                  proj1, proj2);
+    }
+
+    // four legged
+    template <typename I1, typename S1, typename I2, typename S2,
+              typename Proj1 = identity, typename Proj2 = identity,
+              typename Pred = equal_to<>>
+    constexpr std::enable_if_t<
+        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
+            Sentinel<S2, I2> &&
+            IndirectRelation<Pred, projected<I1, Proj1>, projected<I2, Proj2>>,
+        mismatch_result<I1, I2>>
+    operator()(I1 first1, S1 last1, I2 first2, S2 last2, Pred pred = Pred{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return mismatch_fn::impl4(std::move(first1), std::move(last1),
+                                  std::move(first2), std::move(last2),
+                                  pred, proj1, proj2);
+    }
+
+    // two ranges
+    template <typename Rng1, typename Rng2, typename Proj1 = identity,
+              typename Proj2 = identity, typename Pred = equal_to<>>
+    constexpr std::enable_if_t<
+        InputRange<Rng1> && InputRange<Rng2> &&
+            IndirectRelation<Pred, projected<iterator_t<Rng1>, Proj1>,
+                             projected<iterator_t<Rng2>, Proj2>>,
+        mismatch_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>>>
+    operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
+               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
+    {
+        return mismatch_fn::impl4(nano::begin(rng1), nano::end(rng1),
+                                  nano::begin(rng2), nano::end(rng2),
+                                  pred, proj1, proj2);
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::mismatch_fn, mismatch)
+
+NANO_END_NAMESPACE
+
+#endif
+
+
+NANO_BEGIN_NAMESPACE
+
+template <typename I1, typename I2>
+using swap_ranges_result = mismatch_result<I1, I2>;
+
+namespace detail {
+
+struct swap_ranges_fn {
+    template <typename I1, typename S1, typename I2, typename S2>
+    static constexpr swap_ranges_result<I1, I2>
+    impl4(I1 first1 ,S1 last1, I2 first2, S2 last2)
+    {
+        while (first1 != last1 && first2 != last2) {
+            nano::iter_swap(first1, first2);
+            ++first1; ++first2;
+        }
+        return {std::move(first1), std::move(first2)};
+    }
+
+    template <typename I1, typename S1, typename I2>
+    static constexpr swap_ranges_result<I1, I2>
+    impl3(I1 first1, S1 last1, I2 first2)
+    {
+        while (first1 != last1) {
+            nano::iter_swap(first1, first2);
+            ++first1; ++first2;
+        }
+        return {std::move(first1), std::move(first2)};
+    }
+
+public:
+    template <typename I1, typename S1, typename I2, typename S2>
+    constexpr std::enable_if_t<
+        ForwardIterator<I1> &&
+        Sentinel<S1, I1> &&
+        ForwardIterator<I2> &&
+        Sentinel<S2, I2> &&
+        IndirectlySwappable<I1, I2>,
+        swap_ranges_result<I1, I2>>
+    operator()(I1 first1 ,S1 last1, I2 first2, S2 last2) const
+    {
+        return swap_ranges_fn::impl4(std::move(first1), std::move(last1),
+                                     std::move(first2), std::move(last2));
+    }
+
+    template <typename I1, typename S1, typename I2>
+    NANO_DEPRECATED
+    constexpr std::enable_if_t<
+            ForwardIterator<I1> &&
+            Sentinel<S1, I1> &&
+            ForwardIterator<I2> &&
+            IndirectlySwappable<I1, I2>,
+            swap_ranges_result<I1, I2>>
+    operator()(I1 first1 ,S1 last1, I2 first2) const
+    {
+        return swap_ranges_fn::impl3(std::move(first1), std::move(last1),
+                                     std::move(first2));
+    }
+
+    template <typename Rng1, typename Rng2>
+    constexpr std::enable_if_t<
+            ForwardRange<Rng1> &&
+            ForwardRange<Rng2> &&
+            IndirectlySwappable<iterator_t<Rng1>, iterator_t<Rng2>>,
+            swap_ranges_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>>>
+    operator()(Rng1&& rng1, Rng2&& rng2) const
+    {
+        return swap_ranges_fn::impl4(nano::begin(rng1), nano::end(rng1),
+                                     nano::begin(rng2), nano::end(rng2));
+    }
+
+    template <typename Rng1, typename I2>
+    NANO_DEPRECATED
+    constexpr std::enable_if_t<
+            ForwardRange<Rng1> &&
+            ForwardIterator<I2> &&
+            IndirectlySwappable<iterator_t<Rng1>, I2>,
+            swap_ranges_result<safe_iterator_t<Rng1>, I2>>
+    operator()(Rng1&& rng1, I2 first2) const
+    {
+        return swap_ranges_fn::impl3(nano::begin(rng1), nano::end(rng1),
+                                     std::move(first2));
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::swap_ranges_fn, swap_ranges)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/iterator/unreachable.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ITERATOR_UNREACHABLE_HPP_INCLUDED
+#define NANORANGE_ITERATOR_UNREACHABLE_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+// [range.unreachable.sentinels]
+
+struct unreachable_sentinel_t {
+    template<typename I>
+    friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
+    operator==(const I &, unreachable_sentinel_t) noexcept
+    {
+        return false;
+    }
+
+    template<typename I>
+    friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
+    operator==(unreachable_sentinel_t, const I &) noexcept
+    {
+        return false;
+    }
+
+    template<typename I>
+    friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
+    operator!=(const I &, unreachable_sentinel_t) noexcept
+    {
+        return true;
+    }
+
+    template<typename I>
+    friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
+    operator!=(unreachable_sentinel_t, const I &) noexcept
+    {
+        return true;
+    }
+};
+
+NANO_INLINE_VARIABLE constexpr unreachable_sentinel_t unreachable_sentinel{};
+
+NANO_END_NAMESPACE
+
+#endif
+
 
 
 NANO_BEGIN_NAMESPACE
@@ -7475,14 +7770,86 @@ namespace detail {
 struct rotate_fn {
 private:
     template <typename I, typename S>
-    static constexpr subrange<I> impl(I first, I middle, S last)
+    static constexpr subrange<I> do_rotate_one_left(I first, S last)
     {
-        if (first == middle) {
-            auto ret = next(first, last);
-            return {ret, ret};
+        // Stash the first element and move everything one place
+        iter_value_t<I> val = nano::iter_move(first);
+        auto ret = nano::move(nano::next(first), std::move(last), first);
+        *ret.out = std::move(val);
+        return {std::move(ret.out), std::move(ret.in)};
+    }
+
+    template <typename I>
+    static constexpr subrange<I> do_rotate_one_right(I first, I middle)
+    {
+        I last = nano::next(middle);
+        iter_value_t<I> val = nano::iter_move(middle);
+        nano::move_backward(first, middle, last);
+        *first = std::move(val);
+        return {std::move(++first), std::move(last)};
+    }
+
+    template <typename I, typename S>
+    static constexpr std::enable_if_t<
+            RandomAccessIterator<I> && SizedSentinel<S, I>,
+            subrange<I>>
+    do_rotate(I first, I middle, S last, priority_tag<2>)
+    {
+        constexpr bool is_tma = std::is_trivially_move_assignable<iter_value_t<I>>::value;
+
+        auto i = nano::distance(first, middle);
+        auto j = nano::distance(first, last) - i;
+        I out = first + (last - middle);
+
+        while (i != j) {
+            if (i > j) {
+                if (is_tma && j == 1) {
+                    do_rotate_one_right(middle - i, middle);
+                    return {std::move(out), nano::next(first, last)};
+                }
+                nano::swap_ranges(middle - i, unreachable_sentinel, middle, middle + j);
+                i -= j;
+            } else {
+                if (is_tma && i == 1) {
+                    do_rotate_one_left(middle - i, middle + j);
+                    return {std::move(out), nano::next(first, last)};
+                }
+                nano::swap_ranges(middle - i, middle, middle + j - i, unreachable_sentinel);
+                j -= i;
+            }
         }
-        if (middle == last) {
-            return {first, middle};
+        nano::swap_ranges(middle  - i, middle, middle, unreachable_sentinel);
+
+        return {std::move(out), nano::next(first, last)};
+    }
+
+    template <typename I, typename S>
+    static constexpr std::enable_if_t<BidirectionalIterator<I>, subrange<I>>
+    do_rotate(I first, I middle, S last, priority_tag<1>)
+    {
+        if (std::is_trivially_move_assignable<iter_value_t<I>>::value &&
+                nano::next(middle) == last) {
+            return do_rotate_one_right(std::move(first), std::move(middle));
+        }
+
+        return do_rotate(std::move(first), std::move(middle), std::move(last),
+                         priority_tag<0>{});
+    }
+
+    template <typename I, typename S>
+    static constexpr subrange<I>
+    do_rotate(I first, I middle, S last, priority_tag<0>)
+    {
+        if (std::is_trivially_move_assignable<iter_value_t<I>>::value &&
+                nano::next(first) == middle) {
+            return do_rotate_one_left(std::move(first), std::move(last));
+        }
+
+        if (SizedSentinel<I, I> && SizedSentinel<S, I> &&
+            nano::distance(first, middle) == nano::distance(middle, last))
+        {
+            auto ret = nano::swap_ranges(first, middle, middle, unreachable_sentinel);
+            return {std::move(ret.in1), std::move(ret.in2)};
         }
 
         I next = middle;
@@ -7507,6 +7874,21 @@ private:
         }
 
         return {std::move(ret), std::move(next)};
+    }
+
+    template <typename I, typename S>
+    static constexpr subrange<I> impl(I first, I middle, S last)
+    {
+        if (first == middle) {
+            auto ret = nano::next(first, last);
+            return {ret, ret};
+        }
+        if (middle == last) {
+            return {first, middle};
+        }
+
+        return do_rotate(std::move(first), std::move(middle), std::move(last),
+                         priority_tag<2>{});
     }
 
 public:
@@ -8885,139 +9267,6 @@ NANO_END_NAMESPACE
 
 
 
-// nanorange/algorithm/mismatch.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_MISMATCH_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_MISMATCH_HPP_INCLUDED
-
-
-
-NANO_BEGIN_NAMESPACE
-
-// [range.mismatch]
-
-template <typename I1, typename I2>
-struct mismatch_result {
-    I1 in1;
-    I2 in2;
-};
-
-namespace detail {
-
-struct mismatch_fn {
-private:
-    friend struct is_permutation_fn;
-
-    template <typename I1, typename S1, typename I2, typename Proj1,
-              typename Proj2, typename Pred>
-    static constexpr mismatch_result<I1, I2>
-    impl3(I1 first1, S1 last1, I2 first2, Pred& pred, Proj1& proj1, Proj2& proj2)
-    {
-        while (first1 != last1 &&
-               nano::invoke(pred, nano::invoke(proj1, *first1),
-                            nano::invoke(proj2, *first2))) {
-            ++first1;
-            ++first2;
-        }
-
-        return {first1, first2};
-    }
-
-    template <typename I1, typename S1, typename I2, typename S2,
-              typename Proj1, typename Proj2, typename Pred>
-    static constexpr mismatch_result<I1, I2>
-    impl4(I1 first1, S1 last1, I2 first2, S2 last2, Pred& pred, Proj1& proj1,
-          Proj2& proj2)
-    {
-        while (first1 != last1 && first2 != last2 &&
-               nano::invoke(pred, nano::invoke(proj1, *first1),
-                            nano::invoke(proj2, *first2))) {
-            ++first1;
-            ++first2;
-        }
-
-        return {first1, first2};
-    }
-
-public:
-    // three legged
-    template <typename I1, typename S1, typename I2, typename Proj1 = identity,
-              typename Proj2 = identity, typename Pred = equal_to<>>
-    NANO_DEPRECATED constexpr std::enable_if_t<
-        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<std::decay_t<I2>> &&
-        !InputRange<I1> &&
-        IndirectRelation<Pred, projected<I1, Proj1>, projected<std::decay_t<I2>, Proj2>>,
-        mismatch_result<I1, std::decay_t<I2>>>
-    operator()(I1 first1, S1 last1, I2&& first2, Pred pred = Pred{},
-               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
-    {
-        return mismatch_fn::impl3(std::move(first1), std::move(last1),
-                                  std::forward<I2>(first2), pred,
-                                  proj1, proj2);
-    }
-
-    // range and a half
-    template <typename Rng1, typename I2, typename Proj1 = identity,
-              typename Proj2 = identity, typename Pred = equal_to<>>
-    NANO_DEPRECATED constexpr std::enable_if_t<
-        InputRange<Rng1> && InputIterator<std::decay_t<I2>> &&
-                !InputRange<I2> &&
-            IndirectRelation<Pred, projected<iterator_t<Rng1>, Proj1>,
-                             projected<std::decay_t<I2>, Proj2>>,
-        mismatch_result<safe_iterator_t<Rng1>, std::decay_t<I2>>>
-    operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{},
-               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
-    {
-        return mismatch_fn::impl3(nano::begin(rng1), nano::end(rng1),
-                                  std::forward<I2>(first2), pred,
-                                  proj1, proj2);
-    }
-
-    // four legged
-    template <typename I1, typename S1, typename I2, typename S2,
-              typename Proj1 = identity, typename Proj2 = identity,
-              typename Pred = equal_to<>>
-    constexpr std::enable_if_t<
-        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
-            Sentinel<S2, I2> &&
-            IndirectRelation<Pred, projected<I1, Proj1>, projected<I2, Proj2>>,
-        mismatch_result<I1, I2>>
-    operator()(I1 first1, S1 last1, I2 first2, S2 last2, Pred pred = Pred{},
-               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
-    {
-        return mismatch_fn::impl4(std::move(first1), std::move(last1),
-                                  std::move(first2), std::move(last2),
-                                  pred, proj1, proj2);
-    }
-
-    // two ranges
-    template <typename Rng1, typename Rng2, typename Proj1 = identity,
-              typename Proj2 = identity, typename Pred = equal_to<>>
-    constexpr std::enable_if_t<
-        InputRange<Rng1> && InputRange<Rng2> &&
-            IndirectRelation<Pred, projected<iterator_t<Rng1>, Proj1>,
-                             projected<iterator_t<Rng2>, Proj2>>,
-        mismatch_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>>>
-    operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
-               Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
-    {
-        return mismatch_fn::impl4(nano::begin(rng1), nano::end(rng1),
-                                  nano::begin(rng2), nano::end(rng2),
-                                  pred, proj1, proj2);
-    }
-};
-
-} // namespace detail
-
-NANO_INLINE_VAR(detail::mismatch_fn, mismatch)
-
-NANO_END_NAMESPACE
-
-#endif
 
 
 NANO_BEGIN_NAMESPACE
@@ -13664,109 +13913,6 @@ NANO_END_NAMESPACE
 
 #endif
 
-// nanorange/algorithm/swap_ranges.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ALGORITHM_SWAP_RANGES_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_SWAP_RANGES_HPP_INCLUDED
-
-
-
-NANO_BEGIN_NAMESPACE
-
-template <typename I1, typename I2>
-using swap_ranges_result = mismatch_result<I1, I2>;
-
-namespace detail {
-
-struct swap_ranges_fn {
-    template <typename I1, typename S1, typename I2, typename S2>
-    static constexpr swap_ranges_result<I1, I2>
-    impl4(I1 first1 ,S1 last1, I2 first2, S2 last2)
-    {
-        while (first1 != last1 && first2 != last2) {
-            nano::iter_swap(first1, first2);
-            ++first1; ++first2;
-        }
-        return {std::move(first1), std::move(first2)};
-    }
-
-    template <typename I1, typename S1, typename I2>
-    static constexpr swap_ranges_result<I1, I2>
-    impl3(I1 first1, S1 last1, I2 first2)
-    {
-        while (first1 != last1) {
-            nano::iter_swap(first1, first2);
-            ++first1; ++first2;
-        }
-        return {std::move(first1), std::move(first2)};
-    }
-
-public:
-    template <typename I1, typename S1, typename I2, typename S2>
-    constexpr std::enable_if_t<
-        ForwardIterator<I1> &&
-        Sentinel<S1, I1> &&
-        ForwardIterator<I2> &&
-        Sentinel<S2, I2> &&
-        IndirectlySwappable<I1, I2>,
-        swap_ranges_result<I1, I2>>
-    operator()(I1 first1 ,S1 last1, I2 first2, S2 last2) const
-    {
-        return swap_ranges_fn::impl4(std::move(first1), std::move(last1),
-                                     std::move(first2), std::move(last2));
-    }
-
-    template <typename I1, typename S1, typename I2>
-    NANO_DEPRECATED
-    constexpr std::enable_if_t<
-            ForwardIterator<I1> &&
-            Sentinel<S1, I1> &&
-            ForwardIterator<I2> &&
-            IndirectlySwappable<I1, I2>,
-            swap_ranges_result<I1, I2>>
-    operator()(I1 first1 ,S1 last1, I2 first2) const
-    {
-        return swap_ranges_fn::impl3(std::move(first1), std::move(last1),
-                                     std::move(first2));
-    }
-
-    template <typename Rng1, typename Rng2>
-    constexpr std::enable_if_t<
-            ForwardRange<Rng1> &&
-            ForwardRange<Rng2> &&
-            IndirectlySwappable<iterator_t<Rng1>, iterator_t<Rng2>>,
-            swap_ranges_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>>>
-    operator()(Rng1&& rng1, Rng2&& rng2) const
-    {
-        return swap_ranges_fn::impl4(nano::begin(rng1), nano::end(rng1),
-                                     nano::begin(rng2), nano::end(rng2));
-    }
-
-    template <typename Rng1, typename I2>
-    NANO_DEPRECATED
-    constexpr std::enable_if_t<
-            ForwardRange<Rng1> &&
-            ForwardIterator<I2> &&
-            IndirectlySwappable<iterator_t<Rng1>, I2>,
-            swap_ranges_result<safe_iterator_t<Rng1>, I2>>
-    operator()(Rng1&& rng1, I2 first2) const
-    {
-        return swap_ranges_fn::impl3(nano::begin(rng1), nano::end(rng1),
-                                     std::move(first2));
-    }
-};
-
-}
-
-NANO_INLINE_VAR(detail::swap_ranges_fn, swap_ranges)
-
-NANO_END_NAMESPACE
-
-#endif
 
 
 // nanorange/algorithm/unique.hpp
@@ -14483,56 +14629,6 @@ struct iterator_traits<::nano::ranges::ostreambuf_iterator<C, T>> {
 #endif
 
 
-// nanorange/iterator/unreachable.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ITERATOR_UNREACHABLE_HPP_INCLUDED
-#define NANORANGE_ITERATOR_UNREACHABLE_HPP_INCLUDED
-
-
-
-NANO_BEGIN_NAMESPACE
-
-// [range.unreachable.sentinels]
-
-struct unreachable_sentinel_t {
-    template<typename I>
-    friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
-    operator==(const I &, unreachable_sentinel_t) noexcept
-    {
-        return false;
-    }
-
-    template<typename I>
-    friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
-    operator==(unreachable_sentinel_t, const I &) noexcept
-    {
-        return false;
-    }
-
-    template<typename I>
-    friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
-    operator!=(const I &, unreachable_sentinel_t) noexcept
-    {
-        return true;
-    }
-
-    template<typename I>
-    friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
-    operator!=(unreachable_sentinel_t, const I &) noexcept
-    {
-        return true;
-    }
-};
-
-NANO_INLINE_VARIABLE constexpr unreachable_sentinel_t unreachable_sentinel{};
-
-NANO_END_NAMESPACE
-
-#endif
 
 
 #endif
