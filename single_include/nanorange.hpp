@@ -11774,7 +11774,7 @@ private:
             ++first;
         }
 
-        return std::move(first);
+        return first;
     }
 
 public:
@@ -11999,7 +11999,7 @@ private:
             ++first;
         }
 
-        return std::move(first);
+        return first;
     }
 
 public:
