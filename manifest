@@ -2,12 +2,12 @@
 
 name: nanorange
 version: 0.1.0-a.0.z
-summary: std::ranges implementation for C++14+
+summary: std::ranges implementation for C++17
 license: BSL ; Boost software license
 url: https://github.com/tcbrindle/NanoRange
 depends: * build2 >= 0.8.0-
-requires: c++14
-requires: msvc_15u7 | clang_3.8 | gcc_5.4
+requires: c++17
+requires: msvc_15u7 | clang_4.0 | gcc_7.1
 build-exclude: *-msvc_14* ; MSVC version too old
 build-exclude: linux-clang_5.0 ; Error in libstdc++ make_integer_sequence
 build-exclude: linux-clang_6.0 ; Same
