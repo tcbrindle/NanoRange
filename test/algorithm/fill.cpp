@@ -43,7 +43,7 @@ test_char() {
 	CHECK(ca[3] == 1);
 	CHECK(i == Iter(ca + 4));
 
-	auto rng = stl2::make_subrange(Iter(ca), Sent(ca + n));
+	auto rng = stl2::subrange(Iter(ca), Sent(ca + n));
 	i = stl2::fill(rng, char(2));
 	CHECK(ca[0] == 2);
 	CHECK(ca[1] == 2);
@@ -51,7 +51,7 @@ test_char() {
 	CHECK(ca[3] == 2);
 	CHECK(i == Iter(ca + 4));
 
-	auto j = stl2::fill(stl2::make_subrange(Iter(ca), Sent(ca + n)), char(3));
+	auto j = stl2::fill(stl2::subrange(Iter(ca), Sent(ca + n)), char(3));
 	CHECK(ca[0] == 3);
 	CHECK(ca[1] == 3);
 	CHECK(ca[2] == 3);
@@ -70,7 +70,7 @@ test_int() {
 	CHECK(ia[2] == 1);
 	CHECK(ia[3] == 1);
 
-	auto rng = stl2::make_subrange(Iter(ia), Sent(ia + n));
+	auto rng = stl2::subrange(Iter(ia), Sent(ia + n));
 	stl2::fill(rng, 2);
 	CHECK(ia[0] == 2);
 	CHECK(ia[2] == 2);

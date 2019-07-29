@@ -23,7 +23,7 @@ TEST_CASE("view.subrange") {
 	{
 		static constexpr int some_ints[] = {2, 3, 5, 7, 11, 13};
 		static constexpr std::size_t n = size(some_ints);
-		auto r = make_subrange(some_ints + 0, some_ints + n);
+		auto r = subrange(some_ints + 0, some_ints + n);
 		using R = decltype(r);
 		static_assert(models::View<R>, "");
 		static_assert(models::SizedRange<R>, "");
@@ -40,7 +40,7 @@ TEST_CASE("view.subrange") {
 
 	{
         std::vector<int> v1{1, 2, 3, 4, 5};
-        auto r = make_subrange(v1);
+        auto r = subrange(v1);
 
         CHECK(!r.empty());
         CHECK(size(r) == size(v1));

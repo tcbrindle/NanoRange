@@ -75,8 +75,8 @@ public:
                               using S = typename sentinel_type<I>::type;
                               check(algo(begin, end, rest...));
                               check(algo(begin, S{base(end)}, rest...));
-                              check(algo(::rvalue_if<RvalueOK>(nano::make_subrange(begin, end)), rest...));
-                              check(algo(::rvalue_if<RvalueOK>(nano::make_subrange(begin, S{base(end)})), rest...));
+                              check(algo(::rvalue_if<RvalueOK>(nano::subrange(begin, end)), rest...));
+                              check(algo(::rvalue_if<RvalueOK>(nano::subrange(begin, S{base(end)})), rest...));
                           }};
     }
 };
@@ -107,11 +107,11 @@ public:
                               using S2 = typename sentinel_type<I2>::type;
                               check(algo(begin1, end1, begin2, end2, rest...));
                               check(algo(begin1, S1{base(end1)}, begin2, S2{base(end2)}, rest...));
-                              check(algo(::rvalue_if<RvalueOK1>(nano::make_subrange(begin1, end1)),
-                                          ::rvalue_if<RvalueOK2>(nano::make_subrange(begin2, end2)),
+                              check(algo(::rvalue_if<RvalueOK1>(nano::subrange(begin1, end1)),
+                                          ::rvalue_if<RvalueOK2>(nano::subrange(begin2, end2)),
                                           rest...));
-                              check(algo(::rvalue_if<RvalueOK1>(nano::make_subrange(begin1, S1{base(end1)})),
-                                          ::rvalue_if<RvalueOK2>(nano::make_subrange(begin2, S2{base(end2)})),
+                              check(algo(::rvalue_if<RvalueOK1>(nano::subrange(begin1, S1{base(end1)})),
+                                          ::rvalue_if<RvalueOK2>(nano::subrange(begin2, S2{base(end2)})),
                                           rest...));
                           }};
     }

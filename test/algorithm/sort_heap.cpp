@@ -68,7 +68,7 @@ void test_3(int N)
 		ia[i] = i;
 	std::shuffle(ia, ia + N, gen);
 	std::make_heap(ia, ia + N);
-	CHECK(stl2::sort_heap(::as_lvalue(stl2::make_subrange(ia, ia + N)))
+	CHECK(stl2::sort_heap(::as_lvalue(stl2::subrange(ia, ia + N)))
 				  == ia + N);
 	CHECK(std::is_sorted(ia, ia + N));
 	delete[] ia;
@@ -82,7 +82,7 @@ void test_4(int N)
 	std::shuffle(ia, ia + N, gen);
 	std::make_heap(ia, ia + N);
 	CHECK(stl2::sort_heap(
-			::as_lvalue(stl2::make_subrange(ia, sentinel<int*>(ia + N))))
+			::as_lvalue(stl2::subrange(ia, sentinel<int*>(ia + N))))
 				  == ia + N);
 	CHECK(std::is_sorted(ia, ia + N));
 	delete[] ia;
@@ -120,7 +120,7 @@ void test_7(int N)
 		ia[i] = i;
 	std::shuffle(ia, ia + N, gen);
 	std::make_heap(ia, ia + N, std::greater<int>());
-	CHECK(stl2::sort_heap(::as_lvalue(stl2::make_subrange(ia, ia + N)),
+	CHECK(stl2::sort_heap(::as_lvalue(stl2::subrange(ia, ia + N)),
 						  std::greater<int>()) == ia + N);
 	CHECK(std::is_sorted(ia, ia + N, std::greater<int>()));
 	delete[] ia;
@@ -134,13 +134,13 @@ void test_8(int N)
 	std::shuffle(ia, ia + N, gen);
 	std::make_heap(ia, ia + N, std::greater<int>());
 	CHECK(stl2::sort_heap(
-			::as_lvalue(stl2::make_subrange(ia, sentinel<int*>(ia + N))),
+			::as_lvalue(stl2::subrange(ia, sentinel<int*>(ia + N))),
 			std::greater<int>()) == ia + N);
 	CHECK(std::is_sorted(ia, ia + N, std::greater<int>()));
 
 	std::shuffle(ia, ia + N, gen);
 	std::make_heap(ia, ia + N, std::greater<int>());
-	CHECK(stl2::sort_heap(stl2::make_subrange(ia, sentinel<int*>(ia + N)),
+	CHECK(stl2::sort_heap(stl2::subrange(ia, sentinel<int*>(ia + N)),
 						  std::greater<int>()) == ia + N);
 	CHECK(std::is_sorted(ia, ia + N, std::greater<int>()));
 

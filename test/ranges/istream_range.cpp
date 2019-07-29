@@ -51,7 +51,7 @@ TEST_CASE("rng.istream_range")
         constexpr const char test[] = "abcd3210";
         std::istringstream ss{test};
         ::check_equal(ranges::istream_range<moveonly>(ss),
-                      ranges::make_subrange(test, test + sizeof(test) - 1));
+                      ranges::subrange(test, test + sizeof(test) - 1));
     }
 
     // Default-constructed istream_ranges are empty

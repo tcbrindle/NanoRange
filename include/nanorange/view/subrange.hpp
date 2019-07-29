@@ -300,49 +300,6 @@ constexpr auto get(const subrange<I, S, K>& r)
     }
 }
 
-// Extensions for C++14 compilers without CTAD
-// These basically replicate the subrange constructors above
-
-template <typename I, typename S>
-constexpr auto make_subrange(I i, S s)
-    -> std::enable_if_t<Iterator<I> && Sentinel<S, I>,
-                        decltype(subrange<I, S>{std::move(i), std::move(s)})>
-{
-    return {std::move(i), std::move(s)};
-}
-
-template <typename I, typename S>
-constexpr auto make_subrange(I i, S s, iter_difference_t<I> n)
-    -> std::enable_if_t<Iterator<I> && Sentinel<S, I>,
-                        decltype(subrange<I, S>{std::move(i), std::move(s), n})>
-{
-    return {std::move(i), std::move(s), n};
-}
-
-template <typename R>
-constexpr auto make_subrange(R&& r)
-    -> std::enable_if_t<detail::ForwardingRange<R> && !SizedRange<R>,
-                        subrange<iterator_t<R>, sentinel_t<R>>>
-{
-    return {std::forward<R>(r)};
-}
-
-template <typename R>
-constexpr auto make_subrange(R&& r)
-    -> std::enable_if_t<detail::ForwardingRange<R> && SizedRange<R>,
-                        subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>>
-{
-    return {std::forward<R>(r)};
-}
-
-template <typename R>
-constexpr auto make_subrange(R&& r, iter_difference_t<R> n)
--> std::enable_if_t<detail::ForwardingRange<R>,
-        subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>>
-{
-    return {std::forward<R>(r), n};
-}
-
 template <typename R>
 using safe_subrange_t =
     std::enable_if_t<detail::ForwardingRange<R>, subrange<iterator_t<R>>>;

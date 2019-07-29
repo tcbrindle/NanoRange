@@ -149,7 +149,7 @@ TEST_CASE("alg.basic.partial_sort_copy")
     }
 
     SECTION("with ranges") {
-        auto in_rng = nano::make_subrange(
+        auto in_rng = nano::subrange(
             std::istream_iterator<int>{iss},
             std::istream_iterator<int>{});
         rng::partial_sort_copy(in_rng, vec);
@@ -173,7 +173,7 @@ TEST_CASE("alg.basic.partial_sort_copy (with comparator)")
     }
 
     SECTION("with ranges") {
-        auto in_rng = nano::make_subrange(
+        auto in_rng = nano::subrange(
             std::istream_iterator<int>{iss},
             std::istream_iterator<int>{});
         rng::partial_sort_copy(in_rng, vec, rng::greater<>{});

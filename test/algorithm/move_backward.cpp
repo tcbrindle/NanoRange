@@ -53,7 +53,7 @@ test() {
 			ia[i] = i;
 		int ib[N] = {0};
 
-		auto r = stl2::move_backward(as_lvalue(stl2::make_subrange(InIter(ia), InIter(ia + N))),
+		auto r = stl2::move_backward(as_lvalue(stl2::subrange(InIter(ia), InIter(ia + N))),
 														   OutIter(ib + N));
 		CHECK(base(r.in) == ia + N);
 		CHECK(base(r.out) == ib);
@@ -92,7 +92,7 @@ test1() {
 			ia[i].reset(new int(i));
 		std::unique_ptr<int> ib[N];
 
-		auto r = stl2::move_backward(as_lvalue(stl2::make_subrange(InIter(ia), InIter(ia + N))),
+		auto r = stl2::move_backward(as_lvalue(stl2::subrange(InIter(ia), InIter(ia + N))),
 														   OutIter(ib + N));
 		CHECK(base(r.in) == ia + N);
 		CHECK(base(r.out) == ib);
@@ -103,7 +103,7 @@ test1() {
 
 		stl2::move_backward(ib, ib + N, ia + N);
 
-		auto r2 = stl2::move_backward(stl2::make_subrange(InIter(ia), InIter(ia + N)), OutIter(ib + N));
+		auto r2 = stl2::move_backward(stl2::subrange(InIter(ia), InIter(ia + N)), OutIter(ib + N));
 		CHECK(base(r2.in) == ia + N);
 		CHECK(base(r2.out) == ib);
 		for (int i = 0; i < N; ++i) {

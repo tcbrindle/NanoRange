@@ -60,7 +60,7 @@ test(Iter first, Sent last, const T& value, Proj proj = Proj{})
 		CHECK(value < ranges::invoke(proj, *j));
 
 	auto res = ranges::equal_range(
-			ranges::make_subrange(first, last), value, ranges::less<>{}, proj);
+			ranges::subrange(first, last), value, ranges::less<>{}, proj);
 	for (Iter j = first; j != res.begin(); ++j)
 		CHECK(ranges::invoke(proj, *j) < value);
 	for (Iter j = res.begin(); j != last; ++j)

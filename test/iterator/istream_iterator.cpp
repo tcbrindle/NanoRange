@@ -91,13 +91,13 @@ TEST_CASE("iter.istream_iterator")
 	{
 		std::istringstream is("5 4 3 2 1 0");
 		::check_equal(
-			make_subrange(istream_iterator<int>{is}, default_sentinel),
+			subrange(istream_iterator<int>{is}, default_sentinel),
 				{5, 4, 3, 2, 1, 0});
 	}
 	{
 		std::istringstream is("0.9 1.8 2.4 3.3");
 		::check_equal(
-			make_subrange(istream_iterator<double>{is}, default_sentinel),
+			subrange(istream_iterator<double>{is}, default_sentinel),
 				{0.9, 1.8, 2.4, 3.3});
 	}
 

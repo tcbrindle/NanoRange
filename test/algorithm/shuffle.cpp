@@ -58,7 +58,7 @@ TEST_CASE("alg.shuffle")
 		std::iota(ib, ib + s, 0);
 		std::iota(orig, orig + s, 0);
 		std::minstd_rand g;
-		auto rng = stl2::make_subrange(random_access_iterator<int*>(ia),  random_access_iterator<int*>(ia+s));
+		auto rng = stl2::subrange(random_access_iterator<int*>(ia),  random_access_iterator<int*>(ia+s));
 		stl2::shuffle(rng, g);
 		CHECK(!stl2::equal(ia, orig));
 		CHECK(stl2::shuffle(ib, g) == stl2::end(ib));

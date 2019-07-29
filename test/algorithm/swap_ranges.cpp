@@ -91,7 +91,7 @@ void test_rng_3()
 {
 	int i[3] = {1, 2, 3};
 	int j[3] = {4, 5, 6};
-	auto r = stl2::swap_ranges(as_lvalue(stl2::make_subrange(Iter1(i), Iter1(i+3))), Iter2(j));
+	auto r = stl2::swap_ranges(as_lvalue(stl2::subrange(Iter1(i), Iter1(i+3))), Iter2(j));
 	CHECK(base(r.in1) == i+3);
 	CHECK(base(r.in2) == j+3);
 	CHECK(i[0] == 4);
@@ -102,7 +102,7 @@ void test_rng_3()
 	CHECK(j[2] == 3);
 
 	using Sent1 = typename sentinel_type<Iter1>::type;
-	r = stl2::swap_ranges(as_lvalue(stl2::make_subrange(Iter1(j), Sent1(j+3))), Iter2(i));
+	r = stl2::swap_ranges(as_lvalue(stl2::subrange(Iter1(j), Sent1(j+3))), Iter2(i));
 	CHECK(base(r.in1) == j+3);
 	CHECK(base(r.in2) == i+3);
 	CHECK(i[0] == 1);
@@ -119,8 +119,8 @@ void test_rng_4()
 	int i[3] = {1, 2, 3};
 	int j[4] = {4, 5, 6, 7};
 	auto r = stl2::swap_ranges(
-		as_lvalue(stl2::make_subrange(Iter1(i), Iter1(i+3))),
-		as_lvalue(stl2::make_subrange(Iter2(j), Iter2(j+4))));
+		as_lvalue(stl2::subrange(Iter1(i), Iter1(i+3))),
+		as_lvalue(stl2::subrange(Iter2(j), Iter2(j+4))));
 	CHECK(base(r.in1) == i+3);
 	CHECK(base(r.in2) == j+3);
 	CHECK(i[0] == 4);
@@ -134,8 +134,8 @@ void test_rng_4()
 	using Sent1 = typename sentinel_type<Iter1>::type;
 	using Sent2 = typename sentinel_type<Iter2>::type;
 	r = stl2::swap_ranges(
-		as_lvalue(stl2::make_subrange(Iter1(j), Sent1(j+4))),
-		as_lvalue(stl2::make_subrange(Iter2(i), Sent2(i+3))));
+		as_lvalue(stl2::subrange(Iter1(j), Sent1(j+4))),
+		as_lvalue(stl2::subrange(Iter2(i), Sent2(i+3))));
 	CHECK(base(r.in1) == j+3);
 	CHECK(base(r.in2) == i+3);
 	CHECK(i[0] == 1);
@@ -147,8 +147,8 @@ void test_rng_4()
 	CHECK(j[3] == 7);
 
 	auto r2 = stl2::swap_ranges(
-		stl2::make_subrange(Iter1(j), Sent1(j+4)),
-		stl2::make_subrange(Iter2(i), Sent2(i+3)));
+		stl2::subrange(Iter1(j), Sent1(j+4)),
+		stl2::subrange(Iter2(i), Sent2(i+3)));
 	CHECK(base(r2.in1) == j+3);
 	CHECK(base(r2.in2) == i+3);
 	CHECK(i[0] == 4);
