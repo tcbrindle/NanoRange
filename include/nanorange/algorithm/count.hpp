@@ -65,19 +65,6 @@ NANO_INLINE_VAR(detail::count_if_fn, count_if)
 namespace detail {
 
 struct count_fn {
-private:
-    template <typename ValueType>
-    struct equal_to_pred {
-        const ValueType& val;
-
-        template <typename T>
-        constexpr bool operator()(const T& t) const
-        {
-            return t == val;
-        }
-    };
-
-public:
     template <typename I, typename S, typename T, typename Proj = identity>
     constexpr std::enable_if_t<
         InputIterator<I> && Sentinel<S, I> &&
@@ -85,7 +72,7 @@ public:
         iter_difference_t<I>>
     operator()(I first, S last, const T& value, Proj proj = Proj{}) const
     {
-        const auto pred = equal_to_pred<T>{value};
+        const auto pred = [&value] (const auto& t) { return t == value; };
         return count_if_fn::impl(std::move(first), std::move(last),
                                  pred, proj);
     }
@@ -98,7 +85,7 @@ public:
         iter_difference_t<iterator_t<Rng>>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
     {
-        const auto pred = equal_to_pred<T>{value};
+        const auto pred = [&value] (const auto& t) { return t == value; };
         return count_if_fn::impl(nano::begin(rng), nano::end(rng),
                                  pred, proj);
     }
