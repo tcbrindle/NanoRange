@@ -268,6 +268,12 @@ public:
     friend constexpr S end(subrange&& r) { return r.end(); }
 };
 
+#ifdef _MSC_VER
+// FIXME: Extra deduction guide because MSVC can't use the (constrained) implicit one
+template <typename I, typename S, std::enable_if_t<Iterator<I> && Sentinel<S, I>, int> = 0>
+subrange(I, S) -> subrange<I, S>;
+#endif
+
 template <typename I, typename S, std::enable_if_t<Iterator<I> && Sentinel<S, I>, int> = 0>
 subrange(I, S, iter_difference_t<I>) -> subrange<I, S, subrange_kind::sized>;
 
