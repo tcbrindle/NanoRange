@@ -82,14 +82,6 @@
 
 #include <ciso646>
 
-#if (__cplusplus >= 201703) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
-#define NANO_HAVE_CPP17
-#endif
-
-#if defined(NANO_HAVE_CPP17) || defined(__cpp_inline_variables)
-#define NANO_HAVE_INLINE_VARS
-#endif
-
 #ifdef NANORANGE_NO_DEPRECATION_WARNINGS
 #define NANO_DEPRECATED
 #define NANO_DEPRECATED_FOR(x)
@@ -98,17 +90,7 @@
 #define NANO_DEPRECATED_FOR(x) [[deprecated(x)]]
 #endif
 
-#ifdef NANO_HAVE_CPP17
-#define NANO_NODISCARD [[nodiscard]]
-#else
-#define NANO_NODISCARD
-#endif
-
-#if defined(NANO_HAVE_CPP17) || defined(__cpp_deduction_guides)
-#define NANO_HAVE_DEDUCTION_GUIDES
-#endif
-
-#define NANO_CONCEPT constexpr bool
+#define NANO_CONCEPT inline constexpr bool
 
 #define NANO_BEGIN_NAMESPACE                                                   \
     \
@@ -122,38 +104,10 @@ inline namespace ranges                                                        \
     }                                                                          \
     }
 
-#ifdef NANO_HAVE_INLINE_VARS
 #define NANO_INLINE_VAR(type, name)                                            \
     inline namespace function_objects {                                        \
     inline constexpr type name{};                                              \
     }
-#define NANO_INLINE_VARIABLE inline
-#else
-#define NANO_INLINE_VAR(type, name)                                            \
-    inline namespace function_objects {                                        \
-    inline namespace {                                                         \
-    constexpr const auto& name =                                               \
-        ::nano::ranges::detail::static_const_<type>::value;                    \
-    }                                                                          \
-    }
-#define NANO_INLINE_VARIABLE
-#endif
-
-NANO_BEGIN_NAMESPACE
-
-namespace detail {
-
-template <typename T>
-struct static_const_ {
-    static constexpr T value{};
-};
-
-template <typename T>
-constexpr T static_const_<T>::value;
-
-} // namespace detail
-
-NANO_END_NAMESPACE
 
 #if defined(_LIBCPP_VERSION)
 #define NANO_BEGIN_NAMESPACE_STD _LIBCPP_BEGIN_NAMESPACE_STD
@@ -2705,9 +2659,7 @@ NANO_END_NAMESPACE
 
 
 
-#ifdef NANO_HAVE_CPP17
 #include <string_view>
-#endif
 
 NANO_BEGIN_NAMESPACE
 
@@ -2736,7 +2688,6 @@ private:
 
     // Specialisation for rvalue string_views in C++17, as we can't add
     // functions to namespace std
-#ifdef NANO_HAVE_CPP17
     template <typename C, typename T>
     static constexpr auto
     impl(std::basic_string_view<C, T> sv, priority_tag<2>) noexcept
@@ -2744,7 +2695,6 @@ private:
     {
         return sv.begin();
     }
-#endif
 
     template <typename T>
     static constexpr auto
@@ -2801,7 +2751,6 @@ private:
         return t + N;
     }
 
-#ifdef NANO_HAVE_CPP17
     template <typename C, typename T>
     static constexpr auto
     impl(std::basic_string_view<C, T> sv, priority_tag<2>) noexcept
@@ -2809,7 +2758,6 @@ private:
     {
         return sv.end();
     }
-#endif
 
     template <typename T,
               typename S = decltype(decay_copy(std::declval<T&>().end())),
@@ -4138,7 +4086,7 @@ NANO_BEGIN_NAMESPACE
 
 struct default_sentinel_t {};
 
-NANO_INLINE_VARIABLE constexpr default_sentinel_t default_sentinel{};
+inline constexpr default_sentinel_t default_sentinel{};
 
 NANO_END_NAMESPACE
 
@@ -4990,19 +4938,6 @@ NANO_INLINE_VAR(detail::count_if_fn, count_if)
 namespace detail {
 
 struct count_fn {
-private:
-    template <typename ValueType>
-    struct equal_to_pred {
-        const ValueType& val;
-
-        template <typename T>
-        constexpr bool operator()(const T& t) const
-        {
-            return t == val;
-        }
-    };
-
-public:
     template <typename I, typename S, typename T, typename Proj = identity>
     constexpr std::enable_if_t<
         InputIterator<I> && Sentinel<S, I> &&
@@ -5010,7 +4945,7 @@ public:
         iter_difference_t<I>>
     operator()(I first, S last, const T& value, Proj proj = Proj{}) const
     {
-        const auto pred = equal_to_pred<T>{value};
+        const auto pred = [&value] (const auto& t) { return t == value; };
         return count_if_fn::impl(std::move(first), std::move(last),
                                  pred, proj);
     }
@@ -5023,7 +4958,7 @@ public:
         iter_difference_t<iterator_t<Rng>>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
     {
-        const auto pred = equal_to_pred<T>{value};
+        const auto pred = [&value] (const auto& t) { return t == value; };
         return count_if_fn::impl(nano::begin(rng), nano::end(rng),
                                  pred, proj);
     }
@@ -5598,14 +5533,14 @@ private:
 
 public:
     template <typename R = D>
-    NANO_NODISCARD constexpr auto empty()
+    [[nodiscard]] constexpr auto empty()
         -> std::enable_if_t<ForwardRange<R>, bool>
     {
         return ranges::begin(derived()) == ranges::end(derived());
     }
 
     template <typename R = D>
-    NANO_NODISCARD constexpr auto empty() const
+    [[nodiscard]] constexpr auto empty() const
         -> std::enable_if_t<ForwardRange<const R>, bool>
     {
         return ranges::begin(derived()) == ranges::end(derived());
@@ -5729,38 +5664,6 @@ using subrange_::subrange;
 
 namespace detail {
 
-// libstdc++ < 7 does not have a SFINAE-friendly std::tuple_size,
-// meaning that doing virtually anything with it is a hard error, including
-// testing the PairLike concept below. As a workaround, we'll define our own
-// tuple_size (only for std::tuple and std::pair) if we're using libstdc++ v5 or
-// v6.
-//
-// FIXME: Do this better.
-//
-// Note:
-// __GNUC__ tells us we're using GCC or Clang
-// !_LIBCPP_VERSION tells us we're not using libc++
-// !_GLIBCXX_RELEASE tells us we're not using libstdc++ >= 7, which is when this
-// symbol was added
-#if defined(__GNUC__) && !defined(_LIBCPP_VERSION) && !defined(_GLIBCXX_RELEASE)
-template <typename>
-struct sfinae_tuple_size {};
-
-template <typename T>
-struct sfinae_tuple_size<const T>
-    : sfinae_tuple_size<T> {};
-
-template <typename T, typename U>
-struct sfinae_tuple_size<std::pair<T, U>>
-    : std::integral_constant<std::size_t, 2> {};
-
-template <typename... Args>
-struct sfinae_tuple_size<std::tuple<Args...>>
-    : std::integral_constant<std::size_t, sizeof...(Args)> {};
-#else
-template <typename T>
-using sfinae_tuple_size = std::tuple_size<T>;
-#endif
 
 struct PairLike_req {
     template <std::size_t I, typename T>
@@ -5769,7 +5672,7 @@ struct PairLike_req {
 
     template <typename T>
     auto requires_(T t) -> decltype(
-            requires_expr<DerivedFrom<sfinae_tuple_size<T>, std::integral_constant<std::size_t, 2>>>{},
+            requires_expr<DerivedFrom<std::tuple_size<T>, std::integral_constant<std::size_t, 2>>>{},
             std::declval<std::tuple_element_t<0, std::remove_const_t<T>>>(),
             std::declval<std::tuple_element_t<1, std::remove_const_t<T>>>(),
             this->test_func<0, T>(std::get<0>(t)),
@@ -5780,7 +5683,7 @@ template <typename T>
 auto PairLike_fn(long) -> std::false_type;
 
 template <typename T,
-          typename = typename sfinae_tuple_size<T>::type,
+          typename = typename std::tuple_size<T>::type,
           typename = std::enable_if_t<detail::requires_<detail::PairLike_req, T>>>
 auto PairLike_fn(int) -> std::true_type;
 
@@ -5871,27 +5774,6 @@ private:
 
     detail::subrange_data<I, S, StoreSize> data_{};
 
-
-    constexpr iter_difference_t<I> do_size(std::true_type) const
-    {
-        return data_.size_;
-    }
-
-    constexpr iter_difference_t<I> do_size(std::false_type) const
-    {
-        return data_.end_ - data_.begin_;
-    }
-
-    constexpr void do_advance(std::true_type, iter_difference_t<I> n)
-    {
-        data_.size_ -= n - ranges::advance(data_.begin_, n, data_.end_);
-    }
-
-    constexpr void do_advance(std::false_type, iter_difference_t<I> n)
-    {
-        ranges::advance(data_.begin_, n, data_.end_);
-    }
-
 public:
     using iterator = I;
     using sentinel = S;
@@ -5961,7 +5843,7 @@ public:
 
     constexpr S end() const { return data_.end_; }
 
-    NANO_NODISCARD constexpr bool empty() const
+    [[nodiscard]] constexpr bool empty() const
     {
         return data_.begin_ == data_.end_;
     }
@@ -5970,11 +5852,14 @@ public:
     constexpr auto size() const
         -> std::enable_if_t<KK == subrange_kind::sized, iter_difference_t<I>>
     {
-        using SS_t = std::conditional_t<StoreSize, std::true_type, std::false_type>;
-        return do_size(SS_t{});
+        if constexpr (StoreSize) {
+            return data_.size_;
+        } else {
+            return data_.end_ - data_.begin_;
+        }
     }
 
-    NANO_NODISCARD constexpr subrange next(iter_difference_t<I> n = 1) const
+    [[nodiscard]] constexpr subrange next(iter_difference_t<I> n = 1) const
     {
         auto tmp = *this;
         tmp.advance(n);
@@ -5982,7 +5867,7 @@ public:
     }
 
     template <typename II = I>
-    NANO_NODISCARD constexpr auto prev(iter_difference_t<I> n = 1) const
+    [[nodiscard]] constexpr auto prev(iter_difference_t<I> n = 1) const
         -> std::enable_if_t<BidirectionalIterator<II>, subrange>
     {
         auto tmp = *this;
@@ -5992,8 +5877,11 @@ public:
 
     constexpr subrange& advance(iter_difference_t<I> n)
     {
-        using SS_t = std::conditional_t<StoreSize, std::true_type, std::false_type>;
-        do_advance(SS_t{}, n);
+        if constexpr (StoreSize) {
+            data_.size_ -= n - ranges::advance(data_.begin_, n, data_.end_);
+        } else {
+            ranges::advance(data_.begin_, n, data_.end_);
+        }
         return *this;
     }
 
@@ -6002,7 +5890,11 @@ public:
     friend constexpr S end(subrange&& r) { return r.end(); }
 };
 
-#ifdef NANO_HAVE_DEDUCTION_GUIDES
+#ifdef _MSC_VER
+// FIXME: Extra deduction guide because MSVC can't use the (constrained) implicit one
+template <typename I, typename S, std::enable_if_t<Iterator<I> && Sentinel<S, I>, int> = 0>
+subrange(I, S) -> subrange<I, S>;
+#endif
 
 template <typename I, typename S, std::enable_if_t<Iterator<I> && Sentinel<S, I>, int> = 0>
 subrange(I, S, iter_difference_t<I>) -> subrange<I, S, subrange_kind::sized>;
@@ -6023,77 +5915,17 @@ template <typename R, std::enable_if_t<detail::ForwardingRange<R>, int> = 0>
 subrange(R&&, iter_difference_t<iterator_t<R>>) ->
     subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>;
 
-#endif
-
 } // namespace subrange_
 
-namespace detail {
-
-template <typename I, typename S, subrange_kind K>
-constexpr I subrange_get_helper(std::integral_constant<std::size_t, 0>,
-                                const subrange<I, S, K>& s)
-{
-    return s.begin();
-}
-
-template <typename I, typename S, subrange_kind K>
-constexpr S subrange_get_helper(std::integral_constant<std::size_t, 1>,
-                                const subrange<I, S, K>& s)
-{
-    return s.end();
-}
-
-} // namespace detail
-
-template <std::size_t N, typename I, typename S, subrange_kind K>
+template <std::size_t N, typename I, typename S, subrange_kind K,
+          std::enable_if_t<(N < 2), int> = 0>
 constexpr auto get(const subrange<I, S, K>& r)
-    -> std::enable_if_t<N < 2,
-           decltype(detail::subrange_get_helper(std::integral_constant<size_t, N>{}, r))>
 {
-    return detail::subrange_get_helper(std::integral_constant<size_t, N>{}, r);
-}
-
-// Extensions for C++14 compilers without CTAD
-// These basically replicate the subrange constructors above
-
-template <typename I, typename S>
-constexpr auto make_subrange(I i, S s)
-    -> std::enable_if_t<Iterator<I> && Sentinel<S, I>,
-                        decltype(subrange<I, S>{std::move(i), std::move(s)})>
-{
-    return {std::move(i), std::move(s)};
-}
-
-template <typename I, typename S>
-constexpr auto make_subrange(I i, S s, iter_difference_t<I> n)
-    -> std::enable_if_t<Iterator<I> && Sentinel<S, I>,
-                        decltype(subrange<I, S>{std::move(i), std::move(s), n})>
-{
-    return {std::move(i), std::move(s), n};
-}
-
-template <typename R>
-constexpr auto make_subrange(R&& r)
-    -> std::enable_if_t<detail::ForwardingRange<R> && !SizedRange<R>,
-                        subrange<iterator_t<R>, sentinel_t<R>>>
-{
-    return {std::forward<R>(r)};
-}
-
-template <typename R>
-constexpr auto make_subrange(R&& r)
-    -> std::enable_if_t<detail::ForwardingRange<R> && SizedRange<R>,
-                        subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>>
-{
-    return {std::forward<R>(r)};
-}
-
-template <typename R>
-constexpr auto make_subrange(R&& r, iter_difference_t<R> n)
--> std::enable_if_t<detail::ForwardingRange<R>,
-        subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>>
-{
-    return {std::forward<R>(r), n};
+    if constexpr (N == 0) {
+        return r.begin();
+    } else {
+        return r.end();
+    }
 }
 
 template <typename R>
@@ -6328,19 +6160,6 @@ NANO_INLINE_VAR(detail::find_if_fn, find_if)
 namespace detail {
 
 struct find_fn {
-private:
-    template <typename ValueType>
-    struct equal_to_pred {
-        const ValueType& val;
-
-        template <typename T>
-        constexpr bool operator()(const T& t) const
-        {
-            return t == val;
-        }
-    };
-
-public:
     template <typename I, typename S, typename T, typename Proj = identity>
     constexpr std::enable_if_t<
         InputIterator<I> && Sentinel<S, I> &&
@@ -6348,7 +6167,7 @@ public:
         I>
     operator()(I first, S last, const T& value, Proj proj = Proj{}) const
     {
-        const equal_to_pred<T> pred{value};
+        const auto pred = [&value] (const auto& t) { return t == value; };
         return find_if_fn::impl(std::move(first), std::move(last), pred, proj);
     }
 
@@ -6360,7 +6179,7 @@ public:
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
     {
-        const equal_to_pred<T> pred{value};
+        const auto pred = [&value] (const auto& t) { return t == value; };
         return find_if_fn::impl(nano::begin(rng), nano::end(rng), pred, proj);
     }
 };
@@ -7755,7 +7574,7 @@ struct unreachable_sentinel_t {
     }
 };
 
-NANO_INLINE_VARIABLE constexpr unreachable_sentinel_t unreachable_sentinel{};
+inline constexpr unreachable_sentinel_t unreachable_sentinel{};
 
 NANO_END_NAMESPACE
 
@@ -8457,7 +8276,7 @@ public:
 
     std::size_t size() const { return end_ - start_.get(); }
     std::size_t capacity() const { return end_cap_ - start_.get(); }
-    NANO_NODISCARD bool empty() const { return size() == 0; }
+    [[nodiscard]] bool empty() const { return size() == 0; }
 
     void push_back(const T& elem) { emplace_back(elem); }
     void push_back(T&& elem) { emplace_back(std::move(elem)); }
@@ -9275,27 +9094,14 @@ namespace detail {
 
 struct is_permutation_fn {
 private:
-    template <typename Pred, typename Val>
-    struct comparator
-    {
-        Pred& pred;
-        const Val& val;
-
-        template <typename T>
-        constexpr bool operator()(const T& t) const
-        {
-            return nano::invoke(pred, t, val);
-        }
-    };
-
     template <typename I1, typename S1, typename I2, typename S2, typename Pred,
               typename Proj1, typename Proj2>
     static constexpr bool process_tail(I1 first1, S1 last1, I2 first2, S2 last2,
                                        Pred& pred, Proj1& proj1, Proj2& proj2)
     {
         for (auto it = first1; it != last1; ++it) {
-            comparator<Pred, decltype(nano::invoke(proj1, *it))>
-                comp{pred, nano::invoke(proj1, *it)};
+            const auto comp = [&pred, val = nano::invoke(proj1, *it)]
+                    (const auto& t) { return nano::invoke(pred, t, val); };
 
             // Check whether we have already seen this value
             if (any_of_fn::impl(first1, it, comp, proj1)) {
@@ -9393,7 +9199,7 @@ public:
     operator()(I1 first1, S1 last1, I2 first2, S2 last2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
-        if /*constexpr*/ (SizedSentinel<S1, I1> && SizedSentinel<S2, I2>) {
+        if constexpr (SizedSentinel<S1, I1> && SizedSentinel<S2, I2>) {
             if (nano::distance(first1, last1) != nano::distance(first2, last2)) {
                 return false;
             }
@@ -10600,25 +10406,15 @@ namespace detail {
 
 struct nth_element_fn {
 private:
-    template <typename Comp, typename Proj>
-    struct invoke_helper {
-        Comp& comp;
-        Proj& proj;
-
-        template <typename T, typename U>
-        constexpr bool operator()(T&& t, U&& u) const
-        {
-            return nano::invoke(comp, nano::invoke(proj, std::forward<T>(t)),
-                                nano::invoke(proj, std::forward<U>(u)));
-        }
-    };
-
     template <typename I, typename Comp, typename Proj>
     static constexpr void impl(I first, I nth, I last, Comp& comp, Proj& proj)
     {
         constexpr iter_difference_t<I> limit = 7;
 
-        const auto pred = invoke_helper<Comp, Proj>{comp, proj};
+        const auto pred = [&comp, &proj] (auto&& t, auto&& u) {
+            return nano::invoke(comp, nano::invoke(proj, std::forward<decltype(t)>(t)),
+                                nano::invoke(proj, std::forward<decltype(u)>(u)));
+        };
 
         I end = last;
 
@@ -10789,7 +10585,10 @@ private:
     template <typename I, typename Comp, typename Proj>
     static constexpr unsigned sort3(I x, I y, I z, Comp& comp, Proj& proj)
     {
-        auto pred = invoke_helper<Comp, Proj>{comp, proj};
+        const auto pred = [&comp, &proj] (auto&& t, auto&& u) {
+            return nano::invoke(comp, nano::invoke(proj, std::forward<decltype(t)>(t)),
+                                nano::invoke(proj, std::forward<decltype(u)>(u)));
+        };
 
         if (!pred(*y, *x)) {      // if x <= y
             if (!pred(*z, *y)) {  // if y <= z
