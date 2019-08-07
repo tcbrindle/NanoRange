@@ -75,14 +75,14 @@ void test_3(int N)
 	std::shuffle(ia, ia + N, gen);
 	std::make_heap(ia, ia + N);
 	for (int i = N; i > 0; --i) {
-		CHECK(stl2::pop_heap(::as_lvalue(stl2::make_subrange(ia, ia + i)))
+		CHECK(stl2::pop_heap(::as_lvalue(stl2::subrange(ia, ia + i)))
 					  == ia + i);
 		CHECK(std::is_heap(ia, ia + i - 1));
 	}
 	std::shuffle(ia, ia + N, gen);
 	std::make_heap(ia, ia + N);
 	for (int i = N; i > 0; --i) {
-		CHECK(stl2::pop_heap(stl2::make_subrange(ia, ia + i))
+		CHECK(stl2::pop_heap(stl2::subrange(ia, ia + i))
 					  == ia + i);
 		CHECK(std::is_heap(ia, ia + i - 1));
 	}
@@ -99,7 +99,7 @@ void test_4(int N)
 	std::make_heap(ia, ia + N);
 	for (int i = N; i > 0; --i) {
 		CHECK(stl2::pop_heap(
-				::as_lvalue(stl2::make_subrange(ia, sentinel<int*>(ia + i))))
+				::as_lvalue(stl2::subrange(ia, sentinel<int*>(ia + i))))
 					  == ia + i);
 		CHECK(std::is_heap(ia, ia + i - 1));
 	}
@@ -107,7 +107,7 @@ void test_4(int N)
 	std::make_heap(ia, ia + N);
 	for (int i = N; i > 0; --i) {
 		CHECK(stl2::pop_heap(
-				stl2::make_subrange(ia, sentinel<int*>(ia + i)))
+				stl2::subrange(ia, sentinel<int*>(ia + i)))
 					  == ia + i);
 		CHECK(std::is_heap(ia, ia + i - 1));
 	}
@@ -154,14 +154,14 @@ void test_7(int N)
 	std::shuffle(ia, ia + N, gen);
 	std::make_heap(ia, ia + N, std::greater<int>());
 	for (int i = N; i > 0; --i) {
-		CHECK(stl2::pop_heap(::as_lvalue(stl2::make_subrange(ia, ia + i)),
+		CHECK(stl2::pop_heap(::as_lvalue(stl2::subrange(ia, ia + i)),
 							 std::greater<int>()) == ia + i);
 		CHECK(std::is_heap(ia, ia + i - 1, std::greater<int>()));
 	}
 	std::shuffle(ia, ia + N, gen);
 	std::make_heap(ia, ia + N, std::greater<int>());
 	for (int i = N; i > 0; --i) {
-		CHECK(stl2::pop_heap(stl2::make_subrange(ia, ia + i),
+		CHECK(stl2::pop_heap(stl2::subrange(ia, ia + i),
 							 std::greater<int>()) == ia + i);
 		CHECK(std::is_heap(ia, ia + i - 1, std::greater<int>()));
 	}
@@ -178,14 +178,14 @@ void test_8(int N)
 	std::make_heap(ia, ia + N, std::greater<int>());
 	for (int i = N; i > 0; --i) {
 		CHECK(stl2::pop_heap(
-				::as_lvalue(stl2::make_subrange(ia, sentinel<int*>(ia + i))),
+				::as_lvalue(stl2::subrange(ia, sentinel<int*>(ia + i))),
 				std::greater<int>()) == ia + i);
 		CHECK(std::is_heap(ia, ia + i - 1, std::greater<int>()));
 	}
 	std::shuffle(ia, ia + N, gen);
 	std::make_heap(ia, ia + N, std::greater<int>());
 	for (int i = N; i > 0; --i) {
-		CHECK(stl2::pop_heap(stl2::make_subrange(ia, sentinel<int*>(ia + i)),
+		CHECK(stl2::pop_heap(stl2::subrange(ia, sentinel<int*>(ia + i)),
 							 std::greater<int>()) == ia + i);
 		CHECK(std::is_heap(ia, ia + i - 1, std::greater<int>()));
 	}

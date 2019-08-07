@@ -13,7 +13,7 @@ NANO_BEGIN_NAMESPACE
 
 struct default_sentinel_t {};
 
-NANO_INLINE_VARIABLE constexpr default_sentinel_t default_sentinel{};
+inline constexpr default_sentinel_t default_sentinel{};
 
 NANO_END_NAMESPACE
 

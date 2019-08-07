@@ -1,5 +1,5 @@
 
-[![Standard](https://img.shields.io/badge/c%2B%2B-14/17/20-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
+[![Standard](https://img.shields.io/badge/c%2B%2B-17/20-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
 [![License](https://img.shields.io/badge/license-BSL-blue.svg)](http://www.boost.org/LICENSE_1_0.txt)
 [![Build Status](https://travis-ci.org/tcbrindle/NanoRange.svg?branch=master)](https://travis-ci.org/tcbrindle/NanoRange)
 [![Build status](https://ci.appveyor.com/api/projects/status/6vciaaskslg34pux/branch/master?svg=true)](https://ci.appveyor.com/project/tcbrindle/nanorange/branch/master) [![download](https://img.shields.io/badge/latest-download-blue.svg)](https://github.com/tcbrindle/NanoRange/raw/master/single_include/nanorange.hpp) 
@@ -8,7 +8,7 @@
 
 # NanoRange #
 
-NanoRange is a C++14 implementation of the C++20 Ranges proposals (formerly the
+NanoRange is a C++17 implementation of the C++20 Ranges proposals (formerly the
 Ranges TS). It provides SFINAE-based implementations of all the proposed Concepts,
 and constrained and range-based versions the algorithms in the `<algorithm>`
 standard library header.
@@ -43,8 +43,8 @@ vcpkg install nanorange --head
 
 ## Compatibility ##
 
-NanoRange requires a conforming C++14 compiler, and is
-[tested](https://travis-ci.org/tcbrindle/nanorange) with GCC 5.4 and Clang 3.8
+NanoRange requires a conforming C++17 compiler, and is
+[tested](https://travis-ci.org/tcbrindle/nanorange) with GCC 7 and Clang 4.0
 and newer. Older versions may work in some cases, but this is not guaranteed.
 
 In addition, NanoRange works with MSVC 2017 version 15.9. Note that

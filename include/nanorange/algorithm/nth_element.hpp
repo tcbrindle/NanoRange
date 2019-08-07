@@ -31,25 +31,15 @@ namespace detail {
 
 struct nth_element_fn {
 private:
-    template <typename Comp, typename Proj>
-    struct invoke_helper {
-        Comp& comp;
-        Proj& proj;
-
-        template <typename T, typename U>
-        constexpr bool operator()(T&& t, U&& u) const
-        {
-            return nano::invoke(comp, nano::invoke(proj, std::forward<T>(t)),
-                                nano::invoke(proj, std::forward<U>(u)));
-        }
-    };
-
     template <typename I, typename Comp, typename Proj>
     static constexpr void impl(I first, I nth, I last, Comp& comp, Proj& proj)
     {
         constexpr iter_difference_t<I> limit = 7;
 
-        const auto pred = invoke_helper<Comp, Proj>{comp, proj};
+        const auto pred = [&comp, &proj] (auto&& t, auto&& u) {
+            return nano::invoke(comp, nano::invoke(proj, std::forward<decltype(t)>(t)),
+                                nano::invoke(proj, std::forward<decltype(u)>(u)));
+        };
 
         I end = last;
 
@@ -220,7 +210,10 @@ private:
     template <typename I, typename Comp, typename Proj>
     static constexpr unsigned sort3(I x, I y, I z, Comp& comp, Proj& proj)
     {
-        auto pred = invoke_helper<Comp, Proj>{comp, proj};
+        const auto pred = [&comp, &proj] (auto&& t, auto&& u) {
+            return nano::invoke(comp, nano::invoke(proj, std::forward<decltype(t)>(t)),
+                                nano::invoke(proj, std::forward<decltype(u)>(u)));
+        };
 
         if (!pred(*y, *x)) {      // if x <= y
             if (!pred(*z, *y)) {  // if y <= z

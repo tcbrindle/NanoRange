@@ -55,7 +55,7 @@ namespace {
 		CHECK(result.out == target + 4);
 		CHECK(std::count(target, target + 4, 0) == 4);
 		auto l2 = {1, 2, 3, 4};
-		CHECK(ranges::equal(ranges::make_subrange(target + 4, target + 8), std::move(l2)));
+		CHECK(ranges::equal(ranges::subrange(target + 4, target + 8), std::move(l2)));
 	}
 }
 

@@ -64,21 +64,21 @@ test_larger_sorts(int N, int M)
 
 	std::shuffle(array, array + N, gen);
 	res = stl2::partial_sort(
-			::as_lvalue(stl2::make_subrange(array, array + N)), array + M);
+			::as_lvalue(stl2::subrange(array, array + N)), array + M);
 	CHECK(res == array + N);
 	for (int i = 0; i < M; ++i)
 		CHECK(array[i] == i);
 
 	std::shuffle(array, array + N, gen);
 	res2 = stl2::partial_sort(
-			::as_lvalue(stl2::make_subrange(I{array}, S{array + N})),
+			::as_lvalue(stl2::subrange(I{array}, S{array + N})),
 			I{array + M});
 	CHECK(res2.base() == array + N);
 	for (int i = 0; i < M; ++i)
 		CHECK(array[i] == i);
 
 	std::shuffle(array, array + N, gen);
-	auto res3 = stl2::partial_sort(stl2::make_subrange(array, array + N),
+	auto res3 = stl2::partial_sort(stl2::subrange(array, array + N),
 								   array + M);
 	CHECK(res3 == array + N);
 	for (int i = 0; i < M; ++i)
@@ -86,7 +86,7 @@ test_larger_sorts(int N, int M)
 
 	std::shuffle(array, array + N, gen);
 	auto res4 = stl2::partial_sort(
-			stl2::make_subrange(I{array}, S{array + N}), I{array + M});
+			stl2::subrange(I{array}, S{array + N}), I{array + M});
 	CHECK(res4.base() == array + N);
 	for (int i = 0; i < M; ++i)
 		CHECK(array[i] == i);
@@ -106,7 +106,7 @@ test_larger_sorts(int N, int M)
 
 	std::shuffle(array, array + N, gen);
 	res = stl2::partial_sort(
-			::as_lvalue(stl2::make_subrange(array, array + N)), array + M,
+			::as_lvalue(stl2::subrange(array, array + N)), array + M,
 			std::greater<int>());
 	CHECK(res == array + N);
 	for (int i = 0; i < M; ++i)
@@ -114,7 +114,7 @@ test_larger_sorts(int N, int M)
 
 	std::shuffle(array, array + N, gen);
 	res2 = stl2::partial_sort(
-			::as_lvalue(stl2::make_subrange(I{array}, S{array + N})),
+			::as_lvalue(stl2::subrange(I{array}, S{array + N})),
 			I{array + M}, std::greater<int>());
 	CHECK(res2.base() == array + N);
 	for (int i = 0; i < M; ++i)

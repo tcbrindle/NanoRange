@@ -65,12 +65,12 @@ void test_3(int N)
 	for (int i = 0; i < N; ++i)
 		ia[i] = i;
 	std::shuffle(ia, ia + N, gen);
-	CHECK(stl2::make_heap(::as_lvalue(stl2::make_subrange(ia, ia + N)))
+	CHECK(stl2::make_heap(::as_lvalue(stl2::subrange(ia, ia + N)))
 				  == ia + N);
 	CHECK(std::is_heap(ia, ia + N));
 
 	std::shuffle(ia, ia + N, gen);
-	CHECK(stl2::make_heap(stl2::make_subrange(ia, ia + N))
+	CHECK(stl2::make_heap(stl2::subrange(ia, ia + N))
 				  == ia + N);
 	CHECK(std::is_heap(ia, ia + N));
 
@@ -84,13 +84,13 @@ void test_4(int N)
 		ia[i] = i;
 	std::shuffle(ia, ia + N, gen);
 	CHECK(stl2::make_heap(
-			::as_lvalue(stl2::make_subrange(ia, sentinel<int*>(ia + N))))
+			::as_lvalue(stl2::subrange(ia, sentinel<int*>(ia + N))))
 				  == ia + N);
 	CHECK(std::is_heap(ia, ia + N));
 
 	std::shuffle(ia, ia + N, gen);
 	CHECK(stl2::make_heap(
-			stl2::make_subrange(ia, sentinel<int*>(ia + N)))
+			stl2::subrange(ia, sentinel<int*>(ia + N)))
 				  == ia + N);
 	CHECK(std::is_heap(ia, ia + N));
 
@@ -126,12 +126,12 @@ void test_7(int N)
 	for (int i = 0; i < N; ++i)
 		ia[i] = i;
 	std::shuffle(ia, ia + N, gen);
-	CHECK(stl2::make_heap(::as_lvalue(stl2::make_subrange(ia, ia + N)),
+	CHECK(stl2::make_heap(::as_lvalue(stl2::subrange(ia, ia + N)),
 						  std::greater<int>()) == ia + N);
 	CHECK(std::is_heap(ia, ia + N, std::greater<int>()));
 
 	std::shuffle(ia, ia + N, gen);
-	CHECK(stl2::make_heap(stl2::make_subrange(ia, ia + N),
+	CHECK(stl2::make_heap(stl2::subrange(ia, ia + N),
 						  std::greater<int>()) == ia + N);
 	CHECK(std::is_heap(ia, ia + N, std::greater<int>()));
 
@@ -145,12 +145,12 @@ void test_8(int N)
 		ia[i] = i;
 	std::shuffle(ia, ia + N, gen);
 	CHECK(stl2::make_heap(
-			::as_lvalue(stl2::make_subrange(ia, sentinel<int*>(ia + N))),
+			::as_lvalue(stl2::subrange(ia, sentinel<int*>(ia + N))),
 			std::greater<int>()) == ia + N);
 	CHECK(std::is_heap(ia, ia + N, std::greater<int>()));
 
 	std::shuffle(ia, ia + N, gen);
-	CHECK(stl2::make_heap(stl2::make_subrange(ia, sentinel<int*>(ia + N)),
+	CHECK(stl2::make_heap(stl2::subrange(ia, sentinel<int*>(ia + N)),
 						  std::greater<int>()) == ia + N);
 	CHECK(std::is_heap(ia, ia + N, std::greater<int>()));
 

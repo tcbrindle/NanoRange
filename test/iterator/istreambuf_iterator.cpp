@@ -93,8 +93,8 @@ TEST_CASE("iter.istreambuf_iterator") {
 	{
 		static const char hw[] = "Hello, world!";
 		std::istringstream is(hw);
-		::check_equal(make_subrange(I{is}, default_sentinel),
-									make_subrange(hw + 0, hw + size(hw) - 1));
+		::check_equal(subrange(I{is}, default_sentinel),
+									subrange(hw + 0, hw + size(hw) - 1));
 	}
 
 	{

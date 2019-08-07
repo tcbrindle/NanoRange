@@ -135,7 +135,7 @@ TEST_CASE("alg.push_heap")
 		std::shuffle(ia, ia+N, gen);
 		for (int i = 0; i <= N; ++i)
 		{
-			CHECK(stl2::push_heap(stl2::make_subrange(ia, ia+i), std::greater<int>(), &S::i) == ia+i);
+			CHECK(stl2::push_heap(stl2::subrange(ia, ia+i), std::greater<int>(), &S::i) == ia+i);
 			std::transform(ia, ia+i, ib, std::mem_fn(&S::i));
 			CHECK(std::is_heap(ib, ib+i, std::greater<int>()));
 		}

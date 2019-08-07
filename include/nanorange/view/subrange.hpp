@@ -42,38 +42,6 @@ using subrange_::subrange;
 
 namespace detail {
 
-// libstdc++ < 7 does not have a SFINAE-friendly std::tuple_size,
-// meaning that doing virtually anything with it is a hard error, including
-// testing the PairLike concept below. As a workaround, we'll define our own
-// tuple_size (only for std::tuple and std::pair) if we're using libstdc++ v5 or
-// v6.
-//
-// FIXME: Do this better.
-//
-// Note:
-// __GNUC__ tells us we're using GCC or Clang
-// !_LIBCPP_VERSION tells us we're not using libc++
-// !_GLIBCXX_RELEASE tells us we're not using libstdc++ >= 7, which is when this
-// symbol was added
-#if defined(__GNUC__) && !defined(_LIBCPP_VERSION) && !defined(_GLIBCXX_RELEASE)
-template <typename>
-struct sfinae_tuple_size {};
-
-template <typename T>
-struct sfinae_tuple_size<const T>
-    : sfinae_tuple_size<T> {};
-
-template <typename T, typename U>
-struct sfinae_tuple_size<std::pair<T, U>>
-    : std::integral_constant<std::size_t, 2> {};
-
-template <typename... Args>
-struct sfinae_tuple_size<std::tuple<Args...>>
-    : std::integral_constant<std::size_t, sizeof...(Args)> {};
-#else
-template <typename T>
-using sfinae_tuple_size = std::tuple_size<T>;
-#endif
 
 struct PairLike_req {
     template <std::size_t I, typename T>
@@ -82,7 +50,7 @@ struct PairLike_req {
 
     template <typename T>
     auto requires_(T t) -> decltype(
-            requires_expr<DerivedFrom<sfinae_tuple_size<T>, std::integral_constant<std::size_t, 2>>>{},
+            requires_expr<DerivedFrom<std::tuple_size<T>, std::integral_constant<std::size_t, 2>>>{},
             std::declval<std::tuple_element_t<0, std::remove_const_t<T>>>(),
             std::declval<std::tuple_element_t<1, std::remove_const_t<T>>>(),
             this->test_func<0, T>(std::get<0>(t)),
@@ -93,7 +61,7 @@ template <typename T>
 auto PairLike_fn(long) -> std::false_type;
 
 template <typename T,
-          typename = typename sfinae_tuple_size<T>::type,
+          typename = typename std::tuple_size<T>::type,
           typename = std::enable_if_t<detail::requires_<detail::PairLike_req, T>>>
 auto PairLike_fn(int) -> std::true_type;
 
@@ -184,27 +152,6 @@ private:
 
     detail::subrange_data<I, S, StoreSize> data_{};
 
-
-    constexpr iter_difference_t<I> do_size(std::true_type) const
-    {
-        return data_.size_;
-    }
-
-    constexpr iter_difference_t<I> do_size(std::false_type) const
-    {
-        return data_.end_ - data_.begin_;
-    }
-
-    constexpr void do_advance(std::true_type, iter_difference_t<I> n)
-    {
-        data_.size_ -= n - ranges::advance(data_.begin_, n, data_.end_);
-    }
-
-    constexpr void do_advance(std::false_type, iter_difference_t<I> n)
-    {
-        ranges::advance(data_.begin_, n, data_.end_);
-    }
-
 public:
     using iterator = I;
     using sentinel = S;
@@ -274,7 +221,7 @@ public:
 
     constexpr S end() const { return data_.end_; }
 
-    NANO_NODISCARD constexpr bool empty() const
+    [[nodiscard]] constexpr bool empty() const
     {
         return data_.begin_ == data_.end_;
     }
@@ -283,11 +230,14 @@ public:
     constexpr auto size() const
         -> std::enable_if_t<KK == subrange_kind::sized, iter_difference_t<I>>
     {
-        using SS_t = std::conditional_t<StoreSize, std::true_type, std::false_type>;
-        return do_size(SS_t{});
+        if constexpr (StoreSize) {
+            return data_.size_;
+        } else {
+            return data_.end_ - data_.begin_;
+        }
     }
 
-    NANO_NODISCARD constexpr subrange next(iter_difference_t<I> n = 1) const
+    [[nodiscard]] constexpr subrange next(iter_difference_t<I> n = 1) const
     {
         auto tmp = *this;
         tmp.advance(n);
@@ -295,7 +245,7 @@ public:
     }
 
     template <typename II = I>
-    NANO_NODISCARD constexpr auto prev(iter_difference_t<I> n = 1) const
+    [[nodiscard]] constexpr auto prev(iter_difference_t<I> n = 1) const
         -> std::enable_if_t<BidirectionalIterator<II>, subrange>
     {
         auto tmp = *this;
@@ -305,8 +255,11 @@ public:
 
     constexpr subrange& advance(iter_difference_t<I> n)
     {
-        using SS_t = std::conditional_t<StoreSize, std::true_type, std::false_type>;
-        do_advance(SS_t{}, n);
+        if constexpr (StoreSize) {
+            data_.size_ -= n - ranges::advance(data_.begin_, n, data_.end_);
+        } else {
+            ranges::advance(data_.begin_, n, data_.end_);
+        }
         return *this;
     }
 
@@ -315,7 +268,11 @@ public:
     friend constexpr S end(subrange&& r) { return r.end(); }
 };
 
-#ifdef NANO_HAVE_DEDUCTION_GUIDES
+#ifdef _MSC_VER
+// FIXME: Extra deduction guide because MSVC can't use the (constrained) implicit one
+template <typename I, typename S, std::enable_if_t<Iterator<I> && Sentinel<S, I>, int> = 0>
+subrange(I, S) -> subrange<I, S>;
+#endif
 
 template <typename I, typename S, std::enable_if_t<Iterator<I> && Sentinel<S, I>, int> = 0>
 subrange(I, S, iter_difference_t<I>) -> subrange<I, S, subrange_kind::sized>;
@@ -336,77 +293,17 @@ template <typename R, std::enable_if_t<detail::ForwardingRange<R>, int> = 0>
 subrange(R&&, iter_difference_t<iterator_t<R>>) ->
     subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>;
 
-#endif
-
 } // namespace subrange_
 
-namespace detail {
-
-template <typename I, typename S, subrange_kind K>
-constexpr I subrange_get_helper(std::integral_constant<std::size_t, 0>,
-                                const subrange<I, S, K>& s)
-{
-    return s.begin();
-}
-
-template <typename I, typename S, subrange_kind K>
-constexpr S subrange_get_helper(std::integral_constant<std::size_t, 1>,
-                                const subrange<I, S, K>& s)
-{
-    return s.end();
-}
-
-} // namespace detail
-
-template <std::size_t N, typename I, typename S, subrange_kind K>
+template <std::size_t N, typename I, typename S, subrange_kind K,
+          std::enable_if_t<(N < 2), int> = 0>
 constexpr auto get(const subrange<I, S, K>& r)
-    -> std::enable_if_t<N < 2,
-           decltype(detail::subrange_get_helper(std::integral_constant<size_t, N>{}, r))>
 {
-    return detail::subrange_get_helper(std::integral_constant<size_t, N>{}, r);
-}
-
-// Extensions for C++14 compilers without CTAD
-// These basically replicate the subrange constructors above
-
-template <typename I, typename S>
-constexpr auto make_subrange(I i, S s)
-    -> std::enable_if_t<Iterator<I> && Sentinel<S, I>,
-                        decltype(subrange<I, S>{std::move(i), std::move(s)})>
-{
-    return {std::move(i), std::move(s)};
-}
-
-template <typename I, typename S>
-constexpr auto make_subrange(I i, S s, iter_difference_t<I> n)
-    -> std::enable_if_t<Iterator<I> && Sentinel<S, I>,
-                        decltype(subrange<I, S>{std::move(i), std::move(s), n})>
-{
-    return {std::move(i), std::move(s), n};
-}
-
-template <typename R>
-constexpr auto make_subrange(R&& r)
-    -> std::enable_if_t<detail::ForwardingRange<R> && !SizedRange<R>,
-                        subrange<iterator_t<R>, sentinel_t<R>>>
-{
-    return {std::forward<R>(r)};
-}
-
-template <typename R>
-constexpr auto make_subrange(R&& r)
-    -> std::enable_if_t<detail::ForwardingRange<R> && SizedRange<R>,
-                        subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>>
-{
-    return {std::forward<R>(r)};
-}
-
-template <typename R>
-constexpr auto make_subrange(R&& r, iter_difference_t<R> n)
--> std::enable_if_t<detail::ForwardingRange<R>,
-        subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>>
-{
-    return {std::forward<R>(r), n};
+    if constexpr (N == 0) {
+        return r.begin();
+    } else {
+        return r.end();
+    }
 }
 
 template <typename R>

@@ -57,7 +57,7 @@ public:
 
     std::size_t size() const { return end_ - start_.get(); }
     std::size_t capacity() const { return end_cap_ - start_.get(); }
-    NANO_NODISCARD bool empty() const { return size() == 0; }
+    [[nodiscard]] bool empty() const { return size() == 0; }
 
     void push_back(const T& elem) { emplace_back(elem); }
     void push_back(T&& elem) { emplace_back(std::move(elem)); }

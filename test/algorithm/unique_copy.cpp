@@ -146,7 +146,7 @@ test_range() {
 	const unsigned sa = sizeof(ia) / sizeof(ia[0]);
 	int ja[sa] = {-1};
 	count_equal::count = 0;
-	stl2::unique_copy_result<InIter, OutIter> r = stl2::unique_copy(::as_lvalue(stl2::make_subrange(InIter(ia), Sent(ia + sa))),
+	stl2::unique_copy_result<InIter, OutIter> r = stl2::unique_copy(::as_lvalue(stl2::subrange(InIter(ia), Sent(ia + sa))),
 													 OutIter(ja), count_equal());
 	CHECK(base(r.in) == ia + sa);
 	CHECK(base(r.out) == ja + sa);
@@ -157,7 +157,7 @@ test_range() {
 	const unsigned sb = sizeof(ib) / sizeof(ib[0]);
 	int jb[sb] = {-1};
 	count_equal::count = 0;
-	r = stl2::unique_copy(::as_lvalue(stl2::make_subrange(InIter(ib), Sent(ib + sb))), OutIter(jb), count_equal());
+	r = stl2::unique_copy(::as_lvalue(stl2::subrange(InIter(ib), Sent(ib + sb))), OutIter(jb), count_equal());
 	CHECK(base(r.in) == ib + sb);
 	CHECK(base(r.out) == jb + sb);
 	CHECK(jb[0] == 0);
@@ -168,7 +168,7 @@ test_range() {
 	const unsigned sc = sizeof(ic) / sizeof(ic[0]);
 	int jc[sc] = {-1};
 	count_equal::count = 0;
-	r = stl2::unique_copy(::as_lvalue(stl2::make_subrange(InIter(ic), Sent(ic + sc))), OutIter(jc), count_equal());
+	r = stl2::unique_copy(::as_lvalue(stl2::subrange(InIter(ic), Sent(ic + sc))), OutIter(jc), count_equal());
 	CHECK(base(r.in) == ic + sc);
 	CHECK(base(r.out) == jc + 1);
 	CHECK(jc[0] == 0);
@@ -178,7 +178,7 @@ test_range() {
 	const unsigned sd = sizeof(id) / sizeof(id[0]);
 	int jd[sd] = {-1};
 	count_equal::count = 0;
-	r = stl2::unique_copy(::as_lvalue(stl2::make_subrange(InIter(id), Sent(id + sd))), OutIter(jd), count_equal());
+	r = stl2::unique_copy(::as_lvalue(stl2::subrange(InIter(id), Sent(id + sd))), OutIter(jd), count_equal());
 	CHECK(base(r.in) == id + sd);
 	CHECK(base(r.out) == jd + 2);
 	CHECK(jd[0] == 0);
@@ -189,7 +189,7 @@ test_range() {
 	const unsigned se = sizeof(ie) / sizeof(ie[0]);
 	int je[se] = {-1};
 	count_equal::count = 0;
-	r = stl2::unique_copy(::as_lvalue(stl2::make_subrange(InIter(ie), Sent(ie + se))), OutIter(je), count_equal());
+	r = stl2::unique_copy(::as_lvalue(stl2::subrange(InIter(ie), Sent(ie + se))), OutIter(je), count_equal());
 	CHECK(base(r.in) == ie + se);
 	CHECK(base(r.out) == je + 3);
 	CHECK(je[0] == 0);
@@ -201,7 +201,7 @@ test_range() {
 	const unsigned sg = sizeof(ig) / sizeof(ig[0]);
 	int jg[sg] = {-1};
 	count_equal::count = 0;
-	r = stl2::unique_copy(::as_lvalue(stl2::make_subrange(InIter(ig), Sent(ig + sg))), OutIter(jg), count_equal());
+	r = stl2::unique_copy(::as_lvalue(stl2::subrange(InIter(ig), Sent(ig + sg))), OutIter(jg), count_equal());
 	CHECK(base(r.in) == ig + sg);
 	CHECK(base(r.out) == jg + 2);
 	CHECK(jg[0] == 0);
@@ -212,7 +212,7 @@ test_range() {
 	const unsigned sh = sizeof(ih) / sizeof(ih[0]);
 	int jh[sh] = {-1};
 	count_equal::count = 0;
-	r = stl2::unique_copy(::as_lvalue(stl2::make_subrange(InIter(ih), Sent(ih + sh))), OutIter(jh), count_equal());
+	r = stl2::unique_copy(::as_lvalue(stl2::subrange(InIter(ih), Sent(ih + sh))), OutIter(jh), count_equal());
 	CHECK(base(r.in) == ih + sh);
 	CHECK(base(r.out) == jh + 2);
 	CHECK(jh[0] == 0);
@@ -223,7 +223,7 @@ test_range() {
 	const unsigned si = sizeof(ii) / sizeof(ii[0]);
 	int ji[si] = {-1};
 	count_equal::count = 0;
-	r = stl2::unique_copy(::as_lvalue(stl2::make_subrange(InIter(ii), Sent(ii + si))), OutIter(ji), count_equal());
+	r = stl2::unique_copy(::as_lvalue(stl2::subrange(InIter(ii), Sent(ii + si))), OutIter(ji), count_equal());
 	CHECK(base(r.in) == ii + si);
 	CHECK(base(r.out) == ji + 3);
 	CHECK(ji[0] == 0);
@@ -291,7 +291,7 @@ TEST_CASE("alg.unique_copy")
 		stl2::unique_copy_result<S const *, S *> r = stl2::unique_copy(ia, ib, stl2::equal_to<>(), &S::i);
 		CHECK(r.in == stl2::end(ia));
 		CHECK(r.out == ib + 7);
-		check_equal(stl2::make_subrange(ib, ib+7), {S{1,1},S{2,2},S{3,3},S{4,5},S{5,6},S{6,9},S{7,10}});
+		check_equal(stl2::subrange(ib, ib+7), {S{1,1},S{2,2},S{3,3},S{4,5},S{5,6},S{6,9},S{7,10}});
 	}
 
 #ifdef HAVE_RVALUE_RANGES
@@ -307,7 +307,7 @@ TEST_CASE("alg.unique_copy")
 		CHECK(r.in == stl2::end(ia));
 #endif
 		CHECK(r.out == ib + 7);
-		check_equal(stl2::make_subrange(ib, ib+7), {S{1,1},S{2,2},S{3,3},S{4,5},S{5,6},S{6,9},S{7,10}});
+		check_equal(stl2::subrange(ib, ib+7), {S{1,1},S{2,2},S{3,3},S{4,5},S{5,6},S{6,9},S{7,10}});
 	}
 #endif
 }

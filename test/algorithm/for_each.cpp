@@ -50,7 +50,7 @@ TEST_CASE("alg.for_each")
 	CHECK(sum == 24);
 
 	sum = 0;
-	CHECK(stl2::for_each(stl2::make_subrange(v1.begin(), v1.end()), fun).in == v1.end());
+	CHECK(stl2::for_each(stl2::subrange(v1.begin(), v1.end()), fun).in == v1.end());
 	CHECK(sum == 12);
 
 	{

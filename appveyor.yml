@@ -17,17 +17,9 @@ environment:
       generator: Visual Studio 15 2017
       standard: 17
 
-    - platform: x86
-      generator: Visual Studio 15 2017
-      standard: 14
-
     - platform: x64
       generator: Visual Studio 15 2017 Win64
       standard: 17
-
-    - platform: x64
-      generator: Visual Studio 15 2017 Win64
-      standard: 14
 
 install:
 - mkdir cmake-build

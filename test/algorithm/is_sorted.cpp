@@ -59,7 +59,7 @@ struct range_call {
 	bool operator()(B&& b, E&& e, Args&& ... args)
 	{
 		return ranges::is_sorted(
-				ranges::make_subrange(begin_t{b}, sentinel_t{e}),
+				ranges::subrange(begin_t{b}, sentinel_t{e}),
 				std::forward<Args>(args)...);
 	}
 };

@@ -54,7 +54,7 @@ TEST_CASE("iter.ostreambuf_iterator") {
 
 	{
 		static const char hw[] = "Hello, world!";
-		auto hw_range = make_subrange(__stl2::begin(hw), __stl2::end(hw) - 1);
+		auto hw_range = subrange(__stl2::begin(hw), __stl2::end(hw) - 1);
 		std::ostringstream os;
 		auto r = ::copy(hw_range, I{os});
 		//CHECK(r.out() != default_sentinel{});

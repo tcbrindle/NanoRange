@@ -17,27 +17,14 @@ namespace detail {
 
 struct is_permutation_fn {
 private:
-    template <typename Pred, typename Val>
-    struct comparator
-    {
-        Pred& pred;
-        const Val& val;
-
-        template <typename T>
-        constexpr bool operator()(const T& t) const
-        {
-            return nano::invoke(pred, t, val);
-        }
-    };
-
     template <typename I1, typename S1, typename I2, typename S2, typename Pred,
               typename Proj1, typename Proj2>
     static constexpr bool process_tail(I1 first1, S1 last1, I2 first2, S2 last2,
                                        Pred& pred, Proj1& proj1, Proj2& proj2)
     {
         for (auto it = first1; it != last1; ++it) {
-            comparator<Pred, decltype(nano::invoke(proj1, *it))>
-                comp{pred, nano::invoke(proj1, *it)};
+            const auto comp = [&pred, val = nano::invoke(proj1, *it)]
+                    (const auto& t) { return nano::invoke(pred, t, val); };
 
             // Check whether we have already seen this value
             if (any_of_fn::impl(first1, it, comp, proj1)) {
@@ -135,7 +122,7 @@ public:
     operator()(I1 first1, S1 last1, I2 first2, S2 last2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
-        if /*constexpr*/ (SizedSentinel<S1, I1> && SizedSentinel<S2, I2>) {
+        if constexpr (SizedSentinel<S1, I1> && SizedSentinel<S2, I2>) {
             if (nano::distance(first1, last1) != nano::distance(first2, last2)) {
                 return false;
             }

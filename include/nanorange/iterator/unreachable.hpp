@@ -43,7 +43,7 @@ struct unreachable_sentinel_t {
     }
 };
 
-NANO_INLINE_VARIABLE constexpr unreachable_sentinel_t unreachable_sentinel{};
+inline constexpr unreachable_sentinel_t unreachable_sentinel{};
 
 NANO_END_NAMESPACE
 

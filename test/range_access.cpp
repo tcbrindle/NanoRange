@@ -16,10 +16,8 @@
 #include <utility>
 #include <nanorange/view/subrange.hpp>
 
-#ifdef NANO_HAVE_CPP17
 #include <string_view>
 #include <nanorange/algorithm/find.hpp>
-#endif
 
 #include "catch.hpp"
 
@@ -186,7 +184,6 @@ static_assert(ranges::Iterator<I>, "");
 static_assert(ranges::Iterator<CI>, "");
 
 void test_string_view_p0970() {
-#if defined(NANO_HAVE_CPP17)
 	// basic_string_views are non-dangling
 	using I = ranges::iterator_t<std::string_view>;
 	static_assert(ranges::Same<I, decltype(ranges::begin(std::declval<std::string_view>()))>);
@@ -200,7 +197,6 @@ void test_string_view_p0970() {
 		static_assert(ranges::Same<I, decltype(result)>);
 		CHECK(result == std::string_view{hw}.begin() + 7);
 	}
-#endif
 }
 
 }

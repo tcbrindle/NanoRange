@@ -52,8 +52,8 @@ TEST_CASE("alg.merge")
 			ia[i] = 2 * i;
 		for(unsigned i = 0; i < N; ++i)
 			ib[i] = 2 * i + 1;
-		auto r0 = stl2::make_subrange(ia.get(), ia.get() + N);
-		auto r1 = stl2::make_subrange(ib.get(), ib.get() + N);
+		auto r0 = stl2::subrange(ia.get(), ia.get() + N);
+		auto r1 = stl2::subrange(ib.get(), ib.get() + N);
 		auto r = stl2::merge(r0, r1, ic.get());
 		CHECK(r.in1 == ia.get() + N);
 		CHECK(r.in2 == ib.get() + N);
@@ -73,8 +73,8 @@ TEST_CASE("alg.merge")
 			ia[i] = 2 * i;
 		for(unsigned i = 0; i < N; ++i)
 			ib[i] = 2 * i + 1;
-		auto r0 = stl2::make_subrange(ia.get(), ia.get() + N);
-		auto r1 = stl2::make_subrange(ib.get(), ib.get() + N);
+		auto r0 = stl2::subrange(ia.get(), ia.get() + N);
+		auto r1 = stl2::subrange(ib.get(), ib.get() + N);
 		auto r = stl2::merge(std::move(r0), std::move(r1), ic.get());
 		CHECK(r.in1 == ia.get() + N);
 		CHECK(r.in2 == ib.get() + N);
