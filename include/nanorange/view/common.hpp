@@ -100,15 +100,8 @@ public:
 
 };
 
-#ifdef NANO_HAVE_DEDUCTION_GUIDES
-
 template <typename R>
 common_view(R&&) -> common_view<all_view<R>>;
-
-#endif
-
-
-namespace view {
 
 namespace detail {
 
@@ -143,7 +136,12 @@ public:
     }
 };
 
+template <>
+inline constexpr bool is_raco<common_fn> = true;
+
 } // namespace detail
+
+namespace view {
 
 NANO_INLINE_VAR(detail::common_fn, common)
 

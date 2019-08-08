@@ -21,9 +21,8 @@ TEST_CASE("view.common") {
 	using namespace ranges;
 	{
 		int rg[] = {0,1,2,3,4,5,6,7,8,9};
-		// FIXME FIXME
-		//auto x = rg | view::common;
-		auto x = view::common(rg);
+		auto x = rg | view::common;
+		//auto x = view::common(rg);
 		::check_equal(x, {0,1,2,3,4,5,6,7,8,9});
 		static_assert(View<decltype(x)>, "");
 		static_assert(SizedRange<decltype(x)>, "");
@@ -32,9 +31,8 @@ TEST_CASE("view.common") {
 	}
 	{
 		int rg[] = {0,1,2,3,4,5,6,7,8,9};
-		// FIXME FIXME
-		//auto x = view::counted(bidirectional_iterator(rg), 5) | view::common;
-		auto x = view::common(view::counted(bidirectional_iterator<int*>(rg), 5));
+		auto x = view::counted(bidirectional_iterator(rg), 5) | view::common;
+		//auto x = view::common(view::counted(bidirectional_iterator<int*>(rg), 5));
 		::check_equal(x, {0,1,2,3,4});
 		static_assert(View<decltype(x)>, "");
 		static_assert(SizedRange<decltype(x)>, "");

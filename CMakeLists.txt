@@ -117,6 +117,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/begin_end.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/concepts.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/primitives.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/view/range_adaptors.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/common_reference.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/common_type.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/macros.hpp

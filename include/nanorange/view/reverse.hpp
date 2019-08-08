@@ -112,8 +112,6 @@ private:
 template <typename R>
 reverse_view(R&&) -> reverse_view<all_view<R>>;
 
-namespace view {
-
 namespace detail {
 
 struct reverse_fn {
@@ -128,7 +126,12 @@ struct reverse_fn {
     }
 };
 
+template <>
+inline constexpr bool is_raco<reverse_fn> = true;
+
 } // namespace detail
+
+namespace view {
 
 NANO_INLINE_VAR(detail::reverse_fn, reverse)
 

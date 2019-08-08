@@ -7,6 +7,7 @@
 #ifndef NANORANGE_VIEW_ALL_HPP_INCLUDED
 #define NANORANGE_VIEW_ALL_HPP_INCLUDED
 
+#include <nanorange/detail/view/range_adaptors.hpp>
 #include <nanorange/view/ref.hpp>
 #include <nanorange/view/subrange.hpp>
 
@@ -50,6 +51,9 @@ public:
         return all_fn::impl(std::forward<T>(t), priority_tag<2>{});
     }
 };
+
+template <>
+inline constexpr bool is_raco<all_fn> = true;
 
 } // namespace detail
 

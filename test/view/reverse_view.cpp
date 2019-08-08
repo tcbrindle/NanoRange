@@ -22,8 +22,8 @@ TEST_CASE("view.reverse") {
 	{
 		int rg[] = {0,1,2,3,4,5,6,7,8,9};
 		// FIXME FIXME
-//		auto x = rg | view::reverse;
-		auto x = view::reverse(rg);
+		auto x = rg | view::reverse;
+//		auto x = view::reverse(rg);
 		::check_equal(x, {9,8,7,6,5,4,3,2,1,0});
 		static_assert(View<decltype(x)>, "");
 		static_assert(Range<const decltype(x)>, "");
@@ -39,8 +39,8 @@ TEST_CASE("view.reverse") {
 	{
 		int rg[] = {0,1,2,3,4,5,6,7,8,9};
 		// FIXME FIXME
-		//auto x = view::counted(bidirectional_iterator(rg), 5) | view::reverse;
-		auto x = view::reverse(view::counted(bidirectional_iterator<int*>(rg), 5));
+		auto x = view::counted(bidirectional_iterator(rg), 5) | view::reverse;
+		//auto x = view::reverse(view::counted(bidirectional_iterator<int*>(rg), 5));
 		::check_equal(x, {4,3,2,1,0});
 		static_assert(View<decltype(x)>, "");
 		static_assert(!Range<const decltype(x)>, "");
