@@ -45,6 +45,20 @@ NANO_CONCEPT Advanceable = Decrementable<I> &&
     StrictTotallyOrdered<I> &&
     requires_<Advanceable_req, I>;
 
+template <typename W>
+constexpr auto iota_view_iter_cat_helper()
+{
+    if constexpr (detail::Advanceable<W>) {
+        return random_access_iterator_tag{};
+    } else if constexpr (detail::Decrementable<W>) {
+        return bidirectional_iterator_tag{};
+    } else if constexpr (Incrementable<W>) {
+        return forward_iterator_tag{};
+    } else {
+        return input_iterator_tag{};
+    }
+}
+
 } // namespace detail
 
 template <typename W, typename Bound = unreachable_sentinel_t>
@@ -54,19 +68,6 @@ struct iota_view : view_interface<iota_view<W, Bound>> {
     static_assert(detail::WeaklyEqualityComparableWith<W, Bound>);
 
 private:
-     static constexpr auto iter_cat_helper()
-     {
-         if constexpr (detail::Advanceable<W>) {
-             return random_access_iterator_tag{};
-         } else if constexpr (detail::Decrementable<W>) {
-             return bidirectional_iterator_tag{};
-         } else if constexpr (Incrementable<W>) {
-             return forward_iterator_tag{};
-         } else {
-             return input_iterator_tag{};
-         }
-     }
-
     struct sentinel;
 
     struct iterator {
@@ -75,9 +76,8 @@ private:
         W value_ = W();
 
     public:
-        using iterator_category = decltype(iter_cat_helper());
-
-
+        using iterator_category = decltype(detail::iota_view_iter_cat_helper<W>());
+        
         using value_type = W;
         // FIXME: IOTA_DIFF_T urgh
         using difference_type = iter_difference_t<W>;
