@@ -180,6 +180,7 @@ add_executable(test_nanorange
     #view/repeat_n_view.cpp
     #view/repeat_view.cpp
     view/reverse_view.cpp
+    view/single_view.cpp
     #view/span.cpp
     #view/split_view.cpp
     view/subrange.cpp

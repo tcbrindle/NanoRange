@@ -157,6 +157,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/interface.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/reverse.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/ref.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/single.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/subrange.hpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm.hpp

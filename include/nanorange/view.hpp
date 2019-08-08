@@ -14,6 +14,7 @@
 #include <nanorange/view/interface.hpp>
 #include <nanorange/view/ref.hpp>
 #include <nanorange/view/reverse.hpp>
+#include <nanorange/view/single.hpp>
 #include <nanorange/view/subrange.hpp>
 
 #endif
