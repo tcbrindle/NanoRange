@@ -1,7 +1,8 @@
 
 image:
 - Visual Studio 2017
-- Visual Studio 2017 Preview
+- Visual Studio 2019
+- Visual Studio 2019 Preview
 
 # Do not build branches of the form "pr/*". By prefixing pull requests coming
 # from branches inside the repository with pr/, this avoids building both the
@@ -15,16 +16,14 @@ environment:
   matrix:
     - platform: x86
       generator: Visual Studio 15 2017
-      standard: 17
 
     - platform: x64
       generator: Visual Studio 15 2017 Win64
-      standard: 17
 
 install:
 - mkdir cmake-build
 - cd cmake-build
-- cmake .. -G "%generator%" -DCMAKE_CXX_STANDARD=%standard%
+- cmake .. -G "%generator%"
 
 build_script:
 - cmake --build . --target test_nanorange --config Debug
