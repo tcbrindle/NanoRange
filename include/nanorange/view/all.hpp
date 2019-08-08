@@ -59,7 +59,7 @@ inline constexpr bool is_raco<all_fn> = true;
 
 namespace view {
 
-NANO_INLINE_VAR(detail::all_fn, all)
+NANO_INLINE_VAR(nano::detail::all_fn, all)
 
 }
 

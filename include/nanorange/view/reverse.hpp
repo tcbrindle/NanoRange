@@ -133,7 +133,7 @@ inline constexpr bool is_raco<reverse_fn> = true;
 
 namespace view {
 
-NANO_INLINE_VAR(detail::reverse_fn, reverse)
+NANO_INLINE_VAR(nano::detail::reverse_fn, reverse)
 
 } // namespace view
 

@@ -174,6 +174,7 @@ add_executable(test_nanorange
     view/empty_view.cpp
     #view/filter_view.cpp
     #view/indirect_view.cpp
+    view/iota.cpp
     #view/join_view.cpp
     #view/move_view.cpp
     view/ref_view.cpp
