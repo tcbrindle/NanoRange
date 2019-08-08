@@ -7,7 +7,7 @@
 #ifndef NANORANGE_VIEW_ALL_HPP_INCLUDED
 #define NANORANGE_VIEW_ALL_HPP_INCLUDED
 
-#include <nanorange/detail/view/ref.hpp>
+#include <nanorange/view/ref.hpp>
 #include <nanorange/view/subrange.hpp>
 
 NANO_BEGIN_NAMESPACE
@@ -28,9 +28,9 @@ private:
 
     template <typename T>
     static constexpr auto impl(T&& t, priority_tag<1>) noexcept
-        -> decltype(detail::make_ref_view(std::forward<T>(t)))
+        -> decltype(ref_view(std::forward<T>(t)))
     {
-        return detail::make_ref_view(std::forward<T>(t));
+        return ref_view(std::forward<T>(t));
     }
 
     template <typename T>

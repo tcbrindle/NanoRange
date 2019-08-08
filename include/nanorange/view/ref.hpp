@@ -4,14 +4,14 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef NANORANGE_DETAIL_VIEW_REF_HPP_INCLUDED
-#define NANORANGE_DETAIL_VIEW_REF_HPP_INCLUDED
+#ifndef NANORANGE_VIEW_REF_HPP_INCLUDED
+#define NANORANGE_VIEW_REF_HPP_INCLUDED
 
 #include <nanorange/view/interface.hpp>
 
 NANO_BEGIN_NAMESPACE
 
-namespace detail {
+namespace ref_view_ {
 
 template <typename R>
 class ref_view : public view_interface<ref_view<R>> {
@@ -31,10 +31,11 @@ class ref_view : public view_interface<ref_view<R>> {
 public:
     constexpr ref_view() noexcept = default;
 
-    template <typename T, std::enable_if_t<
-            detail::NotSameAs<T, ref_view> &&
-            ConvertibleTo<T, R&> &&
-            detail::requires_<constructor_req, T>, int> = 0>
+    template <typename T,
+              std::enable_if_t<detail::NotSameAs<T, ref_view> &&
+                                   ConvertibleTo<T, R&> &&
+                                   detail::requires_<constructor_req, T>,
+                               int> = 0>
     constexpr ref_view(T&& t)
         : r_(std::addressof(static_cast<R&>(std::forward<T>(t))))
     {}
@@ -68,20 +69,12 @@ public:
     friend constexpr sentinel_t<R> end(ref_view r) { return r.end(); }
 };
 
-template <typename Rng>
-constexpr std::enable_if_t<
-    Range<Rng> &&
-    std::is_object<Rng>::value,
-    ref_view<Rng>>
-make_ref_view(Rng& rng)
-{
-    return ref_view<Rng>{rng};
-}
+template <typename R>
+ref_view(R&) -> ref_view<R>;
 
-template <typename T>
-void make_ref_view(const T&&) = delete;
+} // namespace ref_view_
 
-} // namespace detail
+using ref_view_::ref_view;
 
 NANO_END_NAMESPACE
 

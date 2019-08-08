@@ -10,7 +10,7 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <nanorange/detail/view/ref.hpp>
+#include <nanorange/view/ref.hpp>
 #include <vector>
 #include "../catch.hpp"
 #include "../test_utils.hpp"
@@ -20,7 +20,7 @@ TEST_CASE("view.ref")
 	auto rng = std::vector<int>(10, 0);
 	auto iota = 0;
 	//for (auto&& i : rng | view::ref) {
-	for (auto&& i : nano::detail::make_ref_view(rng)) {
+	for (auto&& i : nano::ref_view(rng)) {
 		i += iota;
 		++iota;
 	}
