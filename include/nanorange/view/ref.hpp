@@ -69,7 +69,7 @@ public:
     friend constexpr sentinel_t<R> end(ref_view r) { return r.end(); }
 };
 
-template <typename R>
+template <typename R, std::enable_if_t<Range<R> && std::is_object_v<R>, int> = 0>
 ref_view(R&) -> ref_view<R>;
 
 } // namespace ref_view_
