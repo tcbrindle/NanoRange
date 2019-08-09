@@ -116,14 +116,16 @@ private:
             return tmp;
         }
 
+        template <typename VV = V>
         friend constexpr auto operator==(const iterator& x, const iterator& y)
-            -> std::enable_if_t<EqualityComparable<iterator_t<V>>, bool>
+            -> std::enable_if_t<EqualityComparable<iterator_t<VV>>, bool>
         {
             return x.current_ == y.current_;
         }
 
+        template <typename VV = V>
         friend constexpr auto operator!=(const iterator& x, const iterator& y)
-            -> std::enable_if_t<EqualityComparable<iterator_t<V>>, bool>
+            -> std::enable_if_t<EqualityComparable<iterator_t<VV>>, bool>
         {
             return !(x == y);
         }
