@@ -16,6 +16,16 @@ namespace detail {
 template <typename>
 inline constexpr bool is_raco = false;
 
+template <typename R, typename C, std::enable_if_t<
+          ViewableRange<R> &&
+          !is_raco<uncvref_t<R>> &&
+          is_raco<uncvref_t<C>>, int> = 0>
+constexpr auto operator|(R&& lhs, C&& rhs)
+    -> decltype(std::forward<C>(rhs)(std::forward<R>(lhs)))
+{
+    return std::forward<C>(rhs)(std::forward<R>(lhs));
+}
+
 template <typename LHS, typename RHS>
 struct raco_pipe {
 private:
@@ -51,6 +61,13 @@ public:
 template <typename LHS, typename RHS>
 inline constexpr bool is_raco<raco_pipe<LHS, RHS>> = true;
 
+template <typename LHS, typename RHS, std::enable_if_t<
+    is_raco<uncvref_t<LHS>> && is_raco<uncvref_t<RHS>>, int> = 0>
+constexpr auto operator|(LHS&& lhs, RHS&& rhs)
+{
+    return raco_pipe<LHS, RHS>{std::forward<LHS>(lhs), std::forward<RHS>(rhs)};
+}
+
 template <typename Lambda>
 struct rao_proxy : Lambda {
     constexpr explicit rao_proxy(Lambda&& l) : Lambda(std::move(l)) {}
@@ -58,23 +75,6 @@ struct rao_proxy : Lambda {
 
 template <typename L>
 inline constexpr bool is_raco<rao_proxy<L>> = true;
-
-template <typename R, typename C, std::enable_if_t<
-        ViewableRange<R> &&
-        !is_raco<uncvref_t<R>> &&
-        is_raco<uncvref_t<C>>, int> = 0>
-constexpr auto operator|(R&& lhs, C&& rhs)
-    -> decltype(std::forward<C>(rhs)(std::forward<R>(lhs)))
-{
-    return std::forward<C>(rhs)(std::forward<R>(lhs));
-}
-
-template <typename LHS, typename RHS, std::enable_if_t<
-    is_raco<uncvref_t<LHS>> && is_raco<uncvref_t<RHS>>, int> = 0>
-constexpr auto operator|(LHS&& lhs, RHS&& rhs)
-{
-    return raco_pipe<LHS, RHS>{std::forward<LHS>(lhs), std::forward<RHS>(rhs)};
-}
 
 } // namespace detail
 
