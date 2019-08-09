@@ -16,7 +16,7 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 // TODO: Handle piping views
-struct all_fn {
+struct all_view_fn {
 private:
     template <typename T>
     static constexpr auto impl(T&& t, priority_tag<2>)
@@ -45,21 +45,21 @@ private:
 public:
     template <typename T>
     constexpr auto operator()(T&& t) const
-        noexcept(noexcept(all_fn::impl(std::forward<T>(t), priority_tag<2>{})))
-        -> decltype(all_fn::impl(std::forward<T>(t), priority_tag<2>{}))
+        noexcept(noexcept(all_view_fn::impl(std::forward<T>(t), priority_tag<2>{})))
+        -> decltype(all_view_fn::impl(std::forward<T>(t), priority_tag<2>{}))
     {
-        return all_fn::impl(std::forward<T>(t), priority_tag<2>{});
+        return all_view_fn::impl(std::forward<T>(t), priority_tag<2>{});
     }
 };
 
 template <>
-inline constexpr bool is_raco<all_fn> = true;
+inline constexpr bool is_raco<all_view_fn> = true;
 
 } // namespace detail
 
 namespace view {
 
-NANO_INLINE_VAR(nano::detail::all_fn, all)
+NANO_INLINE_VAR(nano::detail::all_view_fn, all)
 
 }
 

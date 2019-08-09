@@ -229,7 +229,7 @@ using filter_view_::filter_view;
 
 namespace detail {
 
-struct filter_fn {
+struct filter_view_fn {
     template <typename Pred>
     constexpr auto operator()(Pred pred) const
     {
@@ -260,7 +260,7 @@ struct filter_fn {
 
 namespace view {
 
-NANO_INLINE_VAR(nano::detail::filter_fn, filter)
+NANO_INLINE_VAR(nano::detail::filter_view_fn, filter)
 
 }
 

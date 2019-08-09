@@ -105,7 +105,7 @@ common_view(R&&) -> common_view<all_view<R>>;
 
 namespace detail {
 
-struct common_fn {
+struct common_view_fn {
 private:
     template <typename T>
     static constexpr auto impl(T&& t, nano::detail::priority_tag<1>)
@@ -128,22 +128,22 @@ public:
     template <typename T>
     constexpr auto operator()(T&& t) const
         -> std::enable_if_t<ViewableRange<T>,
-        decltype(common_fn::impl(std::forward<T>(t),
+        decltype(common_view_fn::impl(std::forward<T>(t),
                                     nano::detail::priority_tag<1>{}))>
     {
-        return common_fn::impl(std::forward<T>(t),
+        return common_view_fn::impl(std::forward<T>(t),
                                nano::detail::priority_tag<1>{});
     }
 };
 
 template <>
-inline constexpr bool is_raco<common_fn> = true;
+inline constexpr bool is_raco<common_view_fn> = true;
 
 } // namespace detail
 
 namespace view {
 
-NANO_INLINE_VAR(detail::common_fn, common)
+NANO_INLINE_VAR(detail::common_view_fn, common)
 
 } // namespace view
 

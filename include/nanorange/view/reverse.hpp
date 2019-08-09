@@ -114,7 +114,7 @@ reverse_view(R&&) -> reverse_view<all_view<R>>;
 
 namespace detail {
 
-struct reverse_fn {
+struct reverse_view_fn {
     template <typename R>
     constexpr std::enable_if_t<
             ViewableRange<R> &&
@@ -127,13 +127,13 @@ struct reverse_fn {
 };
 
 template <>
-inline constexpr bool is_raco<reverse_fn> = true;
+inline constexpr bool is_raco<reverse_view_fn> = true;
 
 } // namespace detail
 
 namespace view {
 
-NANO_INLINE_VAR(nano::detail::reverse_fn, reverse)
+NANO_INLINE_VAR(nano::detail::reverse_view_fn, reverse)
 
 } // namespace view
 

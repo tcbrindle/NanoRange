@@ -341,7 +341,7 @@ namespace view {
 
 namespace detail {
 
-struct iota_fn {
+struct iota_view_fn {
     template <typename W>
     constexpr auto operator()(W&& value) const
         noexcept(noexcept(iota_view{std::forward<W>(value)}))
@@ -361,7 +361,7 @@ struct iota_fn {
 
 } // namespace detail
 
-NANO_INLINE_VAR(detail::iota_fn, iota)
+NANO_INLINE_VAR(detail::iota_view_fn, iota)
 
 }
 
