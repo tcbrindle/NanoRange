@@ -345,8 +345,9 @@ public:
     }
 };
 
-// FIXME: Constraints
-template <typename W, typename Bound>
+template <typename W, typename Bound, std::enable_if_t<
+    !Integral<W> || !Integral<Bound> ||
+        (SignedIntegral<W> == SignedIntegral<Bound>), int> = 0>
 iota_view(W, Bound) -> iota_view<W, Bound>;
 
 namespace view {
