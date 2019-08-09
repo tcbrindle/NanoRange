@@ -160,7 +160,7 @@ private:
 
         friend constexpr bool operator==(const iterator& i, const sentinel& s)
         {
-            return i.current_ = s.end_;
+            return i.base() == s.end_;
         }
 
         friend constexpr bool operator==(const sentinel& s, const iterator& i)
