@@ -37,7 +37,6 @@ matrix:
         apt:
           packages:
             - g++-9
-            - ninja-build
           sources:
             - ubuntu-toolchain-r-test
 
@@ -47,7 +46,6 @@ matrix:
         apt:
           packages:
             - g++-8
-            - ninja-build
           sources:
             - ubuntu-toolchain-r-test
 
@@ -57,7 +55,6 @@ matrix:
         apt:
           packages:
             - g++-7
-            - ninja-build
           sources:
             - ubuntu-toolchain-r-test
 
@@ -67,7 +64,6 @@ matrix:
         apt:
           packages:
             - clang-8
-            - ninja-build
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-8
@@ -78,7 +74,6 @@ matrix:
         apt:
           packages:
             - clang-7
-            - ninja-build
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-7
@@ -89,7 +84,6 @@ matrix:
         apt:
           packages:
             - clang-6.0
-            - ninja-build
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-6.0
@@ -100,7 +94,6 @@ matrix:
         apt:
           packages:
             - clang-5.0
-            - ninja-build
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-5.0
@@ -152,19 +145,15 @@ install:
       export LDFLAGS="-L ${DEPS_DIR}/llvm/install/lib -l c++ -l c++abi"
       export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${DEPS_DIR}/llvm/install/lib"
     fi
-  - |
-    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      brew update && brew install ninja
-    fi
 
 before_script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir -p -v build
   - cd build
-  - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=$COMPILER
+  - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=$COMPILER
 
 script:
-  - cmake --build . --target test_nanorange
+  - cmake --build . --target test_nanorange -- -j2
   - ctest
 
 after_success:
