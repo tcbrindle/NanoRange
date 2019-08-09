@@ -117,11 +117,13 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/begin_end.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/concepts.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/primitives.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/thirdparty/mpark_variant.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/common_reference.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/common_type.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/macros.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/swap.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/type_traits.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/variant.hpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/back_insert_iterator.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/iterator/common_iterator.hpp

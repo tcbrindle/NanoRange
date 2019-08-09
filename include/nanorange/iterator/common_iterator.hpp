@@ -7,6 +7,7 @@
 #ifndef NANORANGE_ITERATOR_COMMON_ITERATOR_HPP_INCLUDED
 #define NANORANGE_ITERATOR_COMMON_ITERATOR_HPP_INCLUDED
 
+#include <nanorange/detail/variant.hpp>
 #include <nanorange/iterator/concepts.hpp>
 
 NANO_BEGIN_NAMESPACE
@@ -14,6 +15,14 @@ NANO_BEGIN_NAMESPACE
 // [range.iterators.common]
 
 namespace common_iterator_ {
+
+struct access {
+    template <typename CI>
+    static constexpr decltype(auto) get_variant(CI&& ci)
+    {
+        return std::forward<CI>(ci).v_;
+    }
+};
 
 template <typename I, typename S>
 class common_iterator {
@@ -23,6 +32,8 @@ class common_iterator {
 
     template <typename II, typename SS>
     friend class common_iterator;
+
+    friend struct common_iterator_::access;
 
     class op_arrow_proxy {
         iter_value_t<I> keep_;
@@ -63,22 +74,76 @@ class common_iterator {
         return {i};
     }
 
+    template <typename II, typename SS>
+    struct copy_visitor {
+        constexpr auto operator()(const II& iter) const
+        {
+            return detail::variant<I, S>(detail::in_place_index<0>, iter);
+        }
+
+        constexpr auto operator()(const SS& sent) const
+        {
+            return detail::variant<I, S>(detail::in_place_index<1>, sent);
+        }
+    };
+
+    template <typename I2, typename S2>
+    struct equality_visitor_base {
+        // Both sentinels
+        constexpr auto operator()(const S&, const S2&) const
+        {
+            return true;
+        }
+
+        template <typename T1, typename T2>
+        constexpr auto operator()(const T1& t1, const T2& t2) const
+            -> decltype(t1 == t2)
+        {
+            return t1 == t2;
+        }
+    };
+
+    template <typename I2, typename S2, bool B = EqualityComparableWith<I, I2>>
+    struct equality_visitor : equality_visitor_base<I2, S2> {};
+
+    template <typename I2, typename S2>
+    struct equality_visitor<I2, S2, false> : equality_visitor_base<I2, S2> {
+        using equality_visitor_base<I2, S2>::operator();
+        constexpr bool operator()(const I&, const I2&) const { return true; }
+    };
+
+    template <typename I2, typename S2>
+    struct distance_visitor {
+        constexpr iter_difference_t<I2> operator()(const S&, const S2&) const
+        {
+            return 0;
+        }
+
+        template <typename T1, typename T2>
+        constexpr iter_difference_t<I2> operator()(const T1& t1, const T2& t2) const
+        {
+            return t1 - t2;
+        }
+    };
+
 public:
     using difference_type = iter_difference_t<I>;
 
-    constexpr common_iterator() : is_sentinel_{false}, iter_{} {}
+    constexpr common_iterator() = default;
 
-    constexpr common_iterator(I i) : is_sentinel_{false}, iter_(i) {}
+    constexpr common_iterator(I i)
+        : v_(detail::in_place_type<I>, std::move(i))
+    {}
 
-    constexpr common_iterator(S s) : is_sentinel_{true}, sentinel_{s} {}
+    constexpr common_iterator(S s)
+        : v_(detail::in_place_type<S>, std::move(s))
+    {}
 
     template <
         typename II, typename SS,
         std::enable_if_t<ConvertibleTo<II, I> && ConvertibleTo<SS, S>, int> = 0>
     constexpr common_iterator(const common_iterator<II, SS>& other)
-        : is_sentinel_{other.is_sentinel_},
-          iter_(other.iter_),
-          sentinel_(other.sentinel_)
+        : v_(detail::visit(copy_visitor<II, SS>{}, other.v_))
     {}
 
     template <typename II, typename SS>
@@ -86,19 +151,17 @@ public:
                                common_iterator&>
     operator=(const common_iterator<II, SS>& other)
     {
-        is_sentinel_ = other.is_sentinel_;
-        iter_ = other.iter_;
-        sentinel_ = other.sentinel_;
+        v_ = detail::visit(copy_visitor<II, SS>{}, other.v_);
         return *this;
     }
 
-    constexpr decltype(auto) operator*() { return *iter_; }
+    constexpr decltype(auto) operator*() { return *iter(); }
 
     template <typename II = I,
               std::enable_if_t<detail::Dereferenceable<const I>, int> = 0>
     constexpr decltype(auto) operator*() const
     {
-        return *iter_;
+        return *iter();
     }
 
     template <typename II = I>
@@ -106,26 +169,26 @@ public:
         -> decltype(common_iterator::do_op_arrow(std::declval<const II&>(),
                                                  detail::priority_tag<2>{}))
     {
-        return do_op_arrow(iter_, detail::priority_tag<2>{});
+        return do_op_arrow(iter(), detail::priority_tag<2>{});
     }
 
     constexpr common_iterator& operator++()
     {
-        ++iter_;
+        ++iter();
         return *this;
     }
 
     template <typename II = I, std::enable_if_t<!ForwardIterator<II>, int> = 0>
     constexpr  decltype(auto) operator++(int)
     {
-        return iter_++;
+        return iter()++;
     }
 
     template <typename II = I, std::enable_if_t<ForwardIterator<II>, int> = 0>
     constexpr common_iterator operator++(int)
     {
         common_iterator tmp = *this;
-        ++iter_;
+        ++iter();
         return tmp;
     }
 
@@ -135,8 +198,7 @@ public:
         -> std::enable_if_t<Sentinel<S2, I> && Sentinel<S, I2> &&
                             !EqualityComparableWith<I, I2>, bool>
     {
-        return x.is_sentinel_ ? (y.is_sentinel_ || y.iter_ == x.sentinel_)
-                              : (!y.is_sentinel_ || x.iter_ == y.sentinel_);
+        return detail::visit(equality_visitor<I2, S2>{}, x.v_, access::get_variant(y));
     }
 
     template <typename I2, typename S2>
@@ -145,9 +207,7 @@ public:
         -> std::enable_if_t<Sentinel<S2, I> && Sentinel<S, I2> &&
                             EqualityComparableWith<I, I2>, bool>
     {
-        return x.is_sentinel_
-               ? (y.is_sentinel_ || y.iter_ == x.sentinel_)
-               : (y.is_sentinel_ ? x.iter_ == y.sentinel_ : x.iter_ == y.iter_);
+        return detail::visit(equality_visitor<I2, S2>{}, x.v_, access::get_variant(y));
     }
 
     template <typename I2, typename S2>
@@ -164,28 +224,26 @@ public:
         -> std::enable_if_t<SizedSentinel<I, I2> && SizedSentinel<S, I2> &&
                             SizedSentinel<S, I2>, iter_difference_t<I2>>
     {
-        return x.is_sentinel_
-               ? (y.is_sentinel_ ? 0 : x.sentinel_ - y.iter_)
-               : (y.is_sentinel_ ? x.iter_ - y.sentinel_ : x.iter_ - y.iter_);
+        return detail::visit(distance_visitor<I2, S2>{}, x.v_, access::get_variant(y));
     }
 
     friend constexpr iter_rvalue_reference_t<I> iter_move(const common_iterator& i)
     {
-        return ranges::iter_move(i.iter_);
+        return ranges::iter_move(i.iter());
     }
 
     template <typename I2, typename S2>
     friend constexpr std::enable_if_t<IndirectlySwappable<I2, I>>
     iter_swap(const common_iterator& x, const common_iterator<I2, S2>& y)
     {
-        return ranges::iter_swap(x.iter_, y.iter_);
+        return ranges::iter_swap(x.iter(), y.iter());
     }
 
-    // private:
-    // TODO: Some sort of variant-like union
-    bool is_sentinel_{};
-    I iter_{};
-    S sentinel_{};
+private:
+    constexpr I& iter() { return detail::unsafe_get<I>(v_); }
+    constexpr const I& iter() const { return detail::unsafe_get<I>(v_); }
+
+    detail::variant<I, S> v_;
 };
 
 } // namespace common_iterator_
@@ -195,6 +253,11 @@ using common_iterator_::common_iterator;
 template <typename I, typename S>
 struct readable_traits<common_iterator<I, S>> {
     using value_type = iter_value_t<I>;
+};
+
+template <typename I, typename S>
+struct incrementable_traits<common_iterator<I, S>> {
+    using difference_type = iter_difference_t<I>;
 };
 
 template <typename I, typename S>

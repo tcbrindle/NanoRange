@@ -206,6 +206,20 @@ TEST_CASE("iter.common_iterator") {
 		++ci2;
 		CHECK(ci2 != ci);
 	}
+	// Check distance:
+	{
+		int rgi[] {0, 1, 2, 3, 4, 5};
+		using CI = nano::common_iterator<
+		        nano::counted_iterator<int*>, nano::default_sentinel_t>;
+		auto start1 = CI{{rgi, 5}};
+		auto start2 = start1;
+		auto end = CI{ranges::default_sentinel};
+		CHECK(start2 - start1 == 0);
+		CHECK(end - start1 == 5);
+		++start1;
+		CHECK(start1 - start2 == 1);
+		CHECK(end - start1 == 4);
+	}
 	test_operator_arrow();
 	test_constexpr();
 }
