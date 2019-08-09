@@ -1,7 +1,11 @@
 
+# Ninja download and caching taken from Range-V3's appveyor.yml
+# https://github.com/ericniebler/range-v3/blob/master/appveyor.yml
+# (c) Range-V3 contributors
+
 image:
-- Visual Studio 2017
-- Visual Studio 2019 Preview
+  - Visual Studio 2017
+  - Visual Studio 2019 Preview
 
 # Do not build branches of the form "pr/*". By prefixing pull requests coming
 # from branches inside the repository with pr/, this avoids building both the
@@ -19,13 +23,24 @@ environment:
     - platform: x64
       generator: Visual Studio 15 2017 Win64
 
+cache:
+  - C:\ninja-1.8.2
+
 install:
-- mkdir cmake-build
-- cd cmake-build
-- cmake .. -G "%generator%"
+  - ps: |
+      if (![IO.File]::Exists("C:\ninja-1.8.2\ninja.exe")) {
+        Start-FileDownload 'https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-win.zip'
+        7z x -y ninja-win.zip -oC:\ninja-1.8.2
+      }
+      $env:PATH="C:\ninja-1.8.2;$env:PATH"
+  - for /f "tokens=1* delims=" %%i in ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath') do call "%%i\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM:x86=x64_x86%
+  - ninja --version
 
 build_script:
-- cmake --build . --target test_nanorange --config Debug
+  - mkdir cmake-build
+  - cd cmake-build
+  - cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug
+  - cmake --build . --target test_nanorange
 
 test_script:
-- ctest -C Debug
+  - ctest -j2
