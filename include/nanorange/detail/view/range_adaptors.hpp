@@ -16,12 +16,13 @@ namespace detail {
 template <typename>
 inline constexpr bool is_raco = false;
 
-template <typename R, typename C, std::enable_if_t<
-          ViewableRange<R> &&
-          !is_raco<uncvref_t<R>> &&
-          is_raco<uncvref_t<C>>, int> = 0>
+template <typename R, typename C>
 constexpr auto operator|(R&& lhs, C&& rhs)
-    -> decltype(std::forward<C>(rhs)(std::forward<R>(lhs)))
+    -> std::enable_if_t<
+        ViewableRange<R> &&
+        !is_raco<uncvref_t<R>> &&
+        is_raco<uncvref_t<C>>,
+        decltype(std::forward<C>(rhs)(std::forward<R>(lhs)))>
 {
     return std::forward<C>(rhs)(std::forward<R>(lhs));
 }
@@ -61,9 +62,11 @@ public:
 template <typename LHS, typename RHS>
 inline constexpr bool is_raco<raco_pipe<LHS, RHS>> = true;
 
-template <typename LHS, typename RHS, std::enable_if_t<
-    is_raco<uncvref_t<LHS>> && is_raco<uncvref_t<RHS>>, int> = 0>
+template <typename LHS, typename RHS>
 constexpr auto operator|(LHS&& lhs, RHS&& rhs)
+    -> std::enable_if_t<
+        is_raco<uncvref_t<LHS>> && is_raco<uncvref_t<RHS>>,
+        raco_pipe<LHS, RHS>>
 {
     return raco_pipe<LHS, RHS>{std::forward<LHS>(lhs), std::forward<RHS>(rhs)};
 }
