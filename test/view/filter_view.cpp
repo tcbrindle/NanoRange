@@ -42,8 +42,8 @@ TEST_CASE("view.filter")
 	int rgi[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 	static_assert(size(view::all(rgi))==10);
 
-	//auto rng = rgi | view::filter(is_odd());
-	auto rng = view::filter(rgi, is_odd());
+	auto rng = rgi | view::filter(is_odd());
+	//auto rng = view::filter(rgi, is_odd());
 	static_assert(Same<int &, decltype(*begin(rgi))>);
 	static_assert(Same<int &, decltype(*begin(rng))>);
 	static_assert(View<decltype(rng)>);
@@ -132,12 +132,12 @@ TEST_CASE("view.filter")
 
     {
         auto yes = [](int) { return true; };
-        //(void) (view::iota(0) | view::filter(yes));
+        (void) (view::iota(0) | view::filter(yes));
     }
 
     {
         auto yes = [](int) { return true; };
-        //auto const rng = view::iota(0) | view::filter(yes);
-        //view::all(rng);
+        auto const rng = view::iota(0) | view::filter(yes);
+        view::all(rng);
     }
 }

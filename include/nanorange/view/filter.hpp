@@ -228,6 +228,15 @@ using filter_view_::filter_view;
 namespace detail {
 
 struct filter_fn {
+    template <typename Pred>
+    constexpr auto operator()(Pred pred) const
+    {
+        return detail::rao_proxy{[p = std::move(pred)] (auto&& r) mutable
+            -> decltype(filter_view{std::forward<decltype(r)>(r), std::declval<Pred&&>()})
+        {
+            return filter_view{std::forward<decltype(r)>(r), std::move(p)};
+        }};
+    }
 
     template <typename R, typename Pred>
     constexpr auto operator()(R&& r, Pred pred) const

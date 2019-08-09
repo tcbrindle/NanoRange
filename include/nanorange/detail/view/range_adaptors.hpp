@@ -68,6 +68,14 @@ constexpr auto operator|(LHS&& lhs, RHS&& rhs)
     return raco_pipe<LHS, RHS>{std::forward<LHS>(lhs), std::forward<RHS>(rhs)};
 }
 
+template <typename Lambda>
+struct rao_proxy : Lambda {
+    constexpr explicit rao_proxy(Lambda&& l) : Lambda(std::move(l)) {}
+};
+
+template <typename L>
+inline constexpr bool is_raco<rao_proxy<L>> = true;
+
 } // namespace detail
 
 NANO_END_NAMESPACE
