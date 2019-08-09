@@ -154,7 +154,7 @@ before_script:
 
 script:
   - cmake --build . --target test_nanorange -- -j2
-  - ctest
+  - ctest -j2
 
 after_success:
   - |
