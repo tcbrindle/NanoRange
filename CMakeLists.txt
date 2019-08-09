@@ -152,6 +152,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/common.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/counted.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/empty.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/filter.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/interface.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/iota.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/istream.hpp

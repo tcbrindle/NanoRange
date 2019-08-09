@@ -9,7 +9,6 @@ exe{test-nanorange}: cxx{**\
     -iterator/iterator          \
     -view/drop_view             \
     -view/drop_while_view       \
-    -view/filter_view           \
     -view/indirect_view         \
     -view/join_view             \
     -view/move_view             \

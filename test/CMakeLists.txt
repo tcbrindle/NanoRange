@@ -170,7 +170,7 @@ add_executable(test_nanorange
     #view/drop_view.cpp
     #view/drop_while_view.cpp
     view/empty_view.cpp
-    #view/filter_view.cpp
+    view/filter_view.cpp
     #view/indirect_view.cpp
     view/iota.cpp
     view/istream_view.cpp

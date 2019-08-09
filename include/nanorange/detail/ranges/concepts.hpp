@@ -304,9 +304,22 @@ using safe_iterator_t = std::enable_if_t<Range<R>,
 
 // Helper concepts
 
-// TODO: Add SimpleView and HasArrow
-
 namespace detail {
+
+template <typename R>
+NANO_CONCEPT SimpleView = View<R> && Range<const R> &&
+    Same<iterator_t<R>, iterator_t<const R>> &&
+    Same<sentinel_t<R>, sentinel_t<const R>>;
+
+struct HasArrow_req {
+    template <typename I>
+    auto requires_(I i) -> decltype(i.operator->());
+};
+
+template <typename I>
+NANO_CONCEPT HasArrow = InputIterator<I> &&
+    (std::is_pointer_v<I> || requires_<HasArrow_req, I>);
+
 
 template <typename T, typename U>
 NANO_CONCEPT NotSameAs = !Same<remove_cvref_t<T>, remove_cvref_t<U>>;

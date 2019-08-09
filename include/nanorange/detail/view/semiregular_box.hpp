@@ -37,12 +37,18 @@ public:
               std::enable_if_t<!DefaultConstructible<U>, int> = 0>
     constexpr semiregular_box() {}
 
-    // All other constructors get forwarded to optional
+    // All other constructors get forwarded to optional -- but don't hijack
+    // copy/move construct
     template <typename Arg0, typename... Args,
-              std::enable_if_t<Constructible<std::optional<T>, Arg0, Args...>, int> = 0>
+              std::enable_if_t<
+                  Constructible<std::optional<T>, Arg0, Args...> &&
+                  !Same<uncvref_t<Arg0>, semiregular_box>, int> = 0>
     constexpr semiregular_box(Arg0&& arg0, Args&&... args)
         : std::optional<T>{std::forward<Arg0>(arg0), std::forward<Args>(args)...}
     {}
+
+    constexpr semiregular_box(const semiregular_box&) = default;
+    constexpr semiregular_box(semiregular_box&&) = default;
 
     semiregular_box& operator=(const semiregular_box& other)
     {

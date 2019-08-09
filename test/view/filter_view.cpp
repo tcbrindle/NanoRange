@@ -9,19 +9,16 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <stl2/view/filter.hpp>
-#include <stl2/view/iota.hpp>
-#include <stl2/view/ref.hpp>
-#include <stl2/view/take_exactly.hpp>
-#include <stl2/detail/algorithm/count.hpp>
-#include <stl2/detail/algorithm/transform.hpp>
-#include <stl2/detail/iterator/insert_iterators.hpp>
+#include <nanorange/view/filter.hpp>
+#include <nanorange/view/iota.hpp>
+#include <nanorange/view/ref.hpp>
 #include <memory>
 #include <list>
-#include <vector>
-#include "../simple_test.hpp"
 
-namespace ranges = __stl2;
+#include "../catch.hpp"
+#include "../test_utils.hpp"
+
+namespace ranges = nano::ranges;
 
 namespace {
 	struct is_odd {
@@ -35,15 +32,18 @@ namespace {
 			return (i % 2) == 0;
 		}
 	};
+
 }
 
-int main() {
+TEST_CASE("view.filter")
+{
 	using namespace ranges;
 
 	int rgi[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 	static_assert(size(view::all(rgi))==10);
 
-	auto rng = rgi | view::filter(is_odd());
+	//auto rng = rgi | view::filter(is_odd());
+	auto rng = view::filter(rgi, is_odd());
 	static_assert(Same<int &, decltype(*begin(rgi))>);
 	static_assert(Same<int &, decltype(*begin(rng))>);
 	static_assert(View<decltype(rng)>);
@@ -52,7 +52,7 @@ int main() {
 	static_assert(!SizedRange<decltype(rng)>);
 	static_assert(BidirectionalRange<decltype(rng)>);
 	static_assert(!RandomAccessRange<decltype(rng)>);
-	CHECK_EQUAL(rng, {1,3,5,7,9});
+	::check_equal(rng, {1,3,5,7,9});
 
 	//CHECK_EQUAL(rng | view::reverse, {9,7,5,3,1});
 	//auto tmp = rng | view::reverse;
@@ -84,7 +84,7 @@ int main() {
 	auto b2 = b;
 	b = b2;
 	auto mutable_rng = view::filter(rgi, [flag](int) mutable { return flag = !flag;});
-	CHECK_EQUAL(mutable_rng, {1,3,5,7,9});
+	::check_equal(mutable_rng, {1,3,5,7,9});
 	static_assert(Range<decltype(mutable_rng)>);
 	static_assert(Copyable<decltype(mutable_rng)>);
 	static_assert(!View<decltype(mutable_rng) const>);
@@ -130,5 +130,14 @@ int main() {
 		CHECK(sum == 4);
 	}
 
-	return test_result();
+    {
+        auto yes = [](int) { return true; };
+        //(void) (view::iota(0) | view::filter(yes));
+    }
+
+    {
+        auto yes = [](int) { return true; };
+        //auto const rng = view::iota(0) | view::filter(yes);
+        //view::all(rng);
+    }
 }
