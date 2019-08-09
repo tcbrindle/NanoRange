@@ -148,8 +148,6 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/memory/uninitialized_move.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/memory/uninitialized_value_construct.hpp
 
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/ranges/istream_range.hpp
-
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/all.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/common.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/counted.hpp
