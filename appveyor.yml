@@ -1,7 +1,6 @@
 
 image:
 - Visual Studio 2017
-- Visual Studio 2019
 - Visual Studio 2019 Preview
 
 # Do not build branches of the form "pr/*". By prefixing pull requests coming
