@@ -64,8 +64,6 @@ TEST_CASE("view.iota")
                       {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
     }
 
-// FIXME: This doesn't work in versions of MSVC older than 16.2
-#if !defined(_MSC_VER) || _MSC_VER >= 1922
     {
         // Testing iota_view with something that isn't integral
         std::vector vec{1, 2, 3, 4, 5};
@@ -77,5 +75,4 @@ TEST_CASE("view.iota")
 
         ::check_equal(vec, {0, 0, 0, 4, 5});
     }
-#endif
 }

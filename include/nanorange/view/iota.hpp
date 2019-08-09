@@ -163,62 +163,72 @@ private:
             return W(value_ + n);
         }
 
+        template <typename WW = W>
         friend constexpr auto operator==(const iterator& x, const iterator& y)
-            -> std::enable_if_t<EqualityComparable<W>, bool>
+            -> std::enable_if_t<EqualityComparable<WW>, bool>
         {
             return x.value_ == y.value_;
         }
 
+        template <typename WW = W>
         friend constexpr auto operator!=(const iterator& x, const iterator& y)
-            -> std::enable_if_t<EqualityComparable<W>, bool>
+            -> std::enable_if_t<EqualityComparable<WW>, bool>
         {
             return !(x == y);
         }
 
+        template <typename WW = W>
         friend constexpr auto operator<(const iterator& x, const iterator& y)
-            -> std::enable_if_t<StrictTotallyOrdered<W>, bool>
+            -> std::enable_if_t<StrictTotallyOrdered<WW>, bool>
         {
             return x.value_ < y.value_;
         }
 
+        template <typename WW = W>
         friend constexpr auto operator>(const iterator& x, const iterator& y)
-            -> std::enable_if_t<StrictTotallyOrdered<W>, bool>
+            -> std::enable_if_t<StrictTotallyOrdered<WW>, bool>
         {
             return y < x;
         }
 
+        template <typename WW = W>
         friend constexpr auto operator<=(const iterator& x, const iterator& y)
-            -> std::enable_if_t<StrictTotallyOrdered<W>, bool>
+            -> std::enable_if_t<StrictTotallyOrdered<WW>, bool>
         {
             return !(y < x);
         }
 
+        template <typename WW = W>
         friend constexpr auto operator>=(const iterator& x, const iterator& y)
-            -> std::enable_if_t<StrictTotallyOrdered<W>, bool>
+            -> std::enable_if_t<StrictTotallyOrdered<WW>, bool>
         {
             return !(x < y);
         }
 
+        template <typename WW = W>
         friend constexpr auto operator+(iterator i, difference_type n)
-            -> std::enable_if_t<detail::Advanceable<W>, iterator>
+            -> std::enable_if_t<detail::Advanceable<WW>, iterator>
         {
             return i += n;
         }
 
+        template <typename WW = W>
         friend constexpr auto operator+(difference_type n, iterator i)
-            -> std::enable_if_t<detail::Advanceable<W>, iterator>
+            -> std::enable_if_t<detail::Advanceable<WW>, iterator>
         {
             return i + n;
         }
 
+        template <typename WW = W>
         friend constexpr auto operator-(iterator i, difference_type n)
-            -> std::enable_if_t<detail::Advanceable<W>, iterator>
+            -> std::enable_if_t<detail::Advanceable<WW>, iterator>
         {
             return i -= n;
         }
 
+        template <typename WW = W>
         friend constexpr auto operator-(const iterator& x, const iterator& y)
-            -> std::enable_if_t<detail::Advanceable<W>, difference_type>
+            -> std::enable_if_t<detail::Advanceable<WW>, difference_type>
         {
             using D = difference_type;
             if constexpr (Integral<D>) {
@@ -263,14 +273,16 @@ private:
             return !(i == s);
         }
 
+        template <typename WW = W>
         friend constexpr auto operator-(const iterator& i, const sentinel& s)
-            -> std::enable_if_t<SizedSentinel<Bound, W>, iter_difference_t<W>>
+            -> std::enable_if_t<SizedSentinel<Bound, WW>, iter_difference_t<WW>>
         {
             return i.value_ - s.bound_;
         }
 
+        template <typename WW = W>
         friend constexpr auto operator-(const sentinel& s, const iterator& i)
-            -> std::enable_if_t<SizedSentinel<Bound, W>, iter_difference_t<W>>
+            -> std::enable_if_t<SizedSentinel<Bound, WW>, iter_difference_t<WW>>
         {
             return -(i - s);
         }
@@ -314,7 +326,7 @@ public:
     template <typename WW = W, typename BB = Bound, std::enable_if_t<
               (Same<WW, BB> && detail::Advanceable<W>) ||
               (Integral<WW> && Integral<BB>) ||
-              SizedSentinel<Bound, W>, int> = 0>
+              SizedSentinel<BB, WW>, int> = 0>
     constexpr auto size() const
     {
         constexpr auto make_unsigned_like = [](auto i) {
