@@ -26,7 +26,7 @@ TEST_CASE("alg.basic.merge")
         std::istream_iterator<int> first2{oss2};
         auto result = nano::back_inserter(out);
 
-        nano::merge(first1, last, first2, last, result, nano::greater<>{});
+        nano::merge(first1, last, first2, last, result, nano::greater{});
 
         CHECK(out == std::vector<int>{10, 9, 8, 7, 6, 5, 4, 3, 2, 1});
     }
@@ -40,7 +40,7 @@ TEST_CASE("alg.basic.merge")
             std::istream_iterator<int>{});
         auto result = nano::back_inserter(out);
 
-        nano::merge(rng1, rng2, result, nano::greater<>{});
+        nano::merge(rng1, rng2, result, nano::greater{});
 
         CHECK(out == std::vector<int>{10, 9, 8, 7, 6, 5, 4, 3, 2, 1});
     }
@@ -58,11 +58,11 @@ TEST_CASE("alg.basic.inplace_merge")
     const auto it = nano::next(list.begin(), 5);
 
     SECTION("with iterators") {
-        nano::inplace_merge(list.begin(), it, list.end(), nano::greater<>{});
+        nano::inplace_merge(list.begin(), it, list.end(), nano::greater{});
     }
 
     SECTION("with range") {
-        nano::inplace_merge(list, it, nano::greater<>{});
+        nano::inplace_merge(list, it, nano::greater{});
     }
 
     REQUIRE(list == std::list<int>{10, 9, 8, 7, 6, 5, 4, 3, 2, 1});
@@ -91,7 +91,7 @@ TEST_CASE("alg.basic.set_difference")
         auto rng2 = nano::subrange(
             std::istream_iterator<int>{iss2},
             std::istream_iterator<int>{});
-        nano::set_difference(rng1, rng2, nano::back_inserter(vec), nano::greater<>{});
+        nano::set_difference(rng1, rng2, nano::back_inserter(vec), nano::greater{});
     }
 
     REQUIRE(vec == std::vector<int>{5, 1});
@@ -120,7 +120,7 @@ TEST_CASE("alg.basic.set_intersection")
         auto rng2 = nano::subrange(
             std::istream_iterator<int>{iss2},
             std::istream_iterator<int>{});
-        nano::set_intersection(rng1, rng2, nano::back_inserter(vec), nano::greater<>{});
+        nano::set_intersection(rng1, rng2, nano::back_inserter(vec), nano::greater{});
     }
 
     REQUIRE(vec == std::vector<int>{4, 3, 2});
@@ -149,7 +149,7 @@ TEST_CASE("alg.basic.set_symmetric_difference")
         auto rng2 = nano::subrange(
             std::istream_iterator<int>{iss2},
             std::istream_iterator<int>{});
-        nano::set_symmetric_difference(rng1, rng2, nano::back_inserter(vec), nano::greater<>{});
+        nano::set_symmetric_difference(rng1, rng2, nano::back_inserter(vec), nano::greater{});
     }
 
     REQUIRE(vec == std::vector<int>{6, 5, 1, 0});
@@ -178,7 +178,7 @@ TEST_CASE("alg.basic.set_union")
         auto rng2 = nano::subrange(
             std::istream_iterator<int>{iss2},
             std::istream_iterator<int>{});
-        nano::set_union(rng1, rng2, nano::back_inserter(vec), nano::greater<>{});
+        nano::set_union(rng1, rng2, nano::back_inserter(vec), nano::greater{});
     }
 
     REQUIRE(vec == std::vector<int>{10, 9, 8, 7, 6, 5, 4, 3, 2, 1});
@@ -215,7 +215,7 @@ TEST_CASE("alg.basic.includes")
         auto rng3 = nano::subrange(
             std::istream_iterator<int>{iss3},
             std::istream_iterator<int>{});
-        REQUIRE(nano::includes(rng1, rng2, nano::greater<>{}));
-        REQUIRE_FALSE(nano::includes(rng1, rng3, nano::greater<>{}));
+        REQUIRE(nano::includes(rng1, rng2, nano::greater{}));
+        REQUIRE_FALSE(nano::includes(rng1, rng3, nano::greater{}));
     }
 }

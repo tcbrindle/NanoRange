@@ -45,32 +45,6 @@ struct less_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
 };
 
 template <typename, typename = void>
-struct greater_helper;
-
-template <>
-struct greater_helper<void> {
-    template <typename T, typename U>
-    constexpr auto operator()(T&& t, U&& u) const
-        noexcept(noexcept(less_helper<>{}(std::forward<T>(t),
-                                          std::forward<U>(u))))
-            -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
-    {
-        return less_helper<>{}(std::forward<U>(u), std::forward<T>(t));
-    }
-
-    using is_transparent = std::true_type;
-};
-
-template <typename T>
-struct greater_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
-    constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(less_helper<>{}(u, t)))
-    {
-        return less_helper<>{}(u, t);
-    }
-};
-
-template <typename, typename = void>
 struct less_equal_helper;
 
 template <>
@@ -157,8 +131,15 @@ struct less {
     using is_transparent = std::true_type;
 };
 
-template <typename T = void>
-struct greater : detail::greater_helper<T> {
+struct greater {
+    template <typename T, typename U>
+    constexpr auto operator()(T&& t, U&& u) const
+        -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
+    {
+        return ranges::less{}(std::forward<U>(u), std::forward<T>(t));
+    }
+
+    using is_transparent = std::true_type;
 };
 
 template <typename T = void>
