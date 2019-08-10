@@ -176,8 +176,15 @@ struct greater_equal_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
 
 } // namespace detail
 
-template <typename T = void>
-struct equal_to : detail::equal_to_helper<T> {
+struct equal_to {
+    template <typename T, typename U>
+    constexpr auto operator()(T&& t, U&& u) const
+        -> std::enable_if_t<EqualityComparableWith<T, U>, bool>
+    {
+        return std::equal_to<>{}(std::forward<T>(t), std::forward<U>(u));
+    }
+
+    using is_transparent = std::true_type;
 };
 
 template <typename T = void>

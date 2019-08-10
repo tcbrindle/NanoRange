@@ -112,7 +112,7 @@ private:
 public:
     // Four-legged
     template <typename I1, typename S1, typename I2, typename S2,
-              typename Pred = equal_to<>, typename Proj1 = identity,
+              typename Pred = ranges::equal_to, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr
         std::enable_if_t<ForwardIterator<I1> && Sentinel<S1, I1> &&
@@ -138,7 +138,7 @@ public:
 
     // Three-legged
     template <typename I1, typename S1, typename I2,
-        typename Pred = equal_to<>, typename Proj1 = identity,
+        typename Pred = ranges::equal_to, typename Proj1 = identity,
         typename Proj2 = identity>
     NANO_DEPRECATED
     constexpr
@@ -156,7 +156,7 @@ public:
     }
 
     // Two ranges
-    template <typename Rng1, typename Rng2, typename Pred = equal_to<>,
+    template <typename Rng1, typename Rng2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
         ForwardRange<Rng1> && ForwardRange<Rng2> &&
@@ -182,7 +182,7 @@ public:
     }
 
     // Range and a half
-    template <typename Rng1, typename I2, typename Pred = equal_to<>,
+    template <typename Rng1, typename I2, typename Pred = ranges::equal_to,
         typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED
     constexpr std::enable_if_t<

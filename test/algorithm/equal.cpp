@@ -43,7 +43,7 @@ void test()
 				sentinel<const int*>(ia + s)));
 	using ra_t = random_access_iterator<const int*>;
 	static_assert(InputIterator<ra_t>, "");
-	static_assert(IndirectlyComparable<ra_t, ra_t, equal_to<>>, "");
+	static_assert(IndirectlyComparable<ra_t, ra_t, equal_to>, "");
 	CHECK(equal(random_access_iterator<const int*>(ia),
 				random_access_iterator<const int*>(ia + s),
 				random_access_iterator<const int*>(ia),

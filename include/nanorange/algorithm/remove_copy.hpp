@@ -40,7 +40,7 @@ public:
     constexpr std::enable_if_t<
         InputIterator<I> && Sentinel<S, I> && WeaklyIncrementable<O> &&
             IndirectlyCopyable<I, O> &&
-            IndirectRelation<equal_to<>, projected<I, Proj>, const T*>,
+            IndirectRelation<ranges::equal_to, projected<I, Proj>, const T*>,
         remove_copy_result<I, O>>
     operator()(I first, S last, O result, const T& value,
                Proj proj = Proj{}) const
@@ -53,7 +53,7 @@ public:
     constexpr std::enable_if_t<
         InputRange<Rng> && WeaklyIncrementable<O> &&
             IndirectlyCopyable<iterator_t<Rng>, O> &&
-            IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>,
+            IndirectRelation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T*>,
         remove_copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, const T& value, Proj proj = Proj{}) const

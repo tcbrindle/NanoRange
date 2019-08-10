@@ -240,7 +240,7 @@ TEST_CASE("alg.search")
 	{
 		S const in[] = {{0}, {1}, {2}, {3}, {4}, {5}};
 		T const pat[] = {{2}, {3}};
-		S const *p = stl2::search(in, pat, stl2::equal_to<>{}, &S::i, &T::i).begin();
+		S const *p = stl2::search(in, pat, stl2::equal_to{}, &S::i, &T::i).begin();
 		CHECK(p == in+2);
 	}
 

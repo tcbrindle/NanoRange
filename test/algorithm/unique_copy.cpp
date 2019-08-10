@@ -288,7 +288,7 @@ TEST_CASE("alg.unique_copy")
 	{
 		S const ia[] = {{1,1},{2,2},{3,3},{3,4},{4,5},{5,6},{5,7},{5,8},{6,9},{7,10}};
 		S ib[stl2::size(ia)];
-		stl2::unique_copy_result<S const *, S *> r = stl2::unique_copy(ia, ib, stl2::equal_to<>(), &S::i);
+		stl2::unique_copy_result<S const *, S *> r = stl2::unique_copy(ia, ib, stl2::equal_to(), &S::i);
 		CHECK(r.in == stl2::end(ia));
 		CHECK(r.out == ib + 7);
 		check_equal(stl2::subrange(ib, ib+7), {S{1,1},S{2,2},S{3,3},S{4,5},S{5,6},S{6,9},S{7,10}});

@@ -37,7 +37,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename R = equal_to<>,
+    template <typename I, typename S, typename R = ranges::equal_to,
               typename Proj = identity>
     constexpr std::enable_if_t<
         ForwardIterator<I> &&
@@ -50,7 +50,7 @@ public:
                                comp, proj);
     }
 
-    template <typename Rng, typename R = equal_to<>, typename Proj = identity>
+    template <typename Rng, typename R = ranges::equal_to, typename Proj = identity>
     constexpr std::enable_if_t<
             ForwardRange<Rng> &&
             IndirectRelation<R, projected<iterator_t<Rng>, Proj>> &&

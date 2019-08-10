@@ -34,7 +34,7 @@ NANO_CONCEPT IndirectlySwappable = Readable<I1>&& Readable<I2>&&
 
 // [range.commonalgoreq.indirectlycomparable]
 
-template <typename I1, typename I2, typename R = equal_to<>,
+template <typename I1, typename I2, typename R = ranges::equal_to,
           typename P1 = identity, typename P2 = identity>
 NANO_CONCEPT IndirectlyComparable =
     IndirectRelation<R, projected<I1, P1>, projected<I2, P2>>;
