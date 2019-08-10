@@ -214,43 +214,43 @@ test_proj()
 	int g[] = {0, 1, 2, 3, 4, 5};
 	int h[] = {0, 1, 2, 3, 4, 5, 6};
 	CHECK(find_end(Iter1(ia), Sent1(ia + sa), Iter2(b), Sent2(b + 1),
-				   equal_to<>(), &S::i_).begin() == Iter1(ia + sa - 1));
+				   equal_to(), &S::i_).begin() == Iter1(ia + sa - 1));
 	CHECK(find_end(Iter1(ia), Sent1(ia + sa), Iter2(c), Sent2(c + 2),
-				   equal_to<>(), &S::i_).begin() == Iter1(ia + 18));
+				   equal_to(), &S::i_).begin() == Iter1(ia + 18));
 	CHECK(find_end(Iter1(ia), Sent1(ia + sa), Iter2(d), Sent2(d + 3),
-				   equal_to<>(), &S::i_).begin() == Iter1(ia + 15));
+				   equal_to(), &S::i_).begin() == Iter1(ia + 15));
 	CHECK(find_end(Iter1(ia), Sent1(ia + sa), Iter2(e), Sent2(e + 4),
-				   equal_to<>(), &S::i_).begin() == Iter1(ia + 11));
+				   equal_to(), &S::i_).begin() == Iter1(ia + 11));
 	CHECK(find_end(Iter1(ia), Sent1(ia + sa), Iter2(f), Sent2(f + 5),
-				   equal_to<>(), &S::i_).begin() == Iter1(ia + 6));
+				   equal_to(), &S::i_).begin() == Iter1(ia + 6));
 	CHECK(find_end(Iter1(ia), Sent1(ia + sa), Iter2(g), Sent2(g + 6),
-				   equal_to<>(), &S::i_).begin() == Iter1(ia));
+				   equal_to(), &S::i_).begin() == Iter1(ia));
 	CHECK(find_end(Iter1(ia), Sent1(ia + sa), Iter2(h), Sent2(h + 7),
-				   equal_to<>(), &S::i_).begin() == Iter1(ia + sa));
-	CHECK(find_end(Iter1(ia), Sent1(ia + sa), Iter2(b), Sent2(b), equal_to<>(),
+				   equal_to(), &S::i_).begin() == Iter1(ia + sa));
+	CHECK(find_end(Iter1(ia), Sent1(ia + sa), Iter2(b), Sent2(b), equal_to(),
 				   &S::i_).begin() == Iter1(ia + sa));
-	CHECK(find_end(Iter1(ia), Sent1(ia), Iter2(b), Sent2(b + 1), equal_to<>(),
+	CHECK(find_end(Iter1(ia), Sent1(ia), Iter2(b), Sent2(b + 1), equal_to(),
 				   &S::i_).begin() == Iter1(ia));
 
 	auto ir = subrange(Iter1(ia), Sent1(ia + sa));
-	CHECK(find_end(ir, subrange(Iter2(b), Sent2(b + 1)), equal_to<>(), &S::i_).begin()
+	CHECK(find_end(ir, subrange(Iter2(b), Sent2(b + 1)), equal_to(), &S::i_).begin()
 				  == Iter1(ia + sa - 1));
-	CHECK(find_end(ir, subrange(Iter2(c), Sent2(c + 2)), equal_to<>(), &S::i_).begin()
+	CHECK(find_end(ir, subrange(Iter2(c), Sent2(c + 2)), equal_to(), &S::i_).begin()
 				  == Iter1(ia + 18));
-	CHECK(find_end(ir, subrange(Iter2(d), Sent2(d + 3)), equal_to<>(), &S::i_).begin()
+	CHECK(find_end(ir, subrange(Iter2(d), Sent2(d + 3)), equal_to(), &S::i_).begin()
 				  == Iter1(ia + 15));
-	CHECK(find_end(ir, subrange(Iter2(e), Sent2(e + 4)), equal_to<>(), &S::i_).begin()
+	CHECK(find_end(ir, subrange(Iter2(e), Sent2(e + 4)), equal_to(), &S::i_).begin()
 				  == Iter1(ia + 11));
-	CHECK(find_end(ir, subrange(Iter2(f), Sent2(f + 5)), equal_to<>(), &S::i_).begin()
+	CHECK(find_end(ir, subrange(Iter2(f), Sent2(f + 5)), equal_to(), &S::i_).begin()
 				  == Iter1(ia + 6));
-	CHECK(find_end(ir, subrange(Iter2(g), Sent2(g + 6)), equal_to<>(), &S::i_).begin()
+	CHECK(find_end(ir, subrange(Iter2(g), Sent2(g + 6)), equal_to(), &S::i_).begin()
 				  == Iter1(ia));
-	CHECK(find_end(ir, subrange(Iter2(h), Sent2(h + 7)), equal_to<>(), &S::i_).begin()
+	CHECK(find_end(ir, subrange(Iter2(h), Sent2(h + 7)), equal_to(), &S::i_).begin()
 				  == Iter1(ia + sa));
-	CHECK(find_end(ir, subrange(Iter2(b), Sent2(b)), equal_to<>(), &S::i_).begin()
+	CHECK(find_end(ir, subrange(Iter2(b), Sent2(b)), equal_to(), &S::i_).begin()
 				  == Iter1(ia + sa));
 	auto er = subrange(Iter1(ia), Sent1(ia));
-	CHECK(find_end(er, subrange(Iter2(b), Sent2(b + 1)), equal_to<>(), &S::i_).begin()
+	CHECK(find_end(er, subrange(Iter2(b), Sent2(b + 1)), equal_to(), &S::i_).begin()
 				  == Iter1(ia));
 }
 

@@ -55,7 +55,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename T, typename Pred = equal_to<>,
+    template <typename I, typename S, typename T, typename Pred = ranges::equal_to,
         typename Proj = identity>
     constexpr auto operator()(I first, S last, iter_difference_t<I> count,
                               const T& value, Pred pred = Pred{},
@@ -68,7 +68,7 @@ public:
                                  value, pred, proj);
     }
 
-    template <typename Rng, typename T, typename Pred = equal_to<>,
+    template <typename Rng, typename T, typename Pred = ranges::equal_to,
         typename Proj = identity>
     constexpr auto
     operator()(Rng&& rng, iter_difference_t<iterator_t<Rng>> count,

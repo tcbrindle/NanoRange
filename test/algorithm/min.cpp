@@ -104,9 +104,9 @@ void test_ilist()
 {
 	auto ilist = {5, 4, 3, 2, 1};
 	CHECK(stl2::min(ilist) == 1);
-	CHECK(stl2::min(ilist, stl2::greater<>{}) == 5);
+	CHECK(stl2::min(ilist, stl2::greater{}) == 5);
 	CHECK(stl2::min({1, 2, 3, 4, 5}) == 1);
-	CHECK(stl2::min({1, 2, 3, 4, 5}, stl2::greater<int>{}) == 5);
+	CHECK(stl2::min({1, 2, 3, 4, 5}, std::greater<int>{}) == 5);
 }
 
 struct S

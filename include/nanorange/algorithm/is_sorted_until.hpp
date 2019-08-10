@@ -39,7 +39,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename Comp = less<>,
+    template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
     constexpr std::enable_if_t<
         ForwardIterator<I> &&
@@ -51,7 +51,7 @@ public:
                                         comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         ForwardRange<Rng> &&
         IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,

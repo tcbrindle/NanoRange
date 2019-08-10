@@ -180,7 +180,7 @@ TEST_CASE("alg.search_n")
 	{
 		S const in[] = {{0}, {1}, {2}, {2}, {4}, {5}};
 
-		S const *p = stl2::search_n(in, 2, 2, stl2::equal_to<int>{}, &S::i).begin();
+		S const *p = stl2::search_n(in, 2, 2, std::equal_to<int>{}, &S::i).begin();
 		CHECK(p == in+2);
 	}
 

@@ -157,7 +157,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename Comp = less<>, typename Proj = identity>
+    template <typename I, typename S, typename Comp = ranges::less, typename Proj = identity>
     std::enable_if_t<
         RandomAccessIterator<I> &&
         Sentinel<S, I> &&
@@ -169,7 +169,7 @@ public:
         return ilast;
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     std::enable_if_t<
         RandomAccessRange<Rng> &&
         Sortable<iterator_t<Rng>, Comp, Proj>,

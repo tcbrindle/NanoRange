@@ -21,8 +21,8 @@ constexpr bool test_sort()
         for (int i = 0; i < sz; i++) {
             arr[(size_t)i] = i;
         }
-        nano::sort(arr, nano::greater<>{});
-        return nano::is_sorted(arr, nano::greater<>{});
+        nano::sort(arr, nano::greater{});
+        return nano::is_sorted(arr, nano::greater{});
     }
 }
 static_assert(test_sort(), "");

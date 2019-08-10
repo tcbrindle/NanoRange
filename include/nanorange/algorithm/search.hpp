@@ -48,7 +48,7 @@ private:
 
 public:
     template <typename I1, typename S1, typename I2, typename S2,
-              typename Pred = equal_to<>, typename Proj1 = identity,
+              typename Pred = ranges::equal_to, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr std::enable_if_t<
          ForwardIterator<I1> &&
@@ -65,9 +65,8 @@ public:
                                pred, proj1, proj2);
     }
 
-    template <typename Rng1, typename Rng2,
-              typename Pred = equal_to<>, typename Proj1 = identity,
-              typename Proj2 = identity>
+    template <typename Rng1, typename Rng2, typename Pred = ranges::equal_to,
+              typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
             ForwardRange<Rng1> &&
             ForwardRange<Rng2> &&

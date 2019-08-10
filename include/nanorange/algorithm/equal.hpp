@@ -53,7 +53,7 @@ private:
 public:
     // Four-legged, sized sentinels
     template <typename I1, typename S1, typename I2, typename S2,
-              typename Pred = equal_to<>, typename Proj1 = identity,
+              typename Pred = ranges::equal_to, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
@@ -77,7 +77,7 @@ public:
 
     // Four-legged, unsized sentinels
     template <typename I1, typename S1, typename I2, typename S2,
-              typename Pred = equal_to<>, typename Proj1 = identity,
+              typename Pred = ranges::equal_to, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
@@ -94,7 +94,7 @@ public:
     }
 
     // Three legged
-    template <typename I1, typename S1, typename I2, typename Pred = equal_to<>,
+    template <typename I1, typename S1, typename I2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED constexpr std::enable_if_t<
         InputIterator<I1> && Sentinel<S1, I1> && InputIterator<std::decay_t<I2>> &&
@@ -109,7 +109,7 @@ public:
     }
 
     // Two ranges, both sized
-    template <typename Rng1, typename Rng2, typename Pred = equal_to<>,
+    template <typename Rng1, typename Rng2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputRange<Rng1> && InputRange<Rng2> &&
@@ -129,7 +129,7 @@ public:
     }
 
     // Two ranges, not both sized
-    template <typename Rng1, typename Rng2, typename Pred = equal_to<>,
+    template <typename Rng1, typename Rng2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputRange<Rng1> && InputRange<Rng2> &&
@@ -146,7 +146,7 @@ public:
     }
 
     // Range and a half
-    template <typename Rng1, typename I2, typename Pred = equal_to<>,
+    template <typename Rng1, typename I2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED constexpr std::enable_if_t<
         InputRange<Rng1> && InputIterator<std::decay_t<I2>> &&

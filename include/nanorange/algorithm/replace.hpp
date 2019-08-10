@@ -34,7 +34,7 @@ public:
               typename Proj = identity>
     constexpr std::enable_if_t<
         InputIterator<I> && Sentinel<S, I> && Writable<I, const T2&> &&
-            IndirectRelation<equal_to<>, projected<I, Proj>, const T1*>,
+            IndirectRelation<ranges::equal_to, projected<I, Proj>, const T1*>,
         I>
     operator()(I first, S last, const T1& old_value, const T2& new_value,
                Proj proj = Proj{}) const
@@ -46,7 +46,7 @@ public:
     template <typename Rng, typename T1, typename T2, typename Proj = identity>
     constexpr std::enable_if_t<
         InputRange<Rng> && Writable<iterator_t<Rng>, const T2&> &&
-            IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>,
+            IndirectRelation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T1*>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, const T1& old_value, const T2& new_value,

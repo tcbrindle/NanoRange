@@ -125,11 +125,11 @@ TEST_CASE("alg.basic.partial_sort (with comparator)")
     std::vector<int> vec{1, 2, 3, 4, 5};
 
     SECTION("with iterators") {
-        rng::partial_sort(vec.begin(), vec.begin() + 3, vec.end(), rng::greater<>{});
+        rng::partial_sort(vec.begin(), vec.begin() + 3, vec.end(), rng::greater{});
     }
 
     SECTION("with range") {
-        rng::partial_sort(vec, vec.begin() + 3, rng::greater<>{});
+        rng::partial_sort(vec, vec.begin() + 3, rng::greater{});
     }
 
     REQUIRE(vec[0] == 5);
@@ -169,14 +169,14 @@ TEST_CASE("alg.basic.partial_sort_copy (with comparator)")
         rng::partial_sort_copy(std::istream_iterator<int>{iss},
                                std::istream_iterator<int>{},
                                vec.begin(), vec.end(),
-                               rng::greater<>{});
+                               rng::greater{});
     }
 
     SECTION("with ranges") {
         auto in_rng = nano::subrange(
             std::istream_iterator<int>{iss},
             std::istream_iterator<int>{});
-        rng::partial_sort_copy(in_rng, vec, rng::greater<>{});
+        rng::partial_sort_copy(in_rng, vec, rng::greater{});
     }
 
     REQUIRE(vec[0] == 5);
@@ -246,11 +246,11 @@ TEST_CASE("alg.basic.stable_sort (with comparator)")
     const std::vector<int_pair> check = vec;
 
     SECTION("with iterators") {
-        rng::stable_sort(vec.begin(), vec.end(), rng::greater<>{});
+        rng::stable_sort(vec.begin(), vec.end(), rng::greater{});
     }
 
     SECTION("with range") {
-        rng::stable_sort(vec, rng::greater<>{});
+        rng::stable_sort(vec, rng::greater{});
     }
 
     REQUIRE(vec == check);
@@ -276,11 +276,11 @@ TEST_CASE("alg.basic.nth_element (with comparator)")
     std::vector<int> vec{1, 2, 3, 4, 5};
 
     SECTION("with iterators") {
-        rng::nth_element(vec.begin(), vec.begin() + 1, vec.end(), rng::greater<>{});
+        rng::nth_element(vec.begin(), vec.begin() + 1, vec.end(), rng::greater{});
     }
 
     SECTION("with range") {
-        rng::nth_element(vec, vec.begin() + 1, rng::greater<>{});
+        rng::nth_element(vec, vec.begin() + 1, rng::greater{});
     }
 
     REQUIRE(vec[1] == 4);

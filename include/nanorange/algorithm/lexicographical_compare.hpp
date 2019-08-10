@@ -37,7 +37,7 @@ private:
 
 public:
     template <typename I1, typename S1, typename I2, typename S2,
-              typename Comp = less<>, typename Proj1 = identity,
+              typename Comp = ranges::less, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputIterator<I1> &&
@@ -55,7 +55,7 @@ public:
                 comp, proj1, proj2);
     }
 
-    template <typename Rng1, typename Rng2, typename Comp = less<>,
+    template <typename Rng1, typename Rng2, typename Comp = ranges::less,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputRange<Rng1> &&

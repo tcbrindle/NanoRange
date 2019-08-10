@@ -55,7 +55,7 @@ private:
         IndirectlyCopyableStorable<I, O>, std::true_type>;
 
 public:
-    template <typename I, typename S, typename O, typename Comp = equal_to<>,
+    template <typename I, typename S, typename O, typename Comp = ranges::equal_to,
               typename Proj = identity>
     constexpr auto operator()(I first, S last, O result,
                               Comp comp = Comp{}, Proj proj = Proj{}) const
@@ -72,7 +72,7 @@ public:
                                     std::move(result), comp, proj);
     }
 
-    template <typename Rng, typename O, typename Comp = equal_to<>,
+    template <typename Rng, typename O, typename Comp = ranges::equal_to,
               typename Proj = identity>
     constexpr auto
     operator()(Rng&& rng, O result, Comp comp = Comp{}, Proj proj = Proj{}) const
