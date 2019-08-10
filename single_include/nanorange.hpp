@@ -1032,18 +1032,10 @@ NANO_BEGIN_NAMESPACE
 
 // [range.comparisons]
 
-namespace detail {
-
-template <typename = void, typename = void>
-struct equal_to_helper;
-
-template <>
-struct equal_to_helper<void> {
+struct equal_to {
     template <typename T, typename U>
     constexpr auto operator()(T&& t, U&& u) const
-        noexcept(noexcept(std::equal_to<>{}(std::forward<T>(t),
-                                            std::forward<U>(u))))
-            -> std::enable_if_t<EqualityComparableWith<T, U>, bool>
+        -> std::enable_if_t<EqualityComparableWith<T, U>, bool>
     {
         return std::equal_to<>{}(std::forward<T>(t), std::forward<U>(u));
     }
@@ -1051,50 +1043,21 @@ struct equal_to_helper<void> {
     using is_transparent = std::true_type;
 };
 
-template <typename T>
-struct equal_to_helper<T, std::enable_if_t<EqualityComparable<T>>> {
-    constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(equal_to_helper<>{}(t, u)))
-    {
-        return equal_to_helper<>{}(t, u);
-    }
-};
-
-template <typename, typename = void>
-struct not_equal_to_helper;
-
-template <>
-struct not_equal_to_helper<void> {
+struct not_equal_to {
     template <typename T, typename U>
     constexpr auto operator()(T&& t, U&& u) const
-        noexcept(noexcept(!equal_to_helper<>{}(std::forward<T>(t),
-                                               std::forward<U>(u))))
-            -> std::enable_if_t<EqualityComparableWith<T, U>, bool>
+        -> std::enable_if_t<EqualityComparableWith<T, U>, bool>
     {
-        return !equal_to_helper<>{}(std::forward<T>(t), std::forward<U>(u));
+        return !ranges::equal_to{}(std::forward<T>(t), std::forward<U>(u));
     }
 
     using is_transparent = std::true_type;
 };
 
-template <typename T>
-struct not_equal_to_helper<T, std::enable_if_t<EqualityComparable<T>>> {
-    constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(!equal_to_helper<>{}(t, u)))
-    {
-        return !equal_to_helper<>{}(t, u);
-    }
-};
-
-template <typename = void, typename = void>
-struct less_helper;
-
-template <>
-struct less_helper<void> {
+struct less {
     template <typename T, typename U>
     constexpr auto operator()(T&& t, U&& u) const
-        noexcept(noexcept(std::less<>{}(std::forward<T>(t), std::forward<U>(u))))
-            -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
+        -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
     {
         return std::less<>{}(std::forward<T>(t), std::forward<U>(u));
     }
@@ -1102,117 +1065,37 @@ struct less_helper<void> {
     using is_transparent = std::true_type;
 };
 
-template <typename T>
-struct less_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
-    constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(less_helper<>{}(t, u)))
-    {
-        return less_helper<>{}(t, u);
-    }
-};
-
-template <typename, typename = void>
-struct greater_helper;
-
-template <>
-struct greater_helper<void> {
+struct greater {
     template <typename T, typename U>
     constexpr auto operator()(T&& t, U&& u) const
-        noexcept(noexcept(less_helper<>{}(std::forward<T>(t),
-                                          std::forward<U>(u))))
-            -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
+        -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
     {
-        return less_helper<>{}(std::forward<U>(u), std::forward<T>(t));
+        return ranges::less{}(std::forward<U>(u), std::forward<T>(t));
     }
 
     using is_transparent = std::true_type;
 };
 
-template <typename T>
-struct greater_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
-    constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(less_helper<>{}(u, t)))
-    {
-        return less_helper<>{}(u, t);
-    }
-};
-
-template <typename, typename = void>
-struct less_equal_helper;
-
-template <>
-struct less_equal_helper<void> {
+struct greater_equal {
     template <typename T, typename U>
     constexpr auto operator()(T&& t, U&& u) const
-        noexcept(noexcept(!less_helper<>{}(std::forward<U>(u),
-                                           std::forward<T>(t))))
-            -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
+    -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
     {
-        return !less_helper<>{}(std::forward<U>(u), std::forward<T>(t));
+        return !ranges::less{}(std::forward<T>(t), std::forward<U>(u));
     }
 
     using is_transparent = std::true_type;
 };
 
-template <typename T>
-struct less_equal_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
-    constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(!less_helper<>{}(u, t)))
-    {
-        return !less_helper<>{}(u, t);
-    }
-};
-
-template <typename, typename = void>
-struct greater_equal_helper;
-
-template <>
-struct greater_equal_helper<void> {
+struct less_equal {
     template <typename T, typename U>
     constexpr auto operator()(T&& t, U&& u) const
-        noexcept(noexcept(less_helper<>{}(std::forward<T>(t),
-                                          std::forward<U>(u))))
-            -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
+        -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
     {
-        return !less_helper<>{}(std::forward<T>(t), std::forward<U>(u));
+        return !ranges::less{}(std::forward<U>(u), std::forward<T>(t));
     }
 
     using is_transparent = std::true_type;
-};
-
-template <typename T>
-struct greater_equal_helper<T, std::enable_if_t<StrictTotallyOrdered<T>>> {
-    constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(!less_helper<>{}(t, u)))
-    {
-        return !less_helper<>{}(t, u);
-    }
-};
-
-} // namespace detail
-
-template <typename T = void>
-struct equal_to : detail::equal_to_helper<T> {
-};
-
-template <typename T = void>
-struct not_equal_to : detail::not_equal_to_helper<T> {
-};
-
-template <typename T = void>
-struct less : detail::less_helper<T> {
-};
-
-template <typename T = void>
-struct greater : detail::greater_helper<T> {
-};
-
-template <typename T = void>
-struct greater_equal : detail::greater_equal_helper<T> {
-};
-
-template <typename T = void>
-struct less_equal : detail::less_equal_helper<T> {
 };
 
 NANO_END_NAMESPACE
@@ -2583,7 +2466,7 @@ NANO_CONCEPT IndirectlySwappable = Readable<I1>&& Readable<I2>&&
 
 // [range.commonalgoreq.indirectlycomparable]
 
-template <typename I1, typename I2, typename R = equal_to<>,
+template <typename I1, typename I2, typename R = ranges::equal_to,
           typename P1 = identity, typename P2 = identity>
 NANO_CONCEPT IndirectlyComparable =
     IndirectRelation<R, projected<I1, P1>, projected<I2, P2>>;
@@ -2596,7 +2479,7 @@ NANO_CONCEPT Permutable = ForwardIterator<I>&& IndirectlyMovableStorable<I, I>&&
 
 // [range.commonalgoreq.mergeable]
 
-template <typename I1, typename I2, typename Out, typename R = less<>,
+template <typename I1, typename I2, typename Out, typename R = ranges::less,
           typename P1 = identity, typename P2 = identity>
 NANO_CONCEPT Mergeable =
     InputIterator<I1>&& InputIterator<I2>&& WeaklyIncrementable<Out>&&
@@ -2605,7 +2488,7 @@ NANO_CONCEPT Mergeable =
 
 // [range.commonalgoreq.sortable]
 
-template <typename I, typename R = std::less<>, typename P = identity>
+template <typename I, typename R = ranges::less, typename P = identity>
 NANO_CONCEPT Sortable =
     Permutable<I>&& IndirectStrictWeakOrder<R, projected<I, P>>;
 
@@ -4133,7 +4016,7 @@ private:
 
 public:
     template <typename I, typename S, typename Proj = identity,
-              typename Pred = equal_to<>>
+              typename Pred = ranges::equal_to>
     constexpr std::enable_if_t<ForwardIterator<I> && Sentinel<S, I> &&
                                    IndirectRelation<Pred, projected<I, Proj>>,
                                I>
@@ -4144,7 +4027,7 @@ public:
     }
 
     template <typename Rng, typename Proj = identity,
-              typename Pred = equal_to<>>
+              typename Pred = ranges::equal_to>
     constexpr std::enable_if_t<
         ForwardRange<Rng> &&
             IndirectRelation<Pred, projected<iterator_t<Rng>, Proj>>,
@@ -4460,7 +4343,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename T, typename Comp = less<>,
+    template <typename I, typename S, typename T, typename Comp = ranges::less,
               typename Proj = identity>
     std::enable_if_t<
         ForwardIterator<I> &&
@@ -4474,7 +4357,7 @@ public:
                                     value, comp, proj);
     }
 
-    template <typename Rng, typename T, typename Comp = less<>,
+    template <typename Rng, typename T, typename Comp = ranges::less,
               typename Proj = identity>
     std::enable_if_t<
         ForwardRange<Rng> &&
@@ -4512,7 +4395,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename T, typename Comp = less<>,
+    template <typename I, typename S, typename T, typename Comp = ranges::less,
               typename Proj = identity>
     std::enable_if_t<
        ForwardIterator<I> &&
@@ -4526,7 +4409,7 @@ public:
                                       value, comp, proj);
     }
 
-    template <typename Rng, typename T, typename Comp = less<>,
+    template <typename Rng, typename T, typename Comp = ranges::less,
               typename Proj = identity>
     std::enable_if_t<
         ForwardRange<Rng> &&
@@ -4832,7 +4715,7 @@ struct count_fn {
     template <typename I, typename S, typename T, typename Proj = identity>
     constexpr std::enable_if_t<
         InputIterator<I> && Sentinel<S, I> &&
-            IndirectRelation<equal_to<>, projected<I, Proj>, const T*>,
+            IndirectRelation<ranges::equal_to, projected<I, Proj>, const T*>,
         iter_difference_t<I>>
     operator()(I first, S last, const T& value, Proj proj = Proj{}) const
     {
@@ -4844,7 +4727,7 @@ struct count_fn {
     template <typename Rng, typename T, typename Proj = identity>
     constexpr std::enable_if_t<
         InputRange<Rng> &&
-            IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>,
+            IndirectRelation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T*>,
         iter_difference_t<iterator_t<Rng>>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
@@ -4918,7 +4801,7 @@ private:
 public:
     // Four-legged, sized sentinels
     template <typename I1, typename S1, typename I2, typename S2,
-              typename Pred = equal_to<>, typename Proj1 = identity,
+              typename Pred = ranges::equal_to, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
@@ -4942,7 +4825,7 @@ public:
 
     // Four-legged, unsized sentinels
     template <typename I1, typename S1, typename I2, typename S2,
-              typename Pred = equal_to<>, typename Proj1 = identity,
+              typename Pred = ranges::equal_to, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
@@ -4959,7 +4842,7 @@ public:
     }
 
     // Three legged
-    template <typename I1, typename S1, typename I2, typename Pred = equal_to<>,
+    template <typename I1, typename S1, typename I2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED constexpr std::enable_if_t<
         InputIterator<I1> && Sentinel<S1, I1> && InputIterator<std::decay_t<I2>> &&
@@ -4974,7 +4857,7 @@ public:
     }
 
     // Two ranges, both sized
-    template <typename Rng1, typename Rng2, typename Pred = equal_to<>,
+    template <typename Rng1, typename Rng2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputRange<Rng1> && InputRange<Rng2> &&
@@ -4994,7 +4877,7 @@ public:
     }
 
     // Two ranges, not both sized
-    template <typename Rng1, typename Rng2, typename Pred = equal_to<>,
+    template <typename Rng1, typename Rng2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputRange<Rng1> && InputRange<Rng2> &&
@@ -5011,7 +4894,7 @@ public:
     }
 
     // Range and a half
-    template <typename Rng1, typename I2, typename Pred = equal_to<>,
+    template <typename Rng1, typename I2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED constexpr std::enable_if_t<
         InputRange<Rng1> && InputIterator<std::decay_t<I2>> &&
@@ -5085,7 +4968,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename T, typename Comp = less<>,
+    template <typename I, typename S, typename T, typename Comp = ranges::less,
               typename Proj = identity>
     std::enable_if_t<
         ForwardIterator<I> &&
@@ -5099,7 +4982,7 @@ public:
                                     value, comp, proj);
     }
 
-    template <typename Rng, typename T, typename Comp = less<>,
+    template <typename Rng, typename T, typename Comp = ranges::less,
               typename Proj = identity>
     std::enable_if_t<
         ForwardRange<Rng> &&
@@ -5870,7 +5753,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename T, typename Comp = less<>,
+    template <typename I, typename S, typename T, typename Comp = ranges::less,
               typename Proj = identity>
     std::enable_if_t<
         ForwardIterator<I> &&
@@ -5884,7 +5767,7 @@ public:
                                     value, comp, proj);
     }
 
-    template <typename Rng, typename T, typename Comp = less<>,
+    template <typename Rng, typename T, typename Comp = ranges::less,
               typename Proj = identity>
     std::enable_if_t<
         ForwardRange<Rng> &&
@@ -6058,7 +5941,7 @@ struct find_fn {
     template <typename I, typename S, typename T, typename Proj = identity>
     constexpr std::enable_if_t<
         InputIterator<I> && Sentinel<S, I> &&
-            IndirectRelation<equal_to<>, projected<I, Proj>, const T*>,
+            IndirectRelation<ranges::equal_to, projected<I, Proj>, const T*>,
         I>
     operator()(I first, S last, const T& value, Proj proj = Proj{}) const
     {
@@ -6069,7 +5952,7 @@ struct find_fn {
     template <typename Rng, typename T, typename Proj = identity>
     constexpr std::enable_if_t<
         InputRange<Rng> &&
-            IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>,
+            IndirectRelation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T*>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
@@ -6191,7 +6074,7 @@ private:
 
 public:
     template <typename I1, typename S1, typename I2, typename S2,
-              typename Pred = equal_to<>, typename Proj1 = identity,
+              typename Pred = ranges::equal_to, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr std::enable_if_t<
          ForwardIterator<I1> &&
@@ -6208,9 +6091,8 @@ public:
                                pred, proj1, proj2);
     }
 
-    template <typename Rng1, typename Rng2,
-              typename Pred = equal_to<>, typename Proj1 = identity,
-              typename Proj2 = identity>
+    template <typename Rng1, typename Rng2, typename Pred = ranges::equal_to,
+              typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
             ForwardRange<Rng1> &&
             ForwardRange<Rng2> &&
@@ -6270,7 +6152,7 @@ private:
 
 public:
     template <typename I1, typename S1, typename I2, typename S2,
-            typename Pred = equal_to<>, typename Proj1 = identity,
+            typename Pred = ranges::equal_to, typename Proj1 = identity,
             typename Proj2 = identity>
     constexpr std::enable_if_t<
         ForwardIterator<I1> &&
@@ -6287,7 +6169,7 @@ public:
                                  pred, proj1, proj2);
     }
 
-    template <typename Rng1, typename Rng2, typename Pred = equal_to<>,
+    template <typename Rng1, typename Rng2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
             ForwardRange<Rng1> &&
@@ -6351,7 +6233,7 @@ private:
 public:
     template <typename I1, typename S1, typename I2, typename S2,
               typename Proj1 = identity, typename Proj2 = identity,
-              typename Pred = equal_to<>>
+              typename Pred = ranges::equal_to>
     constexpr std::enable_if_t<
         InputIterator<I1> && Sentinel<S1, I1> && ForwardIterator<I2> &&
             Sentinel<S2, I2> &&
@@ -6366,7 +6248,7 @@ public:
     }
 
     template <typename Rng1, typename Rng2, typename Proj1 = identity,
-              typename Proj2 = identity, typename Pred = equal_to<>>
+              typename Proj2 = identity, typename Pred = ranges::equal_to>
     constexpr std::enable_if_t<
         InputRange<Rng1> && ForwardRange<Rng2> &&
             IndirectRelation<Pred, projected<iterator_t<Rng1>, Proj1>,
@@ -6603,7 +6485,7 @@ private:
 
 public:
     template <typename I1, typename S1, typename I2, typename S2,
-              typename Comp = less<>, typename Proj1 = identity, typename Proj2 = identity>
+              typename Comp = ranges::less, typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputIterator<I1> &&
         Sentinel<S1, I1> &&
@@ -6619,7 +6501,7 @@ public:
                                  comp, proj1, proj2);
     }
 
-    template <typename Rng1, typename Rng2, typename Comp = less<>,
+    template <typename Rng1, typename Rng2, typename Comp = ranges::less,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputRange<Rng1> &&
@@ -6918,7 +6800,7 @@ private:
 
 public:
     template <typename I1, typename S1, typename I2, typename S2, typename O,
-              typename Comp = less<>, typename Proj1 = identity,
+              typename Comp = ranges::less, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputIterator<I1> &&
@@ -6937,7 +6819,7 @@ public:
                               proj1, proj2);
     }
 
-    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>,
+    template <typename Rng1, typename Rng2, typename O, typename Comp = ranges::less,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputRange<Rng1> &&
@@ -7002,7 +6884,7 @@ private:
     }
 
 public:
-    template <typename T, typename Comp = less<>, typename Proj = identity>
+    template <typename T, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         IndirectStrictWeakOrder<Comp, projected<const T*, Proj>>,
         const T&>
@@ -7012,7 +6894,7 @@ public:
                             nano::invoke(proj, a)) ? b : a;
     }
 
-    template <typename T, typename Comp = less<>, typename Proj = identity>
+    template <typename T, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         Copyable<T> &&
         IndirectStrictWeakOrder<Comp, projected<const T*, Proj>>,
@@ -7023,7 +6905,7 @@ public:
         return min_fn::impl(rng, comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         InputRange<Rng> &&
         Copyable<iter_value_t<iterator_t<Rng>>> &&
@@ -7257,7 +7139,7 @@ private:
 public:
     // three legged
     template <typename I1, typename S1, typename I2, typename Proj1 = identity,
-              typename Proj2 = identity, typename Pred = equal_to<>>
+              typename Proj2 = identity, typename Pred = ranges::equal_to>
     NANO_DEPRECATED constexpr std::enable_if_t<
         InputIterator<I1> && Sentinel<S1, I1> && InputIterator<std::decay_t<I2>> &&
         !InputRange<I1> &&
@@ -7273,7 +7155,7 @@ public:
 
     // range and a half
     template <typename Rng1, typename I2, typename Proj1 = identity,
-              typename Proj2 = identity, typename Pred = equal_to<>>
+              typename Proj2 = identity, typename Pred = ranges::equal_to>
     NANO_DEPRECATED constexpr std::enable_if_t<
         InputRange<Rng1> && InputIterator<std::decay_t<I2>> &&
                 !InputRange<I2> &&
@@ -7291,7 +7173,7 @@ public:
     // four legged
     template <typename I1, typename S1, typename I2, typename S2,
               typename Proj1 = identity, typename Proj2 = identity,
-              typename Pred = equal_to<>>
+              typename Pred = ranges::equal_to>
     constexpr std::enable_if_t<
         InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
             Sentinel<S2, I2> &&
@@ -7307,7 +7189,7 @@ public:
 
     // two ranges
     template <typename Rng1, typename Rng2, typename Proj1 = identity,
-              typename Proj2 = identity, typename Pred = equal_to<>>
+              typename Proj2 = identity, typename Pred = ranges::equal_to>
     constexpr std::enable_if_t<
         InputRange<Rng1> && InputRange<Rng2> &&
             IndirectRelation<Pred, projected<iterator_t<Rng1>, Proj1>,
@@ -8767,7 +8649,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename Comp = less<>, typename Proj = identity>
+    template <typename I, typename S, typename Comp = ranges::less, typename Proj = identity>
     std::enable_if_t<
         BidirectionalIterator<I> &&
         Sentinel<S, I> &&
@@ -8778,7 +8660,7 @@ public:
                                       std::move(last), comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     std::enable_if_t<
         BidirectionalRange<Rng> &&
         Sortable<iterator_t<Rng>, Comp, Proj>,
@@ -8865,7 +8747,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename Comp = less<>,
+    template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
     constexpr std::enable_if_t<
         RandomAccessIterator<I> && Sentinel<S, I> &&
@@ -8877,7 +8759,7 @@ public:
         return is_heap_until_fn::impl(std::move(first), n, comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         RandomAccessRange<Rng> &&
             IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
@@ -8903,7 +8785,7 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct is_heap_fn {
-    template <typename I, typename S, typename Comp = less<>,
+    template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
     std::enable_if_t<RandomAccessIterator<I> && Sentinel<S, I> &&
                          IndirectStrictWeakOrder<Comp, projected<I, Proj>>,
@@ -8914,7 +8796,7 @@ struct is_heap_fn {
         return is_heap_until_fn::impl(std::move(first), n, comp, proj) == last;
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     std::enable_if_t<
         RandomAccessRange<Rng> &&
             IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
@@ -9104,7 +8986,7 @@ private:
 public:
     // Four-legged
     template <typename I1, typename S1, typename I2, typename S2,
-              typename Pred = equal_to<>, typename Proj1 = identity,
+              typename Pred = ranges::equal_to, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr
         std::enable_if_t<ForwardIterator<I1> && Sentinel<S1, I1> &&
@@ -9130,7 +9012,7 @@ public:
 
     // Three-legged
     template <typename I1, typename S1, typename I2,
-        typename Pred = equal_to<>, typename Proj1 = identity,
+        typename Pred = ranges::equal_to, typename Proj1 = identity,
         typename Proj2 = identity>
     NANO_DEPRECATED
     constexpr
@@ -9148,7 +9030,7 @@ public:
     }
 
     // Two ranges
-    template <typename Rng1, typename Rng2, typename Pred = equal_to<>,
+    template <typename Rng1, typename Rng2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
         ForwardRange<Rng1> && ForwardRange<Rng2> &&
@@ -9174,7 +9056,7 @@ public:
     }
 
     // Range and a half
-    template <typename Rng1, typename I2, typename Pred = equal_to<>,
+    template <typename Rng1, typename I2, typename Pred = ranges::equal_to,
         typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED
     constexpr std::enable_if_t<
@@ -9248,7 +9130,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename Comp = less<>,
+    template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
     constexpr std::enable_if_t<
         ForwardIterator<I> &&
@@ -9260,7 +9142,7 @@ public:
                                         comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         ForwardRange<Rng> &&
         IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
@@ -9286,7 +9168,7 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct is_sorted_fn {
-    template <typename I, typename S, typename Comp = less<>,
+    template <typename I, typename S, typename Comp = ranges::less,
             typename Proj = identity>
     constexpr std::enable_if_t<
         ForwardIterator<I> &&
@@ -9298,7 +9180,7 @@ struct is_sorted_fn {
                                         comp, proj) == last;
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         ForwardRange<Rng> &&
         IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
@@ -9358,7 +9240,7 @@ private:
 
 public:
     template <typename I1, typename S1, typename I2, typename S2,
-              typename Comp = less<>, typename Proj1 = identity,
+              typename Comp = ranges::less, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputIterator<I1> &&
@@ -9376,7 +9258,7 @@ public:
                 comp, proj1, proj2);
     }
 
-    template <typename Rng1, typename Rng2, typename Comp = less<>,
+    template <typename Rng1, typename Rng2, typename Comp = ranges::less,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputRange<Rng1> &&
@@ -9572,7 +9454,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename Comp = less<>,
+    template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
     constexpr std::enable_if_t<
         RandomAccessIterator<I> && Sentinel<S, I> && Sortable<I, Comp, Proj>, I>
@@ -9582,7 +9464,7 @@ public:
         return make_heap_fn::impl(std::move(first), n, comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<RandomAccessRange<Rng> &&
                                    Sortable<iterator_t<Rng>, Comp>,
                                safe_iterator_t<Rng>>
@@ -9640,7 +9522,7 @@ private:
     }
 
 public:
-    template <typename T, typename Comp = less<>, typename Proj = identity>
+    template <typename T, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
             IndirectStrictWeakOrder<Comp, projected<const T*, Proj>>,
     const T&>
@@ -9651,7 +9533,7 @@ public:
                             nano::invoke(proj, b)) ? a : b;
     }
 
-    template <typename T, typename Comp = less<>, typename Proj = identity>
+    template <typename T, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
             Copyable<T> &&
             IndirectStrictWeakOrder<Comp, projected<const T*, Proj>>,
@@ -9662,7 +9544,7 @@ public:
         return max_fn::impl(rng, comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
             InputRange<Rng> &&
             Copyable<iter_value_t<iterator_t<Rng>>> &&
@@ -9718,7 +9600,7 @@ struct max_element_fn {
     }
 
 public:
-    template <typename I, typename S, typename Comp = less<>,
+    template <typename I, typename S, typename Comp = ranges::less,
             typename Proj = identity>
     constexpr std::enable_if_t<
             ForwardIterator<I> &&
@@ -9730,7 +9612,7 @@ public:
                                     comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
             ForwardRange<Rng> &&
             IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
@@ -9791,7 +9673,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename Comp = less<>,
+    template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
     constexpr std::enable_if_t<
         ForwardIterator<I> &&
@@ -9803,7 +9685,7 @@ public:
                                     comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         ForwardRange<Rng> &&
         IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
@@ -9917,7 +9799,7 @@ private:
     }
 
 public:
-    template <typename T, typename Comp = less<>, typename Proj = identity>
+    template <typename T, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
             IndirectStrictWeakOrder<Comp, projected<const T*, Proj>>,
         minmax_result<const T&>>
@@ -9930,7 +9812,7 @@ public:
         }
     }
 
-    template <typename T, typename Comp = less<>, typename Proj = identity>
+    template <typename T, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
             Copyable<T> &&
             IndirectStrictWeakOrder<Comp, projected<const T*, Proj>>,
@@ -9941,7 +9823,7 @@ public:
         return minmax_fn::impl(rng, comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         InputRange<Rng> &&
         Copyable<iter_value_t<iterator_t<Rng>>> &&
@@ -10042,7 +9924,7 @@ private:
 
 
 public:
-    template <typename I, typename S, typename Comp = less<>,
+    template <typename I, typename S, typename Comp = ranges::less,
             typename Proj = identity>
     constexpr std::enable_if_t<
         ForwardIterator<I> &&
@@ -10055,7 +9937,7 @@ public:
                                     comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         ForwardRange<Rng> &&
         IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
@@ -10209,7 +10091,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename Comp = less<>,
+    template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
     constexpr std::enable_if_t<
         BidirectionalIterator<I> &&
@@ -10221,7 +10103,7 @@ public:
                                          comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         BidirectionalRange<Rng> &&
         Sortable<iterator_t<Rng>, Comp, Proj>, bool>
@@ -10542,7 +10424,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename Comp = less<>, typename Proj = identity>
+    template <typename I, typename S, typename Comp = ranges::less, typename Proj = identity>
     std::enable_if_t<
         RandomAccessIterator<I> &&
         Sentinel<S, I> &&
@@ -10555,7 +10437,7 @@ public:
         return ilast;
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     std::enable_if_t<
         RandomAccessRange<Rng> &&
         Sortable<iterator_t<Rng>, Comp, Proj>,
@@ -10634,7 +10516,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename Comp = less<>,
+    template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
     constexpr std::enable_if_t<
         RandomAccessIterator<I> && Sentinel<S, I> && Sortable<I, Comp, Proj>, I>
@@ -10644,7 +10526,7 @@ public:
         return pop_heap_fn::impl(std::move(first), n, comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<RandomAccessRange<Rng> &&
                                    Sortable<iterator_t<Rng>, Comp, Proj>,
                                safe_iterator_t<Rng>>
@@ -10686,7 +10568,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename Comp = less<>,
+    template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
     constexpr std::enable_if_t<
         RandomAccessIterator<I> && Sentinel<S, I> && Sortable<I, Comp, Proj>, I>
@@ -10696,7 +10578,7 @@ public:
         return sort_heap_fn::impl(std::move(first), n, comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<RandomAccessRange<Rng> &&
                                    Sortable<iterator_t<Rng>, Comp, Proj>,
                                safe_iterator_t<Rng>>
@@ -10741,7 +10623,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename Comp = less<>, typename Proj = identity>
+    template <typename I, typename S, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         RandomAccessIterator<I> &&
         Sentinel<S, I> &&
@@ -10752,7 +10634,7 @@ public:
                                      std::move(last), comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         RandomAccessRange<Rng> &&
         Sortable<iterator_t<Rng>, Comp, Proj>, safe_iterator_t<Rng>>
@@ -10824,7 +10706,7 @@ private:
 
 public:
     template <typename I1, typename S1, typename I2, typename S2,
-              typename Comp = less<>, typename Proj1 = identity, typename Proj2 = identity>
+              typename Comp = ranges::less, typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputIterator<I1> &&
         Sentinel<S1, I1> &&
@@ -10842,7 +10724,7 @@ public:
                                    comp, proj1, proj2);
     }
 
-    template <typename Rng1, typename Rng2, typename Comp = less<>,
+    template <typename Rng1, typename Rng2, typename Comp = ranges::less,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputRange<Rng1> &&
@@ -11100,7 +10982,7 @@ private:
 
 
 public:
-    template <typename I, typename S, typename Comp = less<>,
+    template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
     constexpr std::enable_if_t<
         BidirectionalIterator<I> &&
@@ -11112,7 +10994,7 @@ public:
                                          comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         BidirectionalRange<Rng> &&
         Sortable<iterator_t<Rng>, Comp, Proj>, bool>
@@ -11148,7 +11030,7 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct push_heap_fn {
-    template <typename I, typename S, typename Comp = less<>,
+    template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
     constexpr std::enable_if_t<
         RandomAccessIterator<I> && Sentinel<S, I> && Sortable<I, Comp, Proj>, I>
@@ -11159,7 +11041,7 @@ struct push_heap_fn {
         return first + n;
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<RandomAccessRange<Rng> &&
                                    Sortable<iterator_t<Rng>, Comp, Proj>,
                                safe_iterator_t<Rng>>
@@ -11221,7 +11103,7 @@ public:
     template <typename I, typename S, typename T, typename Proj = identity>
     constexpr std::enable_if_t<
         ForwardIterator<I> && Sentinel<S, I> && Permutable<I> &&
-            IndirectRelation<equal_to<>, projected<I, Proj>, const T*>,
+            IndirectRelation<ranges::equal_to, projected<I, Proj>, const T*>,
         I>
     operator()(I first, S last, const T& value, Proj proj = Proj{}) const
     {
@@ -11231,7 +11113,7 @@ public:
     template <typename Rng, typename T, typename Proj = identity>
     constexpr std::enable_if_t<
         ForwardRange<Rng> && Permutable<iterator_t<Rng>> &&
-            IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>,
+            IndirectRelation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T*>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
@@ -11290,7 +11172,7 @@ public:
     constexpr std::enable_if_t<
         InputIterator<I> && Sentinel<S, I> && WeaklyIncrementable<O> &&
             IndirectlyCopyable<I, O> &&
-            IndirectRelation<equal_to<>, projected<I, Proj>, const T*>,
+            IndirectRelation<ranges::equal_to, projected<I, Proj>, const T*>,
         remove_copy_result<I, O>>
     operator()(I first, S last, O result, const T& value,
                Proj proj = Proj{}) const
@@ -11303,7 +11185,7 @@ public:
     constexpr std::enable_if_t<
         InputRange<Rng> && WeaklyIncrementable<O> &&
             IndirectlyCopyable<iterator_t<Rng>, O> &&
-            IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>,
+            IndirectRelation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T*>,
         remove_copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, const T& value, Proj proj = Proj{}) const
@@ -11496,7 +11378,7 @@ public:
               typename Proj = identity>
     constexpr std::enable_if_t<
         InputIterator<I> && Sentinel<S, I> && Writable<I, const T2&> &&
-            IndirectRelation<equal_to<>, projected<I, Proj>, const T1*>,
+            IndirectRelation<ranges::equal_to, projected<I, Proj>, const T1*>,
         I>
     operator()(I first, S last, const T1& old_value, const T2& new_value,
                Proj proj = Proj{}) const
@@ -11508,7 +11390,7 @@ public:
     template <typename Rng, typename T1, typename T2, typename Proj = identity>
     constexpr std::enable_if_t<
         InputRange<Rng> && Writable<iterator_t<Rng>, const T2&> &&
-            IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>,
+            IndirectRelation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T1*>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, const T1& old_value, const T2& new_value,
@@ -11572,7 +11454,7 @@ public:
     constexpr std::enable_if_t<
         InputIterator<I> && Sentinel<S, I> && OutputIterator<O, const T2&> &&
             IndirectlyCopyable<I, O> &&
-            IndirectRelation<equal_to<>, projected<I, Proj>, const T1*>,
+            IndirectRelation<ranges::equal_to, projected<I, Proj>, const T1*>,
         replace_copy_result<I, O>>
     operator()(I first, S last, O result, const T1& old_value,
                const T2& new_value, Proj proj = Proj{}) const
@@ -11587,7 +11469,7 @@ public:
     constexpr std::enable_if_t<
         InputRange<Rng> && OutputIterator<O, const T2&> &&
             IndirectlyCopyable<iterator_t<Rng>, O> &&
-            IndirectRelation<equal_to<>, projected<iterator_t<Rng>, Proj>,
+            IndirectRelation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T1*>,
         replace_copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, const T1& old_value, const T2& new_value,
@@ -11953,7 +11835,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename T, typename Pred = equal_to<>,
+    template <typename I, typename S, typename T, typename Pred = ranges::equal_to,
         typename Proj = identity>
     constexpr auto operator()(I first, S last, iter_difference_t<I> count,
                               const T& value, Pred pred = Pred{},
@@ -11966,7 +11848,7 @@ public:
                                  value, pred, proj);
     }
 
-    template <typename Rng, typename T, typename Pred = equal_to<>,
+    template <typename Rng, typename T, typename Pred = ranges::equal_to,
         typename Proj = identity>
     constexpr auto
     operator()(Rng&& rng, iter_difference_t<iterator_t<Rng>> count,
@@ -12053,7 +11935,7 @@ private:
 
 public:
     template <typename I1, typename S1, typename I2, typename S2, typename O,
-              typename Comp = less<>, typename Proj1 = identity,
+              typename Comp = ranges::less, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputIterator<I1> &&
@@ -12072,7 +11954,7 @@ public:
                                        proj1, proj2);
     }
 
-    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>,
+    template <typename Rng1, typename Rng2, typename O, typename Comp = ranges::less,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputRange<Rng1> &&
@@ -12141,7 +12023,7 @@ private:
 
 public:
     template <typename I1, typename S1, typename I2, typename S2, typename O,
-              typename Comp = less<>, typename Proj1 = identity,
+              typename Comp = ranges::less, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputIterator<I1> &&
@@ -12158,7 +12040,7 @@ public:
                                          std::move(result), comp, proj1, proj2);
     }
 
-    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>,
+    template <typename Rng1, typename Rng2, typename O, typename Comp = ranges::less,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputRange<Rng1> &&
@@ -12251,7 +12133,7 @@ private:
 
 public:
     template <typename I1, typename S1, typename I2, typename S2, typename O,
-              typename Comp = less<>, typename Proj1 = identity,
+              typename Comp = ranges::less, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputIterator<I1> &&
@@ -12270,7 +12152,7 @@ public:
                                                  proj1, proj2);
     }
 
-    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>,
+    template <typename Rng1, typename Rng2, typename O, typename Comp = ranges::less,
               typename Proj1 = identity, typename Proj2 = identity>
     std::enable_if_t<
         InputRange<Rng1> &&
@@ -12368,7 +12250,7 @@ private:
 
 public:
     template <typename I1, typename S1, typename I2, typename S2, typename O,
-              typename Comp = less<>, typename Proj1 = identity,
+              typename Comp = ranges::less, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputIterator<I1> &&
@@ -12387,7 +12269,7 @@ public:
                                   proj1, proj2);
     }
 
-    template <typename Rng1, typename Rng2, typename O, typename Comp = less<>,
+    template <typename Rng1, typename Rng2, typename O, typename Comp = ranges::less,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputRange<Rng1> &&
@@ -12595,10 +12477,10 @@ constexpr int pdqsort_cacheline_size = 64;
 
 template <typename>
 struct is_default_compare : std::false_type {};
-template <typename T>
-struct is_default_compare<nano::less<T>> : std::true_type {};
-template <typename T>
-struct is_default_compare<nano::greater<T>> : std::true_type {};
+template <>
+struct is_default_compare<nano::less> : std::true_type {};
+template <>
+struct is_default_compare<nano::greater> : std::true_type {};
 template <typename T>
 struct is_default_compare<std::less<T>> : std::true_type {};
 template <typename T>
@@ -13220,7 +13102,7 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct sort_fn {
-    template <typename I, typename S, typename Comp = less<>, typename Proj = identity>
+    template <typename I, typename S, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         RandomAccessIterator<I> &&
         Sentinel<S, I> &&
@@ -13232,7 +13114,7 @@ struct sort_fn {
         return last_it;
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         RandomAccessRange<Rng> &&
         Sortable<iterator_t<Rng>, Comp, Proj>,
@@ -13593,7 +13475,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename Comp = less<>, typename Proj = identity>
+    template <typename I, typename S, typename Comp = ranges::less, typename Proj = identity>
     std::enable_if_t<
         RandomAccessIterator<I> &&
         Sentinel<S, I> &&
@@ -13605,7 +13487,7 @@ public:
         return ilast;
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     std::enable_if_t<
         RandomAccessRange<Rng> &&
         Sortable<iterator_t<Rng>, Comp, Proj>,
@@ -13668,7 +13550,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename R = equal_to<>,
+    template <typename I, typename S, typename R = ranges::equal_to,
               typename Proj = identity>
     constexpr std::enable_if_t<
         ForwardIterator<I> &&
@@ -13681,7 +13563,7 @@ public:
                                comp, proj);
     }
 
-    template <typename Rng, typename R = equal_to<>, typename Proj = identity>
+    template <typename Rng, typename R = ranges::equal_to, typename Proj = identity>
     constexpr std::enable_if_t<
             ForwardRange<Rng> &&
             IndirectRelation<R, projected<iterator_t<Rng>, Proj>> &&
@@ -13759,7 +13641,7 @@ private:
         IndirectlyCopyableStorable<I, O>, std::true_type>;
 
 public:
-    template <typename I, typename S, typename O, typename Comp = equal_to<>,
+    template <typename I, typename S, typename O, typename Comp = ranges::equal_to,
               typename Proj = identity>
     constexpr auto operator()(I first, S last, O result,
                               Comp comp = Comp{}, Proj proj = Proj{}) const
@@ -13776,7 +13658,7 @@ public:
                                     std::move(result), comp, proj);
     }
 
-    template <typename Rng, typename O, typename Comp = equal_to<>,
+    template <typename Rng, typename O, typename Comp = ranges::equal_to,
               typename Proj = identity>
     constexpr auto
     operator()(Rng&& rng, O result, Comp comp = Comp{}, Proj proj = Proj{}) const
