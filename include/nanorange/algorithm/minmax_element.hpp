@@ -99,8 +99,9 @@ public:
         minmax_result<safe_iterator_t<Rng>>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
-        return minmax_element_fn::impl(nano::begin(rng), nano::end(rng),
-                                       comp, proj);
+        auto res = minmax_element_fn::impl(nano::begin(rng), nano::end(rng),
+                                           comp, proj);
+        return {std::move(res).min, std::move(res).max};
     }
 };
 

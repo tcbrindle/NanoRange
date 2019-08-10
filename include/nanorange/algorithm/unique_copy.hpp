@@ -84,8 +84,9 @@ public:
             decltype(constraint_helper<iterator_t<Rng>, O>(priority_tag<2>{}))::value,
        unique_copy_result<safe_iterator_t<Rng>, O>>
     {
-        return unique_copy_fn::impl(nano::begin(rng), nano::end(rng),
-                                    std::move(result), comp, proj);
+        auto ret = unique_copy_fn::impl(nano::begin(rng), nano::end(rng),
+                                        std::move(result), comp, proj);
+        return {std::move(ret).in, std::move(ret).out};
     }
 };
 
