@@ -124,6 +124,9 @@ inline namespace ranges                                                        \
 #define NANO_END_NAMESPACE_STD }
 #endif
 
+#if defined(_MSC_VER) && _MSC_VER < 1921
+#define NANO_MSVC_LAMBDA_PIPE_WORKAROUND 1
+#endif
 
 #endif
 
@@ -222,6 +225,14 @@ struct priority_tag : priority_tag<I - 1> {
 template <>
 struct priority_tag<0> {
 };
+
+template <typename T>
+struct type_identity {
+    using type = T;
+};
+
+template <typename T>
+using type_identity_t = typename type_identity<T>::type;
 
 } // namespace detail
 
@@ -3371,6 +3382,30 @@ template <typename R>
 using safe_iterator_t = std::enable_if_t<Range<R>,
         decltype(ranges::begin(std::declval<R>()))>;
 
+// Helper concepts
+
+namespace detail {
+
+template <typename R>
+NANO_CONCEPT SimpleView = View<R> && Range<const R> &&
+    Same<iterator_t<R>, iterator_t<const R>> &&
+    Same<sentinel_t<R>, sentinel_t<const R>>;
+
+struct HasArrow_req {
+    template <typename I>
+    auto requires_(I i) -> decltype(i.operator->());
+};
+
+template <typename I>
+NANO_CONCEPT HasArrow = InputIterator<I> &&
+    (std::is_pointer_v<I> || requires_<HasArrow_req, I>);
+
+
+template <typename T, typename U>
+NANO_CONCEPT NotSameAs = !Same<remove_cvref_t<T>, remove_cvref_t<U>>;
+
+}
+
 NANO_END_NAMESPACE
 
 #endif
@@ -4058,150 +4093,6 @@ NANO_END_NAMESPACE
 
 
 
-
-#endif
-
-// nanorange/ranges/istream_range.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_RANGES_ISTREAM_RANGE_HPP_INCLUDED
-#define NANORANGE_RANGES_ISTREAM_RANGE_HPP_INCLUDED
-
-
-// nanorange/iterator/default_sentinel.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_ITERATOR_DEFAULT_SENTINEL_HPP_INCLUDED
-#define NANORANGE_ITERATOR_DEFAULT_SENTINEL_HPP_INCLUDED
-
-
-
-NANO_BEGIN_NAMESPACE
-
-struct default_sentinel_t {};
-
-inline constexpr default_sentinel_t default_sentinel{};
-
-NANO_END_NAMESPACE
-
-#endif
-
-
-#include <iosfwd>
-
-NANO_BEGIN_NAMESPACE
-
-template <typename T, typename CharT = char, typename Traits = std::char_traits<CharT>,
-          typename Distance = std::ptrdiff_t>
-class istream_range {
-public:
-
-    class iterator {
-    public:
-        using iterator_category = ranges::input_iterator_tag;
-        using difference_type = Distance;
-        using value_type = T;
-        using reference = const T&;
-        using pointer = const T*;
-        using char_type = CharT;
-        using traits = Traits;
-
-        constexpr iterator() = default;
-
-        explicit iterator(istream_range& rng)
-            : rng_(std::addressof(rng))
-        {}
-
-        reference operator*() const { return rng_->value_; }
-
-        pointer operator->() const { return std::addressof(rng_->value_); }
-
-        iterator& operator++()
-        {
-            rng_->next();
-            return *this;
-        }
-
-        iterator operator++(int)
-        {
-            auto tmp = *this;
-            this->operator++();
-            return tmp;
-        }
-
-        friend bool operator==(const iterator& lhs, const iterator& rhs)
-        {
-            return lhs.rng_ == rhs.rng_;
-        }
-
-        friend bool operator!=(const iterator& lhs, const iterator& rhs)
-        {
-            return !(lhs == rhs);
-        }
-
-        friend bool operator==(const iterator& lhs, default_sentinel_t)
-        {
-            return lhs.done();
-        }
-
-        friend bool operator!=(const iterator& lhs, default_sentinel_t rhs)
-        {
-            return !(lhs == rhs);
-        }
-
-        friend bool operator==(default_sentinel_t, const iterator& rhs)
-        {
-            return rhs.done();
-        }
-
-        friend bool operator!=(default_sentinel_t lhs, const iterator& rhs)
-        {
-            return !(lhs == rhs);
-        }
-
-    private:
-        bool done() const
-        {
-            return rng_ == nullptr || rng_->in_stream_ == nullptr;
-        }
-
-        istream_range* rng_ = nullptr;
-    };
-
-    using sentinel = default_sentinel_t;
-    using istream_type = std::basic_istream<CharT, Traits>;
-
-    constexpr istream_range() = default;
-
-    explicit istream_range(istream_type& s)
-        : in_stream_(std::addressof(s))
-    {
-        next();
-    }
-
-    iterator begin() { return iterator{*this}; }
-
-    sentinel end() { return {}; }
-
-private:
-    void next()
-    {
-        if (!(*in_stream_ >> value_)) {
-            in_stream_ = nullptr;
-        }
-    }
-
-    istream_type* in_stream_ = nullptr;
-    T value_{};
-};
-
-NANO_END_NAMESPACE
 
 #endif
 
@@ -5492,6 +5383,7 @@ struct iterator_traits<::nano::common_iterator<I, S>> {
 #endif
 
 
+
 NANO_BEGIN_NAMESPACE
 
 // [ranges.view_interface]
@@ -5719,9 +5611,6 @@ auto IteratorSentinelPair_fn(int) -> std::enable_if_t<
 template <typename T>
 NANO_CONCEPT IteratorSentinelPair = decltype(IteratorSentinelPair_fn<T>(0))::value;
 
-template <typename T, typename U>
-NANO_CONCEPT NotSameAs = !Same<remove_cvref_t<T>, remove_cvref_t<U>>;
-
 template <typename I, typename S, bool StoreSize = false>
 struct subrange_data {
     I begin_{};
@@ -5885,10 +5774,16 @@ public:
         return *this;
     }
 
-    friend constexpr I begin(subrange&& r) { return r.begin(); }
+    // friend constexpr I begin(subrange&& r) { return r.begin(); }
 
-    friend constexpr S end(subrange&& r) { return r.end(); }
+    // friend constexpr S end(subrange&& r) { return r.end(); }
 };
+
+template <typename I, typename S, subrange_kind K>
+constexpr I begin(subrange<I, S, K>&& r) { return r.begin(); }
+
+template <typename I, typename S, subrange_kind K>
+constexpr S end(subrange<I, S, K>&& r) { return r.end(); }
 
 #ifdef _MSC_VER
 // FIXME: Extra deduction guide because MSVC can't use the (constrained) implicit one
@@ -7851,6 +7746,26 @@ NANO_END_NAMESPACE
 
 
 
+// nanorange/iterator/default_sentinel.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ITERATOR_DEFAULT_SENTINEL_HPP_INCLUDED
+#define NANORANGE_ITERATOR_DEFAULT_SENTINEL_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+struct default_sentinel_t {};
+
+inline constexpr default_sentinel_t default_sentinel{};
+
+NANO_END_NAMESPACE
+
+#endif
 
 
 NANO_BEGIN_NAMESPACE
@@ -15054,6 +14969,1622 @@ NANO_END_NAMESPACE
 #ifndef NANORANGE_UTILITY_HPP_INCLUDED
 #define NANORANGE_UTILITY_HPP_INCLUDED
 
+
+
+#endif
+
+// nanorange/range.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEW_HPP_INCLUDED
+#define NANORANGE_VIEW_HPP_INCLUDED
+
+// nanorange/view/all.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEW_ALL_HPP_INCLUDED
+#define NANORANGE_VIEW_ALL_HPP_INCLUDED
+
+// nanorange/detail/view/range_adaptors.hpp
+//
+// Copyright (c) 2019 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_DETAIL_VIEW_RANGE_ADAPTORS_HPP_INCLUDED
+#define NANORANGE_DETAIL_VIEW_RANGE_ADAPTORS_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+template <typename>
+inline constexpr bool is_raco = false;
+
+template <typename R, typename C>
+constexpr auto operator|(R&& lhs, C&& rhs)
+    -> std::enable_if_t<
+        ViewableRange<R> &&
+        !is_raco<uncvref_t<R>> &&
+        is_raco<uncvref_t<C>>,
+        decltype(std::forward<C>(rhs)(std::forward<R>(lhs)))>
+{
+    return std::forward<C>(rhs)(std::forward<R>(lhs));
+}
+
+template <typename LHS, typename RHS>
+struct raco_pipe {
+private:
+    LHS lhs_;
+    RHS rhs_;
+
+public:
+    constexpr raco_pipe(LHS&& lhs, RHS&& rhs)
+        : lhs_(std::move(lhs)),
+          rhs_(std::move(rhs))
+    {}
+
+    // FIXME: Do I need to do ref-qualified overloads of these too?
+
+    template <typename R, std::enable_if_t<
+        ViewableRange<R>, int> = 0>
+    constexpr auto operator()(R&& r)
+        -> decltype(rhs_(lhs_(std::forward<R>(r))))
+    {
+        return rhs_(lhs_(std::forward<R>(r)));
+    }
+
+
+    template <typename R, std::enable_if_t<
+              ViewableRange<R>, int> = 0>
+    constexpr auto operator()(R&& r) const
+        -> decltype(rhs_(lhs_(std::forward<R>(r))))
+    {
+        return rhs_(lhs_(std::forward<R>(r)));
+    }
+};
+
+template <typename LHS, typename RHS>
+inline constexpr bool is_raco<raco_pipe<LHS, RHS>> = true;
+
+template <typename LHS, typename RHS>
+constexpr auto operator|(LHS&& lhs, RHS&& rhs)
+    -> std::enable_if_t<
+        is_raco<uncvref_t<LHS>> && is_raco<uncvref_t<RHS>>,
+        raco_pipe<LHS, RHS>>
+{
+    return raco_pipe<LHS, RHS>{std::forward<LHS>(lhs), std::forward<RHS>(rhs)};
+}
+
+template <typename Lambda>
+struct rao_proxy : Lambda {
+    constexpr explicit rao_proxy(Lambda&& l) : Lambda(std::move(l)) {}
+};
+
+template <typename L>
+inline constexpr bool is_raco<rao_proxy<L>> = true;
+
+} // namespace detail
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/detail/view/ref.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEW_REF_HPP_INCLUDED
+#define NANORANGE_VIEW_REF_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace ref_view_ {
+
+template <typename R>
+class ref_view : public view_interface<ref_view<R>> {
+
+    static_assert(Range<R> && std::is_object<R>::value, "");
+
+    R* r_ = nullptr;
+
+    struct constructor_req {
+        static void FUN(R&);
+        static void FUN(R&&) = delete;
+
+        template <typename T>
+        auto requires_() -> decltype(FUN(std::declval<T>()));
+    };
+
+public:
+    constexpr ref_view() noexcept = default;
+
+    template <typename T,
+              std::enable_if_t<detail::NotSameAs<T, ref_view> &&
+                                   ConvertibleTo<T, R&> &&
+                                   detail::requires_<constructor_req, T>,
+                               int> = 0>
+    constexpr ref_view(T&& t)
+        : r_(std::addressof(static_cast<R&>(std::forward<T>(t))))
+    {}
+
+    constexpr R& base() const { return *r_; }
+
+    constexpr iterator_t<R> begin() const { return ranges::begin(*r_); }
+
+    constexpr sentinel_t<R> end() const { return ranges::end(*r_); }
+
+    constexpr auto empty() const
+        -> decltype(static_cast<bool>(ranges::empty(*r_)))
+    {
+        return ranges::empty(*r_);
+    }
+
+    template <typename RR = R, std::enable_if_t<SizedRange<RR>, int> = 0>
+    constexpr auto size() const
+    {
+        return ranges::size(*r_);
+    }
+
+    template <typename RR = R, std::enable_if_t<ContiguousRange<RR>, int> = 0>
+    constexpr auto data() const
+    {
+        return ranges::data(*r_);
+    }
+
+    friend constexpr iterator_t<R> begin(ref_view r) { return r.begin(); }
+
+    friend constexpr sentinel_t<R> end(ref_view r) { return r.end(); }
+};
+
+template <typename R, std::enable_if_t<Range<R> && std::is_object_v<R>, int> = 0>
+ref_view(R&) -> ref_view<R>;
+
+} // namespace ref_view_
+
+using ref_view_::ref_view;
+
+NANO_END_NAMESPACE
+
+#endif
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+// TODO: Handle piping views
+struct all_view_fn {
+private:
+    template <typename T>
+    static constexpr auto impl(T&& t, priority_tag<2>)
+        noexcept(noexcept(detail::decay_copy(std::forward<T>(t))))
+        -> std::enable_if_t<View<std::decay_t<T>>,
+                            decltype(detail::decay_copy(std::forward<T>(t)))>
+    {
+        return std::forward<T>(t);
+    }
+
+    template <typename T>
+    static constexpr auto impl(T&& t, priority_tag<1>) noexcept
+        -> decltype(ref_view(std::forward<T>(t)))
+    {
+        return ref_view(std::forward<T>(t));
+    }
+
+    template <typename T>
+    static constexpr auto impl(T&& t, priority_tag<0>)
+        noexcept(noexcept(nano::subrange{std::forward<T>(t)}))
+        -> decltype(nano::subrange{std::forward<T>(t)})
+    {
+        return nano::subrange{std::forward<T>(t)};
+    }
+
+public:
+    template <typename T>
+    constexpr auto operator()(T&& t) const
+        noexcept(noexcept(all_view_fn::impl(std::forward<T>(t), priority_tag<2>{})))
+        -> decltype(all_view_fn::impl(std::forward<T>(t), priority_tag<2>{}))
+    {
+        return all_view_fn::impl(std::forward<T>(t), priority_tag<2>{});
+    }
+};
+
+template <>
+inline constexpr bool is_raco<all_view_fn> = true;
+
+} // namespace detail
+
+namespace view {
+
+NANO_INLINE_VAR(nano::detail::all_view_fn, all)
+
+}
+
+template <typename R>
+using all_view = std::enable_if_t<ViewableRange<R>,
+                                  decltype(view::all(std::declval<R>()))>;
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/view/common.hpp
+//
+// Copyright (c) 2019 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEW_COMMON_HPP_INCLUDED
+#define NANORANGE_VIEW_COMMON_HPP_INCLUDED
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+template <typename V>
+class common_view : public view_interface<common_view<V>> {
+
+    static_assert(View<V> && !CommonRange<V>, "");
+
+    template <typename VV>
+    using random_and_sized_t =
+            std::integral_constant<bool, RandomAccessRange<VV> && SizedRange<VV>>;
+
+
+    V base_ = V();
+
+    template <typename VV>
+    static constexpr auto do_begin(VV& base, std::true_type)
+    {
+        return ranges::begin(base);
+    }
+
+    template <typename VV>
+    static constexpr auto do_begin(VV& base, std::false_type)
+    {
+        return common_iterator<iterator_t<VV>, sentinel_t<VV>>(
+                ranges::begin(base));
+    }
+
+    template <typename VV>
+    static constexpr auto do_end(VV& base, std::true_type)
+    {
+        return ranges::begin(base) + ranges::size(base);
+    }
+
+    template <typename VV>
+    static constexpr auto do_end(VV& base, std::false_type)
+    {
+        return common_iterator<iterator_t<VV>, sentinel_t<VV>>(
+                ranges::end(base));
+    }
+
+
+public:
+    common_view() = default;
+
+    constexpr explicit common_view(V r)
+        : base_(std::move(r))
+    {}
+
+    template <typename R,
+        std::enable_if_t<detail::NotSameAs<R, common_view>, int> = 0,
+        std::enable_if_t<
+                ViewableRange<R> &&
+                !CommonRange<R> &&
+                Constructible<V, all_view<R>>, int> = 0>
+    constexpr explicit common_view(R&& r)
+        : base_(view::all(std::forward<R>(r)))
+    {}
+
+    constexpr V base() const { return base_; }
+
+    template <typename VV = V, std::enable_if_t<SizedRange<VV>, int> = 0>
+    constexpr auto size() { return ranges::size(base_); }
+
+    template <typename VV = V, std::enable_if_t<SizedRange<const VV>, int> = 0>
+    constexpr auto size() const { return ranges::size(base_); }
+
+    constexpr auto begin()
+    {
+        return do_begin<V>(base_, random_and_sized_t<V>{});
+    }
+
+    template <typename VV = V, std::enable_if_t<Range<const VV>, int> = 0>
+    constexpr auto begin() const
+    {
+        return do_begin<const V>(base_, random_and_sized_t<const V>{});
+    }
+
+    constexpr auto end()
+    {
+        return do_end<V>(base_, random_and_sized_t<V>{});
+    }
+
+    template <typename VV = V, std::enable_if_t<Range<const VV>, int> = 0>
+    constexpr auto end() const
+    {
+        return do_end<const V>(base_, random_and_sized_t<const V>{});
+    }
+
+};
+
+template <typename R>
+common_view(R&&) -> common_view<all_view<R>>;
+
+namespace detail {
+
+struct common_view_fn {
+private:
+    template <typename T>
+    static constexpr auto impl(T&& t, nano::detail::priority_tag<1>)
+        noexcept(noexcept(view::all(std::forward<T>(t))))
+        -> std::enable_if_t<
+            CommonRange<T>,
+            decltype(view::all(std::forward<T>(t)))>
+    {
+        return view::all(std::forward<T>(t));
+    }
+
+    template <typename T>
+    static constexpr auto impl(T&& t, nano::detail::priority_tag<0>)
+        -> common_view<all_view<T>>
+    {
+        return common_view<all_view<T>>{std::forward<T>(t)};
+    }
+
+public:
+    template <typename T>
+    constexpr auto operator()(T&& t) const
+        -> std::enable_if_t<ViewableRange<T>,
+        decltype(common_view_fn::impl(std::forward<T>(t),
+                                    nano::detail::priority_tag<1>{}))>
+    {
+        return common_view_fn::impl(std::forward<T>(t),
+                               nano::detail::priority_tag<1>{});
+    }
+};
+
+template <>
+inline constexpr bool is_raco<common_view_fn> = true;
+
+} // namespace detail
+
+namespace view {
+
+NANO_INLINE_VAR(detail::common_view_fn, common)
+
+} // namespace view
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/view/counted.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEW_COUNTED_HPP_INCLUDED
+#define NANORANGE_VIEW_COUNTED_HPP_INCLUDED
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace view {
+
+namespace detail {
+
+struct counted_fn {
+private:
+    template <typename I>
+    static constexpr auto impl(I i, iter_difference_t<I> n, nano::detail::priority_tag<1>)
+        noexcept(noexcept(nano::subrange{i, i + n}))
+        -> std::enable_if_t<RandomAccessIterator<I>, decltype(nano::subrange{i, i + n})>
+    {
+        return nano::subrange{i, i + n};
+    }
+
+    template <typename I>
+    static constexpr auto impl(I i, iter_difference_t<I> n, nano::detail::priority_tag<0>)
+        noexcept(noexcept(nano::subrange{
+                nano::make_counted_iterator(std::move(i), n),
+                default_sentinel}))
+        -> decltype(nano::subrange{
+            nano::make_counted_iterator(std::move(i), n), default_sentinel})
+    {
+        return nano::subrange{nano::make_counted_iterator(std::move(i), n),
+                                   default_sentinel};
+    }
+
+public:
+    template <typename E, typename F, typename T = std::decay_t<E>>
+    constexpr auto operator()(E&& e, F&& f) const
+        noexcept(noexcept(impl(std::forward<E>(e),
+                               static_cast<iter_difference_t<T>>(std::forward<F>(f)),
+                               nano::detail::priority_tag<1>{})))
+        -> std::enable_if_t<
+            Iterator<T> &&
+            ConvertibleTo<F, iter_difference_t<T>>,
+            decltype(impl(std::forward<E>(e),
+                          static_cast<iter_difference_t<T>>(std::forward<F>(f)),
+                          nano::detail::priority_tag<1>{}))>
+    {
+        return impl(std::forward<E>(e),
+                    static_cast<iter_difference_t<T>>(std::forward<F>(f)),
+                    nano::detail::priority_tag<1>{});
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::counted_fn, counted)
+
+} // namespace view
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/view/empty.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEW_EMPTY_HPP_INCLUDED
+#define NANORANGE_VIEW_EMPTY_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace empty_view_ {
+
+template <typename T>
+class empty_view : view_interface<empty_view<T>> {
+    static_assert(std::is_object<T>::value, "");
+
+public:
+    static constexpr T* begin() noexcept { return nullptr; }
+    static constexpr T* end() noexcept { return nullptr; }
+    static constexpr std::ptrdiff_t size() noexcept { return 0; }
+    static constexpr T* data() noexcept { return nullptr; }
+
+    static constexpr bool empty() noexcept { return true; }
+
+    friend constexpr T* begin(empty_view) noexcept { return nullptr; }
+    friend constexpr T* end(empty_view) noexcept { return nullptr; }
+};
+
+}
+
+using empty_view_::empty_view;
+
+namespace view {
+
+template <typename T, typename = std::enable_if_t<std::is_object<T>::value>>
+inline constexpr empty_view<T> empty{};
+
+}
+
+
+NANO_END_NAMESPACE
+
+#endif
+// nanorange/view/filter.hpp
+//
+// Copyright (c) 2019 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEW_FILTER_HPP_INCLUDED
+#define NANORANGE_VIEW_FILTER_HPP_INCLUDED
+
+
+// nanorange/detail/view/semiregular_box.hpp
+//
+// Copyright (c) 2019 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_DETAIL_VIEW_SEMIREGULAR_BOX_HPP_INCLUDED
+#define NANORANGE_DETAIL_VIEW_SEMIREGULAR_BOX_HPP_INCLUDED
+
+
+
+#include <optional>
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+template <typename T>
+struct semiregular_box : std::optional<T>
+{
+    static_assert(CopyConstructible<T>);
+    static_assert(std::is_object_v<T>);
+
+private:
+    std::optional<T>& base() { return *this; }
+    std::optional<T> const& base() const { return *this; }
+
+public:
+    template <typename U = T,
+              std::enable_if_t<DefaultConstructible<U>, int> = 0>
+    constexpr semiregular_box()
+        noexcept(std::is_nothrow_default_constructible_v<T>)
+        : semiregular_box{std::in_place}
+    {}
+
+    template <typename U = T,
+              std::enable_if_t<!DefaultConstructible<U>, int> = 0>
+    constexpr semiregular_box() {}
+
+    // All other constructors get forwarded to optional -- but don't hijack
+    // copy/move construct
+    template <typename Arg0, typename... Args,
+              std::enable_if_t<
+                  Constructible<std::optional<T>, Arg0, Args...> &&
+                  !Same<uncvref_t<Arg0>, semiregular_box>, int> = 0>
+    constexpr semiregular_box(Arg0&& arg0, Args&&... args)
+        : std::optional<T>{std::forward<Arg0>(arg0), std::forward<Args>(args)...}
+    {}
+
+    constexpr semiregular_box(const semiregular_box&) = default;
+    constexpr semiregular_box(semiregular_box&&) = default;
+
+    semiregular_box& operator=(const semiregular_box& other)
+    {
+        if constexpr (Assignable<T&, const T&>) {
+            base() = other.base();
+        } else {
+            if (other) {
+                this->emplace(*other);
+            } else {
+                this->reset();
+            }
+        }
+
+        return *this;
+    }
+
+    semiregular_box& operator=(semiregular_box&& other) noexcept
+    {
+        if constexpr (Assignable<T&, T>) {
+            base() = std::move(other.base());
+        } else {
+            if (other) {
+                this->emplace(std::move(*other));
+            } else {
+                this->reset();
+            }
+        }
+
+        return *this;
+    }
+};
+
+} // namespace detail
+
+NANO_END_NAMESPACE
+
+#endif
+
+
+
+#include <cassert>
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+template <typename V>
+constexpr auto filter_view_iter_cat_helper()
+{
+    using C = iterator_category_t<iterator_t<V>>;
+    if constexpr (DerivedFrom<C, bidirectional_iterator_tag>) {
+        return bidirectional_iterator_tag{};
+    } else if constexpr (DerivedFrom<C, forward_iterator_tag>) {
+        return forward_iterator_tag{};
+    } else {
+        return input_iterator_tag{};
+    }
+}
+
+
+}
+
+namespace filter_view_ {
+
+template <typename V, typename Pred>
+struct filter_view : view_interface<filter_view<V, Pred>> {
+
+    static_assert(InputRange<V>);
+    static_assert(IndirectUnaryPredicate<Pred, iterator_t<V>>);
+    static_assert(View<V>);
+    static_assert(std::is_object_v<Pred>);
+
+private:
+    V base_ = V();
+    detail::semiregular_box<Pred> pred_;
+
+    struct iterator {
+    private:
+        iterator_t<V> current_ = iterator_t<V>();
+        filter_view* parent_ = nullptr;
+
+    public:
+        // using iterator_concept = ...
+        using iterator_category =
+            decltype(detail::filter_view_iter_cat_helper<V>());
+        using value_type = iter_value_t<iterator_t<V>>;
+        using difference_type = iter_difference_t<iterator_t<V>>;
+
+        iterator() = default;
+        constexpr iterator(filter_view& parent, iterator_t<V> current)
+            : current_(std::move(current)), parent_(std::addressof(parent))
+        {}
+
+        constexpr iterator_t<V> base() const { return current_; }
+
+        constexpr iter_reference_t<iterator_t<V>> operator*() const
+        {
+            return *current_;
+        }
+
+        template <typename VV = V>
+        constexpr auto operator->() const
+            -> std::enable_if_t<detail::HasArrow<iterator_t<VV>>, iterator_t<V>>
+        {
+            return current_;
+        }
+
+        constexpr iterator& operator++()
+        {
+            current_ = ranges::find_if(++current_,
+                                       ranges::end(parent_->base_),
+                                       std::ref(*parent_->pred_));
+            return *this;
+        }
+
+        constexpr auto operator++(int)
+        {
+            if constexpr (ForwardRange<V>) {
+                auto tmp = *this;
+                ++*this;
+                return tmp;
+            } else {
+                ++*this;
+            }
+        }
+
+        template <typename VV = V>
+        constexpr auto operator--()
+            -> std::enable_if_t<BidirectionalRange<VV>, iterator&>
+        {
+            do {
+                --current_;
+            } while (!nano::invoke(*parent_->pred_, *current_));
+            return *this;
+        }
+
+        template <typename VV = V>
+        constexpr auto operator--(int)
+            -> std::enable_if_t<BidirectionalRange<VV>, iterator>
+        {
+            auto tmp = *this;
+            --*this;
+            return tmp;
+        }
+
+        template <typename VV = V>
+        friend constexpr auto operator==(const iterator& x, const iterator& y)
+            -> std::enable_if_t<EqualityComparable<iterator_t<VV>>, bool>
+        {
+            return x.current_ == y.current_;
+        }
+
+        template <typename VV = V>
+        friend constexpr auto operator!=(const iterator& x, const iterator& y)
+            -> std::enable_if_t<EqualityComparable<iterator_t<VV>>, bool>
+        {
+            return !(x == y);
+        }
+
+        friend constexpr iter_rvalue_reference_t<iterator_t<V>>
+        iter_move(const iterator& i) noexcept(
+            noexcept(ranges::iter_move(i.current_)))
+        {
+            return ranges::iter_move(i.current_);
+        }
+
+        template <typename VV = V>
+        friend constexpr auto
+        iter_swap(const iterator& x, const iterator& y) noexcept(
+            noexcept(ranges::iter_swap(x.current_, y.current_)))
+            -> std::enable_if_t<IndirectlySwappable<iterator_t<VV>>>
+        {
+            ranges::iter_swap(x.current_, y.current_);
+        }
+    };
+
+    struct sentinel {
+    private:
+        sentinel_t<V> end_ = sentinel_t<V>();
+
+    public:
+        sentinel() = default;
+
+        constexpr explicit sentinel(filter_view& parent)
+            : end_(ranges::end(parent.base_))
+        {}
+
+        constexpr sentinel_t<V> base() const { return end_; }
+
+        friend constexpr bool operator==(const iterator& i, const sentinel& s)
+        {
+            return i.base() == s.end_;
+        }
+
+        friend constexpr bool operator==(const sentinel& s, const iterator& i)
+        {
+            return i == s;
+        }
+
+        friend constexpr bool operator!=(const iterator& i, const sentinel& s)
+        {
+            return !(i == s);
+        }
+
+        friend constexpr bool operator!=(const sentinel& s, const iterator& i)
+        {
+            return !(i == s);
+        }
+    };
+
+    std::optional<iterator> begin_cache_{};
+
+public:
+    filter_view() = default;
+
+    constexpr filter_view(V base, Pred pred)
+        : base_(std::move(base)), pred_(std::move(pred))
+    {}
+
+    template <typename R,
+              std::enable_if_t<InputRange<R> && Constructible<V, all_view<R>>,
+                               int> = 0>
+    constexpr filter_view(R&& r, Pred pred)
+        : base_(view::all(std::forward<R>(r))), pred_(std::move(pred))
+    {}
+
+    constexpr V base() const { return base_; }
+
+    constexpr iterator begin()
+    {
+        if (begin_cache_) {
+            return *begin_cache_;
+        }
+
+        assert(pred_.has_value());
+        begin_cache_ = iterator{*this, nano::find_if(base_, std::ref(*pred_))};
+        return *begin_cache_;
+    }
+
+    constexpr auto end()
+    {
+        if constexpr (CommonRange<V>) {
+            return iterator{*this, ranges::end(base_)};
+        } else {
+            return sentinel{*this};
+        }
+    }
+};
+
+template <typename R, typename Pred>
+filter_view(R&&, Pred)->filter_view<all_view<R>, Pred>;
+
+}
+
+using filter_view_::filter_view;
+
+namespace detail {
+
+struct filter_view_fn {
+    template <typename Pred>
+    constexpr auto operator()(Pred pred) const
+    {
+#ifdef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
+        return detail::rao_proxy{std::bind([](auto&& r, auto p) {
+            return filter_view{std::forward<decltype(r)>(r), std::move(p)};
+        }, std::placeholders::_1, std::move(pred))};
+#else
+        return detail::rao_proxy{[p = std::move(pred)] (auto&& r) mutable
+            -> decltype(filter_view{std::forward<decltype(r)>(r), std::declval<Pred&&>()})
+        {
+            return filter_view{std::forward<decltype(r)>(r), std::move(p)};
+        }};
+#endif
+    }
+
+    template <typename R, typename Pred>
+    constexpr auto operator()(R&& r, Pred pred) const
+        noexcept(noexcept(filter_view{std::forward<R>(r), std::move(pred)}))
+        -> decltype(filter_view{std::forward<R>(r), std::move(pred)})
+    {
+        return filter_view{std::forward<R>(r), std::move(pred)};
+    }
+
+};
+
+}
+
+namespace view {
+
+NANO_INLINE_VAR(nano::detail::filter_view_fn, filter)
+
+}
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/view/iota.hpp
+//
+// Copyright (c) 2019 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEW_IOTA_HPP_INCLUDED
+#define NANORANGE_VIEW_IOTA_HPP_INCLUDED
+
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct Decrementable_req {
+    template <typename I>
+    auto requires_(I i) -> decltype(
+        same_lv<I>(--i),
+        requires_expr<Same<I, decltype(i--)>>{}
+    );
+};
+
+template <typename I>
+NANO_CONCEPT Decrementable =
+    Incrementable<I> && requires_<Decrementable_req, I>;
+
+struct Advanceable_req {
+    // FIXME: Nasty IOTA-DIFF-T stuff
+    template <typename I, typename DiffT = iter_difference_t<I>>
+    auto requires_(I i, const I j, const DiffT n) -> decltype(
+        same_lv<I>(i += n),
+        same_lv<I>(i -= n),
+        I(j + n),
+        I(n + j),
+        I(j - n),
+        convertible_to_helper<DiffT>(j - j)
+    );
+};
+
+template <typename I>
+NANO_CONCEPT Advanceable = Decrementable<I> &&
+    StrictTotallyOrdered<I> &&
+    requires_<Advanceable_req, I>;
+
+template <typename W>
+constexpr auto iota_view_iter_cat_helper()
+{
+    if constexpr (detail::Advanceable<W>) {
+        return random_access_iterator_tag{};
+    } else if constexpr (detail::Decrementable<W>) {
+        return bidirectional_iterator_tag{};
+    } else if constexpr (Incrementable<W>) {
+        return forward_iterator_tag{};
+    } else {
+        return input_iterator_tag{};
+    }
+}
+
+} // namespace detail
+
+template <typename W, typename Bound = unreachable_sentinel_t>
+struct iota_view : view_interface<iota_view<W, Bound>> {
+    static_assert(WeaklyIncrementable<W>);
+    static_assert(Semiregular<Bound>);
+    static_assert(detail::WeaklyEqualityComparableWith<W, Bound>);
+
+private:
+    struct sentinel;
+
+    struct iterator {
+    private:
+        friend struct sentinel;
+        W value_ = W();
+
+    public:
+        using iterator_category = decltype(detail::iota_view_iter_cat_helper<W>());
+        
+        using value_type = W;
+        // FIXME: IOTA_DIFF_T urgh
+        using difference_type = iter_difference_t<W>;
+
+        iterator() = default;
+
+        constexpr explicit iterator(W value) : value_(value) {}
+
+        constexpr W operator*() const
+            noexcept(std::is_nothrow_copy_constructible_v<W>)
+        {
+            return value_;
+        }
+
+        constexpr iterator& operator++()
+        {
+            ++value_;
+            return *this;
+        }
+
+        constexpr auto operator++(int)
+        {
+            if constexpr (Incrementable<W>) {
+                auto tmp = *this;
+                ++*this;
+                return tmp;
+            } else {
+                ++*this;
+            }
+        }
+
+        template <typename WW = W>
+        constexpr auto operator--()
+            -> std::enable_if_t<detail::Decrementable<WW>, iterator&>
+        {
+            --value_;
+            return *this;
+        }
+
+        constexpr iterator operator--(int)
+        {
+            auto tmp = *this;
+            ++*this;
+            return tmp;
+        }
+
+        template <typename WW = W>
+        constexpr auto operator+=(difference_type n)
+            -> std::enable_if_t<detail::Advanceable<WW>, iterator&>
+        {
+            if constexpr (Integral<W> && !SignedIntegral<W>) {
+                if (n >= difference_type(0)) {
+                    value_ += static_cast<W>(n);
+                } else {
+                    value_ -= static_cast<W>(-n);
+                }
+            } else {
+                value_ += n;
+            }
+            return *this;
+        }
+
+        template <typename WW = W>
+        constexpr auto operator-=(difference_type n)
+            -> std::enable_if_t<detail::Advanceable<WW>, iterator&>
+        {
+            if constexpr (Integral<W> && !SignedIntegral<W>) {
+                if (n >= difference_type(0)) {
+                    value_ -= static_cast<W>(n);
+                } else {
+                    value_ += static_cast<W>(-n);
+                }
+            } else {
+                value_ -= n;
+            }
+            return *this;
+        }
+
+        template <typename WW = W>
+        constexpr auto operator[](difference_type n) const
+            -> std::enable_if_t<detail::Advanceable<WW>, W>
+        {
+            return W(value_ + n);
+        }
+
+        template <typename WW = W>
+        friend constexpr auto operator==(const iterator& x, const iterator& y)
+            -> std::enable_if_t<EqualityComparable<WW>, bool>
+        {
+            return x.value_ == y.value_;
+        }
+
+        template <typename WW = W>
+        friend constexpr auto operator!=(const iterator& x, const iterator& y)
+            -> std::enable_if_t<EqualityComparable<WW>, bool>
+        {
+            return !(x == y);
+        }
+
+        template <typename WW = W>
+        friend constexpr auto operator<(const iterator& x, const iterator& y)
+            -> std::enable_if_t<StrictTotallyOrdered<WW>, bool>
+        {
+            return x.value_ < y.value_;
+        }
+
+        template <typename WW = W>
+        friend constexpr auto operator>(const iterator& x, const iterator& y)
+            -> std::enable_if_t<StrictTotallyOrdered<WW>, bool>
+        {
+            return y < x;
+        }
+
+        template <typename WW = W>
+        friend constexpr auto operator<=(const iterator& x, const iterator& y)
+            -> std::enable_if_t<StrictTotallyOrdered<WW>, bool>
+        {
+            return !(y < x);
+        }
+
+        template <typename WW = W>
+        friend constexpr auto operator>=(const iterator& x, const iterator& y)
+            -> std::enable_if_t<StrictTotallyOrdered<WW>, bool>
+        {
+            return !(x < y);
+        }
+
+        template <typename WW = W>
+        friend constexpr auto operator+(iterator i, difference_type n)
+            -> std::enable_if_t<detail::Advanceable<WW>, iterator>
+        {
+            return i += n;
+        }
+
+        template <typename WW = W>
+        friend constexpr auto operator+(difference_type n, iterator i)
+            -> std::enable_if_t<detail::Advanceable<WW>, iterator>
+        {
+            return i + n;
+        }
+
+        template <typename WW = W>
+        friend constexpr auto operator-(iterator i, difference_type n)
+            -> std::enable_if_t<detail::Advanceable<WW>, iterator>
+        {
+            return i -= n;
+        }
+
+        template <typename WW = W>
+        friend constexpr auto operator-(const iterator& x, const iterator& y)
+            -> std::enable_if_t<detail::Advanceable<WW>, difference_type>
+        {
+            using D = difference_type;
+            if constexpr (Integral<D>) {
+                if constexpr (SignedIntegral<D>) {
+                    return D(D(x.value_) - D(y.value_));
+                } else {
+                    return (y.value_ > x.value)
+                        ? D(-D(y.value_ - x.value_))
+                        : D(x.value_ - y.value_);
+                }
+            } else {
+                return x.value_ - y.value_;
+            }
+        }
+    };
+
+    struct sentinel {
+    private:
+        Bound bound_ = Bound();
+
+    public:
+        sentinel() = default;
+        constexpr explicit sentinel(Bound bound) : bound_(bound) {}
+
+        friend constexpr bool operator==(const iterator& i, const sentinel& s)
+        {
+            return i.value_ == s.bound_;
+        }
+
+        friend constexpr bool operator==(const sentinel& s, const iterator& i)
+        {
+            return i == s;
+        }
+
+        friend constexpr bool operator!=(const iterator& i, const sentinel& s)
+        {
+            return !(i == s);
+        }
+
+        friend constexpr bool operator!=(const sentinel& s, const iterator& i)
+        {
+            return !(i == s);
+        }
+
+        template <typename WW = W>
+        friend constexpr auto operator-(const iterator& i, const sentinel& s)
+            -> std::enable_if_t<SizedSentinel<Bound, WW>, iter_difference_t<WW>>
+        {
+            return i.value_ - s.bound_;
+        }
+
+        template <typename WW = W>
+        friend constexpr auto operator-(const sentinel& s, const iterator& i)
+            -> std::enable_if_t<SizedSentinel<Bound, WW>, iter_difference_t<WW>>
+        {
+            return -(i - s);
+        }
+    };
+
+    W value_ = W();
+    Bound bound_ = Bound();
+
+public:
+    iota_view() = default;
+
+    constexpr explicit iota_view(W value) : value_(value) {}
+
+    constexpr iota_view(detail::type_identity_t<W> value,
+                        detail::type_identity_t<Bound> bound)
+        : value_(value),
+          bound_(bound)
+    {}
+
+    constexpr iterator begin() const
+    {
+        return iterator{value_};
+    }
+
+    template <typename WW = W, std::enable_if_t<!Same<WW, Bound>, int> = 0>
+    constexpr auto end() const
+    {
+        if constexpr (Same<Bound, unreachable_sentinel_t>) {
+            return unreachable_sentinel;
+        } else {
+            return sentinel{bound_};
+        }
+    }
+
+    template <typename WW = W, std::enable_if_t<Same<WW, Bound>, int> = 0>
+    constexpr iterator end() const
+    {
+        return iterator{bound_};
+    }
+
+    template <typename WW = W, typename BB = Bound, std::enable_if_t<
+              (Same<WW, BB> && detail::Advanceable<W>) ||
+              (Integral<WW> && Integral<BB>) ||
+              SizedSentinel<BB, WW>, int> = 0>
+    constexpr auto size() const
+    {
+        constexpr auto make_unsigned_like = [](auto i) {
+            return std::make_unsigned_t<decltype(i)>(i);
+        };
+
+        if constexpr (Integral<W> && Integral<Bound>) {
+            return (value_ < 0)
+                ? ((bound_ < 0)
+                  ? make_unsigned_like(-value_) - make_unsigned_like(-bound_)
+                  : make_unsigned_like(bound_) - make_unsigned_like(-value_))
+                : make_unsigned_like(bound_) - make_unsigned_like(value_);
+        } else {
+            make_unsigned_like(bound_ - value_);
+        }
+    }
+};
+
+template <typename W, typename Bound, std::enable_if_t<
+    !Integral<W> || !Integral<Bound> ||
+        (SignedIntegral<W> == SignedIntegral<Bound>), int> = 0>
+iota_view(W, Bound) -> iota_view<W, Bound>;
+
+namespace view {
+
+namespace detail {
+
+struct iota_view_fn {
+    template <typename W>
+    constexpr auto operator()(W&& value) const
+        noexcept(noexcept(iota_view{std::forward<W>(value)}))
+        -> decltype(iota_view(std::forward<W>(value)))
+    {
+        return iota_view(std::forward<W>(value));
+    }
+
+    template <typename W, typename Bound>
+    constexpr auto operator()(W&& value, Bound&& bound) const
+        noexcept(noexcept(iota_view{std::forward<W>(value), std::forward<Bound>(bound)}))
+        -> decltype(iota_view(std::forward<W>(value), std::forward<Bound>(bound)))
+    {
+        return iota_view{std::forward<W>(value), std::forward<Bound>(bound)};
+    }
+};
+
+} // namespace detail
+
+NANO_INLINE_VAR(detail::iota_view_fn, iota)
+
+}
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/view/istream.hpp
+//
+// Copyright (c) 2019 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEW_ISTREAM_HPP_INCLUDED
+#define NANORANGE_VIEW_ISTREAM_HPP_INCLUDED
+
+
+
+
+
+#include <iosfwd>
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct StreamExtractable_req {
+    template <typename Val, typename CharT, typename Traits>
+    auto requires_(std::basic_istream<CharT, Traits>& is, Val& t)
+        -> decltype(is >> t);
+};
+
+template <typename Val, typename CharT, typename Traits>
+NANO_CONCEPT StreamExtractable =
+    requires_<StreamExtractable_req, Val, CharT, Traits>;
+
+} // namespace detail
+
+template <typename Val, typename CharT, typename Traits = std::char_traits<CharT>>
+struct basic_istream_view : view_interface<basic_istream_view<Val, CharT, Traits>> {
+
+    static_assert(Movable<Val>);
+    static_assert(DefaultConstructible<Val>);
+    static_assert(detail::StreamExtractable<Val, CharT, Traits>);
+
+    basic_istream_view() = default;
+
+    constexpr explicit basic_istream_view(std::basic_istream<CharT, Traits>& stream)
+        : stream_(std::addressof(stream))
+    {}
+
+    constexpr auto begin()
+    {
+        if (stream_) {
+            *stream_ >> object_;
+        }
+        return iterator{*this};
+    }
+
+    constexpr default_sentinel_t end() const noexcept
+    {
+        return default_sentinel;
+    }
+
+private:
+    struct iterator {
+        using iterator_category = input_iterator_tag;
+        using difference_type = std::ptrdiff_t;
+        using value_type = Val;
+
+        iterator() = default;
+
+        constexpr explicit iterator(basic_istream_view& parent) noexcept
+            : parent_(std::addressof(parent))
+        {}
+
+// FIXME: re-enable when we have move-only iterators
+#if 0
+        iterator(const iterator&) = delete;
+        iterator(iterator&&) = default;
+
+        iterator& operator=(const iterator&) = delete;
+        iterator& operator=(iterator&&) = default;
+#endif
+        iterator& operator++()
+        {
+            *parent_->stream_ >> parent_->object_;
+            return *this;
+        }
+
+        void operator++(int)
+        {
+            ++*this;
+        }
+
+        Val& operator*() const { return parent_->object_; }
+
+        friend bool operator==(const iterator& x, default_sentinel_t)
+        {
+            return x.done();
+        }
+
+        friend bool operator==(default_sentinel_t s, const iterator& x)
+        {
+            return x == s;
+        }
+
+        friend bool operator!=(const iterator& x, default_sentinel_t s)
+        {
+            return !(x == s);
+        }
+
+        friend bool operator!=(default_sentinel_t s, const iterator& x)
+        {
+            return !(x == s);
+        }
+
+    private:
+        [[nodiscard]] bool done() const
+        {
+            return parent_ == nullptr
+                  || parent_->stream_ == nullptr
+                  || !*parent_->stream_;
+        }
+
+        basic_istream_view* parent_{};
+    };
+
+    std::basic_istream<CharT, Traits>* stream_{};
+    Val object_ = Val();
+};
+
+template <typename Val, typename CharT, typename Traits>
+auto istream_view(std::basic_istream<CharT, Traits>& s)
+    -> basic_istream_view<Val, CharT, Traits>
+{
+    return basic_istream_view<Val, CharT, Traits>{s};
+}
+
+NANO_END_NAMESPACE
+
+#endif
+
+
+// nanorange/view/reverse.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEW_REVERSE_HPP_INCLUDED
+#define NANORANGE_VIEW_REVERSE_HPP_INCLUDED
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+template <bool IsCommonRange, typename>
+struct reverse_view_cache {};
+
+template <typename I>
+struct reverse_view_cache<false, I> {
+    I cached = I{};
+};
+
+}
+
+template <typename V>
+struct reverse_view
+    : view_interface<reverse_view<V>>,
+      private detail::reverse_view_cache<CommonRange<V>, iterator_t<V>> {
+
+    static_assert(View<V> && BidirectionalRange<V>, "");
+
+    reverse_view() = default;
+
+    constexpr explicit reverse_view(V r)
+        : base_(std::move(r))
+    {}
+
+    template <typename R,
+              /* FIXME: This is not to spec, but we get in horrible recursive trouble if it's omitted */
+              std::enable_if_t<detail::NotSameAs<R, reverse_view>, int> = 0,
+              std::enable_if_t<
+                  ViewableRange<R> &&
+                  BidirectionalRange<R> &&
+                  Constructible<V, all_view<R>>, int> = 0>
+    constexpr explicit reverse_view(R&& r)
+        : base_(view::all(std::forward<R>(r)))
+    {}
+
+    constexpr reverse_view(const reverse_view& other)
+        : base_(other.base_)
+    {}
+
+    constexpr V base() const { return base_; }
+
+    template <typename VV = V>
+    constexpr auto begin()
+        -> std::enable_if_t<!CommonRange<VV>, reverse_iterator<iterator_t<V>>>
+    {
+        using I = iterator_t<V>;
+        I& c = this->cached;
+        if (c == I{}) {
+            c = ranges::next(ranges::begin(base_), ranges::end(base_));
+        }
+        return nano::make_reverse_iterator(c);
+    }
+
+    template <typename VV = V>
+    constexpr auto begin()
+        -> std::enable_if_t<CommonRange<VV>, reverse_iterator<iterator_t<V>>>
+    {
+        return nano::make_reverse_iterator(ranges::end(base_));
+    }
+
+    template <typename VV = V>
+    constexpr auto begin() const
+        -> std::enable_if_t<CommonRange<const VV>,
+                            reverse_iterator<iterator_t<const V>>>
+    {
+        return nano::make_reverse_iterator(ranges::end(base_));
+    }
+
+    constexpr reverse_iterator<iterator_t<V>> end()
+    {
+        return nano::make_reverse_iterator(ranges::begin(base_));
+    }
+
+    template <typename VV = V>
+    constexpr auto end() const
+        -> std::enable_if_t<CommonRange<const VV>, reverse_iterator<iterator_t<const V>>>
+    {
+        return nano::make_reverse_iterator(ranges::begin(base_));
+    }
+
+    template <typename VV = V, std::enable_if_t<SizedRange<VV>, int> = 0>
+    constexpr auto size()
+    {
+        return ranges::size(base_);
+    }
+
+    template <typename VV = V, std::enable_if_t<SizedRange<const VV>, int> = 0>
+    constexpr auto size() const
+    {
+        return ranges::size(base_);
+    }
+
+private:
+    V base_ = V{};
+};
+
+template <typename R>
+reverse_view(R&&) -> reverse_view<all_view<R>>;
+
+namespace detail {
+
+struct reverse_view_fn {
+    template <typename R>
+    constexpr std::enable_if_t<
+            ViewableRange<R> &&
+            BidirectionalRange<R>,
+    reverse_view<all_view<R>>>
+    operator()(R&& r) const
+    {
+        return reverse_view<all_view<R>>(std::forward<R>(r));
+    }
+};
+
+template <>
+inline constexpr bool is_raco<reverse_view_fn> = true;
+
+} // namespace detail
+
+namespace view {
+
+NANO_INLINE_VAR(nano::detail::reverse_view_fn, reverse)
+
+} // namespace view
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/view/single.hpp
+//
+// Copyright (c) 2019 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEW_SINGLE_HPP_INCLUDED
+#define NANORANGE_VIEW_SINGLE_HPP_INCLUDED
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+template <typename T>
+struct single_view : view_interface<single_view<T>> {
+    static_assert(CopyConstructible<T>);
+    static_assert(std::is_object<T>::value);
+
+    single_view() = default;
+
+    constexpr explicit single_view(const T& t)
+        : value_(t)
+    {}
+
+    constexpr explicit single_view(T&& t)
+        : value_(std::move(t))
+    {}
+
+    template <typename... Args,
+              std::enable_if_t<Constructible<T, Args...>, int> = 0>
+    constexpr single_view(std::in_place_t, Args&&... args)
+        : value_{std::in_place, std::forward<Args>(args)...}
+    {}
+
+    constexpr T* begin() noexcept { return data(); }
+    constexpr const T* begin() const noexcept { return data(); }
+
+    constexpr T* end() noexcept { return data() + 1; }
+    constexpr const T* end() const noexcept { return data() + 1; }
+
+    static constexpr std::size_t size() { return 1; }
+
+    constexpr T* data() noexcept { return value_.operator->(); }
+    constexpr const T* data() const noexcept { return value_.operator->(); }
+
+private:
+    detail::semiregular_box<T> value_;
+};
+
+namespace view {
+
+namespace detail {
+
+struct single_view_fn {
+    template <typename T>
+    constexpr auto operator()(T&& t) const
+        noexcept(noexcept(single_view{std::forward<T>(t)}))
+        -> decltype(single_view{std::forward<T>(t)})
+    {
+        return single_view{std::forward<T>(t)};
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::single_view_fn, single)
+
+}
+
+
+NANO_END_NAMESPACE
+
+#endif
 
 
 #endif
