@@ -9,6 +9,7 @@
 
 #include <nanorange/detail/ranges/concepts.hpp>
 #include <nanorange/iterator/common_iterator.hpp>
+#include <nanorange/iterator/operations.hpp>
 
 NANO_BEGIN_NAMESPACE
 

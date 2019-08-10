@@ -12,6 +12,7 @@
 #include <sstream>
 #include <vector>
 #include <nanorange/ranges.hpp>
+#include <nanorange/view/istream.hpp>
 #include "../catch.hpp"
 
 namespace ranges = nano::ranges;
@@ -204,8 +205,8 @@ static_assert(!ranges::BidirectionalIterator<int>, "");
 static_assert(ranges::RandomAccessIterator<int*>, "");
 static_assert(!ranges::RandomAccessIterator<int>, "");
 
-static_assert(ranges::View<ranges::istream_range<int>>, "");
-static_assert(ranges::InputIterator<ranges::iterator_t<ranges::istream_range<int>>>, "");
+static_assert(ranges::View<ranges::basic_istream_view<int, char>>, "");
+static_assert(ranges::InputIterator<ranges::iterator_t<ranges::basic_istream_view<int, char>>>, "");
 static_assert(!ranges::View<int>, "");
 
 static_assert(ranges::CommonRange<std::vector<int> >, "");

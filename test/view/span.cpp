@@ -518,37 +518,37 @@ void test_case_class_template_argument_deduction()
 		int arr[] = {1, 2, 3, 4, 5};
 		{
 			span s{arr};
-			static_assert(ranges::models::Same<span<int, 5>, decltype(s)>);
+			static_assert(ranges::Same<span<int, 5>, decltype(s)>);
 		}
 		{
 			span s{ranges::begin(arr), ranges::size(arr)};
-			static_assert(ranges::models::Same<span<int>, decltype(s)>);
+			static_assert(ranges::Same<span<int>, decltype(s)>);
 		}
 		{
 			span s{ranges::begin(arr), ranges::end(arr)};
-			static_assert(ranges::models::Same<span<int>, decltype(s)>);
+			static_assert(ranges::Same<span<int>, decltype(s)>);
 		}
 	}
 	{
 		std::array<int, 5> arr = {1, 2, 3, 4, 5};
 		{
 			span s{arr};
-			static_assert(ranges::models::Same<span<int, 5>, decltype(s)>);
+			static_assert(ranges::Same<span<int, 5>, decltype(s)>);
 		}
 		{
 			span s{ranges::begin(arr), ranges::size(arr)};
-			static_assert(ranges::models::Same<span<int>, decltype(s)>);
+			static_assert(ranges::Same<span<int>, decltype(s)>);
 		}
 		{
 			span s{ranges::begin(arr), ranges::end(arr)};
-			static_assert(ranges::models::Same<span<int>, decltype(s)>);
+			static_assert(ranges::Same<span<int>, decltype(s)>);
 		}
 	}
 	{
 		std::vector<int> vec = {1, 2, 3, 4, 5};
 		{
 			span s{vec};
-			static_assert(ranges::models::Same<span<int>, decltype(s)>);
+			static_assert(ranges::Same<span<int>, decltype(s)>);
 		}
 	}
 #endif
@@ -1081,8 +1081,8 @@ int main() {
 	test_case_interop_with_std_regex();
 	test_case_default_constructible();
 
-	static_assert(ranges::models::ContiguousView<span<int>>);
-	static_assert(ranges::models::ContiguousView<span<int, 42>>);
+	static_assert(ranges::ContiguousRange<span<int>> && ranges::View<span<int>>);
+	static_assert(ranges::ContiguousRange<span<int, 42>> && ranges::View<span<int, 42>>);
 
 	// spans are non-dangling
 	static_assert(ranges::Same<decltype(ranges::begin(std::declval<span<int>>())), ranges::iterator_t<span<int>>>);

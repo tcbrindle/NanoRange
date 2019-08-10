@@ -97,9 +97,6 @@ auto IteratorSentinelPair_fn(int) -> std::enable_if_t<
 template <typename T>
 NANO_CONCEPT IteratorSentinelPair = decltype(IteratorSentinelPair_fn<T>(0))::value;
 
-template <typename T, typename U>
-NANO_CONCEPT NotSameAs = !Same<remove_cvref_t<T>, remove_cvref_t<U>>;
-
 template <typename I, typename S, bool StoreSize = false>
 struct subrange_data {
     I begin_{};
@@ -263,10 +260,16 @@ public:
         return *this;
     }
 
-    friend constexpr I begin(subrange&& r) { return r.begin(); }
+    // friend constexpr I begin(subrange&& r) { return r.begin(); }
 
-    friend constexpr S end(subrange&& r) { return r.end(); }
+    // friend constexpr S end(subrange&& r) { return r.end(); }
 };
+
+template <typename I, typename S, subrange_kind K>
+constexpr I begin(subrange<I, S, K>&& r) { return r.begin(); }
+
+template <typename I, typename S, subrange_kind K>
+constexpr S end(subrange<I, S, K>&& r) { return r.end(); }
 
 #ifdef _MSC_VER
 // FIXME: Extra deduction guide because MSVC can't use the (constrained) implicit one

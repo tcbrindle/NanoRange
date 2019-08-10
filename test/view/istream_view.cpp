@@ -9,11 +9,10 @@
 //
 // Project home: https://github.com/ericniebler/range-v3
 
-#include <nanorange/ranges/istream_range.hpp>
+#include <nanorange/view/istream.hpp>
 #include <sstream>
 #include "../catch.hpp"
 #include "../test_utils.hpp"
-#include <nanorange/algorithm/equal.hpp>
 
 using namespace nano;
 
@@ -42,27 +41,27 @@ struct moveonly {
 
 }
 
-static_assert(InputRange<ranges::istream_range<int>>, "");
-static_assert(InputRange<ranges::istream_range<moveonly>>, "");
+static_assert(InputRange<ranges::basic_istream_view<int, char>>, "");
+static_assert(InputRange<ranges::basic_istream_view<moveonly, char>>, "");
 
-TEST_CASE("rng.istream_range")
+TEST_CASE("view.istream")
 {
     {
         constexpr const char test[] = "abcd3210";
         std::istringstream ss{test};
-        ::check_equal(ranges::istream_range<moveonly>(ss),
+        ::check_equal(ranges::istream_view<moveonly>(ss),
                       ranges::subrange(test, test + sizeof(test) - 1));
     }
 
-    // Default-constructed istream_ranges are empty
+    // Default-constructed istream_views are empty
     {
-        ranges::istream_range<int> isr{};
+        ranges::basic_istream_view<int, char> isr{};
         CHECK(ranges::distance(isr) == 0);
     }
 
     // Default-constructed iterators can be compared
     {
-        constexpr ranges::istream_range<int>::iterator iter{};
+        const auto iter = decltype(ranges::basic_istream_view<int, char>{}.begin()){};
         constexpr ranges::default_sentinel_t sent{};
         CHECK(iter == sent);
         CHECK(sent == iter);

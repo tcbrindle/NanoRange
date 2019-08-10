@@ -19,6 +19,5 @@
 #include <nanorange/detail/ranges/primitives.hpp>
 #include <nanorange/iterator/operations.hpp>
 #include <nanorange/functional.hpp>
-#include <nanorange/ranges/istream_range.hpp>
 
 #endif

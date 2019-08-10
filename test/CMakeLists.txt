@@ -160,37 +160,48 @@ add_executable(test_nanorange
     memory/uninitialized_move.cpp
     memory/uninitialized_value_construct.cpp
 
-    ranges/istream_range.cpp
-
     range_access.cpp
 
     utility/common_type.cpp
     utility/concepts.cpp
 
-    #view/bounded_view.cpp
-    #view/counted_view.cpp
-    #view/filter_view.cpp
+    view/common_view.cpp
+    view/counted_view.cpp
+    #view/drop_view.cpp
+    #view/drop_while_view.cpp
+    view/empty_view.cpp
+    view/filter_view.cpp
+    #view/indirect_view.cpp
+    view/iota.cpp
+    view/istream_view.cpp
     #view/join_view.cpp
     #view/move_view.cpp
+    view/ref_view.cpp
     #view/repeat_n_view.cpp
     #view/repeat_view.cpp
-    #view/reverse_view.cpp
+    view/reverse_view.cpp
+    view/single_view.cpp
     #view/span.cpp
     #view/split_view.cpp
     view/subrange.cpp
+    #view/take_exactly_view.cpp
     #view/take_view.cpp
+    #view/take_while_view.cpp
     #view/transform_view.cpp
 )
 target_compile_definitions(test_nanorange PRIVATE "-DNANORANGE_NO_DEPRECATION_WARNINGS")
 target_link_libraries(test_nanorange PRIVATE nanorange)
 
 if (CMAKE_COMPILER_IS_GNUCXX)
-    target_compile_options(test_nanorange PRIVATE -Wall -Wextra -pedantic -Wno-noexcept-type -Wno-attributes)
+    target_compile_options(test_nanorange PRIVATE -Wall -Wextra -pedantic
+        -Wno-noexcept-type -Wno-attributes
+        -ftemplate-backtrace-limit=0)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(test_nanorange PRIVATE -Wall -Wextra -pedantic
-        -Wno-unused-function -Wno-unneeded-internal-declaration -Wno-missing-braces)
+        -Wno-unused-function -Wno-unneeded-internal-declaration -Wno-missing-braces
+        -ftemplate-backtrace-limit=0)
 endif()
 
 if (MSVC)

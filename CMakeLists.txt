@@ -117,6 +117,8 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/begin_end.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/concepts.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/primitives.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/view/range_adaptors.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/view/semiregular_box.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/common_reference.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/common_type.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/macros.hpp
@@ -146,9 +148,17 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/memory/uninitialized_move.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/memory/uninitialized_value_construct.hpp
 
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/ranges/istream_range.hpp
-
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/all.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/common.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/counted.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/empty.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/filter.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/interface.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/iota.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/istream.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/reverse.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/ref.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/single.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/view/subrange.hpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm.hpp

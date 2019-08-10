@@ -16,5 +16,6 @@
 #include <nanorange/ranges.hpp>
 #include <nanorange/type_traits.hpp>
 #include <nanorange/utility.hpp>
+#include <nanorange/view.hpp>
 
 #endif // NANORANGE_HPP_INCLUDED
