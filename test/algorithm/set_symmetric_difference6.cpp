@@ -35,7 +35,6 @@ TEST_CASE("alg.set_symmetric_difference6")
 		CHECK_FALSE(stl2::lexicographical_compare(ic, res2.out, ir, ir+sr, std::less<int>(), &U::k));
 	}
 
-#ifdef HAVE_RVALUE_RANGES
 	// Test rvalue ranges
 	{
 		S ia[] = {S{1}, S{2}, S{2}, S{3}, S{3}, S{3}, S{4}, S{4}, S{4}, S{4}};
@@ -46,29 +45,13 @@ TEST_CASE("alg.set_symmetric_difference6")
 
 		auto res1 =
 			stl2::set_symmetric_difference(std::move(ia), std::move(ib), ic, std::less<int>(), &S::i, &T::j);
-#ifndef _MSC_VER
-		CHECK(std::get<0>(res1).get_unsafe() == stl2::end(ia));
-		CHECK(std::get<1>(res1).get_unsafe() == stl2::end(ib));
-#else
-		CHECK(std::get<0>(res1) == stl2::end(ia));
-		CHECK(std::get<1>(res1) == stl2::end(ib));
-#endif
-		CHECK((std::get<2>(res1) - ic) == sr);
-		CHECK_FALSE(stl2::lexicographical_compare(ic, std::get<2>(res1), ir, ir+sr, std::less<int>(), &U::k));
+		CHECK((res1.out - ic) == sr);
+		CHECK_FALSE(stl2::lexicographical_compare(ic, res1.out, ir, ir+sr, std::less<int>(), &U::k));
 		stl2::fill(ic, U{0});
 
 		auto res2 =
 			stl2::set_symmetric_difference(std::move(ib), std::move(ia), ic, std::less<int>(), &T::j, &S::i);
-		// FIXME: MSVC
-#ifndef _MSC_VER
-		CHECK(std::get<0>(res2).get_unsafe() == stl2::end(ib));
-		CHECK(std::get<1>(res2).get_unsafe() == stl2::end(ia));
-#else
-		CHECK(std::get<0>(res2) == stl2::end(ib));
-		CHECK(std::get<1>(res2) == stl2::end(ia));
-#endif
-		CHECK((std::get<2>(res2) - ic) == sr);
-		CHECK_FALSE(stl2::lexicographical_compare(ic, std::get<2>(res2), ir, ir+sr, std::less<int>(), &U::k));
+		CHECK((res2.out - ic) == sr);
+		CHECK_FALSE(stl2::lexicographical_compare(ic, res2.out, ir, ir+sr, std::less<int>(), &U::k));
 	}
-#endif
 }

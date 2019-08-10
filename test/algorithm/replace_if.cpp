@@ -99,7 +99,6 @@ TEST_CASE("alg.replace_if")
 		CHECK(i == stl2::end(ia));
 	}
 
-#ifdef HAVE_RVALUE_RANGES
 	// test rvalue range
 	{
 		using P = std::pair<int,std::string>;
@@ -111,12 +110,5 @@ TEST_CASE("alg.replace_if")
 		CHECK((ia[2] == P{42,"42"}));
 		CHECK((ia[3] == P{3,"3"}));
 		CHECK((ia[4] == P{4,"4"}));
-		// FIXME: MSVC rvalue ranges
-#ifndef _MSC_VER
-		CHECK(i.get_unsafe() == stl2::end(ia));
-#else
-		CHECK(i == stl2::end(ia));
-#endif
 	}
-#endif
 }

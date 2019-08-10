@@ -158,14 +158,13 @@ TEST_CASE("alg.remove_copy")
 		CHECK(ib[5].i == 4);
 	}
 
-#ifdef HAVE_RVALUE_RANGES
 	// Check rvalue range
 	{
 		S ia[] = {S{0}, S{1}, S{2}, S{3}, S{4}, S{2}, S{3}, S{4}, S{2}};
 		constexpr unsigned sa = stl2::size(ia);
 		S ib[sa];
-		auto r = stl2::remove_copy(std::move(ia), ib, 2, &S::i);
-		CHECK(r.in.get_unsafe() == ia + sa);
+		auto r = stl2::remove_copy(stl2::subrange(ia), ib, 2, &S::i);
+		CHECK(r.in == ia + sa);
 		CHECK(r.out == ib + sa-3);
 		CHECK(ib[0].i == 0);
 		CHECK(ib[1].i == 1);
@@ -174,5 +173,4 @@ TEST_CASE("alg.remove_copy")
 		CHECK(ib[4].i == 3);
 		CHECK(ib[5].i == 4);
 	}
-#endif
 }

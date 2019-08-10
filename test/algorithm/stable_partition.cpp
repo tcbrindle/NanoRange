@@ -599,13 +599,14 @@ TEST_CASE("alg.stable_partition")
 		CHECK(ap[8].p == P{4, 1});
 		CHECK(ap[9].p == P{4, 2});
 	}
-#if 0
+
 	// Test rvalue ranges
 	using P = std::pair<int, int>;
 	{  // check mixed
 		S ap[] = { {{0, 1}}, {{0, 2}}, {{1, 1}}, {{1, 2}}, {{2, 1}}, {{2, 2}}, {{3, 1}}, {{3, 2}}, {{4, 1}}, {{4, 2}} };
 		auto r = ranges::stable_partition(std::move(ap), odd_first(), &S::p);
-		CHECK(r.get_unsafe() == ap + 4);
+		static_assert(ranges::Same<decltype(r), ranges::dangling>);
+		//CHECK(r.get_unsafe() == ap + 4);
 		CHECK(ap[0].p == P{1, 1});
 		CHECK(ap[1].p == P{1, 2});
 		CHECK(ap[2].p == P{3, 1});
@@ -617,7 +618,6 @@ TEST_CASE("alg.stable_partition")
 		CHECK(ap[8].p == P{4, 1});
 		CHECK(ap[9].p == P{4, 2});
 	}
-#endif
 
 	{
 		int some_ints[] = {1, 0};

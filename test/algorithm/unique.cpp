@@ -149,20 +149,14 @@ TEST_CASE("alg.unique")
 	test<random_access_iterator<int*>, range_call>();
 	test<int*, range_call>();
 
-#ifdef HAVE_RVALUE_RANGES
 	// Test rvalue range
 	{
 		int a[] = {0, 1, 1, 1, 2, 2, 2};
 		auto r = stl2::unique(std::move(a));
-		// FIXME MSVC
-#ifndef _MSC_VER
-		CHECK(r.get_unsafe() == a + 3);
-#else
-		CHECK(r == a + 3);
-#endif
+		static_assert(stl2::Same<decltype(r), stl2::dangling>);
+		//CHECK(r == a + 3);
 		CHECK(a[0] == 0);
 		CHECK(a[1] == 1);
 		CHECK(a[2] == 2);
 	}
-#endif
 }

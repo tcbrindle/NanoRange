@@ -181,19 +181,13 @@ TEST_CASE("alg.remove_if")
 		CHECK(ia[5].i == 4);
 	}
 
-#ifdef HAVE_RVALUE_RANGES
 	{
 		// Check rvalue range
 		S ia[] = {S{0}, S{1}, S{2}, S{3}, S{4}, S{2}, S{3}, S{4}, S{2}};
 		constexpr unsigned sa = stl2::size(ia);
 		using namespace std::placeholders;
-		auto r = stl2::remove_if(std::move(ia), std::bind(std::equal_to<int>(), _1, 2), &S::i);
-		// FIXME: MSVC rvalue arrays again
-#ifndef _MSC_VER
-		CHECK(r.get_unsafe() == ia + sa-3);
-#else
+		auto r = stl2::remove_if(stl2::subrange(ia), std::bind(std::equal_to<int>(), _1, 2), &S::i);
 		CHECK(r == ia + sa-3);
-#endif
 		CHECK(ia[0].i == 0);
 		CHECK(ia[1].i == 1);
 		CHECK(ia[2].i == 3);
@@ -201,5 +195,4 @@ TEST_CASE("alg.remove_if")
 		CHECK(ia[4].i == 3);
 		CHECK(ia[5].i == 4);
 	}
-#endif
 }

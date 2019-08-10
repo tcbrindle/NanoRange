@@ -147,7 +147,6 @@ TEST_CASE("alg.partial_sort_copy")
     }
 
     // Check rvalue ranges
-#ifdef HAVE_RVALUE_RANGES
     {
         constexpr int N = 256;
         constexpr int M = N/2-1;
@@ -157,11 +156,11 @@ TEST_CASE("alg.partial_sort_copy")
             input[i].i = i;
         std::shuffle(input, input+N, gen);
         auto r = stl2::partial_sort_copy(input, std::move(output), std::less<int>(), &S::i, &U::i);
+        static_assert(stl2::Same<decltype(r), stl2::dangling>);
         U* e = output + std::min(N, M);
-        CHECK(r.get_unsafe() == e);
+        //CHECK(r.get_unsafe() == e);
         int i = 0;
         for (U* x = output; x < e; ++x, ++i)
             CHECK(x->i == i);
     }
-#endif
 }

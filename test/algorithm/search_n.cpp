@@ -199,16 +199,10 @@ TEST_CASE("alg.search_n")
 		CHECK(it2.count() == 0);
 	}
 
-#ifdef HAVE_RVALUE_RANGES
 	// Test rvalue ranges
 	{
 		int ib[] = {0, 0, 1, 1, 2, 2};
-		// FIXME: MSVC
-#ifndef _MSC_VER
-		CHECK(stl2::search_n(std::move(ib), 2, 1).get_unsafe() == ib+2);
-#else
-		CHECK(stl2::search_n(std::move(ib), 2, 1) == ib+2);
-#endif
+		auto r = stl2::search_n(std::move(ib), 2, 1);
+		static_assert(stl2::Same<decltype(r), stl2::dangling>);
 	}
-#endif
 }

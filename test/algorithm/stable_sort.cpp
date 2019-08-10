@@ -222,7 +222,6 @@ TEST_CASE("alg.stable_sort")
 		}
 	}
 
-#if 0
 	// Check rvalue range
 	{
 		std::vector<S> v(1000, S{});
@@ -231,12 +230,12 @@ TEST_CASE("alg.stable_sort")
 			v[i].i = v.size() - i - 1;
 			v[i].j = i;
 		}
-		CHECK(stl2::stable_sort(std::move(v), std::less<int>{}, &S::i).get_unsafe() == v.end());
+		auto r = stl2::stable_sort(std::move(v), std::less<int>{}, &S::i);
+		static_assert(stl2::Same<decltype(r), stl2::dangling>);
 		for(int i = 0; (std::size_t)i < v.size(); ++i)
 		{
 			CHECK(v[i].i == i);
 			CHECK((std::size_t)v[i].j == v.size() - i - 1);
 		}
 	}
-#endif
 }
