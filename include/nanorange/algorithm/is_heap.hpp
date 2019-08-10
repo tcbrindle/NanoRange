@@ -14,7 +14,7 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct is_heap_fn {
-    template <typename I, typename S, typename Comp = less<>,
+    template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
     std::enable_if_t<RandomAccessIterator<I> && Sentinel<S, I> &&
                          IndirectStrictWeakOrder<Comp, projected<I, Proj>>,
@@ -25,7 +25,7 @@ struct is_heap_fn {
         return is_heap_until_fn::impl(std::move(first), n, comp, proj) == last;
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     std::enable_if_t<
         RandomAccessRange<Rng> &&
             IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,

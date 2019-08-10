@@ -146,8 +146,15 @@ struct not_equal_to {
     using is_transparent = std::true_type;
 };
 
-template <typename T = void>
-struct less : detail::less_helper<T> {
+struct less {
+    template <typename T, typename U>
+    constexpr auto operator()(T&& t, U&& u) const
+        -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
+    {
+        return std::less<>{}(std::forward<T>(t), std::forward<U>(u));
+    }
+
+    using is_transparent = std::true_type;
 };
 
 template <typename T = void>

@@ -37,7 +37,7 @@ private:
     }
 
 public:
-    template <typename T, typename Comp = less<>, typename Proj = identity>
+    template <typename T, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         IndirectStrictWeakOrder<Comp, projected<const T*, Proj>>,
         const T&>
@@ -47,7 +47,7 @@ public:
                             nano::invoke(proj, a)) ? b : a;
     }
 
-    template <typename T, typename Comp = less<>, typename Proj = identity>
+    template <typename T, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         Copyable<T> &&
         IndirectStrictWeakOrder<Comp, projected<const T*, Proj>>,
@@ -58,7 +58,7 @@ public:
         return min_fn::impl(rng, comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         InputRange<Rng> &&
         Copyable<iter_value_t<iterator_t<Rng>>> &&

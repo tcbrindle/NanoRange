@@ -15,7 +15,7 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct push_heap_fn {
-    template <typename I, typename S, typename Comp = less<>,
+    template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
     constexpr std::enable_if_t<
         RandomAccessIterator<I> && Sentinel<S, I> && Sortable<I, Comp, Proj>, I>
@@ -26,7 +26,7 @@ struct push_heap_fn {
         return first + n;
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<RandomAccessRange<Rng> &&
                                    Sortable<iterator_t<Rng>, Comp, Proj>,
                                safe_iterator_t<Rng>>

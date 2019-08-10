@@ -56,7 +56,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename Comp = less<>,
+    template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
     constexpr std::enable_if_t<
         RandomAccessIterator<I> && Sentinel<S, I> &&
@@ -68,7 +68,7 @@ public:
         return is_heap_until_fn::impl(std::move(first), n, comp, proj);
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         RandomAccessRange<Rng> &&
             IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,

@@ -39,8 +39,8 @@ constexpr int pdqsort_cacheline_size = 64;
 
 template <typename>
 struct is_default_compare : std::false_type {};
-template <typename T>
-struct is_default_compare<nano::less<T>> : std::true_type {};
+template <>
+struct is_default_compare<nano::less> : std::true_type {};
 template <typename T>
 struct is_default_compare<nano::greater<T>> : std::true_type {};
 template <typename T>

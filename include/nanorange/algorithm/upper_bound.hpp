@@ -39,7 +39,7 @@ private:
     }
 
 public:
-    template <typename I, typename S, typename T, typename Comp = less<>,
+    template <typename I, typename S, typename T, typename Comp = ranges::less,
               typename Proj = identity>
     std::enable_if_t<
         ForwardIterator<I> &&
@@ -53,7 +53,7 @@ public:
                                     value, comp, proj);
     }
 
-    template <typename Rng, typename T, typename Comp = less<>,
+    template <typename Rng, typename T, typename Comp = ranges::less,
               typename Proj = identity>
     std::enable_if_t<
         ForwardRange<Rng> &&

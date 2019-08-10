@@ -14,7 +14,7 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 struct sort_fn {
-    template <typename I, typename S, typename Comp = less<>, typename Proj = identity>
+    template <typename I, typename S, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         RandomAccessIterator<I> &&
         Sentinel<S, I> &&
@@ -26,7 +26,7 @@ struct sort_fn {
         return last_it;
     }
 
-    template <typename Rng, typename Comp = less<>, typename Proj = identity>
+    template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         RandomAccessRange<Rng> &&
         Sortable<iterator_t<Rng>, Comp, Proj>,
