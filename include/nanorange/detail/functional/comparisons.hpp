@@ -20,58 +20,6 @@ NANO_BEGIN_NAMESPACE
 namespace detail {
 
 template <typename = void, typename = void>
-struct equal_to_helper;
-
-template <>
-struct equal_to_helper<void> {
-    template <typename T, typename U>
-    constexpr auto operator()(T&& t, U&& u) const
-        noexcept(noexcept(std::equal_to<>{}(std::forward<T>(t),
-                                            std::forward<U>(u))))
-            -> std::enable_if_t<EqualityComparableWith<T, U>, bool>
-    {
-        return std::equal_to<>{}(std::forward<T>(t), std::forward<U>(u));
-    }
-
-    using is_transparent = std::true_type;
-};
-
-template <typename T>
-struct equal_to_helper<T, std::enable_if_t<EqualityComparable<T>>> {
-    constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(equal_to_helper<>{}(t, u)))
-    {
-        return equal_to_helper<>{}(t, u);
-    }
-};
-
-template <typename, typename = void>
-struct not_equal_to_helper;
-
-template <>
-struct not_equal_to_helper<void> {
-    template <typename T, typename U>
-    constexpr auto operator()(T&& t, U&& u) const
-        noexcept(noexcept(!equal_to_helper<>{}(std::forward<T>(t),
-                                               std::forward<U>(u))))
-            -> std::enable_if_t<EqualityComparableWith<T, U>, bool>
-    {
-        return !equal_to_helper<>{}(std::forward<T>(t), std::forward<U>(u));
-    }
-
-    using is_transparent = std::true_type;
-};
-
-template <typename T>
-struct not_equal_to_helper<T, std::enable_if_t<EqualityComparable<T>>> {
-    constexpr bool operator()(const T& t, const T& u) const
-        noexcept(noexcept(!equal_to_helper<>{}(t, u)))
-    {
-        return !equal_to_helper<>{}(t, u);
-    }
-};
-
-template <typename = void, typename = void>
 struct less_helper;
 
 template <>
@@ -187,8 +135,15 @@ struct equal_to {
     using is_transparent = std::true_type;
 };
 
-template <typename T = void>
-struct not_equal_to : detail::not_equal_to_helper<T> {
+struct not_equal_to {
+    template <typename T, typename U>
+    constexpr auto operator()(T&& t, U&& u) const
+        -> std::enable_if_t<EqualityComparableWith<T, U>, bool>
+    {
+        return !ranges::equal_to{}(std::forward<T>(t), std::forward<U>(u));
+    }
+
+    using is_transparent = std::true_type;
 };
 
 template <typename T = void>
