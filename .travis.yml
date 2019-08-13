@@ -29,6 +29,21 @@ branches:
 matrix:
   include:
     #
+    # Mac OS builds
+    #
+    - os: osx
+      osx_image: xcode11
+      env: COMPILER=clang++
+
+    - os: osx
+      osx_image: xcode10.2
+      env: COMPILER=clang++
+
+    - os: osx
+      osx_image: xcode10.1
+      env: COMPILER=clang++
+
+    #
     # Linux builds
     #
     # GCC 9
@@ -97,21 +112,6 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-5.0
-
-    #
-    # Mac OS builds
-    #
-    - os: osx
-      osx_image: xcode11
-      env: COMPILER=clang++
-
-    - os: osx
-      osx_image: xcode10.2
-      env: COMPILER=clang++
-
-    - os: osx
-      osx_image: xcode10.1
-      env: COMPILER=clang++
 
 install:
   - DEPS_DIR="${HOME}/deps"
