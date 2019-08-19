@@ -5496,12 +5496,28 @@ NANO_CONCEPT IteratorSentinelPair = decltype(IteratorSentinelPair_fn<T>(0))::val
 
 template <typename I, typename S, bool StoreSize = false>
 struct subrange_data {
+    constexpr subrange_data() = default;
+
+    constexpr subrange_data(I&& begin, S&& end)
+        : begin_(std::move(begin)), end_(std::move(end))
+    {}
+
+    constexpr subrange_data(I&& begin, S&& end, iter_difference_t<I> /*unused*/)
+        : begin_(std::move(begin)), end_(std::move(end))
+    {}
+
     I begin_{};
     S end_{};
 };
 
 template <typename I, typename S>
 struct subrange_data<I, S, true> {
+    constexpr subrange_data() = default;
+
+    constexpr subrange_data(I&& begin, S&& end, iter_difference_t<I> size)
+        : begin_(std::move(begin)), end_(std::move(end)), size_(size)
+    {}
+
     I begin_{};
     S end_{};
     iter_difference_t<I> size_ = 0;
@@ -14994,10 +15010,9 @@ public:
     constexpr ref_view() noexcept = default;
 
     template <typename T,
-              std::enable_if_t<detail::NotSameAs<T, ref_view> &&
-                                   ConvertibleTo<T, R&> &&
-                                   detail::requires_<constructor_req, T>,
-                               int> = 0>
+              std::enable_if_t<detail::NotSameAs<T, ref_view>, int> = 0,
+              std::enable_if_t<ConvertibleTo<T, R&> &&
+                               detail::requires_<constructor_req, T>, int> = 0>
     constexpr ref_view(T&& t)
         : r_(std::addressof(static_cast<R&>(std::forward<T>(t))))
     {}
@@ -16262,6 +16277,8 @@ NANO_END_NAMESPACE
 
 
 
+#include <optional>
+
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
@@ -16271,7 +16288,7 @@ struct reverse_view_cache {};
 
 template <typename I>
 struct reverse_view_cache<false, I> {
-    I cached = I{};
+    std::optional<I> cached{};
 };
 
 }
@@ -16306,29 +16323,23 @@ struct reverse_view
 
     constexpr V base() const { return base_; }
 
-    template <typename VV = V>
-    constexpr auto begin()
-        -> std::enable_if_t<!CommonRange<VV>, reverse_iterator<iterator_t<V>>>
+    constexpr reverse_iterator<iterator_t<V>> begin()
     {
-        using I = iterator_t<V>;
-        I& c = this->cached;
-        if (c == I{}) {
-            c = ranges::next(ranges::begin(base_), ranges::end(base_));
+        if constexpr (CommonRange<V>) {
+            return nano::make_reverse_iterator(ranges::end(base_));
+        } else {
+            auto& c = this->cached;
+            if (!c.has_value()) {
+                c = ranges::next(ranges::begin(base_), ranges::end(base_));
+            }
+            return nano::make_reverse_iterator(*c);
         }
-        return nano::make_reverse_iterator(c);
-    }
-
-    template <typename VV = V>
-    constexpr auto begin()
-        -> std::enable_if_t<CommonRange<VV>, reverse_iterator<iterator_t<V>>>
-    {
-        return nano::make_reverse_iterator(ranges::end(base_));
     }
 
     template <typename VV = V>
     constexpr auto begin() const
         -> std::enable_if_t<CommonRange<const VV>,
-                            reverse_iterator<iterator_t<const V>>>
+                            reverse_iterator<iterator_t<const VV>>>
     {
         return nano::make_reverse_iterator(ranges::end(base_));
     }
@@ -16340,7 +16351,7 @@ struct reverse_view
 
     template <typename VV = V>
     constexpr auto end() const
-        -> std::enable_if_t<CommonRange<const VV>, reverse_iterator<iterator_t<const V>>>
+        -> std::enable_if_t<CommonRange<const VV>, reverse_iterator<iterator_t<const VV>>>
     {
         return nano::make_reverse_iterator(ranges::begin(base_));
     }
@@ -16367,14 +16378,37 @@ reverse_view(R&&) -> reverse_view<all_view<R>>;
 namespace detail {
 
 struct reverse_view_fn {
+private:
     template <typename R>
-    constexpr std::enable_if_t<
-            ViewableRange<R> &&
-            BidirectionalRange<R>,
-    reverse_view<all_view<R>>>
-    operator()(R&& r) const
+    static constexpr auto impl(reverse_view<R> r, detail::priority_tag<1>)
     {
-        return reverse_view<all_view<R>>(std::forward<R>(r));
+        return r.base();
+    }
+
+    template <typename I, subrange_kind K>
+    static constexpr auto impl(subrange<reverse_iterator<I>, reverse_iterator<I>, K> s,
+                               detail::priority_tag<1>)
+    {
+        if constexpr (K == subrange_kind::sized) {
+            return subrange<I, I, K>(s.end().base(), s.begin().base(), s.size());
+        } else {
+            return subrange<I, I, K>(s.end().base(), s.begin().base());
+        }
+    }
+
+    template <typename R>
+    static constexpr auto impl(R&& r, detail::priority_tag<0>)
+        -> decltype(reverse_view{std::forward<R>(r)})
+    {
+        return reverse_view{std::forward<R>(r)};
+    }
+
+public:
+    template <typename R>
+    constexpr auto operator()(R&& r) const
+        -> decltype(impl(std::forward<R>(r), priority_tag<1>{}))
+    {
+        return impl(std::forward<R>(r), priority_tag<1>{});
     }
 };
 
