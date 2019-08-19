@@ -99,12 +99,28 @@ NANO_CONCEPT IteratorSentinelPair = decltype(IteratorSentinelPair_fn<T>(0))::val
 
 template <typename I, typename S, bool StoreSize = false>
 struct subrange_data {
+    constexpr subrange_data() = default;
+
+    constexpr subrange_data(I&& begin, S&& end)
+        : begin_(std::move(begin)), end_(std::move(end))
+    {}
+
+    constexpr subrange_data(I&& begin, S&& end, iter_difference_t<I> /*unused*/)
+        : begin_(std::move(begin)), end_(std::move(end))
+    {}
+
     I begin_{};
     S end_{};
 };
 
 template <typename I, typename S>
 struct subrange_data<I, S, true> {
+    constexpr subrange_data() = default;
+
+    constexpr subrange_data(I&& begin, S&& end, iter_difference_t<I> size)
+        : begin_(std::move(begin)), end_(std::move(end)), size_(size)
+    {}
+
     I begin_{};
     S end_{};
     iter_difference_t<I> size_ = 0;

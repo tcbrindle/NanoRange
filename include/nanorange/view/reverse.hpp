@@ -111,14 +111,37 @@ reverse_view(R&&) -> reverse_view<all_view<R>>;
 namespace detail {
 
 struct reverse_view_fn {
+private:
     template <typename R>
-    constexpr std::enable_if_t<
-            ViewableRange<R> &&
-            BidirectionalRange<R>,
-    reverse_view<all_view<R>>>
-    operator()(R&& r) const
+    static constexpr auto impl(reverse_view<R> r, detail::priority_tag<1>)
     {
-        return reverse_view<all_view<R>>(std::forward<R>(r));
+        return r.base();
+    }
+
+    template <typename I, subrange_kind K>
+    static constexpr auto impl(subrange<reverse_iterator<I>, reverse_iterator<I>, K> s,
+                               detail::priority_tag<1>)
+    {
+        if constexpr (K == subrange_kind::sized) {
+            return subrange<I, I, K>(s.end().base(), s.begin().base(), s.size());
+        } else {
+            return subrange<I, I, K>(s.end().base(), s.begin().base());
+        }
+    }
+
+    template <typename R>
+    static constexpr auto impl(R&& r, detail::priority_tag<0>)
+        -> decltype(reverse_view{std::forward<R>(r)})
+    {
+        return reverse_view{std::forward<R>(r)};
+    }
+
+public:
+    template <typename R>
+    constexpr auto operator()(R&& r) const
+        -> decltype(impl(std::forward<R>(r), priority_tag<1>{}))
+    {
+        return impl(std::forward<R>(r), priority_tag<1>{});
     }
 };
 

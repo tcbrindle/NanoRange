@@ -54,4 +54,17 @@ TEST_CASE("view.reverse") {
                     | view::reverse;
         ::check_equal(ints, {4, 3, 2, 1, 0});
     }
+    {
+        int rg[] = {0,1,2,3,4,5,6,7,8,9};
+        auto x = rg | view::reverse | view::reverse;
+        static_assert(std::is_same_v<decltype(x), ref_view<int[10]>>);
+        ::check_equal(x, rg);
+    }
+    {
+        int rg[] = {0,1,2,3,4,5,6,7,8,9};
+        auto s = subrange{reverse_iterator{rg + 10}, reverse_iterator{rg}};
+        auto x = s | view::reverse;
+        static_assert(std::is_same_v<decltype(x), subrange<int*, int*, subrange_kind::sized>>);
+        ::check_equal(rg, x);
+    }
 }
