@@ -51,7 +51,7 @@ inline namespace ranges                                                        \
 #define NANO_END_NAMESPACE_STD }
 #endif
 
-#if defined(_MSC_VER) && _MSC_VER < 1923
+#if defined(_MSC_VER) && _MSC_VER < 1924
 #define NANO_MSVC_LAMBDA_PIPE_WORKAROUND 1
 #endif
 
