@@ -10,6 +10,8 @@
 #include <nanorange/iterator/reverse_iterator.hpp>
 #include <nanorange/view/all.hpp>
 
+#include <optional>
+
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
@@ -19,7 +21,7 @@ struct reverse_view_cache {};
 
 template <typename I>
 struct reverse_view_cache<false, I> {
-    I cached = I{};
+    std::optional<I> cached{};
 };
 
 }
@@ -58,12 +60,11 @@ struct reverse_view
     constexpr auto begin()
         -> std::enable_if_t<!CommonRange<VV>, reverse_iterator<iterator_t<VV>>>
     {
-        using I = iterator_t<V>;
-        I& c = this->cached;
-        if (c == I{}) {
+        auto& c = this->cached;
+        if (!c.has_value()) {
             c = ranges::next(ranges::begin(base_), ranges::end(base_));
         }
-        return nano::make_reverse_iterator(c);
+        return nano::make_reverse_iterator(*c);
     }
 
     template <typename VV = V>
