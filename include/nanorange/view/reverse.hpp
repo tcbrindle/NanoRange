@@ -56,22 +56,17 @@ struct reverse_view
 
     constexpr V base() const { return base_; }
 
-    template <typename VV = V>
-    constexpr auto begin()
-        -> std::enable_if_t<!CommonRange<VV>, reverse_iterator<iterator_t<VV>>>
+    constexpr reverse_iterator<iterator_t<V>> begin()
     {
-        auto& c = this->cached;
-        if (!c.has_value()) {
-            c = ranges::next(ranges::begin(base_), ranges::end(base_));
+        if constexpr (CommonRange<V>) {
+            return nano::make_reverse_iterator(ranges::end(base_));
+        } else {
+            auto& c = this->cached;
+            if (!c.has_value()) {
+                c = ranges::next(ranges::begin(base_), ranges::end(base_));
+            }
+            return nano::make_reverse_iterator(*c);
         }
-        return nano::make_reverse_iterator(*c);
-    }
-
-    template <typename VV = V>
-    constexpr auto begin()
-        -> std::enable_if_t<CommonRange<VV>, reverse_iterator<iterator_t<VV>>>
-    {
-        return nano::make_reverse_iterator(ranges::end(base_));
     }
 
     template <typename VV = V>
