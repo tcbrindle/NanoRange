@@ -26,6 +26,7 @@
 //   http://http://libcxx.llvm.org/
 
 #include <nanorange/algorithm/unique.hpp>
+#include <array>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"
 #include "../test_utils.hpp"
@@ -151,7 +152,7 @@ TEST_CASE("alg.unique")
 
 	// Test rvalue range
 	{
-		int a[] = {0, 1, 1, 1, 2, 2, 2};
+		std::array a = {0, 1, 1, 1, 2, 2, 2};
 		auto r = stl2::unique(std::move(a));
 		static_assert(stl2::Same<decltype(r), stl2::dangling>);
 		//CHECK(r == a + 3);

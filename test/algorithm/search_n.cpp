@@ -25,6 +25,7 @@
 #include <nanorange/algorithm/search_n.hpp>
 #include <nanorange/iterator/counted_iterator.hpp>
 #include <nanorange/view/subrange.hpp>
+#include <array>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"
 #include "../test_utils.hpp"
@@ -201,7 +202,7 @@ TEST_CASE("alg.search_n")
 
 	// Test rvalue ranges
 	{
-		int ib[] = {0, 0, 1, 1, 2, 2};
+		std::array ib = {0, 0, 1, 1, 2, 2};
 		auto r = stl2::search_n(std::move(ib), 2, 1);
 		static_assert(stl2::Same<decltype(r), stl2::dangling>);
 	}

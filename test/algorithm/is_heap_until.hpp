@@ -30,6 +30,8 @@
 #include "../test_utils.hpp"
 #include "../test_iterators.hpp"
 
+#include <array>
+
 namespace stl2 = nano;
 
 namespace {

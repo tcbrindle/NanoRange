@@ -26,6 +26,7 @@
 //   http://http://libcxx.llvm.org/
 
 #include <nanorange/algorithm/unique_copy.hpp>
+#include <array>
 #include <cstring>
 #include "../catch.hpp"
 #include "../test_utils.hpp"
@@ -296,7 +297,7 @@ TEST_CASE("alg.unique_copy")
 
 	// Test rvalue ranges:
 	{
-		S const ia[] = {{1,1},{2,2},{3,3},{3,4},{4,5},{5,6},{5,7},{5,8},{6,9},{7,10}};
+		std::array<S, 10> ia = {S{1,1},{2,2},{3,3},{3,4},{4,5},{5,6},{5,7},{5,8},{6,9},{7,10}};
 		S ib[stl2::size(ia)];
 		auto r = stl2::unique_copy(std::move(ia), ib, stl2::equal_to(), &S::i);
 		static_assert(stl2::Same<decltype(r.in), stl2::dangling>);

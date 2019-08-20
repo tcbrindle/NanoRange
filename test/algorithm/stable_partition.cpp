@@ -23,6 +23,7 @@
 //===----------------------------------------------------------------------===//
 
 #include <nanorange/algorithm/stable_partition.hpp>
+#include <array>
 #include <memory>
 #include <utility>
 #include "../catch.hpp"
@@ -603,7 +604,7 @@ TEST_CASE("alg.stable_partition")
 	// Test rvalue ranges
 	using P = std::pair<int, int>;
 	{  // check mixed
-		S ap[] = { {{0, 1}}, {{0, 2}}, {{1, 1}}, {{1, 2}}, {{2, 1}}, {{2, 2}}, {{3, 1}}, {{3, 2}}, {{4, 1}}, {{4, 2}} };
+		std::array<S, 10> ap = { S{{0, 1}}, {{0, 2}}, {{1, 1}}, {{1, 2}}, {{2, 1}}, {{2, 2}}, {{3, 1}}, {{3, 2}}, {{4, 1}}, {{4, 2}} };
 		auto r = ranges::stable_partition(std::move(ap), odd_first(), &S::p);
 		static_assert(ranges::Same<decltype(r), ranges::dangling>);
 		//CHECK(r.get_unsafe() == ap + 4);
