@@ -3261,9 +3261,18 @@ template <typename R>
 NANO_CONCEPT ContiguousRange =
     decltype(detail::ContiguousRange_fn<R>(0))::value;
 
+// [range.dangling]
+
+struct dangling {
+    constexpr dangling() noexcept = default;
+
+    template <typename... Args>
+    constexpr dangling(Args&&...) noexcept {}
+};
+
 template <typename R>
-using safe_iterator_t = std::enable_if_t<Range<R>,
-        decltype(ranges::begin(std::declval<R>()))>;
+using safe_iterator_t = std::conditional_t<
+    detail::ForwardingRange<R>, iterator_t<R>, dangling>;
 
 // Helper concepts
 
@@ -4503,8 +4512,9 @@ public:
                                copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
-        return copy_fn::impl(nano::begin(rng), nano::end(rng),
+        auto res = copy_fn::impl(nano::begin(rng), nano::end(rng),
                              std::move(result), priority_tag<1>{});
+        return {std::move(res).in, std::move(res).out};
     }
 };
 
@@ -4570,9 +4580,10 @@ public:
         copy_if_result<I, O>>
     operator()(I first, S last, O result, Pred pred, Proj proj = Proj{}) const
     {
-        return copy_if_fn::impl(std::move(first), std::move(last),
-                                std::move(result), std::move(pred),
-                                std::move(proj));
+        auto res = copy_if_fn::impl(std::move(first), std::move(last),
+                                    std::move(result), std::move(pred),
+                                    std::move(proj));
+        return {std::move(res).in, std::move(res).out};
     }
 
     template <typename Rng, typename O, typename Proj = identity, typename Pred>
@@ -4632,8 +4643,9 @@ public:
                                copy_backward_result<safe_iterator_t<Rng>, I>>
     operator()(Rng&& rng, I result) const
     {
-        return copy_backward_fn::impl(nano::begin(rng), nano::end(rng),
-                                      std::move(result));
+        auto res = copy_backward_fn::impl(nano::begin(rng), nano::end(rng),
+                                          std::move(result));
+        return {std::move(res).in, std::move(res).out};
     }
 };
 
@@ -5724,7 +5736,8 @@ constexpr auto get(const subrange<I, S, K>& r)
 
 template <typename R>
 using safe_subrange_t =
-    std::enable_if_t<detail::ForwardingRange<R>, subrange<iterator_t<R>>>;
+    std::conditional_t<detail::ForwardingRange<R>,
+                       subrange<iterator_t<R>>, dangling>;
 
 NANO_END_NAMESPACE
 
@@ -6341,8 +6354,9 @@ public:
         for_each_result<safe_iterator_t<Rng>, Fun>>
     operator()(Rng&& rng, Fun fun, Proj proj = Proj{}) const
     {
-        return for_each_fn::impl(nano::begin(rng), nano::end(rng),
-                                 fun, proj);
+        auto res = for_each_fn::impl(nano::begin(rng), nano::end(rng),
+                                     fun, proj);
+        return {std::move(res).in, std::move(res).fun};
     }
 };
 } // namespace detail
@@ -6677,8 +6691,9 @@ public:
         unary_transform_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, F op, Proj proj = Proj{}) const
     {
-        return transform_fn::unary_impl(nano::begin(rng), nano::end(rng),
-                                        std::move(result), op, proj);
+        auto ret = transform_fn::unary_impl(nano::begin(rng), nano::end(rng),
+                                            std::move(result), op, proj);
+        return {std::move(ret).in, std::move(ret).out};
     }
 
     // Binary op, four-legged
@@ -6712,9 +6727,10 @@ public:
     operator()(Rng1&& rng1, Rng2&& rng2, O result, F op, Proj1 proj1 = Proj1{},
                Proj2 proj2 = Proj2{}) const
     {
-        return transform_fn::binary_impl4(nano::begin(rng1), nano::end(rng1),
-                                          nano::begin(rng2), nano::end(rng2),
-                                          std::move(result), op, proj1, proj2);
+        auto ret = transform_fn::binary_impl4(nano::begin(rng1), nano::end(rng1),
+                                              nano::begin(rng2), nano::end(rng2),
+                                              std::move(result), op, proj1, proj2);
+        return {std::move(ret).in1, std::move(ret).in2, std::move(ret).out};
     }
 
     // Binary op, three-legged
@@ -6749,9 +6765,10 @@ public:
     operator()(Rng1&& rng1, I2&& first2, O result, F op, Proj1 proj1 = Proj1{},
                Proj2 proj2 = Proj2{}) const
     {
-        return transform_fn::binary_impl3(nano::begin(rng1), nano::end(rng1),
-                                          std::forward<I2>(first2), std::move(result),
-                                          op, proj1, proj2);
+        auto ret = transform_fn::binary_impl3(nano::begin(rng1), nano::end(rng1),
+                                              std::forward<I2>(first2), std::move(result),
+                                              op, proj1, proj2);
+        return {std::move(ret).in1, std::move(ret).in2, std::move(ret).out};
     }
 };
 
@@ -6846,10 +6863,11 @@ public:
     operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
-        return merge_fn::impl(nano::begin(rng1), nano::end(rng1),
-                              nano::begin(rng2), nano::end(rng2),
-                              std::move(result), comp,
-                              proj1, proj2);
+        auto res = merge_fn::impl(nano::begin(rng1), nano::end(rng1),
+                                  nano::begin(rng2), nano::end(rng2),
+                                  std::move(result), comp,
+                                  proj1, proj2);
+        return {std::move(res).in1, std::move(res).in2, std::move(res).out};
     }
 };
 
@@ -7007,8 +7025,9 @@ public:
                                move_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
-        return move_fn::impl(nano::begin(rng), nano::end(rng),
-                             std::move(result), priority_tag<1>{});
+        auto res = move_fn::impl(nano::begin(rng), nano::end(rng),
+                                 std::move(result), priority_tag<1>{});
+        return {std::move(res).in, std::move(res).out};
     }
 };
 
@@ -7062,8 +7081,9 @@ public:
                                move_backward_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
-        return move_backward_fn::impl(nano::begin(rng), nano::end(rng),
-                                      std::move(result));
+        auto res = move_backward_fn::impl(nano::begin(rng), nano::end(rng),
+                                          std::move(result));
+        return {std::move(res).in, std::move(res).out};
     }
 };
 
@@ -7181,9 +7201,10 @@ public:
     operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
-        return mismatch_fn::impl3(nano::begin(rng1), nano::end(rng1),
-                                  std::forward<I2>(first2), pred,
-                                  proj1, proj2);
+        auto res = mismatch_fn::impl3(nano::begin(rng1), nano::end(rng1),
+                                      std::forward<I2>(first2), pred,
+                                      proj1, proj2);
+        return {std::move(res).in1, std::move(res).in2};
     }
 
     // four legged
@@ -7214,9 +7235,10 @@ public:
     operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
-        return mismatch_fn::impl4(nano::begin(rng1), nano::end(rng1),
-                                  nano::begin(rng2), nano::end(rng2),
-                                  pred, proj1, proj2);
+        auto res = mismatch_fn::impl4(nano::begin(rng1), nano::end(rng1),
+                                      nano::begin(rng2), nano::end(rng2),
+                                      pred, proj1, proj2);
+        return {std::move(res).in1, std::move(res).in2};
     }
 };
 
@@ -7296,8 +7318,9 @@ public:
             swap_ranges_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>>>
     operator()(Rng1&& rng1, Rng2&& rng2) const
     {
-        return swap_ranges_fn::impl4(nano::begin(rng1), nano::end(rng1),
-                                     nano::begin(rng2), nano::end(rng2));
+        auto ret = swap_ranges_fn::impl4(nano::begin(rng1), nano::end(rng1),
+                                         nano::begin(rng2), nano::end(rng2));
+        return {std::move(ret).in1, std::move(ret).in2};
     }
 
     template <typename Rng1, typename I2>
@@ -7309,8 +7332,9 @@ public:
             swap_ranges_result<safe_iterator_t<Rng1>, I2>>
     operator()(Rng1&& rng1, I2 first2) const
     {
-        return swap_ranges_fn::impl3(nano::begin(rng1), nano::end(rng1),
+        auto ret = swap_ranges_fn::impl3(nano::begin(rng1), nano::end(rng1),
                                      std::move(first2));
+        return {std::move(ret).in1, std::move(ret).in2};
     }
 };
 
@@ -9960,8 +9984,9 @@ public:
         minmax_result<safe_iterator_t<Rng>>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
-        return minmax_element_fn::impl(nano::begin(rng), nano::end(rng),
-                                       comp, proj);
+        auto res = minmax_element_fn::impl(nano::begin(rng), nano::end(rng),
+                                           comp, proj);
+        return {std::move(res).min, std::move(res).max};
     }
 };
 
@@ -10914,9 +10939,10 @@ public:
     operator()(Rng&& rng, O1 out_true, O2 out_false, Pred pred,
             Proj proj = Proj{}) const
     {
-        return partition_copy_fn::impl(nano::begin(rng), nano::end(rng),
-                                       std::move(out_true), std::move(out_false),
-                                       pred, proj);
+        auto res = partition_copy_fn::impl(nano::begin(rng), nano::end(rng),
+                                           std::move(out_true), std::move(out_false),
+                                           pred, proj);
+        return {std::move(res).in, std::move(res).out1, std::move(res).out2};
     }
 };
 
@@ -11206,8 +11232,9 @@ public:
         remove_copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, const T& value, Proj proj = Proj{}) const
     {
-        return remove_copy_fn::impl(nano::begin(rng), nano::end(rng),
-                               std::move(result), value, proj);
+        auto res = remove_copy_fn::impl(nano::begin(rng), nano::end(rng),
+                                        std::move(result), value, proj);
+        return {std::move(res).in, std::move(res).out};
     }
 };
 
@@ -11277,8 +11304,9 @@ public:
         remove_copy_if_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, Pred pred, Proj proj = Proj{}) const
     {
-        return remove_copy_if_fn::impl(nano::begin(rng), nano::end(rng),
-                                       std::move(result), pred, proj);
+        auto ret = remove_copy_if_fn::impl(nano::begin(rng), nano::end(rng),
+                                           std::move(result), pred, proj);
+        return {std::move(ret).in, std::move(ret).out};
     }
 };
 
@@ -11491,9 +11519,10 @@ public:
     operator()(Rng&& rng, O result, const T1& old_value, const T2& new_value,
                Proj proj = Proj{}) const
     {
-        return replace_copy_fn::impl(nano::begin(rng), nano::end(rng),
-                                     std::move(result), old_value, new_value,
-                                     proj);
+        auto ret = replace_copy_fn::impl(nano::begin(rng), nano::end(rng),
+                                         std::move(result), old_value, new_value,
+                                         proj);
+        return {std::move(ret).in, std::move(ret).out};
     }
 };
 
@@ -11569,9 +11598,10 @@ public:
     operator()(Rng&& rng, O result, Pred pred, const T& new_value,
                Proj proj = Proj{}) const
     {
-        return replace_copy_if_fn::impl(nano::begin(rng), nano::end(rng),
-                                        std::move(result), pred, new_value,
-                                        proj);
+        auto ret = replace_copy_if_fn::impl(nano::begin(rng), nano::end(rng),
+                                            std::move(result), pred, new_value,
+                                            proj);
+        return {std::move(ret).in, std::move(ret).out};
     }
 };
 
@@ -11714,8 +11744,9 @@ public:
         reverse_copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
-        return reverse_copy_fn::impl(nano::begin(rng), nano::end(rng),
-                                     std::move(result));
+        auto ret = reverse_copy_fn::impl(nano::begin(rng), nano::end(rng),
+                                         std::move(result));
+        return {std::move(ret).in, std::move(ret).out};
     }
 };
 
@@ -11780,8 +11811,9 @@ public:
         rotate_copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, iterator_t<Rng> middle, O result) const
     {
-        return rotate_copy_fn::impl(nano::begin(rng), std::move(middle),
-                                    nano::end(rng), std::move(result));
+        auto ret = rotate_copy_fn::impl(nano::begin(rng), std::move(middle),
+                                        nano::end(rng), std::move(result));
+        return {std::move(ret).in, std::move(ret).out};
     }
 };
 
@@ -11981,10 +12013,11 @@ public:
     operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
-        return set_difference_fn::impl(nano::begin(rng1), nano::end(rng1),
-                                       nano::begin(rng2), nano::end(rng2),
-                                       std::move(result), comp,
-                                       proj1, proj2);
+        auto ret = set_difference_fn::impl(nano::begin(rng1), nano::end(rng1),
+                                           nano::begin(rng2), nano::end(rng2),
+                                           std::move(result), comp,
+                                           proj1, proj2);
+        return {std::move(ret).in, std::move(ret).out};
     }
 };
 
@@ -12180,10 +12213,11 @@ public:
     operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
-        return set_symmetric_difference_fn::impl(nano::begin(rng1), nano::end(rng1),
-                                                 nano::begin(rng2), nano::end(rng2),
-                                                 std::move(result), comp,
-                                                 proj1, proj2);
+        auto ret = set_symmetric_difference_fn::impl(nano::begin(rng1), nano::end(rng1),
+                                                     nano::begin(rng2), nano::end(rng2),
+                                                     std::move(result), comp,
+                                                     proj1, proj2);
+        return {std::move(ret).in1, std::move(ret).in2, std::move(ret).out};
     }
 };
 
@@ -12296,10 +12330,11 @@ public:
     operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
-        return set_union_fn::impl(nano::begin(rng1), nano::end(rng1),
-                                  nano::begin(rng2), nano::end(rng2),
-                                  std::move(result), comp,
-                                  proj1, proj2);
+        auto ret = set_union_fn::impl(nano::begin(rng1), nano::end(rng1),
+                                      nano::begin(rng2), nano::end(rng2),
+                                      std::move(result), comp,
+                                      proj1, proj2);
+        return {std::move(ret).in1, std::move(ret).in2, std::move(ret).out};
     }
 };
 
@@ -13686,8 +13721,9 @@ public:
             decltype(constraint_helper<iterator_t<Rng>, O>(priority_tag<2>{}))::value,
        unique_copy_result<safe_iterator_t<Rng>, O>>
     {
-        return unique_copy_fn::impl(nano::begin(rng), nano::end(rng),
-                                    std::move(result), comp, proj);
+        auto ret = unique_copy_fn::impl(nano::begin(rng), nano::end(rng),
+                                        std::move(result), comp, proj);
+        return {std::move(ret).in, std::move(ret).out};
     }
 };
 
