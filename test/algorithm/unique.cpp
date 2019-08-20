@@ -152,7 +152,7 @@ TEST_CASE("alg.unique")
 
 	// Test rvalue range
 	{
-		std::array a = {0, 1, 1, 1, 2, 2, 2};
+		std::array<int, 7> a = {0, 1, 1, 1, 2, 2, 2};
 		auto r = stl2::unique(std::move(a));
 		static_assert(stl2::Same<decltype(r), stl2::dangling>);
 		//CHECK(r == a + 3);

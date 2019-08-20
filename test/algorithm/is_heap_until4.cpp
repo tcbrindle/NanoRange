@@ -27,6 +27,6 @@ TEST_CASE("alg.is_heap_until4")
             .check([&](S *r){ CHECK(r == i185+1); });
 
     // Test rvalue range
-    auto res = stl2::is_heap_until(std::array{S{1}}, std::greater<int>(), &S::i);
+    auto res = stl2::is_heap_until(std::array<S, 1>{S{1}}, std::greater<int>(), &S::i);
     static_assert(stl2::Same<decltype(res), stl2::dangling>);
 }

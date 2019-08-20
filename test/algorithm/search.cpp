@@ -263,7 +263,7 @@ TEST_CASE("alg.search")
 
 	// Test rvalue ranges
 	{
-		std::array ib = {0, 1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 4};
+		std::array<int, 12> ib = {0, 1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 4};
 		int ie[] = {1, 2, 3};
 		auto r = stl2::search(std::move(ib), ie);
 		static_assert(stl2::Same<decltype(r), stl2::dangling>);
