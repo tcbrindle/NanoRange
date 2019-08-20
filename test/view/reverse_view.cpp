@@ -25,16 +25,17 @@ TEST_CASE("view.reverse") {
 		int rg[] = {0,1,2,3,4,5,6,7,8,9};
 		auto x = rg | view::reverse;
 		::check_equal(x, {9,8,7,6,5,4,3,2,1,0});
+		// FIXME: Really bizarre GCC9 bug (?)
+		// If you remove this ForwardRange check, then the RandomAccessRange
+		// check below fails (in fact, even InputRange fails).
+		// It all works fine on GCC7 and 8, Clang and MSVC
+		// I have no idea what's going on.
+		static_assert(ForwardRange<decltype(x)>);
 		static_assert(View<decltype(x)>, "");
 		static_assert(Range<const decltype(x)>, "");
 		static_assert(SizedRange<decltype(x)>, "");
 		static_assert(CommonRange<decltype(x)>, "");
-		// FIXME FIXME: I have no idea why GCC9.1 doesn't like this
-		// It works fine on GCC 7&8, Clang and MSVC
-		// Compiler bug?
-#if !(defined(__GNUC__) && !defined(__clang__) && __GNUC__ == 9 && __GNUC_MINOR__ == 1)
 		static_assert(RandomAccessRange<decltype(x)>, "");
-#endif
 	}
 	{
 		int rg[] = {0,1,2,3,4,5,6,7,8,9};
