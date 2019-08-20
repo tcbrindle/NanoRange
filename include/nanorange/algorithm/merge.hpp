@@ -92,10 +92,11 @@ public:
     operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
-        return merge_fn::impl(nano::begin(rng1), nano::end(rng1),
-                              nano::begin(rng2), nano::end(rng2),
-                              std::move(result), comp,
-                              proj1, proj2);
+        auto res = merge_fn::impl(nano::begin(rng1), nano::end(rng1),
+                                  nano::begin(rng2), nano::end(rng2),
+                                  std::move(result), comp,
+                                  proj1, proj2);
+        return {std::move(res).in1, std::move(res).in2, std::move(res).out};
     }
 };
 

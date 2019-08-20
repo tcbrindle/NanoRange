@@ -39,7 +39,6 @@ TEST_CASE("alg.set_difference6")
 		CHECK_FALSE(stl2::lexicographical_compare(ic, res2.out, ir, irr+srr, std::less<int>(), &U::k));
 	}
 
-#ifdef HAVE_RVALUE_RANGES
 	// Test rvalue ranges
 	{
 		S ia[] = {S{1}, S{2}, S{2}, S{3}, S{3}, S{3}, S{4}, S{4}, S{4}, S{4}};
@@ -50,28 +49,17 @@ TEST_CASE("alg.set_difference6")
 		int ir[] = {1, 2, 3, 3, 3, 4, 4};
 		const int sr = sizeof(ir)/sizeof(ir[0]);
 
-		auto res = stl2::set_difference(std::move(ia), std::move(ib), ic, std::less<int>(), &S::i, &T::j);
-		// FIXME: Usual MSVC rvalue range weirdness
-#ifndef _MSC_VER
-		CHECK((res.in.get_unsafe() - ia) == sa);
-#else
+		auto res = stl2::set_difference(stl2::subrange(ia), std::move(ib), ic, std::less<int>(), &S::i, &T::j);
 		CHECK((res.in - ia) == sa);
-#endif
 		CHECK((res.out - ic) == sr);
 		CHECK_FALSE(stl2::lexicographical_compare(ic, res.out, ir, ir+sr, std::less<int>(), &U::k));
 		stl2::fill(ic, U{0});
 
 		int irr[] = {6};
 		const int srr = sizeof(irr)/sizeof(irr[0]);
-		auto res2 = stl2::set_difference(std::move(ib), std::move(ia), ic, std::less<int>(), &T::j, &S::i);
-		// FIXME: Usual MSVC rvalue range weirdness
-#ifndef _MSC_VER
-		CHECK((res2.in.get_unsafe() - ib) == sb);
-#else
+		auto res2 = stl2::set_difference(stl2::subrange(ib), std::move(ia), ic, std::less<int>(), &T::j, &S::i);
 		CHECK((res2.in - ib) == sb);
-#endif
 		CHECK((res2.out - ic) == srr);
 		CHECK_FALSE(stl2::lexicographical_compare(ic, res2.out, ir, irr+srr, std::less<int>(), &U::k));
 	}
-#endif
 }

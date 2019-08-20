@@ -97,8 +97,9 @@ public:
         unary_transform_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, F op, Proj proj = Proj{}) const
     {
-        return transform_fn::unary_impl(nano::begin(rng), nano::end(rng),
-                                        std::move(result), op, proj);
+        auto ret = transform_fn::unary_impl(nano::begin(rng), nano::end(rng),
+                                            std::move(result), op, proj);
+        return {std::move(ret).in, std::move(ret).out};
     }
 
     // Binary op, four-legged
@@ -132,9 +133,10 @@ public:
     operator()(Rng1&& rng1, Rng2&& rng2, O result, F op, Proj1 proj1 = Proj1{},
                Proj2 proj2 = Proj2{}) const
     {
-        return transform_fn::binary_impl4(nano::begin(rng1), nano::end(rng1),
-                                          nano::begin(rng2), nano::end(rng2),
-                                          std::move(result), op, proj1, proj2);
+        auto ret = transform_fn::binary_impl4(nano::begin(rng1), nano::end(rng1),
+                                              nano::begin(rng2), nano::end(rng2),
+                                              std::move(result), op, proj1, proj2);
+        return {std::move(ret).in1, std::move(ret).in2, std::move(ret).out};
     }
 
     // Binary op, three-legged
@@ -169,9 +171,10 @@ public:
     operator()(Rng1&& rng1, I2&& first2, O result, F op, Proj1 proj1 = Proj1{},
                Proj2 proj2 = Proj2{}) const
     {
-        return transform_fn::binary_impl3(nano::begin(rng1), nano::end(rng1),
-                                          std::forward<I2>(first2), std::move(result),
-                                          op, proj1, proj2);
+        auto ret = transform_fn::binary_impl3(nano::begin(rng1), nano::end(rng1),
+                                              std::forward<I2>(first2), std::move(result),
+                                              op, proj1, proj2);
+        return {std::move(ret).in1, std::move(ret).in2, std::move(ret).out};
     }
 };
 

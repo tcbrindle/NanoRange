@@ -265,21 +265,13 @@ TEST_CASE("alg.rotate")
 	test<random_access_iterator<int *>, sentinel<int*>>();
 
 	// test rvalue range
-	/*
 	{
 		int rgi[] = {0,1,2,3,4,5};
-		auto r = nano::rotate(std::move(rgi), rgi+2);
-		// FIXME: Are these correct with P0970?
-		//CHECK(r.begin().get_unsafe() == rgi+4);
-		//CHECK(r.end().get_unsafe() == stl2::end(rgi));
-		// FIXME: MSVC
-#ifndef _MSC_VER
-		CHECK(r.get_unsafe().begin() == rgi+4);
-		CHECK(r.get_unsafe().end() == stl2::end(rgi));
-#else
+		auto r = nano::rotate(stl2::subrange(rgi), rgi+2);
 		CHECK(r.begin() == rgi+4);
 		CHECK(r.end() == stl2::end(rgi));
-#endif
+		CHECK(r.begin() == rgi+4);
+		CHECK(r.end() == stl2::end(rgi));
 		CHECK(rgi[0] == 2);
 		CHECK(rgi[1] == 3);
 		CHECK(rgi[2] == 4);
@@ -287,5 +279,4 @@ TEST_CASE("alg.rotate")
 		CHECK(rgi[4] == 0);
 		CHECK(rgi[5] == 1);
 	}
-	 */
 }

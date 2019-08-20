@@ -327,7 +327,8 @@ constexpr auto get(const subrange<I, S, K>& r)
 
 template <typename R>
 using safe_subrange_t =
-    std::enable_if_t<detail::ForwardingRange<R>, subrange<iterator_t<R>>>;
+    std::conditional_t<detail::ForwardingRange<R>,
+                       subrange<iterator_t<R>>, dangling>;
 
 NANO_END_NAMESPACE
 

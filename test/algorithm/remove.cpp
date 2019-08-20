@@ -164,17 +164,15 @@ TEST_CASE("alg.remove")
 	CHECK(ia[4].i == 3);
 	CHECK(ia[5].i == 4);
 
-#ifdef HAVE_RVALUE_RANGES
 	// Check rvalue range
 	S ia2[] = {S{0}, S{1}, S{2}, S{3}, S{4}, S{2}, S{3}, S{4}, S{2}};
 	constexpr unsigned sa2 = stl2::size(ia2);
-	auto r2 = stl2::remove(std::move(ia2), 2, &S::i);
-	CHECK(r2.get_unsafe() == ia2 + sa2-3);
+	auto r2 = stl2::remove(stl2::subrange(ia2), 2, &S::i);
+	CHECK(r2 == ia2 + sa2-3);
 	CHECK(ia2[0].i == 0);
 	CHECK(ia2[1].i == 1);
 	CHECK(ia2[2].i == 3);
 	CHECK(ia2[3].i == 4);
 	CHECK(ia2[4].i == 3);
 	CHECK(ia2[5].i == 4);
-#endif
 }

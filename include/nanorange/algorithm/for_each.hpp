@@ -53,8 +53,9 @@ public:
         for_each_result<safe_iterator_t<Rng>, Fun>>
     operator()(Rng&& rng, Fun fun, Proj proj = Proj{}) const
     {
-        return for_each_fn::impl(nano::begin(rng), nano::end(rng),
-                                 fun, proj);
+        auto res = for_each_fn::impl(nano::begin(rng), nano::end(rng),
+                                     fun, proj);
+        return {std::move(res).in, std::move(res).fun};
     }
 };
 } // namespace detail

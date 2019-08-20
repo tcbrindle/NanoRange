@@ -404,11 +404,9 @@ TEST_CASE("alg.is_sorted_until")
 	}
 
 	/// Rvalue range test:
-#ifdef HAVE_RVALUE_RANGES
 	{
 		A as[] = {{0}, {1}, {2}, {3}, {4}};
-		CHECK(stl2::is_sorted_until(std::move(as), std::less<int>{}, &A::a).get_unsafe() == stl2::end(as));
-		CHECK(stl2::is_sorted_until(std::move(as), std::greater<int>{}, &A::a).get_unsafe() == stl2::next(stl2::begin(as),1));
+		(void) stl2::is_sorted_until(std::move(as), std::less<int>{}, &A::a);
+		(void) stl2::is_sorted_until(std::move(as), std::greater<int>{}, &A::a);
 	}
-#endif
 }

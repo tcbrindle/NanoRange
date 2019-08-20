@@ -19,6 +19,7 @@
 //===----------------------------------------------------------------------===//
 
 #include <nanorange/algorithm/partial_sort_copy.hpp>
+#include <array>
 #include <cassert>
 #include <memory>
 #include <random>
@@ -147,21 +148,20 @@ TEST_CASE("alg.partial_sort_copy")
     }
 
     // Check rvalue ranges
-#ifdef HAVE_RVALUE_RANGES
     {
         constexpr int N = 256;
         constexpr int M = N/2-1;
         S input[N];
-        U output[M];
+        std::array<U, M> output;
         for (int i = 0; i < N; ++i)
             input[i].i = i;
         std::shuffle(input, input+N, gen);
         auto r = stl2::partial_sort_copy(input, std::move(output), std::less<int>(), &S::i, &U::i);
-        U* e = output + std::min(N, M);
-        CHECK(r.get_unsafe() == e);
+        static_assert(stl2::Same<decltype(r), stl2::dangling>);
+        U* e = output.data() + std::min(N, M);
+        //CHECK(r.get_unsafe() == e);
         int i = 0;
-        for (U* x = output; x < e; ++x, ++i)
+        for (U* x = output.data(); x < e; ++x, ++i)
             CHECK(x->i == i);
     }
-#endif
 }

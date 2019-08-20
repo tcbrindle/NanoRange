@@ -111,7 +111,6 @@ void test_proj()
 	CHECK(r2[3].i == 8);
 }
 
-#ifdef HAVE_RVALUE_RANGES
 void test_rvalue()
 {
 	// Test rvalue ranges
@@ -119,7 +118,7 @@ void test_rvalue()
 	S r1[10] = {S{0}};
 	S r2[10] = {S{0}};
 	auto p = stl2::partition_copy(std::move(ia), r1, r2, is_odd(), &S::i);
-	CHECK(p.in.get_unsafe() == std::end(ia));
+	//CHECK(p.in.get_unsafe() == std::end(ia));
 	CHECK(p.out1 == r1 + 4);
 	CHECK(r1[0].i == 1);
 	CHECK(r1[1].i == 3);
@@ -131,7 +130,6 @@ void test_rvalue()
 	CHECK(r2[2].i == 6);
 	CHECK(r2[3].i == 8);
 }
-#endif
 
 }
 
@@ -144,5 +142,5 @@ TEST_CASE("alg.partition_copy")
 	test_range<input_iterator<const int*>, sentinel<const int*>>();
 
 	test_proj();
-	//test_rvalue();
+	test_rvalue();
 }

@@ -14,6 +14,7 @@
 //  or a copy at http://stlab.adobe.com/licenses.html)
 
 #include <nanorange/algorithm/upper_bound.hpp>
+#include <nanorange/view/subrange.hpp>
 #include <vector>
 #include <utility>
 #include "../catch.hpp"
@@ -69,17 +70,15 @@ TEST_CASE("alg.upper_bound")
 	CHECK(stl2::upper_bound(a, 1, less(), &std::pair<int, int>::first) == &a[4]);
 	CHECK(stl2::upper_bound(c, 1, less(), &std::pair<int, int>::first) == &c[4]);
 
-#ifdef HAVE_RVALUE_RANGES
-	CHECK(stl2::upper_bound(std::move(a), a[2]).get_unsafe() == &a[3]);
-	CHECK(stl2::upper_bound(std::move(c), c[3]).get_unsafe() == &c[4]);
+	CHECK(stl2::upper_bound(stl2::subrange(a), a[2]) == &a[3]);
+	CHECK(stl2::upper_bound(stl2::subrange(c), c[3]) == &c[4]);
 
-	CHECK(stl2::upper_bound(std::move(a), a[4], less<>()).get_unsafe() == &a[5]);
-	CHECK(stl2::upper_bound(std::move(c), c[5], less<>()).get_unsafe() == &c[6]);
+	CHECK(stl2::upper_bound(stl2::subrange(a), a[4], less()) == &a[5]);
+	CHECK(stl2::upper_bound(stl2::subrange(c), c[5], less()) == &c[6]);
 
 
-	CHECK(stl2::upper_bound(std::move(a), 1, less<>(), &std::pair<int, int>::first).get_unsafe() == &a[4]);
-	CHECK(stl2::upper_bound(std::move(c), 1, less<>(), &std::pair<int, int>::first).get_unsafe() == &c[4]);
-#endif
+	CHECK(stl2::upper_bound(stl2::subrange(a), 1, less(), &std::pair<int, int>::first) == &a[4]);
+	CHECK(stl2::upper_bound(stl2::subrange(c), 1, less(), &std::pair<int, int>::first) == &c[4]);
 
 #ifdef HAVE_VIEWS
 	CHECK(*stl2::upper_bound(stl2::ext::iota_view<int>{}, 42).get_unsafe() == 43);

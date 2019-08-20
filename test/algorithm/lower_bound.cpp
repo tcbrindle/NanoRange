@@ -14,6 +14,8 @@
 //  or a copy at http://stlab.adobe.com/licenses.html)
 
 #include <nanorange/algorithm/lower_bound.hpp>
+#include <nanorange/view/iota.hpp>
+#include <nanorange/view/subrange.hpp>
 #include <vector>
 #include <utility>
 #include "../catch.hpp"
@@ -69,12 +71,9 @@ TEST_CASE("alg.lower_bound")
 	CHECK(stl2::lower_bound(a, 1, less(), &std::pair<int, int>::first) == &a[2]);
 	CHECK(stl2::lower_bound(c, 1, less(), &std::pair<int, int>::first) == &c[2]);
 
-#ifdef HAVE_RVALUE_RANGES
-	CHECK(stl2::lower_bound(std::move(a), 1, less<>(), &std::pair<int, int>::first).get_unsafe() == &a[2]);
-	CHECK(stl2::lower_bound(std::move(c), 1, less<>(), &std::pair<int, int>::first).get_unsafe() == &c[2]);
-#endif
+	CHECK(stl2::lower_bound(stl2::subrange(a), 1, less(), &std::pair<int, int>::first) == &a[2]);
+	CHECK(stl2::lower_bound(stl2::subrange(c), 1, less(), &std::pair<int, int>::first) == &c[2]);
 
-#ifdef HAVE_VIEWS
-	CHECK(*stl2::lower_bound(stl2::ext::iota_view<int>{}, 42).get_unsafe() == 42);
-#endif
+	//CHECK(*stl2::lower_bound(stl2::iota_view<int>{}, 42) == 42);
+	(void) stl2::lower_bound(stl2::iota_view<int>{}, 42);
 }
