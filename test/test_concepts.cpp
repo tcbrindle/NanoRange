@@ -271,20 +271,20 @@ static_assert(!rng::regular<int&>, "");
 
 // [regular]Invocable tests
 // FIXME: Add these
-static_assert(!rng::Invocable<void>, "");
+static_assert(!rng::invocable<void>, "");
 
 // Predicate tests
 int int_cmp(int, int);
 
-static_assert(!rng::Predicate<void>, "");
-static_assert(rng::Predicate<decltype(int_cmp), int, int>, "");
-static_assert(rng::Predicate<std::equal_to<>, int, int>, "");
+static_assert(!rng::predicate<void>, "");
+static_assert(rng::predicate<decltype(int_cmp), int, int>, "");
+static_assert(rng::predicate<std::equal_to<>, int, int>, "");
 const auto cmp = [] (auto const& lhs, auto const& rhs) { return lhs < rhs; };
-static_assert(rng::Predicate<decltype(cmp), int, float>, "");
+static_assert(rng::predicate<decltype(cmp), int, float>, "");
 
 // Relation tests
-static_assert(!rng::Relation<void, void, void>, "");
-static_assert(rng::Relation<std::equal_to<>, int, int>, "");
+static_assert(!rng::relation<void, void, void>, "");
+static_assert(rng::relation<std::equal_to<>, int, int>, "");
 
 // Readable tests
 static_assert(!rng::Readable<void>, "");

@@ -29,7 +29,7 @@ private:
 public:
     template <typename O, typename S, typename F>
     constexpr std::enable_if_t<Iterator<O> && Sentinel<S, O> &&
-                                   copy_constructible<F> && Invocable<F&> &&
+                                   copy_constructible<F> && invocable<F&> &&
                                    Writable<O, invoke_result_t<F&>>,
                                O>
     operator()(O first, S last, F gen) const
@@ -38,7 +38,7 @@ public:
     }
 
     template <typename Rng, typename F>
-    constexpr std::enable_if_t<Invocable<F&> &&
+    constexpr std::enable_if_t<invocable<F&> &&
                                    OutputRange<Rng, invoke_result_t<F&>>,
                                safe_iterator_t<Rng>>
     operator()(Rng&& rng, F gen) const

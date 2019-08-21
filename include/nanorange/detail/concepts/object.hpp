@@ -38,13 +38,14 @@ NANO_CONCEPT copyable = decltype(detail::copyable_concept::test<T>(0))::value;
 template <typename T>
 NANO_CONCEPT semiregular = copyable<T> && default_constructible<T>;
 
-// [concepts.lib.object.regular]
+// [concept.regular]
 template <typename T>
 NANO_CONCEPT regular = semiregular<T> && equality_comparable<T>;
 
+// [concept.invocable]
 namespace detail {
 
-struct Invocable_req {
+struct invocable_concept {
     /*template <typename F, typename... Args>
     auto requires_(F&& f, Args&&... args) -> decltype(
         nano::invoke(std::forward<F>(f), std::forward<Args>(args)...)
@@ -57,52 +58,41 @@ struct Invocable_req {
 } // namespace detail
 
 template <typename F, typename... Args>
-NANO_CONCEPT Invocable = detail::requires_<detail::Invocable_req, F, Args...>;
+NANO_CONCEPT invocable = detail::requires_<detail::invocable_concept, F, Args...>;
 
+// [concept.regularinvocable]
 template <typename F, typename... Args>
-NANO_CONCEPT RegularInvocable = Invocable<F, Args...>;
+NANO_CONCEPT regular_invocable = invocable<F, Args...>;
 
+// [concept.predicate]
 namespace detail {
 
-template <typename, typename...>
-auto Predicate_fn(long) -> std::false_type;
+struct predicate_concept {
+    template <typename, typename...>
+    static auto test(long) -> std::false_type;
 
-template <typename F, typename... Args>
-auto Predicate_fn(int) -> std::enable_if_t<
-        RegularInvocable<F, Args...> &&
+    template <typename F, typename... Args>
+    static auto test(int) -> std::enable_if_t<
+        regular_invocable<F, Args...> &&
         boolean<invoke_result_t<F, Args...>>,
         std::true_type>;
 
+};
+
 }
 
 template <typename F, typename... Args>
-NANO_CONCEPT Predicate = decltype(detail::Predicate_fn<F, Args...>(0))::value;
+NANO_CONCEPT predicate = decltype(detail::predicate_concept::test<F, Args...>(0))::value;
 
-namespace detail {
-
-template <typename, typename, typename>
-auto Relation_fn(long) -> std::false_type;
-
+// [concept.relation]
 template <typename R, typename T, typename U>
-auto Relation_fn(int) -> std::enable_if_t<
-        Predicate<R, T, T> && Predicate<R, U, U> &&
-        common_reference_with<const std::remove_reference_t<T>&,
-                        const std::remove_reference_t<U>&> &&
-        Predicate<R,
-                  common_reference_t<const std::remove_reference_t<T>&,
-                                     const std::remove_reference_t<U>&>,
-                  common_reference_t<const std::remove_reference_t<T>&,
-                                     const std::remove_reference_t<U>&>> &&
-        Predicate<R, T, U> && Predicate<R, U, T>,
-                std::true_type>;
+NANO_CONCEPT relation =
+    predicate<R, T, T> && predicate<R, U, U> &&
+    predicate<R, T, U> && predicate<R, U, T>;
 
-}
-
+// [concept.strictweakorder]
 template <typename R, typename T, typename U>
-NANO_CONCEPT Relation = decltype(detail::Relation_fn<R, T, U>(0))::value;
-
-template <typename R, typename T, typename U>
-NANO_CONCEPT StrictWeakOrder = Relation<R, T, U>;
+NANO_CONCEPT strict_weak_order = relation<R, T, U>;
 
 NANO_END_NAMESPACE
 

@@ -25,10 +25,9 @@ auto IndirectUnaryInvocable_fn(long) -> std::false_type;
 template <typename F, typename I>
 auto IndirectUnaryInvocable_fn(int) -> std::enable_if_t<
         Readable<I> &&
-        copy_constructible<F> &&
-        Invocable<F&, iter_value_t<I>&> &&
-        Invocable<F&, iter_reference_t<I>> &&
-        Invocable<F&, iter_common_reference_t<I>> &&
+        copy_constructible<F> && invocable<F&, iter_value_t<I>&> &&
+        invocable<F&, iter_reference_t<I>> &&
+        invocable<F&, iter_common_reference_t<I>> &&
         common_reference_with<
                 invoke_result_t<F&, iter_value_t<I>&>,
                 invoke_result_t<F&, iter_reference_t<I>&>>,
@@ -49,9 +48,9 @@ template <typename F, typename I>
 auto IndirectRegularUnaryInvocable_fn(int) -> std::enable_if_t<
         Readable<I> &&
         copy_constructible<F> &&
-        RegularInvocable<F&, iter_value_t<I>&> &&
-        RegularInvocable<F&, iter_reference_t<I>> &&
-        RegularInvocable<F&, iter_common_reference_t<I>> &&
+        regular_invocable<F&, iter_value_t<I>&> &&
+        regular_invocable<F&, iter_reference_t<I>> &&
+        regular_invocable<F&, iter_common_reference_t<I>> &&
         common_reference_with<
             invoke_result_t<F&, iter_value_t<I>&>,
             invoke_result_t<F&, iter_reference_t<I>&>>,
@@ -73,9 +72,9 @@ template <typename F, typename I>
 auto IndirectUnaryPredicate_fn(int) -> std::enable_if_t<
         Readable<I> &&
         copy_constructible<F> &&
-        Predicate<F&, iter_value_t<I>&> &&
-        Predicate<F&, iter_reference_t<I>> &&
-        Predicate<F&, iter_common_reference_t<I>>,
+                            predicate<F&, iter_value_t<I>&> &&
+                            predicate<F&, iter_reference_t<I>> &&
+                            predicate<F&, iter_common_reference_t<I>>,
             std::true_type>;
 
 }
@@ -92,11 +91,11 @@ auto IndirectRelation_fn(long) -> std::false_type;
 template <typename F, typename I1, typename I2>
 auto IndirectRelation_fn(int) -> std::enable_if_t<
         Readable<I1> && Readable<I2> && copy_constructible<F> &&
-        Relation<F&, iter_value_t<I1>&, iter_value_t<I2>&>&&
-        Relation<F&, iter_value_t<I1>&, iter_reference_t<I2>>&&
-        Relation<F&, iter_reference_t<I1>, iter_value_t<I2>&>&&
-        Relation<F&, iter_reference_t<I1>, iter_reference_t<I2>>&&
-        Relation<F&,
+        relation<F&, iter_value_t<I1>&, iter_value_t<I2>&>&&
+        relation<F&, iter_value_t<I1>&, iter_reference_t<I2>>&&
+        relation<F&, iter_reference_t<I1>, iter_value_t<I2>&>&&
+        relation<F&, iter_reference_t<I1>, iter_reference_t<I2>>&&
+        relation<F&,
             iter_common_reference_t<I1>,
             iter_common_reference_t<I2>>,
     std::true_type>;
@@ -118,11 +117,11 @@ template <typename F, typename I1, typename I2>
 auto IndirectStrictWeakOrder_fn(int) -> std::enable_if_t<
         Readable<I1> &&
         Readable<I2> &&
-        StrictWeakOrder<F&, iter_value_t<I1>&, iter_value_t<I2>&> &&
-        StrictWeakOrder<F&, iter_value_t<I1>&, iter_reference_t<I2>> &&
-        StrictWeakOrder<F&, iter_reference_t<I1>, iter_value_t<I2>&> &&
-        StrictWeakOrder<F&, iter_reference_t<I1>, iter_reference_t<I2>> &&
-        StrictWeakOrder<F&, iter_common_reference_t<I1>, iter_common_reference_t<I2>>,
+        strict_weak_order<F&, iter_value_t<I1>&, iter_value_t<I2>&> &&
+        strict_weak_order<F&, iter_value_t<I1>&, iter_reference_t<I2>> &&
+        strict_weak_order<F&, iter_reference_t<I1>, iter_value_t<I2>&> &&
+        strict_weak_order<F&, iter_reference_t<I1>, iter_reference_t<I2>> &&
+        strict_weak_order<F&, iter_common_reference_t<I1>, iter_common_reference_t<I2>>,
     std::true_type>;
 
 }
@@ -151,7 +150,7 @@ constexpr bool all_readable_v = all_readable_helper<Readable<Is>...>::value;
 template <typename F, typename... Is>
 using indirect_result_t = std::enable_if_t<
         detail::all_readable_v<Is...> &&
-        Invocable<F, iter_reference_t<Is>...>,
+                         invocable<F, iter_reference_t<Is>...>,
         invoke_result_t<F, iter_reference_t<Is>...>>;
 
 // range.commonalgoreq.indirectlymovable]

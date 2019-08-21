@@ -215,8 +215,8 @@ static_assert(ranges::CommonRange<std::vector<int> >, "");
 static_assert(ranges::RandomAccessIterator<ranges::iterator_t<std::vector<int> const &>>, "");
 //static_assert(!ranges::BoundedView<ranges::istream_range<int>>, "");
 
-static_assert(ranges::Predicate<std::less<int>, int, int>, "");
-static_assert(!ranges::Predicate<std::less<int>, char*, int>, "");
+static_assert(ranges::predicate<std::less<int>, int, int>, "");
+static_assert(!ranges::predicate<std::less<int>, char*, int>, "");
 
 static_assert(ranges::OutputIterator<int *, int>, "");
 static_assert(!ranges::OutputIterator<int const *, int>, "");

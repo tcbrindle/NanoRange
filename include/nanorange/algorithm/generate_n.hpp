@@ -16,7 +16,7 @@ namespace detail {
 struct generate_n_fn {
     template <typename O, typename F>
     constexpr std::enable_if_t<Iterator<O> && copy_constructible<F> &&
-                                   Invocable<F&> &&
+                                   invocable<F&> &&
                                    Writable<O, invoke_result_t<F&>>,
                                O>
     operator()(O first, iter_difference_t<O> n, F gen) const
