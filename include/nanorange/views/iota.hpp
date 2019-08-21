@@ -63,7 +63,7 @@ constexpr auto iota_view_iter_cat_helper()
 template <typename W, typename Bound = unreachable_sentinel_t>
 struct iota_view : view_interface<iota_view<W, Bound>> {
     static_assert(WeaklyIncrementable<W>);
-    static_assert(Semiregular<Bound>);
+    static_assert(semiregular<Bound>);
     static_assert(detail::weakly_equality_comparable_with<W, Bound>);
 
 private:

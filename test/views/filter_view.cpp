@@ -86,7 +86,7 @@ TEST_CASE("views.filter")
 	auto mutable_rng = views::filter(rgi, [flag](int) mutable { return flag = !flag;});
 	::check_equal(mutable_rng, {1,3,5,7,9});
 	static_assert(Range<decltype(mutable_rng)>);
-	static_assert(Copyable<decltype(mutable_rng)>);
+	static_assert(copyable<decltype(mutable_rng)>);
 	static_assert(!View<decltype(mutable_rng) const>);
 
 	// {

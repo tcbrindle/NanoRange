@@ -183,7 +183,7 @@ template <typename In, typename Out>
 auto IndirectlyMovableStorable_fn(int) -> std::enable_if_t<
         IndirectlyMovable<In, Out> &&
         Writable<Out, iter_value_t<In>> &&
-        Movable<iter_value_t<In>> &&
+        movable<iter_value_t<In>> &&
         constructible_from<iter_value_t<In>, iter_rvalue_reference_t<In>> &&
         assignable_from<iter_value_t<In>&, iter_rvalue_reference_t<In>>,
     std::true_type>;
@@ -222,7 +222,7 @@ template <typename In, typename Out>
 auto IndirectlyCopyableStorable_fn(int) -> std::enable_if_t<
         IndirectlyCopyable<In, Out> &&
         Writable<Out, const iter_value_t<In>&> &&
-        Copyable<iter_value_t<In>> &&
+        copyable<iter_value_t<In>> &&
         constructible_from<iter_value_t<In>, iter_reference_t<In>> &&
         assignable_from<iter_value_t<In>&, iter_reference_t<In>>,
     std::true_type>;

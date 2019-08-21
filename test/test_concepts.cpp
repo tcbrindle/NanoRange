@@ -248,28 +248,28 @@ struct odd_assign {
     odd_assign& operator=(odd_assign&);
 };
 
-static_assert(!rng::Copyable<void>, "");
-static_assert(rng::Copyable<int>, "");
-static_assert(!rng::Copyable<int&>, "");
-static_assert(rng::Copyable<std::string>, "");
-static_assert(!rng::Copyable<std::unique_ptr<int>>, "");
-static_assert(!rng::Copyable<odd_assign>, "");
+static_assert(!rng::copyable<void>, "");
+static_assert(rng::copyable<int>, "");
+static_assert(!rng::copyable<int&>, "");
+static_assert(rng::copyable<std::string>, "");
+static_assert(!rng::copyable<std::unique_ptr<int>>, "");
+static_assert(!rng::copyable<odd_assign>, "");
 
 // Semiregular tests
-static_assert(!rng::Semiregular<void>, "");
-static_assert(rng::Semiregular<int>, "");
-static_assert(rng::Semiregular<std::string>, "");
-static_assert(rng::Semiregular<int*>, "");
-static_assert(!rng::Semiregular<int&>, "");
+static_assert(!rng::semiregular<void>, "");
+static_assert(rng::semiregular<int>, "");
+static_assert(rng::semiregular<std::string>, "");
+static_assert(rng::semiregular<int*>, "");
+static_assert(!rng::semiregular<int&>, "");
 
-// Regular tests
-static_assert(!rng::Regular<void>, "");
-static_assert(rng::Regular<int>, "");
-static_assert(rng::Regular<std::string>, "");
-static_assert(rng::Regular<int*>, "");
-static_assert(!rng::Regular<int&>, "");
+// regular tests
+static_assert(!rng::regular<void>, "");
+static_assert(rng::regular<int>, "");
+static_assert(rng::regular<std::string>, "");
+static_assert(rng::regular<int*>, "");
+static_assert(!rng::regular<int&>, "");
 
-// [Regular]Invocable tests
+// [regular]Invocable tests
 // FIXME: Add these
 static_assert(!rng::Invocable<void>, "");
 

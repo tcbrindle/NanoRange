@@ -183,15 +183,15 @@ static_assert(!ranges::copy_constructible<nonmovable &&>, "");
 static_assert(ranges::copy_constructible<const nonmovable &>, "");
 static_assert(!ranges::copy_constructible<const nonmovable &&>, "");
 
-static_assert(ranges::Movable<int>, "");
-static_assert(!ranges::Movable<int const>, "");
-static_assert(ranges::Movable<moveonly>, "");
-static_assert(!ranges::Movable<nonmovable>, "");
+static_assert(ranges::movable<int>, "");
+static_assert(!ranges::movable<int const>, "");
+static_assert(ranges::movable<moveonly>, "");
+static_assert(!ranges::movable<nonmovable>, "");
 
-static_assert(ranges::Copyable<int>, "");
-static_assert(!ranges::Copyable<int const>, "");
-static_assert(!ranges::Copyable<moveonly>, "");
-static_assert(!ranges::Copyable<nonmovable>, "");
+static_assert(ranges::copyable<int>, "");
+static_assert(!ranges::copyable<int const>, "");
+static_assert(!ranges::copyable<moveonly>, "");
+static_assert(!ranges::copyable<nonmovable>, "");
 
 static_assert(ranges::InputIterator<int*>, "");
 static_assert(!ranges::InputIterator<int>, "");

@@ -45,7 +45,7 @@ enum class t {
 	integral, signed_integral, unsigned_integral, ull
 };
 
-constexpr t f(__stl2::Regular) { return t::regular; }
+constexpr t f(__stl2::regular) { return t::regular; }
 constexpr t f(__stl2::ext::Scalar) { return t::scalar; }
 constexpr t f(__stl2::ext::Arithmetic) { return t::arithmetic; }
 constexpr t f(__stl2::ext::FloatingPoint) { return t::floating_point; }

@@ -14,31 +14,33 @@
 
 NANO_BEGIN_NAMESPACE
 
-// [concepts.lib.object.copyable]
+// [concept.copyable]
 namespace detail {
 
-template <typename>
-auto Copyable_fn(long) -> std::false_type;
+struct copyable_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
 
-template <typename T>
-auto Copyable_fn(int) -> std::enable_if_t<
-        copy_constructible<T> &&
-        Movable<T> &&
+    template <typename T>
+    static auto test(int) -> std::enable_if_t<
+        copy_constructible<T> && movable<T> &&
         assignable_from<T&, const T&>,
         std::true_type>;
+
+};
 
 }
 
 template <typename T>
-NANO_CONCEPT Copyable = decltype(detail::Copyable_fn<T>(0))::value;
+NANO_CONCEPT copyable = decltype(detail::copyable_concept::test<T>(0))::value;
 
-// [concepts.lib.object.semiregular]
+// [concept.semiregular]
 template <typename T>
-NANO_CONCEPT Semiregular = Copyable<T>&& default_constructible<T>;
+NANO_CONCEPT semiregular = copyable<T> && default_constructible<T>;
 
 // [concepts.lib.object.regular]
 template <typename T>
-NANO_CONCEPT Regular = Semiregular<T>&& equality_comparable<T>;
+NANO_CONCEPT regular = semiregular<T> && equality_comparable<T>;
 
 namespace detail {
 

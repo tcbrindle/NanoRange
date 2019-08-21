@@ -220,7 +220,7 @@ constexpr auto make_move_iterator(I i)
 
 template <typename S>
 class move_sentinel {
-    static_assert(Semiregular<S>,
+    static_assert(semiregular<S>,
                   "Template argument to move_sentinel must model Semiregular");
 
 public:
@@ -290,7 +290,7 @@ constexpr auto operator-(const move_iterator<I>& i, const move_sentinel<S>& s)
 
 template <typename S>
 constexpr auto make_move_sentinel(S s)
-    -> std::enable_if_t<Semiregular<S>, move_sentinel<S>>
+    -> std::enable_if_t<semiregular<S>, move_sentinel<S>>
 {
     return move_sentinel<S>(std::move(s));
 }

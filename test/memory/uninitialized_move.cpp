@@ -59,7 +59,7 @@ namespace {
 
 	//template <ranges::Copyable T>
 	template <typename T>
-	std::enable_if_t<ranges::Copyable<T>>
+	std::enable_if_t<ranges::copyable<T>>
 	uninitialized_move_test(const Array<T>& control)
 	{
 		auto independent = make_buffer<T>(control.size());

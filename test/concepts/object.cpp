@@ -295,49 +295,49 @@ CONCEPT_ASSERT(!models::copy_constructible<not_mutable_ref>);
 CONCEPT_ASSERT(!models::copy_constructible<not_const_ref_ref>);
 #endif
 
-CONCEPT_ASSERT(models::Movable<int>);
-CONCEPT_ASSERT(!models::Movable<const int>);
-CONCEPT_ASSERT(models::Movable<double>);
-CONCEPT_ASSERT(!models::Movable<void>);
-CONCEPT_ASSERT(models::Movable<copyable>);
-CONCEPT_ASSERT(models::Movable<moveonly>);
-CONCEPT_ASSERT(!models::Movable<nonmovable>);
-CONCEPT_ASSERT(!models::Movable<copyonly>);
+CONCEPT_ASSERT(models::movable<int>);
+CONCEPT_ASSERT(!models::movable<const int>);
+CONCEPT_ASSERT(models::movable<double>);
+CONCEPT_ASSERT(!models::movable<void>);
+CONCEPT_ASSERT(models::movable<copyable>);
+CONCEPT_ASSERT(models::movable<moveonly>);
+CONCEPT_ASSERT(!models::movable<nonmovable>);
+CONCEPT_ASSERT(!models::movable<copyonly>);
 
-CONCEPT_ASSERT(models::Copyable<int>);
-CONCEPT_ASSERT(!models::Copyable<const int>);
-CONCEPT_ASSERT(models::Copyable<double>);
-CONCEPT_ASSERT(!models::Copyable<void>);
-CONCEPT_ASSERT(models::Copyable<copyable>);
-CONCEPT_ASSERT(!models::Copyable<moveonly>);
-CONCEPT_ASSERT(!models::Copyable<nonmovable>);
-CONCEPT_ASSERT(!models::Copyable<copyonly>);
+CONCEPT_ASSERT(models::copyable<int>);
+CONCEPT_ASSERT(!models::copyable<const int>);
+CONCEPT_ASSERT(models::copyable<double>);
+CONCEPT_ASSERT(!models::copyable<void>);
+CONCEPT_ASSERT(models::copyable<copyable>);
+CONCEPT_ASSERT(!models::copyable<moveonly>);
+CONCEPT_ASSERT(!models::copyable<nonmovable>);
+CONCEPT_ASSERT(!models::copyable<copyonly>);
 
-CONCEPT_ASSERT(models::Semiregular<int>);
-CONCEPT_ASSERT(models::Semiregular<double>);
-CONCEPT_ASSERT(!models::Semiregular<void>);
-CONCEPT_ASSERT(!models::Semiregular<int&>);
-CONCEPT_ASSERT(models::Semiregular<semiregular>);
-CONCEPT_ASSERT(models::Semiregular<regular>);
-CONCEPT_ASSERT(models::Semiregular<copyable>);
-CONCEPT_ASSERT(!models::Semiregular<moveonly>);
-CONCEPT_ASSERT(!models::Semiregular<nonmovable>);
-CONCEPT_ASSERT(!models::Semiregular<copyonly>);
-CONCEPT_ASSERT(!models::Semiregular<explicit_move>);
-CONCEPT_ASSERT(!models::Semiregular<explicit_copy>);
+CONCEPT_ASSERT(models::semiregular<int>);
+CONCEPT_ASSERT(models::semiregular<double>);
+CONCEPT_ASSERT(!models::semiregular<void>);
+CONCEPT_ASSERT(!models::semiregular<int&>);
+CONCEPT_ASSERT(models::semiregular<semiregular>);
+CONCEPT_ASSERT(models::semiregular<regular>);
+CONCEPT_ASSERT(models::semiregular<copyable>);
+CONCEPT_ASSERT(!models::semiregular<moveonly>);
+CONCEPT_ASSERT(!models::semiregular<nonmovable>);
+CONCEPT_ASSERT(!models::semiregular<copyonly>);
+CONCEPT_ASSERT(!models::semiregular<explicit_move>);
+CONCEPT_ASSERT(!models::semiregular<explicit_copy>);
 
-CONCEPT_ASSERT(models::Regular<int>);
-CONCEPT_ASSERT(models::Regular<double>);
-CONCEPT_ASSERT(!models::Regular<void>);
-CONCEPT_ASSERT(!models::Regular<int&>);
-CONCEPT_ASSERT(!models::Regular<semiregular>);
-CONCEPT_ASSERT(models::Regular<regular>);
-CONCEPT_ASSERT(!models::Regular<copyable>);
-CONCEPT_ASSERT(!models::Regular<moveonly>);
-CONCEPT_ASSERT(!models::Regular<nonmovable>);
-CONCEPT_ASSERT(!models::Regular<copyonly>);
-CONCEPT_ASSERT(!models::Regular<explicit_move>);
-CONCEPT_ASSERT(!models::Regular<explicit_copy>);
+CONCEPT_ASSERT(models::regular<int>);
+CONCEPT_ASSERT(models::regular<double>);
+CONCEPT_ASSERT(!models::regular<void>);
+CONCEPT_ASSERT(!models::regular<int&>);
+CONCEPT_ASSERT(!models::regular<semiregular>);
+CONCEPT_ASSERT(models::regular<regular>);
+CONCEPT_ASSERT(!models::regular<copyable>);
+CONCEPT_ASSERT(!models::regular<moveonly>);
+CONCEPT_ASSERT(!models::regular<nonmovable>);
+CONCEPT_ASSERT(!models::regular<copyonly>);
+CONCEPT_ASSERT(!models::regular<explicit_move>);
+CONCEPT_ASSERT(!models::regular<explicit_copy>);
 
 CONCEPT_ASSERT(models::constructible_from<std::initializer_list<int>>);
 CONCEPT_ASSERT(models::default_constructible<std::initializer_list<int>>);
@@ -349,6 +349,6 @@ CONCEPT_ASSERT(models::default_constructible<int*>);
 CONCEPT_ASSERT(!models::constructible_from<int&, long&>);
 
 // https://github.com/ericniebler/stl2/issues/310
-CONCEPT_ASSERT(!models::Movable<int&&>);
+CONCEPT_ASSERT(!models::movable<int&&>);
 
 }

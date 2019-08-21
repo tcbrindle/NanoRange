@@ -76,7 +76,7 @@ struct WeaklyIncrementable_req {
 
 template <typename I>
 NANO_CONCEPT WeaklyIncrementable =
-    Semiregular<I>&& detail::requires_<detail::WeaklyIncrementable_req, I>;
+    semiregular<I>&& detail::requires_<detail::WeaklyIncrementable_req, I>;
 
 // [range.iterators.incrementable]
 
@@ -90,7 +90,7 @@ struct Incrementable_req {
 } // namespace detail
 
 template <typename I>
-NANO_CONCEPT Incrementable = Regular<I>&& WeaklyIncrementable<I>&&
+NANO_CONCEPT Incrementable = regular<I>&& WeaklyIncrementable<I>&&
     detail::requires_<detail::Incrementable_req, I>;
 
 // [range.iterators.iterator]
@@ -112,8 +112,7 @@ NANO_CONCEPT Iterator =
 // [range.iterators.sentinel]
 
 template <typename S, typename I>
-NANO_CONCEPT Sentinel =
-    Semiregular<S>&& Iterator<I>&& detail::weakly_equality_comparable_with<S, I>;
+NANO_CONCEPT Sentinel = semiregular<S>&& Iterator<I>&& detail::weakly_equality_comparable_with<S, I>;
 
 // [range.iterators.sizedsentinel]
 

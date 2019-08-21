@@ -162,7 +162,7 @@ struct view_predicate<T, std::enable_if_t<view_predicate_helper<T>>>
 } // namespace detail
 
 template <typename T>
-NANO_CONCEPT View = Range<T>&& Semiregular<T>&& detail::view_predicate_v<T>;
+NANO_CONCEPT View = Range<T>&& semiregular<T>&& detail::view_predicate_v<T>;
 
 // [range.common]
 namespace detail {
