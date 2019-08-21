@@ -194,7 +194,7 @@ public:
               std::enable_if_t<InputRange<R> && Constructible<V, all_view<R>>,
                                int> = 0>
     constexpr filter_view(R&& r, Pred pred)
-        : base_(view::all(std::forward<R>(r))), pred_(std::move(pred))
+        : base_(views::all(std::forward<R>(r))), pred_(std::move(pred))
     {}
 
     constexpr V base() const { return base_; }
@@ -258,7 +258,7 @@ struct filter_view_fn {
 
 }
 
-namespace view {
+namespace views {
 
 NANO_INLINE_VAR(nano::detail::filter_view_fn, filter)
 

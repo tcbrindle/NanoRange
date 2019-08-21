@@ -21,7 +21,7 @@ TEST_CASE("views.counted")
 	using namespace ranges;
 	{
 		int rg[] = {0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9};
-		auto x = view::counted(rg, 10);
+		auto x = views::counted(rg, 10);
 		::check_equal(x, {0,1,2,3,4,5,6,7,8,9});
 		static_assert(Same<decltype(x), subrange<int*>>, "");
 		static_assert(View<decltype(x)>, "");
@@ -31,7 +31,7 @@ TEST_CASE("views.counted")
 	}
 	{
 		int rg[] = {0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9};
-		auto x = view::counted(forward_iterator<int*>(rg), 10);
+		auto x = views::counted(forward_iterator<int*>(rg), 10);
 		::check_equal(x, {0,1,2,3,4,5,6,7,8,9});
 		static_assert(View<decltype(x)>, "");
 		static_assert(SizedRange<decltype(x)>, "");

@@ -33,7 +33,7 @@ public:
 
 using empty_view_::empty_view;
 
-namespace view {
+namespace views {
 
 template <typename T, typename = std::enable_if_t<std::is_object<T>::value>>
 inline constexpr empty_view<T> empty{};

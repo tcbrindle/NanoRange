@@ -350,7 +350,7 @@ template <typename W, typename Bound, std::enable_if_t<
         (SignedIntegral<W> == SignedIntegral<Bound>), int> = 0>
 iota_view(W, Bound) -> iota_view<W, Bound>;
 
-namespace view {
+namespace views {
 
 namespace detail {
 

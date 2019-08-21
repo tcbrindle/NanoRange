@@ -17,7 +17,7 @@
 TEST_CASE("views.iota")
 {
     {
-        constexpr auto rng = nano::view::iota(0, 10);
+        constexpr auto rng = nano::views::iota(0, 10);
 
         static_assert(nano::RandomAccessRange<decltype(rng)>);
 
@@ -26,7 +26,7 @@ TEST_CASE("views.iota")
         static_assert(!rng.empty());
 
         ::check_equal(rng, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
-        ::check_equal(rng | nano::view::reverse,
+        ::check_equal(rng | nano::views::reverse,
                       {9, 8, 7, 6, 5, 4, 3, 2, 1, 0});
 
 
@@ -59,15 +59,15 @@ TEST_CASE("views.iota")
     }
 
     {
-        auto rng = nano::view::iota(0);
-        ::check_equal(nano::view::counted(nano::begin(rng), 10),
+        auto rng = nano::views::iota(0);
+        ::check_equal(nano::views::counted(nano::begin(rng), 10),
                       {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
     }
 
     {
         // Testing iota_view with something that isn't integral
         std::vector vec{1, 2, 3, 4, 5};
-        auto rng = nano::view::iota(vec.begin(), vec.begin() + 3);
+        auto rng = nano::views::iota(vec.begin(), vec.begin() + 3);
 
         nano::for_each(rng, [](auto i) {
             *i = 0;

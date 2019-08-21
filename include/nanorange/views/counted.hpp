@@ -12,7 +12,7 @@
 
 NANO_BEGIN_NAMESPACE
 
-namespace view {
+namespace views {
 
 namespace detail {
 

@@ -48,7 +48,7 @@ private:
     detail::semiregular_box<T> value_;
 };
 
-namespace view {
+namespace views {
 
 namespace detail {
 

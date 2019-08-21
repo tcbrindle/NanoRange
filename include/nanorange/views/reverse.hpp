@@ -47,7 +47,7 @@ struct reverse_view
                   BidirectionalRange<R> &&
                   Constructible<V, all_view<R>>, int> = 0>
     constexpr explicit reverse_view(R&& r)
-        : base_(view::all(std::forward<R>(r)))
+        : base_(views::all(std::forward<R>(r)))
     {}
 
     constexpr reverse_view(const reverse_view& other)
@@ -150,7 +150,7 @@ inline constexpr bool is_raco<reverse_view_fn> = true;
 
 } // namespace detail
 
-namespace view {
+namespace views {
 
 NANO_INLINE_VAR(nano::detail::reverse_view_fn, reverse)
 

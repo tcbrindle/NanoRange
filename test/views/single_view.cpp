@@ -42,7 +42,7 @@ template <class T>
 void test(T&& t)
 {
     using D = remove_cvref_t<T>;
-    auto v = ranges::view::single(std::forward<T>(t));
+    auto v = ranges::views::single(std::forward<T>(t));
     static_assert(ranges::Same<ranges::single_view<D>, decltype(v)>);
     test_one(v, t);
     test_one(std::as_const(v), t);

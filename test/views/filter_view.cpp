@@ -40,9 +40,9 @@ TEST_CASE("views.filter")
 	using namespace ranges;
 
 	int rgi[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-	static_assert(size(view::all(rgi))==10);
+	static_assert(size(views::all(rgi))==10);
 
-	auto rng = rgi | view::filter(is_odd());
+	auto rng = rgi | views::filter(is_odd());
 	//auto rng = views::filter(rgi, is_odd());
 	static_assert(Same<int &, decltype(*begin(rgi))>);
 	static_assert(Same<int &, decltype(*begin(rng))>);
@@ -83,7 +83,7 @@ TEST_CASE("views.filter")
 	detail::semiregular_box<decltype(f)> b{f};
 	auto b2 = b;
 	b = b2;
-	auto mutable_rng = view::filter(rgi, [flag](int) mutable { return flag = !flag;});
+	auto mutable_rng = views::filter(rgi, [flag](int) mutable { return flag = !flag;});
 	::check_equal(mutable_rng, {1,3,5,7,9});
 	static_assert(Range<decltype(mutable_rng)>);
 	static_assert(Copyable<decltype(mutable_rng)>);
@@ -107,7 +107,7 @@ TEST_CASE("views.filter")
 	{
 		// Test operator-> with pointer
 		std::pair<int, int> pairs[] = {{1, 99}, {2, 1}, {3, 99}, {4, 3}};
-		auto rng = view::filter(pairs, [](auto&& p) { return p.first % 2 == 0; });
+		auto rng = views::filter(pairs, [](auto&& p) { return p.first % 2 == 0; });
 		auto i = ranges::begin(rng);
 		auto const e = ranges::end(rng);
 		int sum = 0;
@@ -120,7 +120,7 @@ TEST_CASE("views.filter")
 	{
 		// Test operator-> with non-pointer
 		std::list<std::pair<int, int>> pairs = {{1, 99}, {2, 1}, {3, 99}, {4, 3}};
-		auto rng = view::filter(pairs, [](auto&& p) { return p.first % 2 == 0; });
+		auto rng = views::filter(pairs, [](auto&& p) { return p.first % 2 == 0; });
 		auto i = ranges::begin(rng);
 		auto const e = ranges::end(rng);
 		int sum = 0;
@@ -132,12 +132,12 @@ TEST_CASE("views.filter")
 
     {
         auto yes = [](int) { return true; };
-        (void) (view::iota(0) | view::filter(yes));
+        (void) (views::iota(0) | views::filter(yes));
     }
 
     {
         auto yes = [](int) { return true; };
-        auto const rng = view::iota(0) | view::filter(yes);
-        view::all(rng);
+        auto const rng = views::iota(0) | views::filter(yes);
+        views::all(rng);
     }
 }

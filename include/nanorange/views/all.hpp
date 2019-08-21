@@ -56,7 +56,7 @@ inline constexpr bool is_raco<all_view_fn> = true;
 
 } // namespace detail
 
-namespace view {
+namespace views {
 
 NANO_INLINE_VAR(nano::detail::all_view_fn, all)
 
@@ -64,7 +64,7 @@ NANO_INLINE_VAR(nano::detail::all_view_fn, all)
 
 template <typename R>
 using all_view = std::enable_if_t<ViewableRange<R>,
-                                  decltype(view::all(std::declval<R>()))>;
+                                  decltype(views::all(std::declval<R>()))>;
 
 NANO_END_NAMESPACE
 

@@ -65,7 +65,7 @@ public:
                 !CommonRange<R> &&
                 Constructible<V, all_view<R>>, int> = 0>
     constexpr explicit common_view(R&& r)
-        : base_(view::all(std::forward<R>(r)))
+        : base_(views::all(std::forward<R>(r)))
     {}
 
     constexpr V base() const { return base_; }
@@ -109,12 +109,12 @@ struct common_view_fn {
 private:
     template <typename T>
     static constexpr auto impl(T&& t, nano::detail::priority_tag<1>)
-        noexcept(noexcept(view::all(std::forward<T>(t))))
+        noexcept(noexcept(views::all(std::forward<T>(t))))
         -> std::enable_if_t<
             CommonRange<T>,
-            decltype(view::all(std::forward<T>(t)))>
+            decltype(views::all(std::forward<T>(t)))>
     {
-        return view::all(std::forward<T>(t));
+        return views::all(std::forward<T>(t));
     }
 
     template <typename T>
@@ -141,7 +141,7 @@ inline constexpr bool is_raco<common_view_fn> = true;
 
 } // namespace detail
 
-namespace view {
+namespace views {
 
 NANO_INLINE_VAR(detail::common_view_fn, common)
 
