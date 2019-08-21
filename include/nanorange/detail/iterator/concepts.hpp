@@ -113,7 +113,7 @@ NANO_CONCEPT Iterator =
 
 template <typename S, typename I>
 NANO_CONCEPT Sentinel =
-    Semiregular<S>&& Iterator<I>&& detail::WeaklyEqualityComparableWith<S, I>;
+    Semiregular<S>&& Iterator<I>&& detail::weakly_equality_comparable_with<S, I>;
 
 // [range.iterators.sizedsentinel]
 
@@ -256,7 +256,7 @@ template <typename I>
 auto RandomAccessIterator_fn(int) -> std::enable_if_t<
      BidirectionalIterator<I> &&
      derived_from<iterator_category_t<I>, random_access_iterator_tag> &&
-     StrictTotallyOrdered<I> &&
+        totally_ordered<I> &&
      SizedSentinel<I, I> &&
      requires_<RandomAccessIterator_req, I>,
              std::true_type>;

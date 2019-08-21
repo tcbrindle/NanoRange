@@ -150,7 +150,7 @@ private:
 template <typename I1, typename I2>
 constexpr auto operator==(const move_iterator<I1>& x,
                           const move_iterator<I2>& y)
-    -> std::enable_if_t<EqualityComparableWith<I1, I2>, bool>
+    -> std::enable_if_t<equality_comparable_with<I1, I2>, bool>
 {
     return x.base() == y.base();
 }
@@ -158,14 +158,14 @@ constexpr auto operator==(const move_iterator<I1>& x,
 template <typename I1, typename I2>
 constexpr auto operator!=(const move_iterator<I1>& x,
                           const move_iterator<I2>& y)
-    -> std::enable_if_t<EqualityComparableWith<I1, I2>, bool>
+    -> std::enable_if_t<equality_comparable_with<I1, I2>, bool>
 {
     return !(x == y);
 }
 
 template <typename I1, typename I2>
 constexpr auto operator<(const move_iterator<I1>& x, const move_iterator<I2>& y)
-    -> std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+    -> std::enable_if_t<totally_ordered_with<I1, I2>, bool>
 {
     return x.base() < y.base();
 }
@@ -173,14 +173,14 @@ constexpr auto operator<(const move_iterator<I1>& x, const move_iterator<I2>& y)
 template <typename I1, typename I2>
 constexpr auto operator<=(const move_iterator<I1>& x,
                           const move_iterator<I2>& y)
-    -> std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+    -> std::enable_if_t<totally_ordered_with<I1, I2>, bool>
 {
     return !(y < x);
 }
 
 template <typename I1, typename I2>
 constexpr auto operator>(const move_iterator<I1>& x, const move_iterator<I2>& y)
-    -> std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+    -> std::enable_if_t<totally_ordered_with<I1, I2>, bool>
 {
     return y < x;
 }
@@ -188,7 +188,7 @@ constexpr auto operator>(const move_iterator<I1>& x, const move_iterator<I2>& y)
 template <typename I1, typename I2>
 constexpr auto operator>=(const move_iterator<I1>& x,
                           const move_iterator<I2>& y)
-    -> std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+    -> std::enable_if_t<totally_ordered_with<I1, I2>, bool>
 {
     return !(x < y);
 }

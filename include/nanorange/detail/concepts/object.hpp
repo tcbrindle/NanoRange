@@ -38,7 +38,7 @@ NANO_CONCEPT Semiregular = Copyable<T>&& default_constructible<T>;
 
 // [concepts.lib.object.regular]
 template <typename T>
-NANO_CONCEPT Regular = Semiregular<T>&& EqualityComparable<T>;
+NANO_CONCEPT Regular = Semiregular<T>&& equality_comparable<T>;
 
 namespace detail {
 
@@ -68,7 +68,7 @@ auto Predicate_fn(long) -> std::false_type;
 template <typename F, typename... Args>
 auto Predicate_fn(int) -> std::enable_if_t<
         RegularInvocable<F, Args...> &&
-        Boolean<invoke_result_t<F, Args...>>,
+        boolean<invoke_result_t<F, Args...>>,
         std::true_type>;
 
 }

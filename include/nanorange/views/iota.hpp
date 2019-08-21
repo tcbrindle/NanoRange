@@ -41,8 +41,7 @@ struct Advanceable_req {
 };
 
 template <typename I>
-NANO_CONCEPT Advanceable = Decrementable<I> &&
-    StrictTotallyOrdered<I> &&
+NANO_CONCEPT Advanceable = Decrementable<I> && totally_ordered<I> &&
     requires_<Advanceable_req, I>;
 
 template <typename W>
@@ -65,7 +64,7 @@ template <typename W, typename Bound = unreachable_sentinel_t>
 struct iota_view : view_interface<iota_view<W, Bound>> {
     static_assert(WeaklyIncrementable<W>);
     static_assert(Semiregular<Bound>);
-    static_assert(detail::WeaklyEqualityComparableWith<W, Bound>);
+    static_assert(detail::weakly_equality_comparable_with<W, Bound>);
 
 private:
     struct sentinel;
@@ -165,42 +164,42 @@ private:
 
         template <typename WW = W>
         friend constexpr auto operator==(const iterator& x, const iterator& y)
-            -> std::enable_if_t<EqualityComparable<WW>, bool>
+            -> std::enable_if_t<equality_comparable<WW>, bool>
         {
             return x.value_ == y.value_;
         }
 
         template <typename WW = W>
         friend constexpr auto operator!=(const iterator& x, const iterator& y)
-            -> std::enable_if_t<EqualityComparable<WW>, bool>
+            -> std::enable_if_t<equality_comparable<WW>, bool>
         {
             return !(x == y);
         }
 
         template <typename WW = W>
         friend constexpr auto operator<(const iterator& x, const iterator& y)
-            -> std::enable_if_t<StrictTotallyOrdered<WW>, bool>
+            -> std::enable_if_t<totally_ordered<WW>, bool>
         {
             return x.value_ < y.value_;
         }
 
         template <typename WW = W>
         friend constexpr auto operator>(const iterator& x, const iterator& y)
-            -> std::enable_if_t<StrictTotallyOrdered<WW>, bool>
+            -> std::enable_if_t<totally_ordered<WW>, bool>
         {
             return y < x;
         }
 
         template <typename WW = W>
         friend constexpr auto operator<=(const iterator& x, const iterator& y)
-            -> std::enable_if_t<StrictTotallyOrdered<WW>, bool>
+            -> std::enable_if_t<totally_ordered<WW>, bool>
         {
             return !(y < x);
         }
 
         template <typename WW = W>
         friend constexpr auto operator>=(const iterator& x, const iterator& y)
-            -> std::enable_if_t<StrictTotallyOrdered<WW>, bool>
+            -> std::enable_if_t<totally_ordered<WW>, bool>
         {
             return !(x < y);
         }

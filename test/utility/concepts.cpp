@@ -234,11 +234,11 @@ static_assert(ranges::common_with<int, IntComparable>, "");
 static_assert(ranges::common_reference_with<int &, IntComparable &>, "");
 //static_assert(ranges::WeaklyOrdered<int, IntComparable>, "");
 //static_assert(ranges::WeaklyOrdered<IntComparable, int>, "");
-static_assert(ranges::detail::WeaklyEqualityComparableWith<int, int>, "");
-static_assert(ranges::EqualityComparable<int>, "");
-static_assert(ranges::EqualityComparableWith<int, int>, "");
-static_assert(ranges::EqualityComparableWith<int, IntComparable>, "");
-static_assert(ranges::EqualityComparableWith<int &, IntComparable &>, "");
+static_assert(ranges::detail::weakly_equality_comparable_with<int, int>, "");
+static_assert(ranges::equality_comparable<int>, "");
+static_assert(ranges::equality_comparable_with<int, int>, "");
+static_assert(ranges::equality_comparable_with<int, IntComparable>, "");
+static_assert(ranges::equality_comparable_with<int &, IntComparable &>, "");
 
 /*static_assert(
     std::is_same<

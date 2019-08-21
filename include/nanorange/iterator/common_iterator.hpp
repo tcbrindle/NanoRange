@@ -133,7 +133,7 @@ public:
     friend constexpr auto operator==(const common_iterator& x,
                                      const common_iterator<I2, S2>& y)
         -> std::enable_if_t<Sentinel<S2, I> && Sentinel<S, I2> &&
-                            !EqualityComparableWith<I, I2>, bool>
+                            !equality_comparable_with<I, I2>, bool>
     {
         return x.is_sentinel_ ? (y.is_sentinel_ || y.iter_ == x.sentinel_)
                               : (!y.is_sentinel_ || x.iter_ == y.sentinel_);
@@ -143,7 +143,7 @@ public:
     friend constexpr auto operator==(const common_iterator& x,
                                      const common_iterator<I2, S2>& y)
         -> std::enable_if_t<Sentinel<S2, I> && Sentinel<S, I2> &&
-                            EqualityComparableWith<I, I2>, bool>
+                            equality_comparable_with<I, I2>, bool>
     {
         return x.is_sentinel_
                ? (y.is_sentinel_ || y.iter_ == x.sentinel_)

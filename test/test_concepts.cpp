@@ -206,41 +206,41 @@ struct explicitly_convertible_to_bool {
     explicit operator bool();
 };
 
-static_assert(!rng::Boolean<void>, "");
-static_assert(rng::Boolean<bool>, "");
-static_assert(rng::Boolean<int>, "");
-static_assert(rng::Boolean<std::true_type>, "");
-static_assert(rng::Boolean<std::bitset<1>::reference>, "");
-static_assert(rng::Boolean<std::vector<bool>::reference>, "");
-static_assert(!rng::Boolean<int*>, "");
-static_assert(!rng::Boolean<std::unique_ptr<int>>, "");
-static_assert(!rng::Boolean<explicitly_convertible_to_bool>, "");
+static_assert(!rng::boolean<void>, "");
+static_assert(rng::boolean<bool>, "");
+static_assert(rng::boolean<int>, "");
+static_assert(rng::boolean<std::true_type>, "");
+static_assert(rng::boolean<std::bitset<1>::reference>, "");
+static_assert(rng::boolean<std::vector<bool>::reference>, "");
+static_assert(!rng::boolean<int*>, "");
+static_assert(!rng::boolean<std::unique_ptr<int>>, "");
+static_assert(!rng::boolean<explicitly_convertible_to_bool>, "");
 
 // EqualityComparable tests
-static_assert(rng::EqualityComparable<int>, "");
-static_assert(rng::EqualityComparable<int&>, "");
-static_assert(!rng::EqualityComparable<void>, "");
-static_assert(!rng::EqualityComparable<std::thread>, "");
+static_assert(rng::equality_comparable<int>, "");
+static_assert(rng::equality_comparable<int&>, "");
+static_assert(!rng::equality_comparable<void>, "");
+static_assert(!rng::equality_comparable<std::thread>, "");
 
-// EqualityComparableWith tests
-static_assert(rng::EqualityComparableWith<double, double>, "");
-static_assert(rng::EqualityComparableWith<std::string, const char*>, "");
-static_assert(!rng::EqualityComparableWith<int, void>, "");
-static_assert(!rng::EqualityComparableWith<int, std::string>, "");
+// equality_comparable_with tests
+static_assert(rng::equality_comparable_with<double, double>, "");
+static_assert(rng::equality_comparable_with<std::string, const char*>, "");
+static_assert(!rng::equality_comparable_with<int, void>, "");
+static_assert(!rng::equality_comparable_with<int, std::string>, "");
 
-// StrictTotallyOrdered tests
-static_assert(!rng::StrictTotallyOrdered<void>, "");
-static_assert(rng::StrictTotallyOrdered<int>, "");
-static_assert(rng::StrictTotallyOrdered<float>, "");
-static_assert(rng::StrictTotallyOrdered<std::string>, "");
-static_assert(!rng::StrictTotallyOrdered<std::thread>, "");
+// totally_ordered tests
+static_assert(!rng::totally_ordered<void>, "");
+static_assert(rng::totally_ordered<int>, "");
+static_assert(rng::totally_ordered<float>, "");
+static_assert(rng::totally_ordered<std::string>, "");
+static_assert(!rng::totally_ordered<std::thread>, "");
 
 // StrictTotallyOrderedWith tests
-static_assert(!rng::StrictTotallyOrderedWith<void, void>, "");
-static_assert(rng::StrictTotallyOrderedWith<int, int>, "");
+static_assert(!rng::totally_ordered_with<void, void>, "");
+static_assert(rng::totally_ordered_with<int, int>, "");
 //static_assert(rng::StrictTotallyOrderedWith<int, float>, "");
-static_assert(rng::StrictTotallyOrderedWith<std::string, const char*>, "");
-static_assert(rng::StrictTotallyOrderedWith<int, double>, "");
+static_assert(rng::totally_ordered_with<std::string, const char*>, "");
+static_assert(rng::totally_ordered_with<int, double>, "");
 
 // Copyable tests
 struct odd_assign {
@@ -401,7 +401,7 @@ using I = rng::common_iterator<int*, rng::unreachable_sentinel_t>;
 static_assert(rng::Iterator<rng::common_iterator<int*, rng::unreachable_sentinel_t>>, "");
 static_assert(rng::InputIterator<rng::common_iterator<int*, rng::unreachable_sentinel_t>>, "");
 static_assert(rng::ForwardIterator<rng::common_iterator<int*, rng::unreachable_sentinel_t>>, "");
-static_assert(rng::EqualityComparable<I>, "");
+static_assert(rng::equality_comparable<I>, "");
 using eq = decltype(std::declval<I const&>() == std::declval<I const&>());
 
 // Regression test for #24

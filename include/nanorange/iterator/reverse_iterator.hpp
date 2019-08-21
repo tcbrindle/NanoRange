@@ -146,42 +146,42 @@ private:
 };
 
 template <typename I1, typename I2>
-constexpr std::enable_if_t<EqualityComparableWith<I1, I2>, bool>
+constexpr std::enable_if_t<equality_comparable_with<I1, I2>, bool>
 operator==(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 {
     return x.base() == y.base();
 }
 
 template <typename I1, typename I2>
-constexpr std::enable_if_t<EqualityComparableWith<I1, I2>, bool>
+constexpr std::enable_if_t<equality_comparable_with<I1, I2>, bool>
 operator!=(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 {
     return x.base() != y.base();
 }
 
 template <typename I1, typename I2>
-constexpr std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+constexpr std::enable_if_t<totally_ordered_with<I1, I2>, bool>
 operator<(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 {
     return x.base() > y.base();
 }
 
 template <typename I1, typename I2>
-constexpr std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+constexpr std::enable_if_t<totally_ordered_with<I1, I2>, bool>
 operator>(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 {
     return x.base() < y.base();
 }
 
 template <typename I1, typename I2>
-constexpr std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+constexpr std::enable_if_t<totally_ordered_with<I1, I2>, bool>
 operator>=(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 {
     return x.base() <= y.base();
 }
 
 template <typename I1, typename I2>
-constexpr std::enable_if_t<StrictTotallyOrderedWith<I1, I2>, bool>
+constexpr std::enable_if_t<totally_ordered_with<I1, I2>, bool>
 operator<=(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 {
     return x.base() >= y.base();
