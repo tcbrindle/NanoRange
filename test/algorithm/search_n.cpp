@@ -24,7 +24,7 @@
 
 #include <nanorange/algorithm/search_n.hpp>
 #include <nanorange/iterator/counted_iterator.hpp>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/subrange.hpp>
 #include <array>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"

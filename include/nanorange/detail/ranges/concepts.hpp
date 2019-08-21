@@ -98,7 +98,7 @@ NANO_CONCEPT SizedRange =
     !disable_sized_range<std::remove_cv_t<std::remove_reference_t<T>>> &&
     detail::requires_<detail::SizedRange_req, T>;
 
-// [range.view]
+// [range.views]
 
 namespace detail {
 

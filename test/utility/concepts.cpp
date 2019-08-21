@@ -12,7 +12,7 @@
 #include <sstream>
 #include <vector>
 #include <nanorange/ranges.hpp>
-#include <nanorange/view/istream.hpp>
+#include <nanorange/views/istream.hpp>
 #include "../catch.hpp"
 
 namespace ranges = nano::ranges;

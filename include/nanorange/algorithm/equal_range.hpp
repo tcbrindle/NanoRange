@@ -9,7 +9,7 @@
 
 #include <nanorange/algorithm/lower_bound.hpp>
 #include <nanorange/algorithm/upper_bound.hpp>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/subrange.hpp>
 
 NANO_BEGIN_NAMESPACE
 

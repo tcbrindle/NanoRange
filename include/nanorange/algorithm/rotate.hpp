@@ -10,7 +10,7 @@
 #include <nanorange/algorithm/move.hpp>
 #include <nanorange/algorithm/swap_ranges.hpp>
 #include <nanorange/iterator/unreachable.hpp>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/subrange.hpp>
 
 NANO_BEGIN_NAMESPACE
 

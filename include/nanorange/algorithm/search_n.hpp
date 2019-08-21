@@ -8,7 +8,7 @@
 #define NANORANGE_ALGORITHM_SEARCH_N_HPP_INCLUDED
 
 #include <nanorange/ranges.hpp>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/subrange.hpp>
 
 NANO_BEGIN_NAMESPACE
 

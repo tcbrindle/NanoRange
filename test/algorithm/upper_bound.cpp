@@ -14,7 +14,7 @@
 //  or a copy at http://stlab.adobe.com/licenses.html)
 
 #include <nanorange/algorithm/upper_bound.hpp>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/subrange.hpp>
 #include <vector>
 #include <utility>
 #include "../catch.hpp"

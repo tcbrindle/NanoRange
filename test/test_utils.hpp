@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/subrange.hpp>
 
 #include "catch.hpp"
 #include "test_iterators.hpp"

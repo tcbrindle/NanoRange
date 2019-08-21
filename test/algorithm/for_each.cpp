@@ -10,7 +10,7 @@
 // Project home: https://github.com/ericniebler/range-v3
 
 #include <nanorange/algorithm/for_each.hpp>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/subrange.hpp>
 #include <vector>
 #include "../catch.hpp"
 #include "../test_utils.hpp"

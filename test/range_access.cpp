@@ -14,7 +14,7 @@
 #include <iostream>
 #include <vector>
 #include <utility>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/subrange.hpp>
 
 #include <string_view>
 #include <nanorange/algorithm/find.hpp>

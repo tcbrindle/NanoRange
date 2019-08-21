@@ -19,7 +19,7 @@
 //===----------------------------------------------------------------------===//
 
 #include <nanorange/algorithm/find_end.hpp>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/subrange.hpp>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"
 #include "../test_utils.hpp"
