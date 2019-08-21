@@ -13,7 +13,7 @@
 NANO_BEGIN_NAMESPACE
 
 template <typename T>
-std::enable_if_t<Destructible<T>>
+std::enable_if_t<destructible<T>>
 destroy_at(T* location) noexcept
 {
     location->~T();
@@ -37,7 +37,7 @@ public:
     std::enable_if_t<
         NoThrowInputIterator<I> &&
         NoThrowSentinel<S, I> &&
-        Destructible<iter_value_t<I>>, I>
+        destructible<iter_value_t<I>>, I>
     operator()(I first, S last) const noexcept
     {
         return destroy_fn::impl(std::move(first), std::move(last));
@@ -46,7 +46,7 @@ public:
     template <typename Rng>
     std::enable_if_t<
         NoThrowInputRange<Rng> &&
-        Destructible<iter_value_t<iterator_t<Rng>>>,
+        destructible<iter_value_t<iterator_t<Rng>>>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng) const noexcept
     {
@@ -64,7 +64,7 @@ struct destroy_n_fn {
     template <typename I>
     std::enable_if_t<
         NoThrowInputIterator<I> &&
-        Destructible<iter_value_t<I>>, I>
+        destructible<iter_value_t<I>>, I>
     operator()(I first, iter_difference_t<I> n) const noexcept
     {
         return nano::destroy(make_counted_iterator(std::move(first), n),

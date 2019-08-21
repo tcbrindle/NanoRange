@@ -641,7 +641,7 @@ constexpr void pdqsort_loop(I begin, I end, Comp& comp, Proj& proj,
 
 template <typename I, typename Comp, typename Proj,
           bool Branchless = is_default_compare_v<std::remove_const_t<Comp>>&&
-              Same<Proj, identity>&& std::is_arithmetic<iter_value_t<I>>::value>
+              same_as<Proj, identity>&& std::is_arithmetic<iter_value_t<I>>::value>
 constexpr void pdqsort(I begin, I end, Comp& comp, Proj& proj)
 {
     if (begin == end) {

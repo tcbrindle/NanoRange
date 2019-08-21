@@ -20,7 +20,7 @@ template <typename I>
 auto NoThrowInputIterator_fn(int) -> std::enable_if_t<
     InputIterator<I> &&
     std::is_lvalue_reference<iter_reference_t<I>>::value &&
-    Same<remove_cvref_t<iter_reference_t<I>>, iter_value_t<I>>,
+    same_as<remove_cvref_t<iter_reference_t<I>>, iter_value_t<I>>,
     std::true_type>;
 
 template <typename I>

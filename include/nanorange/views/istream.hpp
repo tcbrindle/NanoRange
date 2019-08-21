@@ -33,7 +33,7 @@ template <typename Val, typename CharT, typename Traits = std::char_traits<CharT
 struct basic_istream_view : view_interface<basic_istream_view<Val, CharT, Traits>> {
 
     static_assert(Movable<Val>);
-    static_assert(DefaultConstructible<Val>);
+    static_assert(default_constructible<Val>);
     static_assert(detail::StreamExtractable<Val, CharT, Traits>);
 
     basic_istream_view() = default;

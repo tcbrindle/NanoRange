@@ -64,7 +64,7 @@ private:
 
     template <typename I, typename S>
     static constexpr auto impl(I& i, S bound, priority_tag<2>)
-        -> std::enable_if_t<Assignable<I&, S>>
+        -> std::enable_if_t<assignable_from<I&, S>>
     {
         i = std::move(bound);
     }

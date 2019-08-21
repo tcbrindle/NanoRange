@@ -66,7 +66,7 @@ public:
         Sentinel<S, I> &&
         NoThrowForwardIterator<O> &&
         NoThrowSentinel<S2, O> &&
-        Constructible<iter_value_t<O>, iter_reference_t<I>>,
+        constructible_from<iter_value_t<O>, iter_reference_t<I>>,
         uninitialized_copy_result<I, O>>
     operator()(I ifirst, S ilast, O ofirst, S2 olast) const
     {
@@ -80,7 +80,7 @@ public:
     std::enable_if_t<
         InputRange<IRng> &&
         NoThrowForwardRange<ORng> &&
-        Constructible<iter_value_t<iterator_t<ORng>>, iter_reference_t<iterator_t<IRng>>>,
+        constructible_from<iter_value_t<iterator_t<ORng>>, iter_reference_t<iterator_t<IRng>>>,
         uninitialized_copy_result<safe_iterator_t<IRng>, safe_iterator_t<ORng>>>
     operator()(IRng&& irng, ORng&& orng) const
     {
@@ -96,7 +96,7 @@ public:
         InputIterator<I> &&
         Sentinel<S, I> &&
         NoThrowForwardIterator<O> &&
-        Constructible<iter_value_t<O>, iter_reference_t<I>>,
+        constructible_from<iter_value_t<O>, iter_reference_t<I>>,
         uninitialized_copy_result<I, O>>
     operator()(I ifirst, S ilast, O ofirst) const
     {
@@ -111,7 +111,7 @@ public:
         InputRange<IRng> &&
         NoThrowForwardIterator<std::decay_t<O>> &&
         !NoThrowForwardRange<O> &&
-        Constructible<iter_value_t<std::decay_t<O>>, iter_reference_t<iterator_t<IRng>>>,
+        constructible_from<iter_value_t<std::decay_t<O>>, iter_reference_t<iterator_t<IRng>>>,
         uninitialized_copy_result<safe_iterator_t<IRng>, std::decay_t<O>>>
     operator()(IRng&& irng, O&& ofirst) const
     {
@@ -135,7 +135,7 @@ struct uninitialized_copy_n_fn {
         InputIterator<I> &&
         NoThrowForwardIterator<O> &&
         NoThrowSentinel<S, O> &&
-        Constructible<iter_value_t<O>, iter_reference_t<I>>,
+        constructible_from<iter_value_t<O>, iter_reference_t<I>>,
         uninitialized_copy_n_result<I, O>>
     operator()(I ifirst, iter_difference_t<I> n, O ofirst, S olast) const
     {
@@ -150,7 +150,7 @@ struct uninitialized_copy_n_fn {
     std::enable_if_t<
         InputIterator<I> &&
         NoThrowForwardIterator<O> &&
-        Constructible<iter_value_t<O>, iter_reference_t<I>>,
+        constructible_from<iter_value_t<O>, iter_reference_t<I>>,
         uninitialized_copy_n_result<I, O>>
     operator()(I ifirst, iter_difference_t<I> n, O ofirst) const
     {

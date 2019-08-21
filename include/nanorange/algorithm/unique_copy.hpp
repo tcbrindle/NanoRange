@@ -47,7 +47,7 @@ private:
 
     template <typename I, typename O>
     static auto constraint_helper(priority_tag<1>) -> std::enable_if_t<
-        InputIterator<O> && Same<iter_value_t<I>, iter_value_t<O>>,
+        InputIterator<O> && same_as<iter_value_t<I>, iter_value_t<O>>,
         std::true_type>;
 
     template <typename I, typename O>

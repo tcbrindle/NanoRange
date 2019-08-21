@@ -36,13 +36,13 @@ public:
 
     explicit constexpr reverse_iterator(I x) : current_(std::move(x)) {}
 
-    template <typename U, std::enable_if_t<ConvertibleTo<U, I>, int> = 0>
+    template <typename U, std::enable_if_t<convertible_to<U, I>, int> = 0>
 
     constexpr reverse_iterator(const reverse_iterator<U>& i)
         : current_(i.base())
     {}
 
-    template <typename U, std::enable_if_t<ConvertibleTo<U, I>, int> = 0>
+    template <typename U, std::enable_if_t<convertible_to<U, I>, int> = 0>
 
     constexpr reverse_iterator& operator=(const reverse_iterator<U>& i)
     {

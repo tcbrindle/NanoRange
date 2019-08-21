@@ -29,7 +29,7 @@ void test_one(V& v, const T& t)
     static_assert(ranges::CommonRange<V>);
     using I = ranges::iterator_t<V>;
     static_assert(std::is_pointer_v<I>);
-    static_assert(ranges::Same<T, ranges::iter_value_t<I>>);
+    static_assert(ranges::same_as<T, ranges::iter_value_t<I>>);
     static_assert(V::size() == 1u);
     CHECK(v.size() == 1u);
     CHECK(v.data() != nullptr);
@@ -43,7 +43,7 @@ void test(T&& t)
 {
     using D = remove_cvref_t<T>;
     auto v = ranges::views::single(std::forward<T>(t));
-    static_assert(ranges::Same<ranges::single_view<D>, decltype(v)>);
+    static_assert(ranges::same_as<ranges::single_view<D>, decltype(v)>);
     test_one(v, t);
     test_one(std::as_const(v), t);
 }

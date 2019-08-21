@@ -35,12 +35,12 @@ public:
 
     explicit constexpr move_iterator(I i) : current_(std::move(i)) {}
 
-    template <typename U, std::enable_if_t<ConvertibleTo<U, I>, int> = 0>
+    template <typename U, std::enable_if_t<convertible_to<U, I>, int> = 0>
     constexpr move_iterator(const move_iterator<U>& i) : current_(i.current_)
     {}
 
     template <typename U>
-    constexpr std::enable_if_t<ConvertibleTo<U, I>, move_iterator&>
+    constexpr std::enable_if_t<convertible_to<U, I>, move_iterator&>
     operator=(const move_iterator<U>& i)
     {
         current_ = i.current_;
@@ -228,13 +228,13 @@ public:
 
     constexpr explicit move_sentinel(S s) : last_(std::move(s)) {}
 
-    template <typename U, std::enable_if_t<ConvertibleTo<U, S>, int> = 0>
+    template <typename U, std::enable_if_t<convertible_to<U, S>, int> = 0>
     constexpr move_sentinel(const move_sentinel<U>& s) : last_(s.base())
     {}
 
     template <typename U>
     constexpr auto operator=(const move_sentinel<U>& s)
-        -> std::enable_if_t<ConvertibleTo<U, S>, move_sentinel&>
+        -> std::enable_if_t<convertible_to<U, S>, move_sentinel&>
     {
         last_ = s.base();
         return *this;

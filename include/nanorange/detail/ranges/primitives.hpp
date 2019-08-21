@@ -46,7 +46,7 @@ private:
     static constexpr auto impl(T&& t, priority_tag<2>) noexcept(
         noexcept(decay_copy(std::forward<T>(t).size())))
         -> std::enable_if_t<
-            Integral<I> && !disable_sized_range<remove_cvref_t<T>>, I>
+            integral<I> && !disable_sized_range<remove_cvref_t<T>>, I>
     {
         return decay_copy(std::forward<T>(t).size());
     }
@@ -56,7 +56,7 @@ private:
     static constexpr auto impl(T&& t, priority_tag<1>) noexcept(
         noexcept(decay_copy(size(std::forward<T>(t)))))
         -> std::enable_if_t<
-            Integral<I> && !disable_sized_range<remove_cvref_t<T>>, I>
+            integral<I> && !disable_sized_range<remove_cvref_t<T>>, I>
     {
         return decay_copy(size(std::forward<T>(t)));
     }

@@ -40,7 +40,7 @@ template <typename D>
 class view_interface : public view_base {
 
     static_assert(std::is_class<D>::value, "");
-    static_assert(Same<D, std::remove_cv_t<D>>, "");
+    static_assert(same_as<D, std::remove_cv_t<D>>, "");
 
 private:
     constexpr D& derived() noexcept { return static_cast<D&>(*this); }

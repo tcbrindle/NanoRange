@@ -19,7 +19,7 @@ template <typename I, typename S>
 class common_iterator {
     static_assert(Iterator<I>, "");
     static_assert(Sentinel<S, I>, "");
-    static_assert(!Same<I, S>, "");
+    static_assert(!same_as<I, S>, "");
 
     template <typename II, typename SS>
     friend class common_iterator;
@@ -74,7 +74,7 @@ public:
 
     template <
         typename II, typename SS,
-        std::enable_if_t<ConvertibleTo<II, I> && ConvertibleTo<SS, S>, int> = 0>
+        std::enable_if_t<convertible_to<II, I> && convertible_to<SS, S>, int> = 0>
     constexpr common_iterator(const common_iterator<II, SS>& other)
         : is_sentinel_{other.is_sentinel_},
           iter_(other.iter_),
@@ -82,7 +82,7 @@ public:
     {}
 
     template <typename II, typename SS>
-    constexpr std::enable_if_t<ConvertibleTo<II, I> && ConvertibleTo<SS, S>,
+    constexpr std::enable_if_t<convertible_to<II, I> && convertible_to<SS, S>,
                                common_iterator&>
     operator=(const common_iterator<II, SS>& other)
     {

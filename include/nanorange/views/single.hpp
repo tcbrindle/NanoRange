@@ -14,7 +14,7 @@ NANO_BEGIN_NAMESPACE
 
 template <typename T>
 struct single_view : view_interface<single_view<T>> {
-    static_assert(CopyConstructible<T>);
+    static_assert(copy_constructible<T>);
     static_assert(std::is_object<T>::value);
 
     single_view() = default;
@@ -28,7 +28,7 @@ struct single_view : view_interface<single_view<T>> {
     {}
 
     template <typename... Args,
-              std::enable_if_t<Constructible<T, Args...>, int> = 0>
+              std::enable_if_t<constructible_from<T, Args...>, int> = 0>
     constexpr single_view(std::in_place_t, Args&&... args)
         : value_{std::in_place, std::forward<Args>(args)...}
     {}

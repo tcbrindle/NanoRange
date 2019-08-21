@@ -116,7 +116,7 @@ TEST_CASE("iter.counted_iterator")
 	{
 		counted_iterator<char*> c{nullptr, 0};
 		counted_iterator<char const*> d{c};
-		static_assert(!Assignable<decltype(c)&, decltype(d)>, "");
+		static_assert(!assignable_from<decltype(c)&, decltype(d)>, "");
 		CHECK((c - c) == 0);
 		CHECK((d - d) == 0);
 		CHECK((c - d) == 0);

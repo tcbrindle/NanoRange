@@ -23,20 +23,20 @@ struct Boolean_req {
                    const std::remove_reference_t<B>& b2, const bool a)
         -> decltype(valid_expr(
             requires_expr<
-                ConvertibleTo<const std::remove_reference_t<B&>, bool>>{},
-            !b1, requires_expr<ConvertibleTo<decltype(!b1), bool>>{}, b1&& a,
-            requires_expr<Same<decltype(b1 && a), bool>>{}, b1 || a,
-            requires_expr<Same<decltype(b1 || a), bool>>{}, b1&& b2,
-            requires_expr<Same<decltype(b1 && b2), bool>>{}, a&& b2,
-            requires_expr<Same<decltype(a && b2), bool>>{}, b1 || b2,
-            requires_expr<Same<decltype(b1 || b2), bool>>{}, a || b2,
-            requires_expr<Same<decltype(a || b2), bool>>{}, b1 == b2,
-            requires_expr<ConvertibleTo<decltype(b1 == b2), bool>>{}, b1 == a,
-            requires_expr<ConvertibleTo<decltype(b1 == a), bool>>{}, a == b2,
-            requires_expr<ConvertibleTo<decltype(a == b2), bool>>{}, b1 != b2,
-            requires_expr<ConvertibleTo<decltype(b1 != b2), bool>>{}, b1 != a,
-            requires_expr<ConvertibleTo<decltype(b1 != a), bool>>{}, a != b2,
-            requires_expr<ConvertibleTo<decltype(a != b2), bool>>{}));
+                convertible_to<const std::remove_reference_t<B&>, bool>>{},
+            !b1, requires_expr<convertible_to<decltype(!b1), bool>>{}, b1&& a,
+            requires_expr<same_as<decltype(b1 && a), bool>>{}, b1 || a,
+            requires_expr<same_as<decltype(b1 || a), bool>>{}, b1&& b2,
+            requires_expr<same_as<decltype(b1 && b2), bool>>{}, a&& b2,
+            requires_expr<same_as<decltype(a && b2), bool>>{}, b1 || b2,
+            requires_expr<same_as<decltype(b1 || b2), bool>>{}, a || b2,
+            requires_expr<same_as<decltype(a || b2), bool>>{}, b1 == b2,
+            requires_expr<convertible_to<decltype(b1 == b2), bool>>{}, b1 == a,
+            requires_expr<convertible_to<decltype(b1 == a), bool>>{}, a == b2,
+            requires_expr<convertible_to<decltype(a == b2), bool>>{}, b1 != b2,
+            requires_expr<convertible_to<decltype(b1 != b2), bool>>{}, b1 != a,
+            requires_expr<convertible_to<decltype(b1 != a), bool>>{}, a != b2,
+            requires_expr<convertible_to<decltype(a != b2), bool>>{}));
 };
 
 } // namespace detail
@@ -77,7 +77,7 @@ auto EqualityComparableWith_fn(long) -> std::false_type;
 template <typename T, typename U>
 auto EqualityComparableWith_fn(int) -> std::enable_if_t<
     EqualityComparable<T> && EqualityComparable<U> &&
-    CommonReference<const std::remove_reference_t<T>&,
+        common_reference_with<const std::remove_reference_t<T>&,
                     const std::remove_reference_t<U>&> &&
     EqualityComparable<
        common_reference_t<
@@ -136,7 +136,7 @@ auto StrictTotallyOrderedWith_fn(long) -> std::false_type;
 template <typename T, typename U>
 auto StrictTotallyOrderedWith_fn(int) -> std::enable_if_t<
         StrictTotallyOrdered<T> && StrictTotallyOrdered<U> &&
-        CommonReference<const std::remove_reference_t<T>&,
+        common_reference_with<const std::remove_reference_t<T>&,
                         const std::remove_reference_t<U>&> &&
         StrictTotallyOrdered<
                 common_reference_t<

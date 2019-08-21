@@ -50,7 +50,7 @@ struct PairLike_req {
 
     template <typename T>
     auto requires_(T t) -> decltype(
-            requires_expr<DerivedFrom<std::tuple_size<T>, std::integral_constant<std::size_t, 2>>>{},
+            requires_expr<derived_from<std::tuple_size<T>, std::integral_constant<std::size_t, 2>>>{},
             std::declval<std::tuple_element_t<0, std::remove_const_t<T>>>(),
             std::declval<std::tuple_element_t<1, std::remove_const_t<T>>>(),
             this->test_func<0, T>(std::get<0>(t)),
@@ -83,7 +83,7 @@ NANO_CONCEPT PairlikeConvertibleTo =
 
 template <typename T, typename U, typename V>
 NANO_CONCEPT PairLikeConvertibleFrom = !Range<T> && PairLike<T> &&
-                                       Constructible<T, U, V>;
+                                       constructible_from<T, U, V>;
 
 template <typename T>
 auto IteratorSentinelPair_fn(long) -> std::false_type;
@@ -135,8 +135,8 @@ auto subrange_range_constructor_constraint_helper_fn(long) -> std::false_type;
 template <typename R, typename I, typename S, subrange_kind K>
 auto subrange_range_constructor_constraint_helper_fn(int) -> std::enable_if_t<
                 ForwardingRange<R>&&
-                ConvertibleTo<iterator_t<R>, I> &&
-                ConvertibleTo<sentinel_t<R>, S>, std::true_type>;
+                convertible_to<iterator_t<R>, I> &&
+                convertible_to<sentinel_t<R>, S>, std::true_type>;
 
 template <typename R, typename I, typename S, subrange_kind K>
 constexpr bool subrange_range_constructor_constraint_helper =
@@ -198,8 +198,8 @@ public:
 
     template <typename R, subrange_kind KK = K, std::enable_if_t<
             detail::ForwardingRange<R>&&
-            ConvertibleTo<iterator_t<R>, I>&&
-            ConvertibleTo<sentinel_t<R>, S>&&
+            convertible_to<iterator_t<R>, I>&&
+            convertible_to<sentinel_t<R>, S>&&
             KK == subrange_kind::sized, int> = 0>
     constexpr subrange(R&& r, iter_difference_t<I> n)
             : subrange(ranges::begin(r), ranges::end(r), n) {}

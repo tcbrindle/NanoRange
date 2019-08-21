@@ -81,7 +81,7 @@ namespace detail {
 
 template <typename T, typename Deduced>
 auto convertible_to_helper(Deduced)
-    -> std::enable_if_t<ConvertibleTo<Deduced, T>, int>;
+    -> std::enable_if_t<convertible_to<Deduced, T>, int>;
 
 struct SizedRange_req {
     template <typename T>
@@ -121,7 +121,7 @@ struct view_predicate<T, std::enable_if_t<has_enable_view_v<T>>> {
 
 template <typename T>
 struct view_predicate<
-    T, std::enable_if_t<!has_enable_view_v<T> && DerivedFrom<T, view_base>>>
+    T, std::enable_if_t<!has_enable_view_v<T> && derived_from<T, view_base>>>
     : std::true_type {};
 
 template <typename T>
@@ -145,10 +145,10 @@ auto view_predicate_helper_fn(long) -> std::false_type;
 template <typename T>
 auto view_predicate_helper_fn(int) -> std::enable_if_t<
         !has_enable_view_v<T> &&
-        !DerivedFrom<T, view_base> &&
+        !derived_from<T, view_base> &&
         Range<T> &&
         Range<const T> &&
-        !Same<iter_reference_t<iterator_t<T>>, iter_reference_t<iterator_t<const T>>>,
+        !same_as<iter_reference_t<iterator_t<T>>, iter_reference_t<iterator_t<const T>>>,
     std::true_type>;
 
 template <typename T>
@@ -172,8 +172,7 @@ auto CommonRange_fn(long) -> std::false_type;
 
 template <typename T>
 auto CommonRange_fn(int) -> std::enable_if_t<
-    Range<T> &&
-    Same<iterator_t<T>, sentinel_t<T>>,
+    Range<T> && same_as<iterator_t<T>, sentinel_t<T>>,
         std::true_type>;
 
 }
@@ -278,7 +277,8 @@ namespace detail {
 struct ContiguousRange_req {
     template <typename R>
     auto requires_(R& r) -> decltype(
-        requires_expr<Same<decltype(ranges::data(r)), std::add_pointer_t<iter_reference_t<iterator_t<R>>>>>{}
+        requires_expr<
+            same_as<decltype(ranges::data(r)), std::add_pointer_t<iter_reference_t<iterator_t<R>>>>>{}
     );
 };
 
@@ -316,9 +316,8 @@ using safe_iterator_t = std::conditional_t<
 namespace detail {
 
 template <typename R>
-NANO_CONCEPT SimpleView = View<R> && Range<const R> &&
-    Same<iterator_t<R>, iterator_t<const R>> &&
-    Same<sentinel_t<R>, sentinel_t<const R>>;
+NANO_CONCEPT SimpleView = View<R> && Range<const R> && same_as<iterator_t<R>, iterator_t<const R>> &&
+        same_as<sentinel_t<R>, sentinel_t<const R>>;
 
 struct HasArrow_req {
     template <typename I>
@@ -331,7 +330,7 @@ NANO_CONCEPT HasArrow = InputIterator<I> &&
 
 
 template <typename T, typename U>
-NANO_CONCEPT NotSameAs = !Same<remove_cvref_t<T>, remove_cvref_t<U>>;
+NANO_CONCEPT NotSameAs = !same_as<remove_cvref_t<T>, remove_cvref_t<U>>;
 
 }
 

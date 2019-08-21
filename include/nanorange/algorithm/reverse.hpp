@@ -29,7 +29,7 @@ private:
 
     template <typename I, typename S>
     static constexpr std::enable_if_t<
-        !Same<I, S>, I>
+        !same_as<I, S>, I>
     impl(I first, S bound)
     {
         I last = next(first, bound);

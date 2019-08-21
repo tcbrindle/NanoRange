@@ -34,14 +34,14 @@ public:
         : current_(x), cnt_(n)
     {}
 
-    template <typename I2, std::enable_if_t<ConvertibleTo<I2, I>, int> = 0>
+    template <typename I2, std::enable_if_t<convertible_to<I2, I>, int> = 0>
     constexpr counted_iterator(const counted_iterator<I2>& i)
         : current_(i.current_), cnt_(i.cnt_)
     {}
 
     template <typename I2>
     constexpr auto operator=(const counted_iterator<I2>& i)
-        -> std::enable_if_t<ConvertibleTo<I2, I>, counted_iterator&>
+        -> std::enable_if_t<convertible_to<I2, I>, counted_iterator&>
     {
         current_ = i.current_;
         cnt_ = i.cnt_;
@@ -147,7 +147,7 @@ public:
     template <typename I2>
     friend constexpr auto operator==(const counted_iterator& x,
                                      const counted_iterator<I2>& y)
-        -> std::enable_if_t<Common<I2, I>, bool>
+        -> std::enable_if_t<common_with<I2, I>, bool>
     {
         return x.count() == y.count();
     }
@@ -165,7 +165,7 @@ public:
     template <typename I2>
     friend constexpr auto operator!=(const counted_iterator& x,
                                      const counted_iterator<I2>& y)
-        -> std::enable_if_t<Common<I2, I>, bool>
+        -> std::enable_if_t<common_with<I2, I>, bool>
     {
         return !(x == y);
     }
@@ -183,7 +183,7 @@ public:
     template <typename I2>
     friend constexpr auto operator<(const counted_iterator& x,
                                     const counted_iterator<I2>& y)
-        -> std::enable_if_t<Common<I2, I>, bool>
+        -> std::enable_if_t<common_with<I2, I>, bool>
     {
         return y.count() < x.count();
     }
@@ -191,7 +191,7 @@ public:
     template <typename I2>
     friend constexpr auto operator>(const counted_iterator& x,
                                     const counted_iterator<I2>& y)
-        -> std::enable_if_t<Common<I2, I>, bool>
+        -> std::enable_if_t<common_with<I2, I>, bool>
     {
         return y < x;
     }
@@ -199,7 +199,7 @@ public:
     template <typename I2>
     friend constexpr auto operator<=(const counted_iterator& x,
                                      const counted_iterator<I2>& y)
-         -> std::enable_if_t<Common<I2, I>, bool>
+         -> std::enable_if_t<common_with<I2, I>, bool>
     {
         return !(y < x);
     }
@@ -207,7 +207,7 @@ public:
     template <typename I2>
     friend constexpr auto operator>=(const counted_iterator& x,
                                      const counted_iterator<I2>& y)
-        -> std::enable_if_t<Common<I2, I>, bool>
+        -> std::enable_if_t<common_with<I2, I>, bool>
     {
         return !(x < y);
     }
@@ -215,7 +215,7 @@ public:
     template <typename I2>
     friend constexpr auto operator-(const counted_iterator& x,
                                     const counted_iterator<I2>& y)
-        -> std::enable_if_t<Common<I2, I>, iter_difference_t<I2>>
+        -> std::enable_if_t<common_with<I2, I>, iter_difference_t<I2>>
     {
         return y.count() - x.count();
     }

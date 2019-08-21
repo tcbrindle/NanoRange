@@ -94,7 +94,7 @@ private:
     }
 
     template <typename I, typename S, typename O>
-    static constexpr std::enable_if_t<!Same<I, S>, move_backward_result<I, O>>
+    static constexpr std::enable_if_t<!same_as<I, S>, move_backward_result<I, O>>
     impl(I first, S sent, O result)
     {
         I last = nano::next(first, sent);

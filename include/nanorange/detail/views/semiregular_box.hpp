@@ -18,7 +18,7 @@ namespace detail {
 template <typename T>
 struct semiregular_box : std::optional<T>
 {
-    static_assert(CopyConstructible<T>);
+    static_assert(copy_constructible<T>);
     static_assert(std::is_object_v<T>);
 
 private:
@@ -27,22 +27,22 @@ private:
 
 public:
     template <typename U = T,
-              std::enable_if_t<DefaultConstructible<U>, int> = 0>
+              std::enable_if_t<default_constructible<U>, int> = 0>
     constexpr semiregular_box()
         noexcept(std::is_nothrow_default_constructible_v<T>)
         : semiregular_box{std::in_place}
     {}
 
     template <typename U = T,
-              std::enable_if_t<!DefaultConstructible<U>, int> = 0>
+              std::enable_if_t<!default_constructible<U>, int> = 0>
     constexpr semiregular_box() {}
 
     // All other constructors get forwarded to optional -- but don't hijack
     // copy/move construct
     template <typename Arg0, typename... Args,
               std::enable_if_t<
-                  Constructible<std::optional<T>, Arg0, Args...> &&
-                  !Same<uncvref_t<Arg0>, semiregular_box>, int> = 0>
+                  constructible_from<std::optional<T>, Arg0, Args...> &&
+                  !same_as<uncvref_t<Arg0>, semiregular_box>, int> = 0>
     constexpr semiregular_box(Arg0&& arg0, Args&&... args)
         : std::optional<T>{std::forward<Arg0>(arg0), std::forward<Args>(args)...}
     {}
@@ -52,7 +52,7 @@ public:
 
     semiregular_box& operator=(const semiregular_box& other)
     {
-        if constexpr (Assignable<T&, const T&>) {
+        if constexpr (assignable_from<T&, const T&>) {
             base() = other.base();
         } else {
             if (other) {
@@ -67,7 +67,7 @@ public:
 
     semiregular_box& operator=(semiregular_box&& other) noexcept
     {
-        if constexpr (Assignable<T&, T>) {
+        if constexpr (assignable_from<T&, T>) {
             base() = std::move(other.base());
         } else {
             if (other) {

@@ -606,7 +606,7 @@ TEST_CASE("alg.stable_partition")
 	{  // check mixed
 		std::array<S, 10> ap = { S{{0, 1}}, {{0, 2}}, {{1, 1}}, {{1, 2}}, {{2, 1}}, {{2, 2}}, {{3, 1}}, {{3, 2}}, {{4, 1}}, {{4, 2}} };
 		auto r = ranges::stable_partition(std::move(ap), odd_first(), &S::p);
-		static_assert(ranges::Same<decltype(r), ranges::dangling>);
+		static_assert(ranges::same_as<decltype(r), ranges::dangling>);
 		//CHECK(r.get_unsafe() == ap + 4);
 		CHECK(ap[0].p == P{1, 1});
 		CHECK(ap[1].p == P{1, 2});

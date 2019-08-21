@@ -21,9 +21,9 @@ template <typename V>
 constexpr auto filter_view_iter_cat_helper()
 {
     using C = iterator_category_t<iterator_t<V>>;
-    if constexpr (DerivedFrom<C, bidirectional_iterator_tag>) {
+    if constexpr (derived_from<C, bidirectional_iterator_tag>) {
         return bidirectional_iterator_tag{};
-    } else if constexpr (DerivedFrom<C, forward_iterator_tag>) {
+    } else if constexpr (derived_from<C, forward_iterator_tag>) {
         return forward_iterator_tag{};
     } else {
         return input_iterator_tag{};
@@ -191,7 +191,7 @@ public:
     {}
 
     template <typename R,
-              std::enable_if_t<InputRange<R> && Constructible<V, all_view<R>>,
+              std::enable_if_t<InputRange<R> && constructible_from<V, all_view<R>>,
                                int> = 0>
     constexpr filter_view(R&& r, Pred pred)
         : base_(views::all(std::forward<R>(r))), pred_(std::move(pred))

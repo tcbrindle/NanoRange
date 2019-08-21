@@ -510,7 +510,7 @@ TEST_CASE("iter.reverse_iterator") {
 		// Verify that reverse_iterator's constructor that accepts a base iterator
 		// is explicit.
 		using RI = __stl2::reverse_iterator<char*>;
-		static_assert(__stl2::Constructible<RI, char*>, "");
-		static_assert(!__stl2::ConvertibleTo<char*, RI>, "");
+		static_assert(__stl2::constructible_from<RI, char*>, "");
+		static_assert(!__stl2::convertible_to<char*, RI>, "");
 	}
 }

@@ -79,7 +79,7 @@ public:
               typename Proj = identity>
     constexpr std::enable_if_t<
         InputIterator<I> && Sentinel<S, I> && WeaklyIncrementable<O> &&
-            CopyConstructible<F> &&
+            copy_constructible<F> &&
             Writable<O, indirect_result_t<F&, projected<I, Proj>>>,
         unary_transform_result<I, O>>
     operator()(I first, S last, O result, F op, Proj proj = Proj{}) const
@@ -91,7 +91,7 @@ public:
     // Unary op, range
     template <typename Rng, typename O, typename F, typename Proj = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng> && WeaklyIncrementable<O> && CopyConstructible<F> &&
+        InputRange<Rng> && WeaklyIncrementable<O> && copy_constructible<F> &&
             Writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng>, Proj>>>,
         unary_transform_result<safe_iterator_t<Rng>, O>>
@@ -108,7 +108,7 @@ public:
     constexpr std::enable_if_t<
         InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
             Sentinel<S2, I2> && WeaklyIncrementable<O> &&
-            CopyConstructible<F> &&
+            copy_constructible<F> &&
             Writable<O, indirect_result_t<F&, projected<I1, Proj1>,
                                           projected<I2, Proj2>>>,
         binary_transform_result<I1, I2, O>>
@@ -125,7 +125,7 @@ public:
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
         InputRange<Rng1> && InputRange<Rng2> && WeaklyIncrementable<O> &&
-            CopyConstructible<F> &&
+            copy_constructible<F> &&
             Writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng1>, Proj1>,
                                        projected<iterator_t<Rng2>, Proj2>>>,
@@ -145,7 +145,7 @@ public:
     NANO_DEPRECATED constexpr std::enable_if_t<
         InputIterator<I1> && Sentinel<S1, I1> && InputIterator<std::decay_t<I2>> &&
             !InputRange<I2> &&
-            WeaklyIncrementable<O> && CopyConstructible<F> &&
+            WeaklyIncrementable<O> && copy_constructible<F> &&
             Writable<O, indirect_result_t<F&, projected<I1, Proj1>,
                                           projected<std::decay_t<I2>, Proj2>>>,
         binary_transform_result<I1, std::decay_t<I2>, O>>
@@ -163,7 +163,7 @@ public:
     NANO_DEPRECATED constexpr std::enable_if_t<
         InputRange<Rng1> && InputIterator<std::decay_t<I2>> &&
                 !InputRange<I2> && WeaklyIncrementable<O> &&
-            CopyConstructible<F> &&
+            copy_constructible<F> &&
             Writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng1>, Proj1>,
                                        projected<std::decay_t<I2>, Proj2>>>,

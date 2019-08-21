@@ -19,7 +19,7 @@ struct Decrementable_req {
     template <typename I>
     auto requires_(I i) -> decltype(
         same_lv<I>(--i),
-        requires_expr<Same<I, decltype(i--)>>{}
+        requires_expr<same_as<I, decltype(i--)>>{}
     );
 };
 
@@ -128,7 +128,7 @@ private:
         constexpr auto operator+=(difference_type n)
             -> std::enable_if_t<detail::Advanceable<WW>, iterator&>
         {
-            if constexpr (Integral<W> && !SignedIntegral<W>) {
+            if constexpr (integral<W> && !signed_integral<W>) {
                 if (n >= difference_type(0)) {
                     value_ += static_cast<W>(n);
                 } else {
@@ -144,7 +144,7 @@ private:
         constexpr auto operator-=(difference_type n)
             -> std::enable_if_t<detail::Advanceable<WW>, iterator&>
         {
-            if constexpr (Integral<W> && !SignedIntegral<W>) {
+            if constexpr (integral<W> && !signed_integral<W>) {
                 if (n >= difference_type(0)) {
                     value_ -= static_cast<W>(n);
                 } else {
@@ -231,8 +231,8 @@ private:
             -> std::enable_if_t<detail::Advanceable<WW>, difference_type>
         {
             using D = difference_type;
-            if constexpr (Integral<D>) {
-                if constexpr (SignedIntegral<D>) {
+            if constexpr (integral<D>) {
+                if constexpr (signed_integral<D>) {
                     return D(D(x.value_) - D(y.value_));
                 } else {
                     return (y.value_ > x.value)
@@ -307,25 +307,25 @@ public:
         return iterator{value_};
     }
 
-    template <typename WW = W, std::enable_if_t<!Same<WW, Bound>, int> = 0>
+    template <typename WW = W, std::enable_if_t<!same_as<WW, Bound>, int> = 0>
     constexpr auto end() const
     {
-        if constexpr (Same<Bound, unreachable_sentinel_t>) {
+        if constexpr (same_as<Bound, unreachable_sentinel_t>) {
             return unreachable_sentinel;
         } else {
             return sentinel{bound_};
         }
     }
 
-    template <typename WW = W, std::enable_if_t<Same<WW, Bound>, int> = 0>
+    template <typename WW = W, std::enable_if_t<same_as<WW, Bound>, int> = 0>
     constexpr iterator end() const
     {
         return iterator{bound_};
     }
 
     template <typename WW = W, typename BB = Bound, std::enable_if_t<
-              (Same<WW, BB> && detail::Advanceable<W>) ||
-              (Integral<WW> && Integral<BB>) ||
+              (same_as<WW, BB> && detail::Advanceable<W>) ||
+              (integral<WW> && integral<BB>) ||
               SizedSentinel<BB, WW>, int> = 0>
     constexpr auto size() const
     {
@@ -333,7 +333,7 @@ public:
             return std::make_unsigned_t<decltype(i)>(i);
         };
 
-        if constexpr (Integral<W> && Integral<Bound>) {
+        if constexpr (integral<W> && integral<Bound>) {
             return (value_ < 0)
                 ? ((bound_ < 0)
                   ? make_unsigned_like(-value_) - make_unsigned_like(-bound_)
@@ -346,8 +346,8 @@ public:
 };
 
 template <typename W, typename Bound, std::enable_if_t<
-    !Integral<W> || !Integral<Bound> ||
-        (SignedIntegral<W> == SignedIntegral<Bound>), int> = 0>
+    !integral<W> || !integral<Bound> ||
+        (signed_integral<W> == signed_integral<Bound>), int> = 0>
 iota_view(W, Bound) -> iota_view<W, Bound>;
 
 namespace views {

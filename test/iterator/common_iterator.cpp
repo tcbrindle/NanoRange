@@ -74,7 +74,7 @@ void test_operator_arrow()
 	{
 		int i = 42;
 		auto ci = ranges::common_iterator<int*, ranges::unreachable_sentinel_t>{&i};
-		static_assert(models::Same<int*, decltype(ci.operator->())>, "");
+		static_assert(models::same_as<int*, decltype(ci.operator->())>, "");
 		CHECK(ci.operator->() == &i);
 	}
 #ifdef NO_BASIC_ITERATOR
@@ -89,13 +89,13 @@ void test_operator_arrow()
 	// the expression *i is a glvalue [lvalue case]
 	{
 		auto ci = ranges::common_iterator<lvalue_iterator, ranges::unreachable_sentinel_t>{};
-		static_assert(models::Same<int*, decltype(ci.operator->())>, "");
+		static_assert(models::same_as<int*, decltype(ci.operator->())>, "");
 		CHECK(ci.operator->() == &forty_two);
 	}
 	// the expression *i is a glvalue [xvalue case]
 	{
 		auto ci = ranges::common_iterator<xvalue_iterator, ranges::unreachable_sentinel_t>{};
-		static_assert(models::Same<int*, decltype(ci.operator->())>, "");
+		static_assert(models::same_as<int*, decltype(ci.operator->())>, "");
 		CHECK(ci.operator->() == &forty_two);
 	}
 #ifdef NO_BASIC_ITERATOR

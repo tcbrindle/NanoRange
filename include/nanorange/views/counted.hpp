@@ -46,7 +46,7 @@ public:
                                nano::detail::priority_tag<1>{})))
         -> std::enable_if_t<
             Iterator<T> &&
-            ConvertibleTo<F, iter_difference_t<T>>,
+            convertible_to<F, iter_difference_t<T>>,
             decltype(impl(std::forward<E>(e),
                           static_cast<iter_difference_t<T>>(std::forward<F>(f)),
                           nano::detail::priority_tag<1>{}))>

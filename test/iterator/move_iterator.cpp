@@ -190,21 +190,21 @@ void test_proxy_iterator() {
 	vec2.reserve(ranges::size(vec));
 
 	static_assert(
-		ranges::Same<
+		ranges::same_as<
 			ranges::iter_reference_t<proxy_iterator<A>>,
 			std::reference_wrapper<A>>, "");
 	static_assert(
-		ranges::Same<
+		ranges::same_as<
 			ranges::iter_reference_t<const proxy_iterator<A>>,
 			std::reference_wrapper<A>>, "");
 	static_assert(
-		ranges::Same<
+		ranges::same_as<
 			ranges::iter_rvalue_reference_t<proxy_iterator<A>>,
 			A&&>, "");
 
 	{
 		static_assert(
-			ranges::Same<
+			ranges::same_as<
 				ranges::iter_rvalue_reference_t<
 					ranges::move_iterator<proxy_iterator<A>>>,
 				A&&>, "");
@@ -246,12 +246,12 @@ void test_proxy_iterator() {
 
 	{
 		static_assert(
-			ranges::Same<
+			ranges::same_as<
 				ranges::iter_rvalue_reference_t<
 					ranges::counted_iterator<proxy_iterator<A>>>,
 				A&&>, "");
 		static_assert(
-			ranges::Same<
+			ranges::same_as<
 				ranges::iter_rvalue_reference_t<
 					ranges::move_iterator<
 						ranges::counted_iterator<proxy_iterator<A>>>>,

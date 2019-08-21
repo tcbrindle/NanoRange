@@ -35,28 +35,28 @@ namespace {
 
 		using I = istreambuf_iterator<charT, traits>;
 		static_assert(nano::WeaklyIncrementable<I>, "");
-		static_assert(nano::Same<typename traits::off_type, iter_difference_t<I>>, "");
-		static_assert(nano::Same<charT, iter_value_t<I>>, "");
+		static_assert(nano::same_as<typename traits::off_type, iter_difference_t<I>>, "");
+		static_assert(nano::same_as<charT, iter_value_t<I>>, "");
 		static_assert(nano::Readable<I>, "");
-		static_assert(nano::Same<charT, iter_reference_t<I>>, "");
-		static_assert(nano::Same<charT, iter_rvalue_reference_t<I>>, "");
+		static_assert(nano::same_as<charT, iter_reference_t<I>>, "");
+		static_assert(nano::same_as<charT, iter_rvalue_reference_t<I>>, "");
 		static_assert(nano::Iterator<I>, "");
-		static_assert(nano::Same<input_iterator_tag, iterator_category_t<I>>, "");
+		static_assert(nano::same_as<input_iterator_tag, iterator_category_t<I>>, "");
 		static_assert(nano::InputIterator<I>, "");
 		static_assert(!nano::ForwardIterator<I>, "");
 		static_assert(nano::Sentinel<I, I>, "");
 		static_assert(nano::Sentinel<default_sentinel_t, I>, "");
-		static_assert(nano::Common<I, default_sentinel_t>, "");
-		static_assert(nano::Same<I, common_type_t<I, default_sentinel_t>>, "");
+		static_assert(nano::common_with<I, default_sentinel_t>, "");
+		static_assert(nano::same_as<I, common_type_t<I, default_sentinel_t>>, "");
 
-		static_assert(nano::Same<iter_value_t<I>, typename I::value_type>, "");
-		static_assert(nano::Same<iter_difference_t<I>, typename I::difference_type>, "");
-		static_assert(nano::Same<input_iterator_tag, typename I::iterator_category>, "");
-		static_assert(nano::Same<charT, typename I::reference>, "");
-		static_assert(nano::Same<traits, typename I::traits_type>, "");
-		static_assert(nano::Same<typename traits::int_type, typename I::int_type>, "");
-		static_assert(nano::Same<std::basic_streambuf<charT, traits>, typename I::streambuf_type>, "");
-		static_assert(nano::Same<std::basic_istream<charT, traits>, typename I::istream_type>, "");
+		static_assert(nano::same_as<iter_value_t<I>, typename I::value_type>, "");
+		static_assert(nano::same_as<iter_difference_t<I>, typename I::difference_type>, "");
+		static_assert(nano::same_as<input_iterator_tag, typename I::iterator_category>, "");
+		static_assert(nano::same_as<charT, typename I::reference>, "");
+		static_assert(nano::same_as<traits, typename I::traits_type>, "");
+		static_assert(nano::same_as<typename traits::int_type, typename I::int_type>, "");
+		static_assert(nano::same_as<std::basic_streambuf<charT, traits>, typename I::streambuf_type>, "");
+		static_assert(nano::same_as<std::basic_istream<charT, traits>, typename I::istream_type>, "");
 
 		auto i = I{};
 		auto ci = const_cast<const I&>(i);
@@ -71,11 +71,11 @@ namespace {
 		//static_assert(nano::Same<decltype(i.operator->()), typename C::pointer>, "");
 		//static_assert(nano::Same<decltype(i.operator++(0)), typename C::__proxy>, "");
 
-		static_assert(nano::Constructible<I, default_sentinel_t>, "");
-		static_assert(nano::ConvertibleTo<default_sentinel_t, I>, "");
-		static_assert(nano::Constructible<I, std::basic_istream<charT, traits>&>, "");
-		static_assert(nano::Constructible<I, std::basic_streambuf<charT, traits>*>, "");
-		static_assert(nano::Constructible<I, decltype(i++)>, "");
+		static_assert(nano::constructible_from<I, default_sentinel_t>, "");
+		static_assert(nano::convertible_to<default_sentinel_t, I>, "");
+		static_assert(nano::constructible_from<I, std::basic_istream<charT, traits>&>, "");
+		static_assert(nano::constructible_from<I, std::basic_streambuf<charT, traits>*>, "");
+		static_assert(nano::constructible_from<I, decltype(i++)>, "");
 	}
 
 	template <class... Cs>

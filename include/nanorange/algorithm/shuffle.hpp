@@ -39,7 +39,7 @@ public:
         RandomAccessIterator<I> &&
         Sentinel<S, I> &&
         UniformRandomBitGenerator<std::remove_reference_t<Gen>> &&
-        ConvertibleTo<invoke_result_t<Gen&>, iter_difference_t<I>>,
+        convertible_to<invoke_result_t<Gen&>, iter_difference_t<I>>,
         I>
     operator()(I first, S last, Gen&& gen) const
     {
@@ -51,7 +51,7 @@ public:
     constexpr std::enable_if_t<
             RandomAccessRange<Rng> &&
             UniformRandomBitGenerator<std::remove_reference_t<Gen>> &&
-            ConvertibleTo<invoke_result_t<Gen&>, iter_difference_t<iterator_t<Rng>>>,
+            convertible_to<invoke_result_t<Gen&>, iter_difference_t<iterator_t<Rng>>>,
     safe_iterator_t<Rng>>
     operator()(Rng&& rng, Gen&& gen) const
     {

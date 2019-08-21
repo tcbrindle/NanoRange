@@ -32,7 +32,7 @@ private:
 
     template <typename I, typename S, typename O>
     static constexpr std::enable_if_t<
-        !Same<I, S>, reverse_copy_result<I, O>>
+        !same_as<I, S>, reverse_copy_result<I, O>>
     impl(I first, S bound, O result)
     {
         return reverse_copy_fn::impl(std::move(first), nano::next(first, bound),

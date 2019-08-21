@@ -104,7 +104,7 @@ TEST_CASE("alg.replace")
 		using P = std::pair<int,std::string>;
 		std::array<P, 5> ia = {P{0,"0"}, {1,"1"}, {2,"2"}, {3,"3"}, {4,"4"}};
 		auto i = stl2::replace(std::move(ia), 2, std::make_pair(42,"42"), &std::pair<int,std::string>::first);
-		static_assert(stl2::Same<decltype(i), stl2::dangling>);
+		static_assert(stl2::same_as<decltype(i), stl2::dangling>);
 		CHECK((ia[0] == P{0,"0"}));
 		CHECK((ia[1] == P{1,"1"}));
 		CHECK((ia[2] == P{42,"42"}));

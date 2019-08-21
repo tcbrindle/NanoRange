@@ -18,7 +18,7 @@ namespace ranges = nano::ranges;
 
 namespace models {
 	template <class... Ts>
-	constexpr bool Same = ranges::Same<Ts...>;
+	constexpr bool Same = ranges::same_as<Ts...>;
 
 	template <class R>
 	constexpr bool Readable = ranges::Readable<R>;

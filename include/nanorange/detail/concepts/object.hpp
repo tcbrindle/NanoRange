@@ -22,9 +22,9 @@ auto Copyable_fn(long) -> std::false_type;
 
 template <typename T>
 auto Copyable_fn(int) -> std::enable_if_t<
-        CopyConstructible<T> &&
+        copy_constructible<T> &&
         Movable<T> &&
-        Assignable<T&, const T&>,
+        assignable_from<T&, const T&>,
         std::true_type>;
 
 }
@@ -34,7 +34,7 @@ NANO_CONCEPT Copyable = decltype(detail::Copyable_fn<T>(0))::value;
 
 // [concepts.lib.object.semiregular]
 template <typename T>
-NANO_CONCEPT Semiregular = Copyable<T>&& DefaultConstructible<T>;
+NANO_CONCEPT Semiregular = Copyable<T>&& default_constructible<T>;
 
 // [concepts.lib.object.regular]
 template <typename T>
@@ -84,7 +84,7 @@ auto Relation_fn(long) -> std::false_type;
 template <typename R, typename T, typename U>
 auto Relation_fn(int) -> std::enable_if_t<
         Predicate<R, T, T> && Predicate<R, U, U> &&
-        CommonReference<const std::remove_reference_t<T>&,
+        common_reference_with<const std::remove_reference_t<T>&,
                         const std::remove_reference_t<U>&> &&
         Predicate<R,
                   common_reference_t<const std::remove_reference_t<T>&,

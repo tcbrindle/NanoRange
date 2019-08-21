@@ -23,7 +23,7 @@ TEST_CASE("views.counted")
 		int rg[] = {0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9};
 		auto x = views::counted(rg, 10);
 		::check_equal(x, {0,1,2,3,4,5,6,7,8,9});
-		static_assert(Same<decltype(x), subrange<int*>>, "");
+		static_assert(same_as<decltype(x), subrange<int*>>, "");
 		static_assert(View<decltype(x)>, "");
 		static_assert(SizedRange<decltype(x)>, "");
 		static_assert(CommonRange<decltype(x)>, "");

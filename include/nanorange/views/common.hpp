@@ -63,7 +63,7 @@ public:
         std::enable_if_t<
                 ViewableRange<R> &&
                 !CommonRange<R> &&
-                Constructible<V, all_view<R>>, int> = 0>
+                constructible_from<V, all_view<R>>, int> = 0>
     constexpr explicit common_view(R&& r)
         : base_(views::all(std::forward<R>(r)))
     {}

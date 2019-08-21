@@ -33,7 +33,7 @@ public:
 
     template <typename T,
               std::enable_if_t<detail::NotSameAs<T, ref_view>, int> = 0,
-              std::enable_if_t<ConvertibleTo<T, R&> &&
+              std::enable_if_t<convertible_to<T, R&> &&
                                detail::requires_<constructor_req, T>, int> = 0>
     constexpr ref_view(T&& t)
         : r_(std::addressof(static_cast<R&>(std::forward<T>(t))))

@@ -138,7 +138,7 @@ private:
     }
 
     template <typename I, typename S, typename Pred, typename Proj>
-    static std::enable_if_t<!Same<I, S>, I>
+    static std::enable_if_t<!same_as<I, S>, I>
     impl(I first, S last, Pred& pred, Proj& proj)
     {
         return impl(first, nano::next(first, last), pred, proj);

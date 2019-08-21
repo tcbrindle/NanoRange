@@ -157,7 +157,7 @@ TEST_CASE("alg.partial_sort_copy")
             input[i].i = i;
         std::shuffle(input, input+N, gen);
         auto r = stl2::partial_sort_copy(input, std::move(output), std::less<int>(), &S::i, &U::i);
-        static_assert(stl2::Same<decltype(r), stl2::dangling>);
+        static_assert(stl2::same_as<decltype(r), stl2::dangling>);
         U* e = output.data() + std::min(N, M);
         //CHECK(r.get_unsafe() == e);
         int i = 0;

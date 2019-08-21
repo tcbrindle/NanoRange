@@ -25,11 +25,11 @@ auto IndirectUnaryInvocable_fn(long) -> std::false_type;
 template <typename F, typename I>
 auto IndirectUnaryInvocable_fn(int) -> std::enable_if_t<
         Readable<I> &&
-        CopyConstructible<F> &&
+        copy_constructible<F> &&
         Invocable<F&, iter_value_t<I>&> &&
         Invocable<F&, iter_reference_t<I>> &&
         Invocable<F&, iter_common_reference_t<I>> &&
-        CommonReference<
+        common_reference_with<
                 invoke_result_t<F&, iter_value_t<I>&>,
                 invoke_result_t<F&, iter_reference_t<I>&>>,
             std::true_type>;
@@ -48,11 +48,11 @@ auto IndirectRegularUnaryInvocable_fn(long) -> std::false_type;
 template <typename F, typename I>
 auto IndirectRegularUnaryInvocable_fn(int) -> std::enable_if_t<
         Readable<I> &&
-        CopyConstructible<F> &&
+        copy_constructible<F> &&
         RegularInvocable<F&, iter_value_t<I>&> &&
         RegularInvocable<F&, iter_reference_t<I>> &&
         RegularInvocable<F&, iter_common_reference_t<I>> &&
-        CommonReference<
+        common_reference_with<
             invoke_result_t<F&, iter_value_t<I>&>,
             invoke_result_t<F&, iter_reference_t<I>&>>,
         std::true_type>;
@@ -72,7 +72,7 @@ auto IndirectUnaryPredicate_fn(long) -> std::false_type;
 template <typename F, typename I>
 auto IndirectUnaryPredicate_fn(int) -> std::enable_if_t<
         Readable<I> &&
-        CopyConstructible<F> &&
+        copy_constructible<F> &&
         Predicate<F&, iter_value_t<I>&> &&
         Predicate<F&, iter_reference_t<I>> &&
         Predicate<F&, iter_common_reference_t<I>>,
@@ -91,7 +91,7 @@ auto IndirectRelation_fn(long) -> std::false_type;
 
 template <typename F, typename I1, typename I2>
 auto IndirectRelation_fn(int) -> std::enable_if_t<
-        Readable<I1> && Readable<I2> && CopyConstructible<F> &&
+        Readable<I1> && Readable<I2> && copy_constructible<F> &&
         Relation<F&, iter_value_t<I1>&, iter_value_t<I2>&>&&
         Relation<F&, iter_value_t<I1>&, iter_reference_t<I2>>&&
         Relation<F&, iter_reference_t<I1>, iter_value_t<I2>&>&&
@@ -184,8 +184,8 @@ auto IndirectlyMovableStorable_fn(int) -> std::enable_if_t<
         IndirectlyMovable<In, Out> &&
         Writable<Out, iter_value_t<In>> &&
         Movable<iter_value_t<In>> &&
-        Constructible<iter_value_t<In>, iter_rvalue_reference_t<In>> &&
-        Assignable<iter_value_t<In>&, iter_rvalue_reference_t<In>>,
+        constructible_from<iter_value_t<In>, iter_rvalue_reference_t<In>> &&
+        assignable_from<iter_value_t<In>&, iter_rvalue_reference_t<In>>,
     std::true_type>;
 
 }
@@ -223,8 +223,8 @@ auto IndirectlyCopyableStorable_fn(int) -> std::enable_if_t<
         IndirectlyCopyable<In, Out> &&
         Writable<Out, const iter_value_t<In>&> &&
         Copyable<iter_value_t<In>> &&
-        Constructible<iter_value_t<In>, iter_reference_t<In>> &&
-        Assignable<iter_value_t<In>&, iter_reference_t<In>>,
+        constructible_from<iter_value_t<In>, iter_reference_t<In>> &&
+        assignable_from<iter_value_t<In>&, iter_reference_t<In>>,
     std::true_type>;
 
 }

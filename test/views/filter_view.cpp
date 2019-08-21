@@ -44,8 +44,8 @@ TEST_CASE("views.filter")
 
 	auto rng = rgi | views::filter(is_odd());
 	//auto rng = views::filter(rgi, is_odd());
-	static_assert(Same<int &, decltype(*begin(rgi))>);
-	static_assert(Same<int &, decltype(*begin(rng))>);
+	static_assert(same_as<int &, decltype(*begin(rgi))>);
+	static_assert(same_as<int &, decltype(*begin(rng))>);
 	static_assert(View<decltype(rng)>);
 	static_assert(InputRange<decltype(rng)>);
 	static_assert(CommonRange<decltype(rng)>);

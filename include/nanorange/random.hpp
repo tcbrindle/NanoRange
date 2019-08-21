@@ -21,9 +21,9 @@ struct UniformRandomBitGenerator_req {
     template <typename G>
     auto requires_() -> decltype(valid_expr(
         G::min(),
-        requires_expr<Same<decltype(G::min()), invoke_result_t<G&>>>{},
+        requires_expr<same_as<decltype(G::min()), invoke_result_t<G&>>>{},
         G::max(),
-        requires_expr<Same<decltype(G::max()), invoke_result_t<G&>>>{}));
+        requires_expr<same_as<decltype(G::max()), invoke_result_t<G&>>>{}));
 };
 
 template <typename>
@@ -32,7 +32,7 @@ auto UniformRandomBitGenerator_fn(long) -> std::false_type;
 template <typename G>
 auto UniformRandomBitGenerator_fn(int) -> std::enable_if_t<
         Invocable<G&> &&
-        UnsignedIntegral<invoke_result_t<G&>> &&
+        unsigned_integral<invoke_result_t<G&>> &&
         requires_<UniformRandomBitGenerator_req, G>,
     std::true_type>;
 

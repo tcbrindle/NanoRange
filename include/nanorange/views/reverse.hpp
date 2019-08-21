@@ -45,7 +45,7 @@ struct reverse_view
               std::enable_if_t<
                   ViewableRange<R> &&
                   BidirectionalRange<R> &&
-                  Constructible<V, all_view<R>>, int> = 0>
+                  constructible_from<V, all_view<R>>, int> = 0>
     constexpr explicit reverse_view(R&& r)
         : base_(views::all(std::forward<R>(r)))
     {}

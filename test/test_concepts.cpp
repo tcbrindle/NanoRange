@@ -30,117 +30,118 @@ struct to_int {
     operator int() const;
 };
 
-// Same concept tests
+// same_as concept tests
 
-static_assert(rng::Same<int, int>, "");
-static_assert(!rng::Same<float, double>, "");
-static_assert(rng::Same<void, void>, "");
-static_assert(rng::Same<incomplete, incomplete>, "");
-static_assert(!rng::Same<int, void>, "");
+static_assert(rng::same_as<int, int>, "");
+static_assert(!rng::same_as<float, double>, "");
+static_assert(rng::same_as<void, void>, "");
+static_assert(rng::same_as<incomplete, incomplete>, "");
+static_assert(!rng::same_as<int, void>, "");
 
 
-// DerivedFrom tests
-static_assert(!rng::DerivedFrom<int, int>, "");
-static_assert(!rng::DerivedFrom<void, incomplete>, "");
-static_assert(!rng::DerivedFrom<int, float>, "");
-static_assert(rng::DerivedFrom<derived, base>, "");
-static_assert(!rng::DerivedFrom<base, derived>, "");
-static_assert(!rng::DerivedFrom<private_derived, base>, "");
+// derived_from tests
+static_assert(!rng::derived_from<int, int>, "");
+static_assert(!rng::derived_from<int&, int&>, "");
+static_assert(!rng::derived_from<void, incomplete>, "");
+static_assert(!rng::derived_from<int, float>, "");
+static_assert(rng::derived_from<derived, base>, "");
+static_assert(!rng::derived_from<base, derived>, "");
+static_assert(!rng::derived_from<private_derived, base>, "");
 
 // ConvertibleTo tests
-static_assert(rng::ConvertibleTo<void, void>, "");
-static_assert(!rng::ConvertibleTo<int, void>, "");
-static_assert(!rng::ConvertibleTo<void, int>, "");
-static_assert(rng::ConvertibleTo<int, int>, "");
-static_assert(rng::ConvertibleTo<int, const int>, "");
-static_assert(rng::ConvertibleTo<const int, int>, "");
-static_assert(rng::ConvertibleTo<int&, const volatile int>, "");
-static_assert(rng::ConvertibleTo<int&, int const&>, "");
-static_assert(!rng::ConvertibleTo<const int&, int&>, "");
-static_assert(rng::ConvertibleTo<int&&, int const&>, "");
-static_assert(!rng::ConvertibleTo<int&, int&&>, "");
+static_assert(rng::convertible_to<void, void>, "");
+static_assert(!rng::convertible_to<int, void>, "");
+static_assert(!rng::convertible_to<void, int>, "");
+static_assert(rng::convertible_to<int, int>, "");
+static_assert(rng::convertible_to<int, const int>, "");
+static_assert(rng::convertible_to<const int, int>, "");
+static_assert(rng::convertible_to<int&, const volatile int>, "");
+static_assert(rng::convertible_to<int&, int const&>, "");
+static_assert(!rng::convertible_to<const int&, int&>, "");
+static_assert(rng::convertible_to<int&&, int const&>, "");
+static_assert(!rng::convertible_to<int&, int&&>, "");
 // Hmmm, is this correct?
-static_assert(!rng::ConvertibleTo<int[], int[]>, "");
-static_assert(rng::ConvertibleTo<int, bool>, "");
-static_assert(rng::ConvertibleTo<float, int>, "");
-static_assert(rng::ConvertibleTo<derived&, base&>, "");
-static_assert(!rng::ConvertibleTo<base&, derived&>, "");
-static_assert(!rng::ConvertibleTo<private_derived&, base&>, "");
+static_assert(!rng::convertible_to<int[], int[]>, "");
+static_assert(rng::convertible_to<int, bool>, "");
+static_assert(rng::convertible_to<float, int>, "");
+static_assert(rng::convertible_to<derived&, base&>, "");
+static_assert(!rng::convertible_to<base&, derived&>, "");
+static_assert(!rng::convertible_to<private_derived&, base&>, "");
 
-static_assert(rng::ConvertibleTo<int&, from_int_only>, "");
-static_assert(!rng::ConvertibleTo<long, from_int_only>, "");
+static_assert(rng::convertible_to<int&, from_int_only>, "");
+static_assert(!rng::convertible_to<long, from_int_only>, "");
 
-static_assert(rng::ConvertibleTo<to_int, int>, "");
-static_assert(rng::ConvertibleTo<to_int, long>, "");
+static_assert(rng::convertible_to<to_int, int>, "");
+static_assert(rng::convertible_to<to_int, long>, "");
 
-static_assert(rng::ConvertibleTo<int*, void*>, "");
-static_assert(!rng::ConvertibleTo<void*, int*>, "");
+static_assert(rng::convertible_to<int*, void*>, "");
+static_assert(!rng::convertible_to<void*, int*>, "");
 
-static_assert(rng::ConvertibleTo<const char*, std::string>, "");
-static_assert(!rng::ConvertibleTo<std::string, const char*>, "");
+static_assert(rng::convertible_to<const char*, std::string>, "");
+static_assert(!rng::convertible_to<std::string, const char*>, "");
 
 // CommonReference tests
-static_assert(rng::CommonReference<int&, int&>, "");
-static_assert(!rng::CommonReference<void, int>, "");
+static_assert(rng::common_reference_with<int&, int&>, "");
+static_assert(!rng::common_reference_with<void, int>, "");
 using void_cr = rng::common_reference_t<void, void>;
-static_assert(rng::Same<void_cr, void>, "");
-static_assert(rng::ConvertibleTo<void, void>, "");
-static_assert(rng::CommonReference<void, void>, "");
+static_assert(rng::same_as<void_cr, void>, "");
+static_assert(rng::convertible_to<void, void>, "");
+static_assert(rng::common_reference_with<void, void>, "");
 
 
 // Common tests
-static_assert(rng::Common<int, int>, "");
+static_assert(rng::common_with<int, int>, "");
 
 // Integal tests
-static_assert(rng::Integral<char>, "");
-static_assert(rng::Integral<signed char>, "");
-static_assert(rng::Integral<unsigned char>, "");
-static_assert(rng::Integral<bool>, "");
-static_assert(!rng::Integral<float>, "");
-static_assert(!rng::Integral<int&>, "");
-static_assert(rng::Integral<const int>, "");
-static_assert(!rng::Integral<float>, "");
-static_assert(!rng::Integral<std::string>, "");
-static_assert(!rng::Integral<void>, "");
+static_assert(rng::integral<char>, "");
+static_assert(rng::integral<signed char>, "");
+static_assert(rng::integral<unsigned char>, "");
+static_assert(rng::integral<bool>, "");
+static_assert(!rng::integral<float>, "");
+static_assert(!rng::integral<int&>, "");
+static_assert(rng::integral<const int>, "");
+static_assert(!rng::integral<float>, "");
+static_assert(!rng::integral<std::string>, "");
+static_assert(!rng::integral<void>, "");
 
 // SignedIntegral tests
-static_assert(rng::SignedIntegral<signed char>, "");
-static_assert(!rng::SignedIntegral<unsigned char>, "");
-static_assert(!rng::SignedIntegral<bool>, "");
-static_assert(!rng::SignedIntegral<std::string>, "");
+static_assert(rng::signed_integral<signed char>, "");
+static_assert(!rng::signed_integral<unsigned char>, "");
+static_assert(!rng::signed_integral<bool>, "");
+static_assert(!rng::signed_integral<std::string>, "");
 
 // UnsignedIntegral tests
-static_assert(rng::UnsignedIntegral<unsigned char>, "");
-static_assert(!rng::UnsignedIntegral<signed char>, "");
-static_assert(!rng::UnsignedIntegral<signed>, "");
-static_assert(!rng::UnsignedIntegral<void>, "");
-static_assert(!rng::UnsignedIntegral<std::string>, "");
+static_assert(rng::unsigned_integral<unsigned char>, "");
+static_assert(!rng::unsigned_integral<signed char>, "");
+static_assert(!rng::unsigned_integral<signed>, "");
+static_assert(!rng::unsigned_integral<void>, "");
+static_assert(!rng::unsigned_integral<std::string>, "");
 
 // Assignable tests
 struct weird_assign {
     int operator=(const weird_assign&);
 };
 
-static_assert(rng::Assignable<int&, int&>, "");
-static_assert(rng::Assignable<int&, int>, "");
-static_assert(rng::Assignable<int&, int&&>, "");
-static_assert(!rng::Assignable<int, int&>, "");
-static_assert(!rng::Assignable<int const&, int&>, "");
-static_assert(rng::Assignable<std::string&, const char*>, "");
-static_assert(!rng::Assignable<weird_assign&, weird_assign&>, "");
-static_assert(!rng::Assignable<void, int>, "");
+static_assert(rng::assignable_from<int&, int&>, "");
+static_assert(rng::assignable_from<int&, int>, "");
+static_assert(rng::assignable_from<int&, int&&>, "");
+static_assert(!rng::assignable_from<int, int&>, "");
+static_assert(!rng::assignable_from<int const&, int&>, "");
+static_assert(rng::assignable_from<std::string&, const char*>, "");
+static_assert(!rng::assignable_from<weird_assign&, weird_assign&>, "");
+static_assert(!rng::assignable_from<void, int>, "");
 
 // Swappable tests
-static_assert(rng::Swappable<int>, "");
-static_assert(!rng::Swappable<void>, "");
-static_assert(rng::Swappable<std::string>, "");
-static_assert(rng::Swappable<base>, "");
+static_assert(rng::swappable<int>, "");
+static_assert(!rng::swappable<void>, "");
+static_assert(rng::swappable<std::string>, "");
+static_assert(rng::swappable<base>, "");
 
-static_assert(!rng::SwappableWith<int, long>, "");
-static_assert(!rng::SwappableWith<int, const int>, "");
-static_assert(!rng::SwappableWith<int[], int[]>, "");
-static_assert(!rng::SwappableWith<int*, void*>, "");
-static_assert(!rng::SwappableWith<base, derived>, "");
+static_assert(!rng::swappable_with<int, long>, "");
+static_assert(!rng::swappable_with<int, const int>, "");
+static_assert(!rng::swappable_with<int[], int[]>, "");
+static_assert(!rng::swappable_with<int*, void*>, "");
+static_assert(!rng::swappable_with<base, derived>, "");
 
 // Destructible tests
 struct throwing_dtor {
@@ -151,29 +152,29 @@ class private_dtor {
     ~private_dtor() = default;
 };
 
-static_assert(rng::Destructible<int>, "");
-static_assert(rng::Destructible<std::string>, "");
-static_assert(!rng::Destructible<void>, "");
-static_assert(!rng::Destructible<throwing_dtor>, "");
-static_assert(!rng::Destructible<private_dtor>, "");
+static_assert(rng::destructible<int>, "");
+static_assert(rng::destructible<std::string>, "");
+static_assert(!rng::destructible<void>, "");
+static_assert(!rng::destructible<throwing_dtor>, "");
+static_assert(!rng::destructible<private_dtor>, "");
 
 // Constructible tests
-static_assert(rng::Constructible<int, long&>, "");
-static_assert(rng::Constructible<base&, derived&>, "");
-static_assert(rng::Constructible<std::string, const char(&)[6]>, "");
-static_assert(rng::Constructible<std::string, char, int, std::allocator<char>>, "");
-static_assert(!rng::Constructible<throwing_dtor>, "");
+static_assert(rng::constructible_from<int, long&>, "");
+static_assert(rng::constructible_from<base&, derived&>, "");
+static_assert(rng::constructible_from<std::string, const char(&)[6]>, "");
+static_assert(rng::constructible_from<std::string, char, int, std::allocator<char>>, "");
+static_assert(!rng::constructible_from<throwing_dtor>, "");
 
 // DefaultConstructible tests
 struct agg {
     int i; float f;
 };
 
-static_assert(!rng::DefaultConstructible<void>, "");
-static_assert(rng::DefaultConstructible<int>, "");
-static_assert(rng::DefaultConstructible<agg>, "");
-static_assert(rng::DefaultConstructible<std::string>, "");
-static_assert(!rng::DefaultConstructible<from_int_only>, "");
+static_assert(!rng::default_constructible<void>, "");
+static_assert(rng::default_constructible<int>, "");
+static_assert(rng::default_constructible<agg>, "");
+static_assert(rng::default_constructible<std::string>, "");
+static_assert(!rng::default_constructible<from_int_only>, "");
 
 // MoveConstructible tests
 struct no_copy_or_move {
@@ -181,23 +182,23 @@ struct no_copy_or_move {
     no_copy_or_move& operator=(const no_copy_or_move&) = delete;
 };
 
-static_assert(!rng::MoveConstructible<void>, "");
-static_assert(rng::MoveConstructible<int>, "");
-static_assert(rng::MoveConstructible<std::string>, "");
-static_assert(rng::MoveConstructible<std::unique_ptr<int>>, "");
-static_assert(!rng::MoveConstructible<no_copy_or_move>, "");
+static_assert(!rng::move_constructible<void>, "");
+static_assert(rng::move_constructible<int>, "");
+static_assert(rng::move_constructible<std::string>, "");
+static_assert(rng::move_constructible<std::unique_ptr<int>>, "");
+static_assert(!rng::move_constructible<no_copy_or_move>, "");
 
 // CopyConstructible tests
 struct odd_copy_ctor {
     odd_copy_ctor(odd_copy_ctor&);
 };
 
-static_assert(!rng::CopyConstructible<void>, "");
-static_assert(rng::CopyConstructible<int>, "");
-static_assert(rng::CopyConstructible<std::string>, "");
-static_assert(!rng::CopyConstructible<std::unique_ptr<int>>, "");
-static_assert(!rng::CopyConstructible<no_copy_or_move>, "");
-static_assert(!rng::CopyConstructible<odd_copy_ctor>, "");
+static_assert(!rng::copy_constructible<void>, "");
+static_assert(rng::copy_constructible<int>, "");
+static_assert(rng::copy_constructible<std::string>, "");
+static_assert(!rng::copy_constructible<std::unique_ptr<int>>, "");
+static_assert(!rng::copy_constructible<no_copy_or_move>, "");
+static_assert(!rng::copy_constructible<odd_copy_ctor>, "");
 
 
 // Boolean tests
