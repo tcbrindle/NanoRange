@@ -4,20 +4,20 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef NANORANGE_VIEW_HPP_INCLUDED
-#define NANORANGE_VIEW_HPP_INCLUDED
+#ifndef NANORANGE_VIEWS_HPP_INCLUDED
+#define NANORANGE_VIEWS_HPP_INCLUDED
 
-#include <nanorange/view/all.hpp>
-#include <nanorange/view/common.hpp>
-#include <nanorange/view/counted.hpp>
-#include <nanorange/view/empty.hpp>
-#include <nanorange/view/filter.hpp>
-#include <nanorange/view/interface.hpp>
-#include <nanorange/view/iota.hpp>
-#include <nanorange/view/istream.hpp>
-#include <nanorange/view/ref.hpp>
-#include <nanorange/view/reverse.hpp>
-#include <nanorange/view/single.hpp>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/all.hpp>
+#include <nanorange/views/common.hpp>
+#include <nanorange/views/counted.hpp>
+#include <nanorange/views/empty.hpp>
+#include <nanorange/views/filter.hpp>
+#include <nanorange/views/interface.hpp>
+#include <nanorange/views/iota.hpp>
+#include <nanorange/views/istream.hpp>
+#include <nanorange/views/ref.hpp>
+#include <nanorange/views/reverse.hpp>
+#include <nanorange/views/single.hpp>
+#include <nanorange/views/subrange.hpp>
 
 #endif
