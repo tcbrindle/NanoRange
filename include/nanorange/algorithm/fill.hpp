@@ -28,7 +28,8 @@ private:
 
 public:
     template <typename T, typename O, typename S>
-    constexpr std::enable_if_t<OutputIterator<O, const T&> && Sentinel<S, O>, O>
+    constexpr std::enable_if_t<
+        output_iterator<O, const T&> && sentinel_for<S, O>, O>
     operator()(O first, S last, const T& value) const
     {
         return fill_fn::impl(std::move(first), std::move(last), value);

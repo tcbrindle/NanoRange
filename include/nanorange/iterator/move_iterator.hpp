@@ -18,7 +18,7 @@ template <typename I>
 class move_iterator {
 
     static_assert(
-        InputIterator<I>,
+        input_iterator<I>,
         "Template argument to move_iterator must model InputIterator");
 
     template <typename I2>
@@ -58,14 +58,14 @@ public:
     }
 
     template <typename II = I>
-    constexpr auto operator++(int) -> std::enable_if_t<!ForwardIterator<II>>
+    constexpr auto operator++(int) -> std::enable_if_t<!forward_iterator<II>>
     {
         ++current_;
     }
 
     template <typename II = I>
     constexpr auto operator++(int)
-        -> std::enable_if_t<ForwardIterator<II>, move_iterator>
+        -> std::enable_if_t<forward_iterator<II>, move_iterator>
     {
         move_iterator tmp = *this;
         ++current_;
@@ -74,7 +74,7 @@ public:
 
     template <typename II = I>
     constexpr auto operator--()
-        -> std::enable_if_t<BidirectionalIterator<II>, move_iterator&>
+        -> std::enable_if_t<bidirectional_iterator<II>, move_iterator&>
     {
         --current_;
         return *this;
@@ -82,7 +82,7 @@ public:
 
     template <typename II = I>
     constexpr auto operator--(int)
-        -> std::enable_if_t<BidirectionalIterator<II>, move_iterator>
+        -> std::enable_if_t<bidirectional_iterator<II>, move_iterator>
     {
         move_iterator tmp = *this;
         --current_;
@@ -91,14 +91,14 @@ public:
 
     template <typename II = I>
     constexpr auto operator+(difference_type n) const
-        -> std::enable_if_t<RandomAccessIterator<II>, move_iterator>
+        -> std::enable_if_t<random_access_iterator<II>, move_iterator>
     {
         return move_iterator(current_ + n);
     }
 
     template <typename II = I>
     constexpr auto operator+=(difference_type n)
-        -> std::enable_if_t<RandomAccessIterator<II>, move_iterator&>
+        -> std::enable_if_t<random_access_iterator<II>, move_iterator&>
     {
         current_ += n;
         return *this;
@@ -106,14 +106,14 @@ public:
 
     template <typename II = I>
     constexpr auto operator-(difference_type n) const
-        -> std::enable_if_t<RandomAccessIterator<II>, move_iterator>
+        -> std::enable_if_t<random_access_iterator<II>, move_iterator>
     {
         return move_iterator(current_ - n);
     }
 
     template <typename II = I>
     constexpr auto operator-=(difference_type n)
-        -> std::enable_if_t<RandomAccessIterator<II>, move_iterator&>
+        -> std::enable_if_t<random_access_iterator<II>, move_iterator&>
     {
         current_ -= n;
         return *this;
@@ -121,7 +121,7 @@ public:
 
     template <typename II = I>
     constexpr auto operator[](difference_type n) const
-        -> std::enable_if_t<RandomAccessIterator<II>, reference>
+        -> std::enable_if_t<random_access_iterator<II>, reference>
     //   -> decltype(auto)
     {
         return iter_move(current_ + n);
@@ -195,14 +195,14 @@ constexpr auto operator>=(const move_iterator<I1>& x,
 
 template <typename I1, typename I2>
 constexpr auto operator-(const move_iterator<I1>& x, const move_iterator<I2>& y)
-    -> std::enable_if_t<SizedSentinel<I1, I2>, iter_difference_t<I2>>
+    -> std::enable_if_t<sized_sentinel_for<I1, I2>, iter_difference_t<I2>>
 {
     return x.base() - y.base();
 }
 
 template <typename I>
 constexpr auto operator+(iter_difference_t<I> n, const move_iterator<I>& x)
-    -> std::enable_if_t<RandomAccessIterator<I>, move_iterator<I>>
+    -> std::enable_if_t<random_access_iterator<I>, move_iterator<I>>
 {
     return x + n;
 }
@@ -213,7 +213,7 @@ using move_iterator_::move_iterator;
 
 template <typename I>
 constexpr auto make_move_iterator(I i)
-    -> std::enable_if_t<InputIterator<I>, move_iterator<I>>
+    -> std::enable_if_t<input_iterator<I>, move_iterator<I>>
 {
     return move_iterator<I>(std::move(i));
 }
@@ -248,42 +248,42 @@ private:
 
 template <typename I, typename S>
 constexpr auto operator==(const move_iterator<I>& i, const move_sentinel<S>& s)
-    -> std::enable_if_t<Sentinel<S, I>, bool>
+    -> std::enable_if_t<sentinel_for<S, I>, bool>
 {
     return i.base() == s.base();
 }
 
 template <typename I, typename S>
 constexpr auto operator==(const move_sentinel<S>& s, const move_iterator<I>& i)
-    -> std::enable_if_t<Sentinel<S, I>, bool>
+    -> std::enable_if_t<sentinel_for<S, I>, bool>
 {
     return i.base() == s.base();
 }
 
 template <typename I, typename S>
 constexpr auto operator!=(const move_iterator<I>& i, const move_sentinel<S>& s)
-    -> std::enable_if_t<Sentinel<S, I>, bool>
+    -> std::enable_if_t<sentinel_for<S, I>, bool>
 {
     return !(i == s);
 }
 
 template <typename I, typename S>
 constexpr auto operator!=(const move_sentinel<S>& s, const move_iterator<I>& i)
-    -> std::enable_if_t<Sentinel<S, I>, bool>
+    -> std::enable_if_t<sentinel_for<S, I>, bool>
 {
     return !(i == s);
 }
 
 template <typename I, typename S>
 constexpr auto operator-(const move_sentinel<S>& s, const move_iterator<I>& i)
-    -> std::enable_if_t<SizedSentinel<S, I>, iter_difference_t<I>>
+    -> std::enable_if_t<sized_sentinel_for<S, I>, iter_difference_t<I>>
 {
     return s.base() - i.base();
 }
 
 template <typename I, typename S>
 constexpr auto operator-(const move_iterator<I>& i, const move_sentinel<S>& s)
-    -> std::enable_if_t<SizedSentinel<S, I>, iter_difference_t<I>>
+    -> std::enable_if_t<sized_sentinel_for<S, I>, iter_difference_t<I>>
 {
     return i.base() - s.base();
 }

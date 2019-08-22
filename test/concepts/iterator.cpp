@@ -21,29 +21,29 @@ namespace models {
 	constexpr bool Same = ranges::same_as<Ts...>;
 
 	template <class R>
-	constexpr bool Readable = ranges::Readable<R>;
+	constexpr bool Readable = ranges::readable<R>;
 
 	template <class W, class T>
-	constexpr bool Writable = ranges::Writable<W, T>;
+	constexpr bool Writable = ranges::writable<W, T>;
 
 	template <class I>
-	constexpr bool WeaklyIncrementable =
-		ranges::WeaklyIncrementable<I>;
+	constexpr bool weakly_incrementable =
+		ranges::weakly_incrementable<I>;
 
 	template <class I>
-	constexpr bool Incrementable = ranges::Incrementable<I>;
+	constexpr bool Incrementable = ranges::incrementable<I>;
 
 	template <class I>
-	constexpr bool WeakIterator = ranges::WeaklyIncrementable<I>;
+	constexpr bool WeakIterator = ranges::weakly_incrementable<I>;
 
 	template <class I>
-	constexpr bool Iterator = ranges::Iterator<I>;
+	constexpr bool Iterator = ranges::input_or_output_iterator<I>;
 
 	template <class I>
-	constexpr bool InputIterator = ranges::InputIterator<I>;
+	constexpr bool InputIterator = ranges::input_iterator<I>;
 
 	template <class S, class I>
-	constexpr bool Sentinel = ranges::Sentinel<I, S>;
+	constexpr bool Sentinel = ranges::sentinel_for<I, S>;
 }
 
 namespace ns {
@@ -231,11 +231,11 @@ namespace writable_test {
 	CONCEPT_ASSERT(models::Writable<A, const double&>);
 } // namespace writable_test
 
-CONCEPT_ASSERT(models::WeaklyIncrementable<int>);
-CONCEPT_ASSERT(models::WeaklyIncrementable<unsigned int>);
-CONCEPT_ASSERT(!models::WeaklyIncrementable<void>);
-CONCEPT_ASSERT(models::WeaklyIncrementable<int*>);
-CONCEPT_ASSERT(models::WeaklyIncrementable<const int*>);
+CONCEPT_ASSERT(models::weakly_incrementable<int>);
+CONCEPT_ASSERT(models::weakly_incrementable<unsigned int>);
+CONCEPT_ASSERT(!models::weakly_incrementable<void>);
+CONCEPT_ASSERT(models::weakly_incrementable<int*>);
+CONCEPT_ASSERT(models::weakly_incrementable<const int*>);
 
 CONCEPT_ASSERT(models::Incrementable<int>);
 CONCEPT_ASSERT(models::Incrementable<unsigned int>);

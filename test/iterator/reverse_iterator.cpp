@@ -289,10 +289,10 @@ TEST_CASE("iter.reverse_iterator") {
 	{
 		namespace models = __stl2;
 		static_assert(
-				models::BidirectionalIterator<
+				models::bidirectional_iterator<
 					__stl2::reverse_iterator<bidirectional_iterator<const char *>>>, "");
 		static_assert(
-				models::RandomAccessIterator<
+				models::random_access_iterator<
 					__stl2::reverse_iterator<random_access_iterator<const char *>>>, "");
 	}
 	{ // test

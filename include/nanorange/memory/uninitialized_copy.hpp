@@ -62,8 +62,7 @@ public:
     // Four-legged
     template <typename I, typename S, typename O, typename S2>
     std::enable_if_t<
-        InputIterator<I> &&
-        Sentinel<S, I> &&
+        input_iterator<I> && sentinel_for<S, I> &&
         NoThrowForwardIterator<O> &&
         NoThrowSentinel<S2, O> &&
         constructible_from<iter_value_t<O>, iter_reference_t<I>>,
@@ -93,8 +92,7 @@ public:
     template <typename I, typename S, typename O>
     NANO_DEPRECATED
     std::enable_if_t<
-        InputIterator<I> &&
-        Sentinel<S, I> &&
+        input_iterator<I> && sentinel_for<S, I> &&
         NoThrowForwardIterator<O> &&
         constructible_from<iter_value_t<O>, iter_reference_t<I>>,
         uninitialized_copy_result<I, O>>
@@ -132,7 +130,7 @@ namespace detail {
 struct uninitialized_copy_n_fn {
     template <typename I, typename O, typename S>
     std::enable_if_t<
-        InputIterator<I> &&
+        input_iterator<I> &&
         NoThrowForwardIterator<O> &&
         NoThrowSentinel<S, O> &&
         constructible_from<iter_value_t<O>, iter_reference_t<I>>,
@@ -148,7 +146,7 @@ struct uninitialized_copy_n_fn {
     template <typename I, typename O>
     NANO_DEPRECATED
     std::enable_if_t<
-        InputIterator<I> &&
+        input_iterator<I> &&
         NoThrowForwardIterator<O> &&
         constructible_from<iter_value_t<O>, iter_reference_t<I>>,
         uninitialized_copy_n_result<I, O>>

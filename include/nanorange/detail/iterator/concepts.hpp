@@ -13,40 +13,42 @@
 
 NANO_BEGIN_NAMESPACE
 
-// [range.iterators.readable]
+// [iterators.concept.readable]
 namespace detail {
 
-struct Readable_req {
+struct readable_concept {
     template <typename In>
-    auto requires_()
-        -> decltype(std::declval<iter_value_t<In>>(),
-                               std::declval<iter_reference_t<In>>(),
-                               std::declval<iter_rvalue_reference_t<In>>());
-};
+    auto requires_() -> decltype(
+        std::declval<iter_value_t<In>>(),
+        std::declval<iter_reference_t<In>>(),
+        std::declval<iter_rvalue_reference_t<In>>()
+    );
 
-template <typename>
-auto Readable_fn(long) -> std::false_type;
+    template <typename>
+    static auto test(long) -> std::false_type;
 
-template <typename In>
-auto Readable_fn(int) -> std::enable_if_t<
-     requires_<Readable_req, In> &&
+    template <typename In>
+    static auto test(int) -> std::enable_if_t<
+        detail::requires_<readable_concept, In> &&
         common_reference_with<iter_reference_t<In>&&, iter_value_t<In>&> &&
         common_reference_with<iter_reference_t<In>&&, iter_rvalue_reference_t<In>&&> &&
         common_reference_with<iter_rvalue_reference_t<In>&&, const iter_value_t<In>&>,
-             std::true_type>;
+        std::true_type>;
+};
 
 } // namespace detail
 
 template <typename In>
-NANO_CONCEPT Readable = decltype(detail::Readable_fn<In>(0))::value;
+NANO_CONCEPT readable = decltype(detail::readable_concept::test<In>(0))::value;
 
-// [range.iterators.writable]
+// [iterator.concept.writable]
 namespace detail {
 
-struct Writable_req {
+struct writable_concept {
     template <typename Out, typename T>
     auto requires_(Out&& o, T&& t) -> decltype(valid_expr(
-        *o = std::forward<T>(t), *std::forward<Out>(o) = std::forward<T>(t),
+        *o = std::forward<T>(t),
+        *std::forward<Out>(o) = std::forward<T>(t),
         const_cast<const iter_reference_t<Out>&&>(*o) = std::forward<T>(t),
         const_cast<const iter_reference_t<Out>&&>(*std::forward<Out>(o)) =
             std::forward<T>(t)));
@@ -55,73 +57,87 @@ struct Writable_req {
 } // namespace detail
 
 template <typename Out, typename T>
-NANO_CONCEPT Writable = detail::requires_<detail::Writable_req, Out, T>;
+NANO_CONCEPT writable = detail::requires_<detail::writable_concept, Out, T>;
 
-// [range.iterators.weaklyincrementable]
+// [iterator.concept.weaklyincrementable]
 
 namespace detail {
+
+template <typename T>
+inline constexpr bool is_integer_like = integral<T>;
+
+template <typename T>
+inline constexpr bool is_signed_integer_like = signed_integral<T>;
 
 template <typename T, typename Deduced>
 auto same_lv(Deduced&) -> std::enable_if_t<same_as<T, Deduced>, int>;
 
-struct WeaklyIncrementable_req {
+struct weakly_incrementable_concept {
     template <typename I>
     auto requires_(I i) -> decltype(
         std::declval<iter_difference_t<I>>(),
-        requires_expr<signed_integral<iter_difference_t<I>>>{},
-        same_lv<I>(++i), i++);
+        requires_expr<is_signed_integer_like<iter_difference_t<I>>>{},
+        requires_expr<same_as<decltype(++i), I&>>{},
+        i++
+    );
+
 };
 
 } // namespace detail
 
 template <typename I>
-NANO_CONCEPT WeaklyIncrementable =
-    semiregular<I>&& detail::requires_<detail::WeaklyIncrementable_req, I>;
+NANO_CONCEPT weakly_incrementable =
+    default_constructible<I> && movable<I> &&
+    detail::requires_<detail::weakly_incrementable_concept, I>;
 
-// [range.iterators.incrementable]
+// [iterator.concept.incrementable]
+namespace detail {
+
+struct incrementable_concept {
+    template <typename I>
+    auto requires_(I i) -> decltype(
+        requires_expr<same_as<decltype(i++), I>>{}
+    );
+};
+
+} // namespace detail
+
+template <typename I>
+NANO_CONCEPT incrementable = regular<I> && weakly_incrementable<I> &&
+    detail::requires_<detail::incrementable_concept, I>;
+
+// [iterator.concept.iterator]
 
 namespace detail {
 
-struct Incrementable_req {
+struct input_or_output_iterator_concept {
     template <typename I>
-    auto requires_(I i) -> decltype(requires_expr<same_as<decltype(i++), I>>{});
+    auto requires_(I i) -> decltype(
+            requires_expr<can_reference<decltype(*i)>>{});
 };
 
 } // namespace detail
 
 template <typename I>
-NANO_CONCEPT Incrementable = regular<I>&& WeaklyIncrementable<I>&&
-    detail::requires_<detail::Incrementable_req, I>;
+NANO_CONCEPT input_or_output_iterator =
+    detail::requires_<detail::input_or_output_iterator_concept, I> &&
+    weakly_incrementable<I>;
 
-// [range.iterators.iterator]
-
-namespace detail {
-
-struct Iterator_req {
-    template <typename I>
-    auto requires_(I i) -> decltype(*i,
-            requires_expr<CanReference<decltype(*i)>>{});
-};
-
-} // namespace detail
-
-template <typename I>
-NANO_CONCEPT Iterator =
-    detail::requires_<detail::Iterator_req, I> && WeaklyIncrementable<I>;
-
-// [range.iterators.sentinel]
+// [iterator.concept.sentinel]
 
 template <typename S, typename I>
-NANO_CONCEPT Sentinel = semiregular<S>&& Iterator<I>&& detail::weakly_equality_comparable_with<S, I>;
+NANO_CONCEPT sentinel_for =
+    semiregular<S> && input_or_output_iterator<I> && 
+    detail::weakly_equality_comparable_with<S, I>;
 
-// [range.iterators.sizedsentinel]
+// [iterator.concept.sizedsentinel]
 
 template <typename S, typename I>
-constexpr bool disable_sized_sentinel = false;
+inline constexpr bool disable_sized_sentinel = false;
 
 namespace detail {
 
-struct SizedSentinel_req {
+struct sized_sentinel_for_concept {
     template <typename S, typename I>
     auto requires_(const S& s, const I& i)
         -> decltype(requires_expr<same_as<decltype(s - i), iter_difference_t<I>>>{},
@@ -131,158 +147,176 @@ struct SizedSentinel_req {
 } // namespace detail
 
 template <typename S, typename I>
-NANO_CONCEPT SizedSentinel =
-    Sentinel<S, I> &&
+NANO_CONCEPT sized_sentinel_for =
+    sentinel_for<S, I> &&
     !disable_sized_sentinel<std::remove_cv_t<S>, std::remove_cv_t<I>> &&
-    detail::requires_<detail::SizedSentinel_req, S, I>;
+    detail::requires_<detail::sized_sentinel_for_concept, S, I>;
 
 // This is a hack, but I'm fed up with my tests breaking because GCC
 // has a silly extension
 template <typename S>
-NANO_CONCEPT SizedSentinel<S, void*> = false;
+NANO_CONCEPT sized_sentinel_for<S, void*> = false;
 
 template <typename I>
-NANO_CONCEPT SizedSentinel<void*, I> = false;
+NANO_CONCEPT sized_sentinel_for<void*, I> = false;
 
 template <>
-NANO_CONCEPT SizedSentinel<void*, void*> = false;
+NANO_CONCEPT sized_sentinel_for<void*, void*> = false;
 
-// [range.iterators.input]
+// [iterator.concept.input]
 
 namespace detail {
 
-template <typename>
-auto InputIterator_fn(long) -> std::false_type;
+// FIXME: Use ITER_CONCEPT, not iterator_category_t
+struct input_iterator_concept {
+    template <typename I>
+    auto requires_() -> iterator_category_t<I>;
 
-template <typename I>
-auto InputIterator_fn(int) -> std::enable_if_t<
-    Iterator<I> && Readable<I> &&
-    exists_v<iterator_category_t, I> &&
-    derived_from<iterator_category_t<I>, input_iterator_tag>,
-            std::true_type>;
+    template <typename>
+    static auto test(long) -> std::false_type;
 
+    template <typename I>
+    static auto test(int) -> std::enable_if_t<
+        input_or_output_iterator<I> &&
+        readable<I> &&
+        detail::requires_<input_iterator_concept, I> &&
+        derived_from<iterator_category_t<I>, input_iterator_tag>,
+        std::true_type>;
+};
 
 }
 
 template <typename I>
-NANO_CONCEPT InputIterator = decltype(detail::InputIterator_fn<I>(0))::value;
+NANO_CONCEPT input_iterator =
+    decltype(detail::input_iterator_concept::test<I>(0))::value;
 
-// [ranges.iterator.output]
+// [iterator.concept.output]
 
 namespace detail {
 
-struct OutputIterator_req {
+struct output_iterator_concept {
     template <typename I, typename T>
-    auto requires_(I i, T&& t)
-        -> decltype(valid_expr(*i++ = std::forward<T>(t)));
+    auto requires_(I i, T&& t) -> decltype(
+        *i++ = std::forward<T>(t)
+    );
 };
 
 } // namespace detail
 
 template <typename I, typename T>
-NANO_CONCEPT OutputIterator = Iterator<I>&& Writable<I, T>&&
-    detail::requires_<detail::OutputIterator_req, I, T>;
+NANO_CONCEPT output_iterator =
+    input_or_output_iterator<I> &&
+    writable<I, T> &&
+    detail::requires_<detail::output_iterator_concept, I, T>;
 
 // [ranges.iterators.forward]
 
 namespace detail {
 
-template <typename>
-auto ForwardIterator_fn(long) -> std::false_type;
+struct forward_iterator_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
 
-template <typename I>
-auto ForwardIterator_fn(int) -> std::enable_if_t<
-        InputIterator<I> &&
+    template <typename I>
+    static auto test(int) -> std::enable_if_t<
+        input_iterator<I> &&
         derived_from<iterator_category_t<I>, forward_iterator_tag> &&
-        Incrementable<I> &&
-        Sentinel<I, I>,
-                std::true_type>;
+        incrementable<I> &&
+        sentinel_for<I, I>,
+        std::true_type>;
+
+
+};
 
 }
 
 template <typename I>
-NANO_CONCEPT ForwardIterator = decltype(detail::ForwardIterator_fn<I>(0))::value;
+NANO_CONCEPT forward_iterator =
+    decltype(detail::forward_iterator_concept::test<I>(0))::value;
 
-// [ranges.iterators.bidirectional]
-
+// [iterator.concept.bidir]
 namespace detail {
 
-struct BidirectionalIterator_req {
+struct bidirectional_iterator_concept {
     template <typename I>
-    auto requires_(I i)
-        -> decltype(same_lv<I>(--i), requires_expr<same_as<decltype(i--), I>>{});
-};
+    auto requires_(I i) -> decltype(
+        requires_expr<same_as<decltype(--i), I&>>{},
+        requires_expr<same_as<decltype(i--), I>>{}
+    );
 
-template <typename>
-auto BidirectionalIterator_fn(long) -> std::false_type;
+    template <typename>
+    static auto test(long) -> std::false_type;
 
-template <typename I>
-auto BidirectionalIterator_fn(int) -> std::enable_if_t<
-        ForwardIterator<I> &&
+    template <typename I>
+    static auto test(int) -> std::enable_if_t<
+        forward_iterator<I> &&
         derived_from<iterator_category_t<I>, bidirectional_iterator_tag> &&
-        requires_<BidirectionalIterator_req, I>,
-                std::true_type>;
+        detail::requires_<bidirectional_iterator_concept, I>,
+        std::true_type>;
+};
 
 } // namespace detail
 
 template <typename I>
-NANO_CONCEPT BidirectionalIterator =
-    decltype(detail::BidirectionalIterator_fn<I>(0))::value;
+NANO_CONCEPT bidirectional_iterator =
+    decltype(detail::bidirectional_iterator_concept::test<I>(0))::value;
 
-// [ranges.iterators.random.access]
+// [iterator.concept.random.access]
 
 namespace detail {
 
-struct RandomAccessIterator_req {
+struct random_access_iterator_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
+
+    template <typename I>
+    static auto test(int) -> std::enable_if_t<
+        bidirectional_iterator<I> &&
+        derived_from<iterator_category_t<I>, random_access_iterator_tag> &&
+        totally_ordered<I> &&
+        sized_sentinel_for<I, I> &&
+        detail::requires_<random_access_iterator_concept, I>,
+        std::true_type>;
+
     template <typename I>
     auto requires_(I i, const I j, const iter_difference_t<I> n) -> decltype(
-        valid_expr(same_lv<I>(i += n),
-                   j + n, requires_expr<same_as<decltype(j + n), I>>{},
-                   n + j,
+        requires_expr<same_as<decltype(i += n), I&>>{},
+        requires_expr<same_as<decltype(j +  n), I>>{},
 #ifndef _MSC_VER
-                   requires_expr<same_as<decltype(n + j), I>>{}, // FIXME: MSVC doesn't like this when I = int*
+        requires_expr<same_as<decltype(n +  j), I>>{}, // FIXME: MSVC doesn't like this when I = int*
 #endif
-                   same_lv<I>(i -= n),
-                   j - n, requires_expr<same_as<decltype(j - n), I>>{},
-                   j[n],
-                   requires_expr<same_as<decltype(j[n]), iter_reference_t<I>>>{}));
+        requires_expr<same_as<decltype(i -= n), I&>>{},
+        requires_expr<same_as<decltype(j -  n), I>>{},
+        requires_expr<same_as<decltype(j[n]), iter_reference_t<I>>>{}
+    );
 };
-
-template <typename>
-auto RandomAccessIterator_fn(long) -> std::false_type;
-
-template <typename I>
-auto RandomAccessIterator_fn(int) -> std::enable_if_t<
-     BidirectionalIterator<I> &&
-     derived_from<iterator_category_t<I>, random_access_iterator_tag> &&
-        totally_ordered<I> &&
-     SizedSentinel<I, I> &&
-     requires_<RandomAccessIterator_req, I>,
-             std::true_type>;
 
 } // namespace detail
 
 template <typename I>
-NANO_CONCEPT RandomAccessIterator = 
-        decltype(detail::RandomAccessIterator_fn<I>(0))::value;
+NANO_CONCEPT random_access_iterator =
+        decltype(detail::random_access_iterator_concept::test<I>(0))::value;
 
 namespace detail {
 
-template <typename>
-auto ContiguousIterator_fn(long) -> std::false_type;
+struct contiguous_iterator_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
 
-template <typename I>
-auto ContiguousIterator_fn(int) -> std::enable_if_t<
-    RandomAccessIterator<I> &&
-    derived_from<iterator_category_t<I>, contiguous_iterator_tag> &&
-    std::is_lvalue_reference<iter_reference_t<I>>::value &&
+    template <typename I>
+    static auto test(int) -> std::enable_if_t<
+        random_access_iterator<I> &&
+        derived_from<iterator_category_t<I>, contiguous_iterator_tag> &&
+        std::is_lvalue_reference_v<iter_reference_t<I>> &&
         same_as<iter_value_t<I>, remove_cvref_t<iter_reference_t<I>>>,
-            std::true_type>;
+        std::true_type>;
+};
 
 }
 
 template <typename I>
-NANO_CONCEPT ContiguousIterator = decltype(detail::ContiguousIterator_fn<I>(0))::value;
+NANO_CONCEPT contiguous_iterator =
+    decltype(detail::contiguous_iterator_concept::test<I>(0))::value;
 
 NANO_END_NAMESPACE
 

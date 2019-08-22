@@ -42,10 +42,8 @@ struct swap_ranges_fn {
 public:
     template <typename I1, typename S1, typename I2, typename S2>
     constexpr std::enable_if_t<
-        ForwardIterator<I1> &&
-        Sentinel<S1, I1> &&
-        ForwardIterator<I2> &&
-        Sentinel<S2, I2> &&
+        forward_iterator<I1> && sentinel_for<S1, I1> && forward_iterator<I2> &&
+            sentinel_for<S2, I2> &&
         IndirectlySwappable<I1, I2>,
         swap_ranges_result<I1, I2>>
     operator()(I1 first1 ,S1 last1, I2 first2, S2 last2) const
@@ -57,9 +55,7 @@ public:
     template <typename I1, typename S1, typename I2>
     NANO_DEPRECATED
     constexpr std::enable_if_t<
-            ForwardIterator<I1> &&
-            Sentinel<S1, I1> &&
-            ForwardIterator<I2> &&
+        forward_iterator<I1> && sentinel_for<S1, I1> && forward_iterator<I2> &&
             IndirectlySwappable<I1, I2>,
             swap_ranges_result<I1, I2>>
     operator()(I1 first1 ,S1 last1, I2 first2) const
@@ -84,8 +80,7 @@ public:
     template <typename Rng1, typename I2>
     NANO_DEPRECATED
     constexpr std::enable_if_t<
-            ForwardRange<Rng1> &&
-            ForwardIterator<I2> &&
+            ForwardRange<Rng1> && forward_iterator<I2> &&
             IndirectlySwappable<iterator_t<Rng1>, I2>,
             swap_ranges_result<safe_iterator_t<Rng1>, I2>>
     operator()(Rng1&& rng1, I2 first2) const

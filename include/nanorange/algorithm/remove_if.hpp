@@ -39,7 +39,7 @@ private:
 public:
     template <typename I, typename S, typename Pred, typename Proj = identity>
     constexpr std::enable_if_t<
-        ForwardIterator<I> && Sentinel<S, I> && Permutable<I> &&
+        forward_iterator<I> && sentinel_for<S, I> && Permutable<I> &&
             IndirectUnaryPredicate<Pred, projected<I, Proj>>,
         I>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const

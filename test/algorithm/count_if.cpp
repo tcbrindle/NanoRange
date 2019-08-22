@@ -30,8 +30,8 @@ struct T {
 
 TEST_CASE("alg.count_if")
 {
-	using namespace nano;
 	using nano::subrange;
+	using nano::count_if;
 	auto equals = [](auto&& i){
 	  return [i = std::forward<decltype(i)>(i)](const auto& j) {
 		return i == j;
@@ -39,33 +39,33 @@ TEST_CASE("alg.count_if")
 	};
 
 	int ia[] = {0, 1, 2, 2, 0, 1, 2, 3};
-	constexpr unsigned cia = size(ia);
+	constexpr unsigned cia = nano::size(ia);
 
-	CHECK(count_if(input_iterator<const int*>(ia),
+	CHECK(nano::count_if(input_iterator<const int*>(ia),
 				   sentinel<const int*>(ia + cia), equals(2)) == 3);
-	CHECK(count_if(input_iterator<const int*>(ia),
+	CHECK(nano::count_if(input_iterator<const int*>(ia),
 				   sentinel<const int*>(ia + cia), equals(7)) == 0);
-	CHECK(count_if(input_iterator<const int*>(ia),
+	CHECK(nano::count_if(input_iterator<const int*>(ia),
 				   sentinel<const int*>(ia), equals(2)) == 0);
 
-	CHECK(count_if(subrange(input_iterator<const int*>(ia),
+	CHECK(nano::count_if(subrange(input_iterator<const int*>(ia),
 						 sentinel<const int*>(ia + cia)), equals(2)) == 3);
-	CHECK(count_if(subrange(input_iterator<const int*>(ia),
+	CHECK(nano::count_if(subrange(input_iterator<const int*>(ia),
 						 sentinel<const int*>(ia + cia)), equals(7)) == 0);
-	CHECK(count_if(subrange(input_iterator<const int*>(ia),
+	CHECK(nano::count_if(subrange(input_iterator<const int*>(ia),
 						 sentinel<const int*>(ia)), equals(2)) == 0);
 
 	S sa[] = {{0}, {1}, {2}, {2}, {0}, {1}, {2}, {3}};
-	constexpr unsigned csa = size(ia);
+	constexpr unsigned csa = nano::size(ia);
 
-	CHECK(count_if(input_iterator<const S*>(sa),
+	CHECK(nano::count_if(input_iterator<const S*>(sa),
 				   sentinel<const S*>(sa + csa), equals(2), &S::i) == 3);
-	CHECK(count_if(input_iterator<const S*>(sa),
+	CHECK(nano::count_if(input_iterator<const S*>(sa),
 				   sentinel<const S*>(sa + csa), equals(7), &S::i) == 0);
-	CHECK(count_if(input_iterator<const S*>(sa),
+	CHECK(nano::count_if(input_iterator<const S*>(sa),
 				   sentinel<const S*>(sa), equals(2), &S::i) == 0);
 
-	CHECK(count_if(subrange(input_iterator<const S*>(sa),
+	CHECK(nano::count_if(subrange(input_iterator<const S*>(sa),
 						 sentinel<const S*>(sa + csa)), equals(2), &S::i) == 3);
 	CHECK(count_if(subrange(input_iterator<const S*>(sa),
 						 sentinel<const S*>(sa + csa)), equals(7), &S::i) == 0);
@@ -74,13 +74,13 @@ TEST_CASE("alg.count_if")
 
 	T ta[] = {{true}, {false}, {true}, {false}, {false}, {true}, {false}, {false}, {true}, {false}};
 	CHECK(count_if(input_iterator<T*>(ta),
-				   sentinel<T*>(ta + size(ta)), &T::m) == 4);
+				   sentinel<T*>(ta + nano::size(ta)), &T::m) == 4);
 	CHECK(count_if(input_iterator<T*>(ta),
-				   sentinel<T*>(ta + size(ta)), &T::b) == 4);
+				   sentinel<T*>(ta + nano::size(ta)), &T::b) == 4);
 	CHECK(count_if(subrange(input_iterator<T*>(ta),
-						 sentinel<T*>(ta + size(ta))), &T::m) == 4);
+						 sentinel<T*>(ta + nano::size(ta))), &T::m) == 4);
 	CHECK(count_if(subrange(input_iterator<T*>(ta),
-						 sentinel<T*>(ta + size(ta))), &T::b) == 4);
+						 sentinel<T*>(ta + nano::size(ta))), &T::b) == 4);
 
 	{
 		auto l = {0, 1, 2, 2, 0, 1, 2, 3};

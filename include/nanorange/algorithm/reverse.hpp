@@ -38,9 +38,7 @@ private:
 
 public:
     template <typename I, typename S>
-    constexpr std::enable_if_t<
-        BidirectionalIterator<I> &&
-        Sentinel<S, I>,
+    constexpr std::enable_if_t<bidirectional_iterator<I> && sentinel_for<S, I>,
         I>
     operator()(I first, S last) const
     {

@@ -31,11 +31,11 @@ template <class> class show_type;
 
 TEST_CASE("alg.find")
 {
-	using namespace nano;
+	using nano::find;
 
 	int ia[] = {0, 1, 2, 3, 4, 5};
 	auto first = [&ia]{ return input_iterator<const int*>{ia}; };
-	constexpr auto s = size(ia);
+	constexpr auto s = nano::size(ia);
 	const auto last = sentinel<const int*>(ia + s);
 
 	auto r = find(first(), last, 3);
@@ -56,7 +56,7 @@ TEST_CASE("alg.find")
 
 	S sa[] = {{0}, {1}, {2}, {3}, {4}, {5}};
 	S *ps = find(sa, 3, &S::i_);
-	CHECK((ps != end(sa) && ps->i_ == 3));
+	CHECK((ps != nano::end(sa) && ps->i_ == 3));
 	ps = find(sa, 10, &S::i_);
-	CHECK(ps == end(sa));
+	CHECK(ps == nano::end(sa));
 }

@@ -21,7 +21,7 @@ private:
     template <typename I>
     static constexpr auto impl(I i, iter_difference_t<I> n, nano::detail::priority_tag<1>)
         noexcept(noexcept(nano::subrange{i, i + n}))
-        -> std::enable_if_t<RandomAccessIterator<I>, decltype(nano::subrange{i, i + n})>
+        -> std::enable_if_t<random_access_iterator<I>, decltype(nano::subrange{i, i + n})>
     {
         return nano::subrange{i, i + n};
     }
@@ -45,7 +45,7 @@ public:
                                static_cast<iter_difference_t<T>>(std::forward<F>(f)),
                                nano::detail::priority_tag<1>{})))
         -> std::enable_if_t<
-            Iterator<T> &&
+            input_or_output_iterator<T> &&
             convertible_to<F, iter_difference_t<T>>,
             decltype(impl(std::forward<E>(e),
                           static_cast<iter_difference_t<T>>(std::forward<F>(f)),

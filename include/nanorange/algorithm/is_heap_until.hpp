@@ -59,7 +59,7 @@ public:
     template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
     constexpr std::enable_if_t<
-        RandomAccessIterator<I> && Sentinel<S, I> &&
+        random_access_iterator<I> && sentinel_for<S, I> &&
             IndirectStrictWeakOrder<Comp, projected<I, Proj>>,
         I>
     operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const

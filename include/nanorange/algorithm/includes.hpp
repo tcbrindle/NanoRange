@@ -52,10 +52,8 @@ public:
     template <typename I1, typename S1, typename I2, typename S2,
               typename Comp = ranges::less, typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
-        InputIterator<I1> &&
-        Sentinel<S1, I1> &&
-        InputIterator<I2> &&
-        Sentinel<S2, I2> &&
+        input_iterator<I1> && sentinel_for<S1, I1> && input_iterator<I2> &&
+            sentinel_for<S2, I2> &&
         IndirectStrictWeakOrder<Comp, projected<I1, Proj1>, projected<I2, Proj2>>,
         bool>
     operator()(I1 first1, S1 last1, I2 first2, S2 last2,

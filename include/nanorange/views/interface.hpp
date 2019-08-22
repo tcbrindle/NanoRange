@@ -77,15 +77,14 @@ public:
         return !ranges::empty(derived());
     }
 
-    template <typename R = D, typename = std::enable_if_t<ContiguousIterator<iterator_t<R>>>>
+    template <typename R = D, typename = std::enable_if_t<contiguous_iterator<iterator_t<R>>>>
     constexpr auto data()
     {
         return ranges::empty(derived()) ? nullptr : std::addressof(*ranges::begin(derived()));
     }
 
     template <typename R = D, typename = std::enable_if_t<
-            Range<const R> &&
-            ContiguousIterator<iterator_t<const R>>>>
+            Range<const R> && contiguous_iterator<iterator_t<const R>>>>
     constexpr auto data() const
     {
         return ranges::empty(derived()) ? nullptr : std::addressof(*ranges::begin(derived()));
@@ -93,7 +92,7 @@ public:
 
     template <typename R = D, typename = std::enable_if_t<
                 ForwardRange<R> &&
-                SizedSentinel<sentinel_t<R>, iterator_t<R>>>>
+                  sized_sentinel_for<sentinel_t<R>, iterator_t<R>>>>
     constexpr auto size()
     {
         return ranges::end(derived()) - ranges::begin(derived());
@@ -101,7 +100,7 @@ public:
 
     template <typename R = D, typename = std::enable_if_t<
             ForwardRange<const R> &&
-            SizedSentinel<sentinel_t<const R>, iterator_t<const R>>>>
+                  sized_sentinel_for<sentinel_t<const R>, iterator_t<const R>>>>
     constexpr auto size() const
     {
         return ranges::end(derived()) - ranges::begin(derived());

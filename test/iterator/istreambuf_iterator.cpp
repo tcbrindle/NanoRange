@@ -34,18 +34,18 @@ namespace {
 		//static_assert(cursor::PostIncrement<C>);
 
 		using I = istreambuf_iterator<charT, traits>;
-		static_assert(nano::WeaklyIncrementable<I>, "");
+		static_assert(nano::weakly_incrementable<I>, "");
 		static_assert(nano::same_as<typename traits::off_type, iter_difference_t<I>>, "");
 		static_assert(nano::same_as<charT, iter_value_t<I>>, "");
-		static_assert(nano::Readable<I>, "");
+		static_assert(nano::readable<I>, "");
 		static_assert(nano::same_as<charT, iter_reference_t<I>>, "");
 		static_assert(nano::same_as<charT, iter_rvalue_reference_t<I>>, "");
-		static_assert(nano::Iterator<I>, "");
+		static_assert(nano::input_or_output_iterator<I>, "");
 		static_assert(nano::same_as<input_iterator_tag, iterator_category_t<I>>, "");
-		static_assert(nano::InputIterator<I>, "");
-		static_assert(!nano::ForwardIterator<I>, "");
-		static_assert(nano::Sentinel<I, I>, "");
-		static_assert(nano::Sentinel<default_sentinel_t, I>, "");
+		static_assert(nano::input_iterator<I>, "");
+		static_assert(!nano::forward_iterator<I>, "");
+		static_assert(nano::sentinel_for<I, I>, "");
+		static_assert(nano::sentinel_for<default_sentinel_t, I>, "");
 		static_assert(nano::common_with<I, default_sentinel_t>, "");
 		static_assert(nano::same_as<I, common_type_t<I, default_sentinel_t>>, "");
 

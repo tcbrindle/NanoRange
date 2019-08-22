@@ -42,9 +42,8 @@ private:
 public:
     template <typename I, typename S, typename O>
     constexpr std::enable_if_t<
-        BidirectionalIterator<I> &&
-        Sentinel<S, I> &&
-        WeaklyIncrementable<O> &&
+        bidirectional_iterator<I> && sentinel_for<S, I> &&
+        weakly_incrementable<O> &&
         IndirectlyCopyable<I, O>,
         reverse_copy_result<I, O>>
     operator()(I first, S last, O result) const
@@ -56,7 +55,7 @@ public:
     template <typename Rng, typename O>
     constexpr std::enable_if_t<
         BidirectionalRange<Rng> &&
-        WeaklyIncrementable<O> &&
+        weakly_incrementable<O> &&
         IndirectlyCopyable<iterator_t<Rng>, O>,
         reverse_copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const

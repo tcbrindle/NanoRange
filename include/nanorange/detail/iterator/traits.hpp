@@ -74,7 +74,7 @@ using legacy_iterator_category_t = typename legacy_iterator_category<T>::type;
 }
 
 template <typename T>
-using iter_reference_t = std::enable_if_t<detail::Dereferenceable<T>,
+using iter_reference_t = std::enable_if_t<detail::dereferenceable<T>,
                                           decltype(*std::declval<T&>())>;
 
 namespace detail {
@@ -83,13 +83,14 @@ struct iter_rvalue_reference_req {
     template <typename T>
     auto requires_(T& t) -> decltype(
         ranges::iter_move(t),
-        requires_expr<CanReference<decltype(ranges::iter_move(t))>>{});
+        requires_expr<can_reference<decltype(ranges::iter_move(t))>>{});
 };
 
 }
 
 template <typename T>
 using iter_rvalue_reference_t = std::enable_if_t<
+        detail::dereferenceable<T> &&
         detail::requires_<detail::iter_rvalue_reference_req, T>,
         decltype(ranges::iter_move(std::declval<T&>()))>;
 

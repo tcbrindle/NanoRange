@@ -104,8 +104,8 @@ void ridiculously_exhaustive_range_property_test() {
 	using I = int*;
 	using CI = const int*;
 
-	CONCEPT_ASSERT(models::Iterator<I>);
-	CONCEPT_ASSERT(models::Iterator<CI>);
+	CONCEPT_ASSERT(models::input_or_output_iterator<I>);
+	CONCEPT_ASSERT(models::input_or_output_iterator<CI>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<int[2]>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<int[2]>, I>);
@@ -422,7 +422,7 @@ void ridiculously_exhaustive_range_property_test() {
 }
 
 template <class I, class S,
-	      std::enable_if_t<models::InputIterator<I> && models::Sentinel<S, I>, int> = 0>
+	      std::enable_if_t<models::input_iterator<I> && models::sentinel_for<S, I>, int> = 0>
 I complicated_algorithm(I i, S s) {
 	static constexpr bool output = false;
 	if (output) std::cout << '{';

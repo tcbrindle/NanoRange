@@ -195,8 +195,7 @@ auto InputRange_fn(long) -> std::false_type;
 
 template <typename T>
 auto InputRange_fn(int) -> std::enable_if_t<
-        Range<T> &&
-        InputIterator<iterator_t<T>>,
+        Range<T> && input_iterator<iterator_t<T>>,
     std::true_type>;
 
 }
@@ -212,7 +211,7 @@ auto OutputRange_fn(long) -> std::false_type;
 
 template <typename R, typename T>
 auto OutputRange_fn(int) -> std::enable_if_t<
-        Range<R> && OutputIterator<iterator_t<R>, T>,
+        Range<R> && output_iterator<iterator_t<R>, T>,
         std::true_type>;
 
 }
@@ -228,7 +227,7 @@ auto ForwardRange_fn(long) -> std::false_type;
 
 template <typename T>
 auto ForwardRange_fn(int) -> std::enable_if_t<
-        InputRange<T> && ForwardIterator<iterator_t<T>>,
+        InputRange<T> && forward_iterator<iterator_t<T>>,
         std::true_type>;
 
 }
@@ -244,7 +243,7 @@ auto BidirectionalRange_fn(long) -> std::false_type;
 
 template <typename T>
 auto BidirectionalRange_fn(int) -> std::enable_if_t<
-        ForwardRange<T> && BidirectionalIterator<iterator_t<T>>,
+        ForwardRange<T> && bidirectional_iterator<iterator_t<T>>,
         std::true_type>;
 
 }
@@ -260,7 +259,8 @@ auto RandomAccessRange_fn(long) -> std::false_type;
 
 template <typename T>
 auto RandomAccessRange_fn(int) -> std::enable_if_t<
-        BidirectionalRange<T> && RandomAccessIterator<iterator_t<T>>,
+        BidirectionalRange<T> &&
+                            random_access_iterator<iterator_t<T>>,
         std::true_type>;
 
 }
@@ -288,7 +288,7 @@ auto ContiguousRange_fn(long) -> std::false_type;
 
 template <typename R>
 auto ContiguousRange_fn(int) -> std::enable_if_t<
-        Range<R> && RandomAccessIterator<iterator_t<R>> &&
+        Range<R> && random_access_iterator<iterator_t<R>> &&
         requires_<ContiguousRange_req, R>,
                 std::true_type>;
 
@@ -325,7 +325,7 @@ struct HasArrow_req {
 };
 
 template <typename I>
-NANO_CONCEPT HasArrow = InputIterator<I> &&
+NANO_CONCEPT HasArrow = input_iterator<I> &&
     (std::is_pointer_v<I> || requires_<HasArrow_req, I>);
 
 

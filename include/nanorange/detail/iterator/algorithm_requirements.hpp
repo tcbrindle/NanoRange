@@ -29,7 +29,7 @@ struct IndirectlySwappable_req {
 } // namespace detail
 
 template <typename I1, typename I2 = I1>
-NANO_CONCEPT IndirectlySwappable = Readable<I1>&& Readable<I2>&&
+NANO_CONCEPT IndirectlySwappable = readable<I1>&& readable<I2>&&
     detail::requires_<detail::IndirectlySwappable_req, I1, I2>;
 
 // [range.commonalgoreq.indirectlycomparable]
@@ -42,7 +42,7 @@ NANO_CONCEPT IndirectlyComparable =
 // [range.commonalgoreq.permutable]
 
 template <typename I>
-NANO_CONCEPT Permutable = ForwardIterator<I>&& IndirectlyMovableStorable<I, I>&&
+NANO_CONCEPT Permutable = forward_iterator<I>&& IndirectlyMovableStorable<I, I>&&
     IndirectlySwappable<I, I>;
 
 // [range.commonalgoreq.mergeable]
@@ -50,7 +50,7 @@ NANO_CONCEPT Permutable = ForwardIterator<I>&& IndirectlyMovableStorable<I, I>&&
 template <typename I1, typename I2, typename Out, typename R = ranges::less,
           typename P1 = identity, typename P2 = identity>
 NANO_CONCEPT Mergeable =
-    InputIterator<I1>&& InputIterator<I2>&& WeaklyIncrementable<Out>&&
+    input_iterator<I1>&& input_iterator<I2>&& weakly_incrementable<Out>&&
         IndirectlyCopyable<I1, Out>&& IndirectlyCopyable<I2, Out>&&
             IndirectStrictWeakOrder<R, projected<I1, P1>, projected<I2, P2>>;
 

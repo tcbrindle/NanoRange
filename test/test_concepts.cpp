@@ -287,93 +287,93 @@ static_assert(!rng::relation<void, void, void>, "");
 static_assert(rng::relation<std::equal_to<>, int, int>, "");
 
 // Readable tests
-static_assert(!rng::Readable<void>, "");
-static_assert(!rng::Readable<int>, "");
-static_assert(rng::Readable<int*>, "");
-static_assert(rng::Readable<std::unique_ptr<int>>, "");
-static_assert(rng::Readable<std::vector<int>::const_iterator>, "");
+static_assert(!rng::readable<void>, "");
+static_assert(!rng::readable<int>, "");
+static_assert(rng::readable<int*>, "");
+static_assert(rng::readable<std::unique_ptr<int>>, "");
+static_assert(rng::readable<std::vector<int>::const_iterator>, "");
 
 struct MoveOnlyReadable {
     using value_type = std::unique_ptr<int>;
     value_type operator*() const;
 };
 
-static_assert(rng::Readable<MoveOnlyReadable>, "");
+static_assert(rng::readable<MoveOnlyReadable>, "");
 
 // Writable tests
-static_assert(!rng::Writable<void, void>, "");
-static_assert(rng::Writable<int*, int>, "");
-static_assert(!rng::Writable<int const*, int>, "");
-static_assert(rng::Writable<std::unique_ptr<int>, int>, "");
-static_assert(rng::Writable<std::vector<int>::iterator, int>, "");
-static_assert(!rng::Writable<std::vector<int>::const_iterator, int>, "");
+static_assert(!rng::writable<void, void>, "");
+static_assert(rng::writable<int*, int>, "");
+static_assert(!rng::writable<int const*, int>, "");
+static_assert(rng::writable<std::unique_ptr<int>, int>, "");
+static_assert(rng::writable<std::vector<int>::iterator, int>, "");
+static_assert(!rng::writable<std::vector<int>::const_iterator, int>, "");
 
-// WeaklyIncrementable tests
-static_assert(!rng::WeaklyIncrementable<void>, "");
-static_assert(rng::WeaklyIncrementable<int>, "");
-static_assert(rng::WeaklyIncrementable<int*>, "");
-static_assert(rng::WeaklyIncrementable<std::vector<int>::iterator>, "");
+// weakly_incrementable tests
+static_assert(!rng::weakly_incrementable<void>, "");
+static_assert(rng::weakly_incrementable<int>, "");
+static_assert(rng::weakly_incrementable<int*>, "");
+static_assert(rng::weakly_incrementable<std::vector<int>::iterator>, "");
 
 // Incrementable tests
-static_assert(!rng::Incrementable<void>, "");
-static_assert(rng::Incrementable<int>, "");
-static_assert(rng::Incrementable<int*>, "");
+static_assert(!rng::incrementable<void>, "");
+static_assert(rng::incrementable<int>, "");
+static_assert(rng::incrementable<int*>, "");
 
 // Iterator tests
-static_assert(!rng::Iterator<void>, "");
-static_assert(!rng::Iterator<int>, "");
-static_assert(rng::Iterator<int*>, "");
-static_assert(rng::Iterator<int const*>, "");
-static_assert(!rng::Iterator<std::unique_ptr<int>>, "");
-static_assert(rng::Iterator<std::vector<int>::iterator>, "");
-static_assert(rng::Iterator<std::vector<bool>::const_iterator>, "");
+static_assert(!rng::input_or_output_iterator<void>, "");
+static_assert(!rng::input_or_output_iterator<int>, "");
+static_assert(rng::input_or_output_iterator<int*>, "");
+static_assert(rng::input_or_output_iterator<int const*>, "");
+static_assert(!rng::input_or_output_iterator<std::unique_ptr<int>>, "");
+static_assert(rng::input_or_output_iterator<std::vector<int>::iterator>, "");
+static_assert(rng::input_or_output_iterator<std::vector<bool>::const_iterator>, "");
 
 // Sentinel tests
-static_assert(!rng::Sentinel<void, void>, "");
-static_assert(!rng::Sentinel<void, int*>, "");
-static_assert(rng::Sentinel<int*, int*>, "");
+static_assert(!rng::sentinel_for<void, void>, "");
+static_assert(!rng::sentinel_for<void, int*>, "");
+static_assert(rng::sentinel_for<int*, int*>, "");
 
 // InputIterator tests
-static_assert(!rng::InputIterator<void>, "");
-static_assert(!rng::InputIterator<float>, "");
-static_assert(rng::InputIterator<int*>, "");
-static_assert(rng::InputIterator<int const*>, "");
-static_assert(!rng::InputIterator<std::unique_ptr<int>>, "");
-static_assert(rng::InputIterator<std::vector<int>::iterator>, "");
-static_assert(rng::InputIterator<std::vector<bool>::const_iterator>, "");
+static_assert(!rng::input_iterator<void>, "");
+static_assert(!rng::input_iterator<float>, "");
+static_assert(rng::input_iterator<int*>, "");
+static_assert(rng::input_iterator<int const*>, "");
+static_assert(!rng::input_iterator<std::unique_ptr<int>>, "");
+static_assert(rng::input_iterator<std::vector<int>::iterator>, "");
+static_assert(rng::input_iterator<std::vector<bool>::const_iterator>, "");
 
 
 // OutputIterator tests
-static_assert(!rng::OutputIterator<void, void>, "");
-static_assert(!rng::OutputIterator<int&, int>, "");
-static_assert(rng::OutputIterator<int*, int>, "");
-static_assert(!rng::OutputIterator<int const*, int>, "");
-static_assert(rng::OutputIterator<std::vector<int>::iterator, int>, "");
-static_assert(!rng::OutputIterator<std::vector<int>::const_iterator, int>, "");
+static_assert(!rng::output_iterator<void, void>, "");
+static_assert(!rng::output_iterator<int&, int>, "");
+static_assert(rng::output_iterator<int*, int>, "");
+static_assert(!rng::output_iterator<int const*, int>, "");
+static_assert(rng::output_iterator<std::vector<int>::iterator, int>, "");
+static_assert(!rng::output_iterator<std::vector<int>::const_iterator, int>, "");
 // Hmmm....
 //static_assert(rng::OutputIterator<std::vector<bool>::iterator, bool>, "");
-static_assert(!rng::OutputIterator<std::vector<bool>::const_iterator, bool>, "");
+static_assert(!rng::output_iterator<std::vector<bool>::const_iterator, bool>, "");
 
 // ForwardIterator tests
-static_assert(!rng::ForwardIterator<void>, "");
-static_assert(rng::ForwardIterator<int*>, "");
-static_assert(rng::ForwardIterator<std::vector<int>::iterator>, "");
+static_assert(!rng::forward_iterator<void>, "");
+static_assert(rng::forward_iterator<int*>, "");
+static_assert(rng::forward_iterator<std::vector<int>::iterator>, "");
 
 // BidirectionalIterator tests
-static_assert(!rng::BidirectionalIterator<void>, "");
-static_assert(rng::BidirectionalIterator<int*>, "");
-static_assert(rng::BidirectionalIterator<std::vector<int>::iterator>, "");
+static_assert(!rng::bidirectional_iterator<void>, "");
+static_assert(rng::bidirectional_iterator<int*>, "");
+static_assert(rng::bidirectional_iterator<std::vector<int>::iterator>, "");
 
 // RandomAccessIterator tests
-static_assert(!rng::RandomAccessIterator<void>, "");
-static_assert(rng::RandomAccessIterator<int*>, "");
-static_assert(rng::RandomAccessIterator<std::vector<int>::iterator>, "");
+static_assert(!rng::random_access_iterator<void>, "");
+static_assert(rng::random_access_iterator<int*>, "");
+static_assert(rng::random_access_iterator<std::vector<int>::iterator>, "");
 
 // ContiguousIterator tests
-static_assert(!rng::ContiguousIterator<void>, "");
-static_assert(!rng::ContiguousIterator<void*>, "");
-static_assert(rng::ContiguousIterator<int*>, "");
-static_assert(rng::ContiguousIterator<const int*>, "");
+static_assert(!rng::contiguous_iterator<void>, "");
+static_assert(!rng::contiguous_iterator<void*>, "");
+static_assert(rng::contiguous_iterator<int*>, "");
+static_assert(rng::contiguous_iterator<const int*>, "");
 
 // IndirectUnaryInvocable tests
 static_assert(!rng::IndirectUnaryInvocable<void, void>, "");
@@ -398,9 +398,9 @@ static_assert(!rng::View<std::vector<int>&>, "");
 
 // common_iterator
 using I = rng::common_iterator<int*, rng::unreachable_sentinel_t>;
-static_assert(rng::Iterator<rng::common_iterator<int*, rng::unreachable_sentinel_t>>, "");
-static_assert(rng::InputIterator<rng::common_iterator<int*, rng::unreachable_sentinel_t>>, "");
-static_assert(rng::ForwardIterator<rng::common_iterator<int*, rng::unreachable_sentinel_t>>, "");
+static_assert(rng::input_or_output_iterator<rng::common_iterator<int*, rng::unreachable_sentinel_t>>, "");
+static_assert(rng::input_iterator<rng::common_iterator<int*, rng::unreachable_sentinel_t>>, "");
+static_assert(rng::forward_iterator<rng::common_iterator<int*, rng::unreachable_sentinel_t>>, "");
 static_assert(rng::equality_comparable<I>, "");
 using eq = decltype(std::declval<I const&>() == std::declval<I const&>());
 
@@ -409,4 +409,4 @@ struct value_type_and_element_type {
     using value_type = int;
     using element_type = int;
 };
-static_assert(!rng::Readable<value_type_and_element_type>, "");
+static_assert(!rng::readable<value_type_and_element_type>, "");

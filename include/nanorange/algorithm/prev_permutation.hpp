@@ -68,9 +68,7 @@ private:
 public:
     template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
-    constexpr std::enable_if_t<
-        BidirectionalIterator<I> &&
-        Sentinel<S, I> &&
+    constexpr std::enable_if_t<bidirectional_iterator<I> && sentinel_for<S, I> &&
         Sortable<I, Comp, Proj>, bool>
     operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
     {

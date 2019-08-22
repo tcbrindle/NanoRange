@@ -53,10 +53,9 @@ public:
     template <typename I1, typename S1, typename I2, typename S2,
               typename Comp = ranges::less, typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
-        InputIterator<I1> &&
-        Sentinel<S1, I1> &&
-        RandomAccessIterator<I2> &&
-        Sentinel<S2, I2> &&
+        input_iterator<I1> && sentinel_for<S1, I1> &&
+            random_access_iterator<I2> &&
+            sentinel_for<S2, I2> &&
         IndirectlyCopyable<I1, I2> &&
         Sortable<I2, Comp, Proj2> &&
         IndirectStrictWeakOrder<Comp, projected<I1, Proj1>, projected<I2, Proj2>>,

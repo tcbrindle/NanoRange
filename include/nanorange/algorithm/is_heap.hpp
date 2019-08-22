@@ -16,7 +16,7 @@ namespace detail {
 struct is_heap_fn {
     template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
-    std::enable_if_t<RandomAccessIterator<I> && Sentinel<S, I> &&
+    std::enable_if_t<random_access_iterator<I> && sentinel_for<S, I> &&
                          IndirectStrictWeakOrder<Comp, projected<I, Proj>>,
                      bool>
     operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const

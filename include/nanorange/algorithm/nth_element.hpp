@@ -253,9 +253,7 @@ private:
 
 public:
     template <typename I, typename S, typename Comp = ranges::less, typename Proj = identity>
-    std::enable_if_t<
-        RandomAccessIterator<I> &&
-        Sentinel<S, I> &&
+    std::enable_if_t<random_access_iterator<I> && sentinel_for<S, I> &&
         Sortable<I, Comp, Proj>, I>
     constexpr operator()(I first, I nth, S last,
                          Comp comp = Comp{}, Proj proj = Proj{}) const

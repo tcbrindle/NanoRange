@@ -17,7 +17,7 @@ TEST_CASE("alg.basic.merge")
     std::vector<int> out;
 
 
-    static_assert(nano::Iterator<
+    static_assert(nano::input_or_output_iterator<
         nano::back_insert_iterator<std::vector<int>>>, "");
 
     SECTION("with iterators") {

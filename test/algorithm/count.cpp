@@ -29,35 +29,35 @@ TEST_CASE("alg.count")
 	int ia[] = {0, 1, 2, 2, 0, 1, 2, 3};
 	constexpr unsigned cia = size(ia);
 
-	CHECK(count(input_iterator<const int*>(ia),
+	CHECK(count(::input_iterator<const int*>(ia),
 				sentinel<const int*>(ia + cia), 2) == 3);
-	CHECK(count(input_iterator<const int*>(ia),
+	CHECK(count(::input_iterator<const int*>(ia),
 				sentinel<const int*>(ia + cia), 7) == 0);
-	CHECK(count(input_iterator<const int*>(ia),
+	CHECK(count(::input_iterator<const int*>(ia),
 				sentinel<const int*>(ia), 2) == 0);
 
-	CHECK(count(subrange(input_iterator<const int*>(ia),
+	CHECK(count(subrange(::input_iterator<const int*>(ia),
 					  sentinel<const int*>(ia + cia)), 2) == 3);
-	CHECK(count(subrange(input_iterator<const int*>(ia),
+	CHECK(count(subrange(::input_iterator<const int*>(ia),
 					  sentinel<const int*>(ia + cia)), 7) == 0);
-	CHECK(count(subrange(input_iterator<const int*>(ia),
+	CHECK(count(subrange(::input_iterator<const int*>(ia),
 					  sentinel<const int*>(ia)), 2) == 0);
 
 	S sa[] = {{0}, {1}, {2}, {2}, {0}, {1}, {2}, {3}};
 	constexpr unsigned csa = size(ia);
 
-	CHECK(count(input_iterator<const S*>(sa),
+	CHECK(count(::input_iterator<const S*>(sa),
 				sentinel<const S*>(sa + csa), 2, &S::i) == 3);
-	CHECK(count(input_iterator<const S*>(sa),
+	CHECK(count(::input_iterator<const S*>(sa),
 				sentinel<const S*>(sa + csa), 7, &S::i) == 0);
-	CHECK(count(input_iterator<const S*>(sa),
+	CHECK(count(::input_iterator<const S*>(sa),
 				sentinel<const S*>(sa), 2, &S::i) == 0);
 
-	CHECK(count(subrange(input_iterator<const S*>(sa),
+	CHECK(count(subrange(::input_iterator<const S*>(sa),
 					  sentinel<const S*>(sa + csa)), 2, &S::i) == 3);
-	CHECK(count(subrange(input_iterator<const S*>(sa),
+	CHECK(count(subrange(::input_iterator<const S*>(sa),
 					  sentinel<const S*>(sa + csa)), 7, &S::i) == 0);
-	CHECK(count(subrange(input_iterator<const S*>(sa),
+	CHECK(count(subrange(::input_iterator<const S*>(sa),
 					  sentinel<const S*>(sa)), 2, &S::i) == 0);
 
 	{

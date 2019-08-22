@@ -42,12 +42,10 @@ private:
     }
 
     template <typename I, typename O>
-    static auto constraint_helper(priority_tag<2>) -> std::enable_if_t<
-        ForwardIterator<I>, std::true_type>;
+    static auto constraint_helper(priority_tag<2>) -> std::enable_if_t<forward_iterator<I>, std::true_type>;
 
     template <typename I, typename O>
-    static auto constraint_helper(priority_tag<1>) -> std::enable_if_t<
-        InputIterator<O> && same_as<iter_value_t<I>, iter_value_t<O>>,
+    static auto constraint_helper(priority_tag<1>) -> std::enable_if_t<input_iterator<O> && same_as<iter_value_t<I>, iter_value_t<O>>,
         std::true_type>;
 
     template <typename I, typename O>
@@ -60,9 +58,8 @@ public:
     constexpr auto operator()(I first, S last, O result,
                               Comp comp = Comp{}, Proj proj = Proj{}) const
         -> std::enable_if_t<
-               InputIterator<I> &&
-               Sentinel<S, I> &&
-               WeaklyIncrementable<O> &&
+            input_iterator<I> && sentinel_for<S, I> &&
+               weakly_incrementable<O> &&
                IndirectRelation<Comp, projected<I, Proj>> &&
                IndirectlyCopyable<I, O> &&
                decltype(constraint_helper<I, O>(priority_tag<2>{}))::value,
@@ -78,7 +75,7 @@ public:
     operator()(Rng&& rng, O result, Comp comp = Comp{}, Proj proj = Proj{}) const
     -> std::enable_if_t<
             InputRange<Rng> &&
-            WeaklyIncrementable<O> &&
+            weakly_incrementable<O> &&
             IndirectRelation<Comp, projected<iterator_t<Rng>, Proj>> &&
             IndirectlyCopyable<iterator_t<Rng>, O> &&
             decltype(constraint_helper<iterator_t<Rng>, O>(priority_tag<2>{}))::value,

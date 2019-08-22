@@ -64,12 +64,9 @@ public:
     template <typename I1, typename S1, typename I2, typename S2, typename O,
               typename Comp = ranges::less, typename Proj1 = identity,
               typename Proj2 = identity>
-    constexpr std::enable_if_t<
-        InputIterator<I1> &&
-        Sentinel<S1, I1> &&
-        InputIterator<I2> &&
-        Sentinel<S2, I2> &&
-        WeaklyIncrementable<O> &&
+    constexpr std::enable_if_t<input_iterator<I1> && sentinel_for<S1, I1> &&
+                                   input_iterator<I2> && sentinel_for<S2, I2> &&
+        weakly_incrementable<O> &&
         Mergeable<I1, I2, O, Comp, Proj1, Proj1>,
         merge_result<I1, I2, O>>
     operator()(I1 first1, S1 last1, I2 first2, S2 last2, O result,
@@ -86,7 +83,7 @@ public:
     constexpr std::enable_if_t<
         InputRange<Rng1> &&
         InputRange<Rng2> &&
-        WeaklyIncrementable<O> &&
+        weakly_incrementable<O> &&
         Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp, Proj1, Proj2>,
         merge_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>, O>>
     operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},

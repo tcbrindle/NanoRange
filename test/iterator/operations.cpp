@@ -85,7 +85,7 @@ namespace {
         constexpr iterator end() const noexcept { return iterator{array_ + N}; }
     };
 
-    static_assert(ranges::BidirectionalIterator<unsized_range<int, 4, true>::iterator>, "");
+    static_assert(ranges::bidirectional_iterator<unsized_range<int, 4, true>::iterator>, "");
 
     constexpr bool test_advance() {
         {

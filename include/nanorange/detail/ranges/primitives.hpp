@@ -70,7 +70,7 @@ private:
         noexcept(decay_copy(ranges::end(t) - ranges::begin(t))))
         -> std::enable_if_t<
             !std::is_array<remove_cvref_t<T>>::value && // MSVC sillyness?
-                SizedSentinel<S, I> && ForwardIterator<I>,
+                sized_sentinel_for<S, I> && forward_iterator<I>,
             D>
     {
         return decay_copy(ranges::end(t) - ranges::begin(t));
@@ -120,7 +120,7 @@ private:
     static constexpr auto
     impl(T&& t,
          priority_tag<0>) noexcept(noexcept(ranges::begin(t) == ranges::end(t)))
-        -> std::enable_if_t<ForwardIterator<I>,
+        -> std::enable_if_t<forward_iterator<I>,
                             decltype(ranges::begin(t) == ranges::end(t))>
     {
         return ranges::begin(t) == ranges::end(t);

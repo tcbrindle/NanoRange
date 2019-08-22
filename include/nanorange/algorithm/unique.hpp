@@ -39,9 +39,7 @@ private:
 public:
     template <typename I, typename S, typename R = ranges::equal_to,
               typename Proj = identity>
-    constexpr std::enable_if_t<
-        ForwardIterator<I> &&
-        Sentinel<S, I> &&
+    constexpr std::enable_if_t<forward_iterator<I> && sentinel_for<S, I> &&
         IndirectRelation<R, projected<I, Proj>> &&
         Permutable<I>, I>
     operator()(I first, S last, R comp = {}, Proj proj = Proj{}) const

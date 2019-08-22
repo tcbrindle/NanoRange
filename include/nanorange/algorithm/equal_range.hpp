@@ -29,8 +29,7 @@ public:
     template <typename I, typename S, typename T, typename Comp = ranges::less,
               typename Proj = identity>
     std::enable_if_t<
-        ForwardIterator<I> &&
-        Sentinel<S, I> &&
+        forward_iterator<I> && sentinel_for<S, I> &&
         IndirectStrictWeakOrder<Comp, const T*, projected<I, Proj>>,
     subrange<I>>
     constexpr operator()(I first, S last, const T& value, Comp comp = Comp{},

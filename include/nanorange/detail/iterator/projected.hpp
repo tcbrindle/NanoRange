@@ -25,7 +25,7 @@ struct projected_helper {
 template <typename I, typename Proj>
 struct projected_helper<
     I, Proj,
-    std::enable_if_t<Readable<I> && IndirectRegularUnaryInvocable<Proj, I>>> {
+    std::enable_if_t<readable<I> && IndirectRegularUnaryInvocable<Proj, I>>> {
     using value_type =
         std::remove_cv_t<std::remove_reference_t<indirect_result_t<Proj&, I>>>;
 
@@ -39,7 +39,7 @@ struct projected_difference_t_helper {};
 
 template <typename I, typename Proj>
 struct projected_difference_t_helper<I, Proj, std::enable_if_t<
-    WeaklyIncrementable<I>>> {
+    weakly_incrementable<I>>> {
     using difference_type = iter_difference_t<I>;
 };
 

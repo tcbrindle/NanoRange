@@ -35,7 +35,7 @@ private:
 public:
     template <typename I, typename S, typename Proj = identity, typename Pred>
     constexpr std::enable_if_t<
-        InputIterator<I> && Sentinel<S, I> &&
+        input_iterator<I> && sentinel_for<S, I> &&
             IndirectUnaryPredicate<Pred, projected<I, Proj>>,
         bool>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const

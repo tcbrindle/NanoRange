@@ -48,8 +48,9 @@ private:
     template <typename T, typename U>
     static constexpr auto impl(T&& t, U&& u, priority_tag<1>) noexcept(
         noexcept(ranges::swap(*std::forward<T>(t), *std::forward<U>(u))))
-        -> std::enable_if_t<Readable<std::remove_reference_t<T>> &&
-                            Readable<std::remove_reference_t<U>> &&
+        -> std::enable_if_t<
+            readable<std::remove_reference_t<T>> &&
+                            readable<std::remove_reference_t<U>> &&
                             swappable_with<iter_reference_t<T>, iter_reference_t<U>>>
     {
         ranges::swap(*std::forward<T>(t), *std::forward<U>(u));

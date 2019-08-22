@@ -39,7 +39,7 @@ TEST_CASE("views.reverse") {
 	}
 	{
 		int rg[] = {0,1,2,3,4,5,6,7,8,9};
-		auto x = views::counted(bidirectional_iterator(rg), 5) | views::reverse;
+		auto x = views::counted(::bidirectional_iterator(rg), 5) | views::reverse;
 		//auto x = views::reverse(views::counted(bidirectional_iterator<int*>(rg), 5));
 		::check_equal(x, {4,3,2,1,0});
 		static_assert(View<decltype(x)>, "");

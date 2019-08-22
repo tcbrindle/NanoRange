@@ -19,7 +19,7 @@ namespace detail {
 struct move_fn {
 private:
     template <typename I, typename S, typename O>
-    static constexpr std::enable_if_t<SizedSentinel<S, I>, move_result<I, O>>
+    static constexpr std::enable_if_t<sized_sentinel_for<S, I>, move_result<I, O>>
     impl(I first, S last, O result, priority_tag<1>)
     {
         const auto dist = last - first;
@@ -48,8 +48,8 @@ private:
 
 public:
     template <typename I, typename S, typename O>
-    constexpr std::enable_if_t<InputIterator<I> && Sentinel<S, I> &&
-                                   WeaklyIncrementable<O> &&
+    constexpr std::enable_if_t<input_iterator<I> && sentinel_for<S, I> &&
+                                   weakly_incrementable<O> &&
                                    IndirectlyMovable<I, O>,
                                move_result<I, O>>
     operator()(I first, S last, O result) const
@@ -59,7 +59,7 @@ public:
     }
 
     template <typename Rng, typename O>
-    constexpr std::enable_if_t<InputRange<Rng> && WeaklyIncrementable<O> &&
+    constexpr std::enable_if_t<InputRange<Rng> && weakly_incrementable<O> &&
                                    IndirectlyMovable<iterator_t<Rng>, O>,
                                move_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
@@ -103,8 +103,9 @@ private:
 
 public:
     template <typename I, typename S, typename O>
-    constexpr std::enable_if_t<BidirectionalIterator<I> && Sentinel<S, I> &&
-                                   BidirectionalIterator<O> &&
+    constexpr std::enable_if_t<
+        bidirectional_iterator<I> && sentinel_for<S, I> &&
+            bidirectional_iterator<O> &&
                                    IndirectlyMovable<I, O>,
                                move_backward_result<I, O>>
     operator()(I first, S last, O result) const
@@ -115,7 +116,7 @@ public:
 
     template <typename Rng, typename O>
     constexpr std::enable_if_t<BidirectionalRange<Rng> &&
-                                   BidirectionalIterator<O> &&
+                                   bidirectional_iterator<O> &&
                                    IndirectlyMovable<iterator_t<Rng>, O>,
                                move_backward_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const

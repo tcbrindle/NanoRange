@@ -180,8 +180,8 @@ namespace X {
 
 using I = int*;
 using CI = const int*;
-static_assert(ranges::Iterator<I>, "");
-static_assert(ranges::Iterator<CI>, "");
+static_assert(ranges::input_or_output_iterator<I>, "");
+static_assert(ranges::input_or_output_iterator<CI>, "");
 
 void test_string_view_p0970() {
 	// basic_string_views are non-dangling

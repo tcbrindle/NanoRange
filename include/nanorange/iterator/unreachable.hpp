@@ -15,28 +15,28 @@ NANO_BEGIN_NAMESPACE
 
 struct unreachable_sentinel_t {
     template<typename I>
-    friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
+    friend constexpr std::enable_if_t<weakly_incrementable<I>, bool>
     operator==(const I &, unreachable_sentinel_t) noexcept
     {
         return false;
     }
 
     template<typename I>
-    friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
+    friend constexpr std::enable_if_t<weakly_incrementable<I>, bool>
     operator==(unreachable_sentinel_t, const I &) noexcept
     {
         return false;
     }
 
     template<typename I>
-    friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
+    friend constexpr std::enable_if_t<weakly_incrementable<I>, bool>
     operator!=(const I &, unreachable_sentinel_t) noexcept
     {
         return true;
     }
 
     template<typename I>
-    friend constexpr std::enable_if_t<WeaklyIncrementable<I>, bool>
+    friend constexpr std::enable_if_t<weakly_incrementable<I>, bool>
     operator!=(unreachable_sentinel_t, const I &) noexcept
     {
         return true;

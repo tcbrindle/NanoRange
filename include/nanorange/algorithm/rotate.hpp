@@ -40,7 +40,7 @@ private:
 
     template <typename I, typename S>
     static constexpr std::enable_if_t<
-            RandomAccessIterator<I> && SizedSentinel<S, I>,
+        random_access_iterator<I> && sized_sentinel_for<S, I>,
             subrange<I>>
     do_rotate(I first, I middle, S last, priority_tag<2>)
     {
@@ -73,7 +73,7 @@ private:
     }
 
     template <typename I, typename S>
-    static constexpr std::enable_if_t<BidirectionalIterator<I>, subrange<I>>
+    static constexpr std::enable_if_t<bidirectional_iterator<I>, subrange<I>>
     do_rotate(I first, I middle, S last, priority_tag<1>)
     {
         if (std::is_trivially_move_assignable<iter_value_t<I>>::value &&
@@ -94,7 +94,7 @@ private:
             return do_rotate_one_left(std::move(first), std::move(last));
         }
 
-        if (SizedSentinel<I, I> && SizedSentinel<S, I> &&
+        if (sized_sentinel_for<I, I> && sized_sentinel_for<S, I> &&
             nano::distance(first, middle) == nano::distance(middle, last))
         {
             auto ret = nano::swap_ranges(first, middle, middle, unreachable_sentinel);
@@ -143,8 +143,7 @@ private:
 public:
     template <typename I, typename S>
     constexpr std::enable_if_t<
-        ForwardIterator<I> &&
-        Sentinel<S, I> &&
+        forward_iterator<I> && sentinel_for<S, I> &&
         Permutable<I>,
         subrange<I>>
     operator()(I first, I middle, S last) const

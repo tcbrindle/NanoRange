@@ -34,18 +34,18 @@ TEST_CASE("iter.istream_iterator")
 {
 	{
 		using I = istream_iterator<int>;
-		static_assert(nano::WeaklyIncrementable<I>, "");
+		static_assert(nano::weakly_incrementable<I>, "");
 		static_assert(nano::same_as<iter_difference_t<I>, std::ptrdiff_t>, "");
-		static_assert(nano::Readable<I>, "");
+		static_assert(nano::readable<I>, "");
 		static_assert(nano::same_as<iter_value_t<I>, int>, "");
 		static_assert(nano::same_as<iter_reference_t<I>, const int&>, "");
 		static_assert(nano::same_as<iter_rvalue_reference_t<I>, const int&&>, "");
-		static_assert(nano::Iterator<I>, "");
-		static_assert(nano::InputIterator<I>, "");
-		static_assert(!nano::ForwardIterator<I>, "");
+		static_assert(nano::input_or_output_iterator<I>, "");
+		static_assert(nano::input_iterator<I>, "");
+		static_assert(!nano::forward_iterator<I>, "");
 
-		static_assert(nano::Sentinel<I, I>, "");
-		static_assert(nano::Sentinel<default_sentinel_t, I>, "");
+		static_assert(nano::sentinel_for<I, I>, "");
+		static_assert(nano::sentinel_for<default_sentinel_t, I>, "");
 		static_assert(nano::common_with<default_sentinel_t, I>, "");
 		static_assert(nano::same_as<I, common_type_t<I, default_sentinel_t>>, "");
 

@@ -18,7 +18,7 @@ auto NoThrowInputIterator_fn(long) -> std::false_type;
 
 template <typename I>
 auto NoThrowInputIterator_fn(int) -> std::enable_if_t<
-    InputIterator<I> &&
+    input_iterator<I> &&
     std::is_lvalue_reference<iter_reference_t<I>>::value &&
     same_as<remove_cvref_t<iter_reference_t<I>>, iter_value_t<I>>,
     std::true_type>;
@@ -28,7 +28,7 @@ NANO_CONCEPT NoThrowInputIterator =
     decltype(NoThrowInputIterator_fn<I>(0))::value;
 
 template <typename S, typename I>
-NANO_CONCEPT NoThrowSentinel = Sentinel<S, I>;
+NANO_CONCEPT NoThrowSentinel = sentinel_for<S, I>;
 
 template <typename>
 auto NoThrowInputRange_fn(long) -> std::false_type;
@@ -46,8 +46,7 @@ NANO_CONCEPT NoThrowInputRange =
 
 template <typename I>
 NANO_CONCEPT NoThrowForwardIterator =
-    NoThrowInputIterator<I> &&
-    ForwardIterator<I> &&
+    NoThrowInputIterator<I> && forward_iterator<I> &&
     NoThrowSentinel<I, I>;
 
 template <typename>

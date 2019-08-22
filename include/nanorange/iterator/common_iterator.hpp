@@ -17,8 +17,8 @@ namespace common_iterator_ {
 
 template <typename I, typename S>
 class common_iterator {
-    static_assert(Iterator<I>, "");
-    static_assert(Sentinel<S, I>, "");
+    static_assert(input_or_output_iterator<I>, "");
+    static_assert(sentinel_for<S, I>, "");
     static_assert(!same_as<I, S>, "");
 
     template <typename II, typename SS>
@@ -95,7 +95,7 @@ public:
     constexpr decltype(auto) operator*() { return *iter_; }
 
     template <typename II = I,
-              std::enable_if_t<detail::Dereferenceable<const I>, int> = 0>
+              std::enable_if_t<detail::dereferenceable<const I>, int> = 0>
     constexpr decltype(auto) operator*() const
     {
         return *iter_;
@@ -115,13 +115,13 @@ public:
         return *this;
     }
 
-    template <typename II = I, std::enable_if_t<!ForwardIterator<II>, int> = 0>
+    template <typename II = I, std::enable_if_t<!forward_iterator<II>, int> = 0>
     constexpr  decltype(auto) operator++(int)
     {
         return iter_++;
     }
 
-    template <typename II = I, std::enable_if_t<ForwardIterator<II>, int> = 0>
+    template <typename II = I, std::enable_if_t<forward_iterator<II>, int> = 0>
     constexpr common_iterator operator++(int)
     {
         common_iterator tmp = *this;
@@ -132,7 +132,7 @@ public:
     template <typename I2, typename S2>
     friend constexpr auto operator==(const common_iterator& x,
                                      const common_iterator<I2, S2>& y)
-        -> std::enable_if_t<Sentinel<S2, I> && Sentinel<S, I2> &&
+        -> std::enable_if_t<sentinel_for<S2, I> && sentinel_for<S, I2> &&
                             !equality_comparable_with<I, I2>, bool>
     {
         return x.is_sentinel_ ? (y.is_sentinel_ || y.iter_ == x.sentinel_)
@@ -142,7 +142,7 @@ public:
     template <typename I2, typename S2>
     friend constexpr auto operator==(const common_iterator& x,
                                      const common_iterator<I2, S2>& y)
-        -> std::enable_if_t<Sentinel<S2, I> && Sentinel<S, I2> &&
+        -> std::enable_if_t<sentinel_for<S2, I> && sentinel_for<S, I2> &&
                             equality_comparable_with<I, I2>, bool>
     {
         return x.is_sentinel_
@@ -153,7 +153,7 @@ public:
     template <typename I2, typename S2>
     friend constexpr auto operator!=(const common_iterator& x,
                                      const common_iterator<I2, S2>& y)
-        -> std::enable_if_t<Sentinel<S2, I> && Sentinel<S, I2>, bool>
+        -> std::enable_if_t<sentinel_for<S2, I> && sentinel_for<S, I2>, bool>
     {
         return !(x == y);
     }
@@ -161,8 +161,8 @@ public:
     template <typename I2, typename S2>
     friend constexpr auto operator-(const common_iterator& x,
                                     const common_iterator<I2, S2>& y)
-        -> std::enable_if_t<SizedSentinel<I, I2> && SizedSentinel<S, I2> &&
-                            SizedSentinel<S, I2>, iter_difference_t<I2>>
+        -> std::enable_if_t<sized_sentinel_for<I, I2> && sized_sentinel_for<S, I2> &&
+                            sized_sentinel_for<S, I2>, iter_difference_t<I2>>
     {
         return x.is_sentinel_
                ? (y.is_sentinel_ ? 0 : x.sentinel_ - y.iter_)
@@ -199,7 +199,7 @@ struct readable_traits<common_iterator<I, S>> {
 
 template <typename I, typename S>
 struct iterator_category<common_iterator<I, S>>
-    : std::conditional<ForwardIterator<I>, forward_iterator_tag,
+    : std::conditional<forward_iterator<I>, forward_iterator_tag,
                        input_iterator_tag> {
 };
 
@@ -216,7 +216,7 @@ struct iterator_traits<::nano::common_iterator<I, S>> {
         std::add_pointer_t<::nano::iter_reference_t<::nano::common_iterator<I, S>>>;
     using reference = ::nano::iter_reference_t<::nano::common_iterator<I, S>>;
     using iterator_category =
-        std::conditional_t<::nano::ForwardIterator<I>,
+        std::conditional_t<::nano::forward_iterator<I>,
                            std::forward_iterator_tag,
                            std::input_iterator_tag>;
 };

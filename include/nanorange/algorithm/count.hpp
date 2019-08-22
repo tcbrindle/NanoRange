@@ -38,7 +38,7 @@ private:
 public:
     template <typename I, typename S, typename Proj = identity, typename Pred>
     constexpr std::enable_if_t<
-        InputIterator<I> && Sentinel<S, I> &&
+        input_iterator<I> && sentinel_for<S, I> &&
             IndirectUnaryPredicate<Pred, projected<I, Proj>>,
         iter_difference_t<I>>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
@@ -67,7 +67,7 @@ namespace detail {
 struct count_fn {
     template <typename I, typename S, typename T, typename Proj = identity>
     constexpr std::enable_if_t<
-        InputIterator<I> && Sentinel<S, I> &&
+        input_iterator<I> && sentinel_for<S, I> &&
             IndirectRelation<ranges::equal_to, projected<I, Proj>, const T*>,
         iter_difference_t<I>>
     operator()(I first, S last, const T& value, Proj proj = Proj{}) const

@@ -193,33 +193,33 @@ static_assert(!ranges::copyable<int const>, "");
 static_assert(!ranges::copyable<moveonly>, "");
 static_assert(!ranges::copyable<nonmovable>, "");
 
-static_assert(ranges::InputIterator<int*>, "");
-static_assert(!ranges::InputIterator<int>, "");
+static_assert(ranges::input_iterator<int*>, "");
+static_assert(!ranges::input_iterator<int>, "");
 
-static_assert(ranges::ForwardIterator<int*>, "");
-static_assert(!ranges::ForwardIterator<int>, "");
+static_assert(ranges::forward_iterator<int*>, "");
+static_assert(!ranges::forward_iterator<int>, "");
 
-static_assert(ranges::BidirectionalIterator<int*>, "");
-static_assert(!ranges::BidirectionalIterator<int>, "");
+static_assert(ranges::bidirectional_iterator<int*>, "");
+static_assert(!ranges::bidirectional_iterator<int>, "");
 
-static_assert(ranges::RandomAccessIterator<int*>, "");
-static_assert(!ranges::RandomAccessIterator<int>, "");
+static_assert(ranges::random_access_iterator<int*>, "");
+static_assert(!ranges::random_access_iterator<int>, "");
 
 static_assert(ranges::View<ranges::basic_istream_view<int, char>>, "");
-static_assert(ranges::InputIterator<ranges::iterator_t<ranges::basic_istream_view<int, char>>>, "");
+static_assert(ranges::input_iterator<ranges::iterator_t<ranges::basic_istream_view<int, char>>>, "");
 static_assert(!ranges::View<int>, "");
 
 static_assert(ranges::CommonRange<std::vector<int> >, "");
 //static_assert(!ranges::BoundedView<std::vector<int>>, "");
 //static_assert(!ranges::BoundedView<std::vector<int> &>, "");
-static_assert(ranges::RandomAccessIterator<ranges::iterator_t<std::vector<int> const &>>, "");
+static_assert(ranges::random_access_iterator<ranges::iterator_t<std::vector<int> const &>>, "");
 //static_assert(!ranges::BoundedView<ranges::istream_range<int>>, "");
 
 static_assert(ranges::predicate<std::less<int>, int, int>, "");
 static_assert(!ranges::predicate<std::less<int>, char*, int>, "");
 
-static_assert(ranges::OutputIterator<int *, int>, "");
-static_assert(!ranges::OutputIterator<int const *, int>, "");
+static_assert(ranges::output_iterator<int *, int>, "");
+static_assert(!ranges::output_iterator<int const *, int>, "");
 
 static_assert(ranges::swappable<int &>, "");
 // FIXME: Find out if this is intended to be false

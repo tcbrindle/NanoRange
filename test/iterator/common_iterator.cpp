@@ -135,12 +135,12 @@ TEST_CASE("iter.common_iterator") {
 	namespace __stl2 = nano::ranges;
 	{
 		static_assert(
-			models::ForwardIterator<
+			models::forward_iterator<
 				__stl2::common_iterator<
 					bidirectional_iterator<const char *>,
 					sentinel<const char *>>>, "");
 		static_assert(
-			!models::BidirectionalIterator<
+			!models::bidirectional_iterator<
 				__stl2::common_iterator<
 					bidirectional_iterator<const char *>,
 					sentinel<const char *>>>, "");
@@ -163,7 +163,7 @@ TEST_CASE("iter.common_iterator") {
 			>::value, "");
 		// Sized iterator range tests
 		static_assert(
-			!models::SizedSentinel<
+			!models::sized_sentinel_for<
 				__stl2::common_iterator<
 					forward_iterator<int*>,
 					sentinel<int*, true> >,
@@ -171,7 +171,7 @@ TEST_CASE("iter.common_iterator") {
 					forward_iterator<int*>,
 					sentinel<int*, true> > >, "");
 		static_assert(
-			models::SizedSentinel<
+			models::sized_sentinel_for<
 				__stl2::common_iterator<
 					random_access_iterator<int*>,
 					sentinel<int*, true> >,
@@ -179,7 +179,7 @@ TEST_CASE("iter.common_iterator") {
 					random_access_iterator<int*>,
 					sentinel<int*, true> > >, "");
 		static_assert(
-			!models::SizedSentinel<
+			!models::sized_sentinel_for<
 				__stl2::common_iterator<
 					random_access_iterator<int*>,
 					sentinel<int*, false> >,

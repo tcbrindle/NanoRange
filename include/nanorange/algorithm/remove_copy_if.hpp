@@ -37,7 +37,7 @@ public:
     template <typename I, typename S, typename O, typename Pred,
               typename Proj = identity>
     constexpr std::enable_if_t<
-        InputIterator<I> && Sentinel<S, I> && WeaklyIncrementable<O> &&
+        input_iterator<I> && sentinel_for<S, I> && weakly_incrementable<O> &&
             IndirectlyCopyable<I, O> &&
             IndirectUnaryPredicate<Pred, projected<I, Proj>>,
         remove_copy_if_result<I, O>>
@@ -50,7 +50,7 @@ public:
 
     template <typename Rng, typename O, typename Pred, typename Proj = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng> && WeaklyIncrementable<O> &&
+        InputRange<Rng> && weakly_incrementable<O> &&
             IndirectlyCopyable<iterator_t<Rng>, O> &&
             IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
         remove_copy_if_result<safe_iterator_t<Rng>, O>>

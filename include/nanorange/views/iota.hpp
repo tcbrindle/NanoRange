@@ -24,8 +24,7 @@ struct Decrementable_req {
 };
 
 template <typename I>
-NANO_CONCEPT Decrementable =
-    Incrementable<I> && requires_<Decrementable_req, I>;
+NANO_CONCEPT Decrementable = incrementable<I> && requires_<Decrementable_req, I>;
 
 struct Advanceable_req {
     // FIXME: Nasty IOTA-DIFF-T stuff
@@ -51,7 +50,7 @@ constexpr auto iota_view_iter_cat_helper()
         return random_access_iterator_tag{};
     } else if constexpr (detail::Decrementable<W>) {
         return bidirectional_iterator_tag{};
-    } else if constexpr (Incrementable<W>) {
+    } else if constexpr (incrementable<W>) {
         return forward_iterator_tag{};
     } else {
         return input_iterator_tag{};
@@ -62,7 +61,7 @@ constexpr auto iota_view_iter_cat_helper()
 
 template <typename W, typename Bound = unreachable_sentinel_t>
 struct iota_view : view_interface<iota_view<W, Bound>> {
-    static_assert(WeaklyIncrementable<W>);
+    static_assert(weakly_incrementable<W>);
     static_assert(semiregular<Bound>);
     static_assert(detail::weakly_equality_comparable_with<W, Bound>);
 
@@ -99,7 +98,7 @@ private:
 
         constexpr auto operator++(int)
         {
-            if constexpr (Incrementable<W>) {
+            if constexpr (incrementable<W>) {
                 auto tmp = *this;
                 ++*this;
                 return tmp;
@@ -274,14 +273,14 @@ private:
 
         template <typename WW = W>
         friend constexpr auto operator-(const iterator& i, const sentinel& s)
-            -> std::enable_if_t<SizedSentinel<Bound, WW>, iter_difference_t<WW>>
+            -> std::enable_if_t<sized_sentinel_for<Bound, WW>, iter_difference_t<WW>>
         {
             return i.value_ - s.bound_;
         }
 
         template <typename WW = W>
         friend constexpr auto operator-(const sentinel& s, const iterator& i)
-            -> std::enable_if_t<SizedSentinel<Bound, WW>, iter_difference_t<WW>>
+            -> std::enable_if_t<sized_sentinel_for<Bound, WW>, iter_difference_t<WW>>
         {
             return -(i - s);
         }
@@ -325,7 +324,7 @@ public:
     template <typename WW = W, typename BB = Bound, std::enable_if_t<
               (same_as<WW, BB> && detail::Advanceable<W>) ||
               (integral<WW> && integral<BB>) ||
-              SizedSentinel<BB, WW>, int> = 0>
+                                   sized_sentinel_for<BB, WW>, int> = 0>
     constexpr auto size() const
     {
         constexpr auto make_unsigned_like = [](auto i) {

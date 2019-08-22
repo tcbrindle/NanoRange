@@ -37,12 +37,12 @@ TEST_CASE("iter.output_iterator") {
 	namespace models = ::nano;
 
 	using I = ostream_iterator<int>;
-	static_assert(models::WeaklyIncrementable<I>, "");
+	static_assert(models::weakly_incrementable<I>, "");
 	static_assert(models::same_as<iter_difference_t<I>, std::ptrdiff_t>, "");
-	static_assert(models::Iterator<I>, "");
+	static_assert(models::input_or_output_iterator<I>, "");
 	static_assert(models::same_as<iter_reference_t<I>, I&>, "");
-	static_assert(models::OutputIterator<I, const int&>, "");
-	static_assert(!models::InputIterator<I>, "");
+	static_assert(models::output_iterator<I, const int&>, "");
+	static_assert(!models::input_iterator<I>, "");
 
 	I i{ss, " "};
 	static_assert(models::same_as<I::difference_type, std::ptrdiff_t>, "");

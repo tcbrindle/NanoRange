@@ -31,7 +31,7 @@ TEST_CASE("views.common") {
 	}
 	{
 		int rg[] = {0,1,2,3,4,5,6,7,8,9};
-		auto x = views::counted(bidirectional_iterator(rg), 5) | views::common;
+		auto x = views::counted(::bidirectional_iterator(rg), 5) | views::common;
 		//auto x = views::common(views::counted(bidirectional_iterator<int*>(rg), 5));
 		::check_equal(x, {0,1,2,3,4});
 		static_assert(View<decltype(x)>, "");

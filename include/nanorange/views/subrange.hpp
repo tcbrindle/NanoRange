@@ -18,7 +18,7 @@ enum class subrange_kind : bool { unsized, sized };
 
 namespace detail {
 
-template <typename I, typename S, bool = SizedSentinel<S, I>>
+template <typename I, typename S, bool = sized_sentinel_for<S, I>>
 struct default_subrange_kind {
     static constexpr subrange_kind kind = subrange_kind::unsized;
 };
@@ -91,7 +91,7 @@ auto IteratorSentinelPair_fn(long) -> std::false_type;
 template <typename T>
 auto IteratorSentinelPair_fn(int) -> std::enable_if_t<
         !Range<T> && PairLike<T> &&
-        Sentinel<std::tuple_element_t<1, T>, std::tuple_element_t<0, T>>,
+        sentinel_for<std::tuple_element_t<1, T>, std::tuple_element_t<0, T>>,
         std::true_type>;
 
 template <typename T>
@@ -145,7 +145,7 @@ constexpr bool subrange_range_constructor_constraint_helper =
 template <typename R>
 constexpr subrange_kind subrange_deduction_guide_helper()
 {
-    return (SizedRange<R> || SizedSentinel<sentinel_t<R>, iterator_t<R>>)
+    return (SizedRange<R> || sized_sentinel_for<sentinel_t<R>, iterator_t<R>>)
            ? subrange_kind::sized : subrange_kind::unsized;
 }
 
@@ -155,13 +155,13 @@ namespace subrange_ {
 
 template <typename I, typename S, subrange_kind K>
 class subrange : public view_interface<subrange<I, S, K>> {
-    static_assert(Iterator<I>, "");
-    static_assert(Sentinel<S, I>, "");
-    static_assert(K == subrange_kind::sized || !SizedSentinel<S, I>, "");
+    static_assert(input_or_output_iterator<I>, "");
+    static_assert(sentinel_for<S, I>, "");
+    static_assert(K == subrange_kind::sized || !sized_sentinel_for<S, I>, "");
 
 private:
     static constexpr bool StoreSize =
-            K == subrange_kind::sized && !SizedSentinel<S, I>;
+            K == subrange_kind::sized && !sized_sentinel_for<S, I>;
 
     detail::subrange_data<I, S, StoreSize> data_{};
 
@@ -259,7 +259,7 @@ public:
 
     template <typename II = I>
     [[nodiscard]] constexpr auto prev(iter_difference_t<I> n = 1) const
-        -> std::enable_if_t<BidirectionalIterator<II>, subrange>
+        -> std::enable_if_t<bidirectional_iterator<II>, subrange>
     {
         auto tmp = *this;
         tmp.advance(-n);
@@ -289,11 +289,12 @@ constexpr S end(subrange<I, S, K>&& r) { return r.end(); }
 
 #ifdef _MSC_VER
 // FIXME: Extra deduction guide because MSVC can't use the (constrained) implicit one
-template <typename I, typename S, std::enable_if_t<Iterator<I> && Sentinel<S, I>, int> = 0>
+template <typename I, typename S,
+          std::enable_if_t<input_or_output_iterator<I> && sentinel_for<S, I>, int> = 0>
 subrange(I, S) -> subrange<I, S>;
 #endif
 
-template <typename I, typename S, std::enable_if_t<Iterator<I> && Sentinel<S, I>, int> = 0>
+template <typename I, typename S, std::enable_if_t<input_or_output_iterator<I> && sentinel_for<S, I>, int> = 0>
 subrange(I, S, iter_difference_t<I>) -> subrange<I, S, subrange_kind::sized>;
 
 template <typename P, std::enable_if_t<detail::IteratorSentinelPair<P>, int> = 0>

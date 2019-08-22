@@ -20,7 +20,7 @@ namespace reverse_iterator_ {
 template <typename I>
 class reverse_iterator {
 
-    static_assert(BidirectionalIterator<I>,
+    static_assert(bidirectional_iterator<I>,
                   "Template argument to reverse_iterator must model "
                   "BidirectionalIterator");
 
@@ -83,14 +83,14 @@ public:
     }
 
     template <typename II = I>
-    constexpr std::enable_if_t<RandomAccessIterator<II>, reverse_iterator>
+    constexpr std::enable_if_t<random_access_iterator<II>, reverse_iterator>
     operator+(difference_type n) const
     {
         return reverse_iterator(current_ - n);
     }
 
     template <typename II = I>
-    constexpr std::enable_if_t<RandomAccessIterator<II>, reverse_iterator&>
+    constexpr std::enable_if_t<random_access_iterator<II>, reverse_iterator&>
     operator+=(difference_type n)
     {
         current_ -= n;
@@ -98,14 +98,14 @@ public:
     }
 
     template <typename II = I>
-    constexpr std::enable_if_t<RandomAccessIterator<II>, reverse_iterator>
+    constexpr std::enable_if_t<random_access_iterator<II>, reverse_iterator>
     operator-(difference_type n) const
     {
         return reverse_iterator(current_ + n);
     }
 
     template <typename II = I>
-    constexpr std::enable_if_t<RandomAccessIterator<II>, reverse_iterator&>
+    constexpr std::enable_if_t<random_access_iterator<II>, reverse_iterator&>
     operator-=(difference_type n)
     {
         current_ += n;
@@ -113,7 +113,7 @@ public:
     }
 
     template <typename II = I>
-    constexpr std::enable_if_t<RandomAccessIterator<II>, reference>
+    constexpr std::enable_if_t<random_access_iterator<II>, reference>
     operator[](difference_type n) const
     {
         return current_[-n - 1];
@@ -188,14 +188,14 @@ operator<=(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 }
 
 template <typename I1, typename I2>
-constexpr std::enable_if_t<SizedSentinel<I1, I2>, iter_difference_t<I2>>
+constexpr std::enable_if_t<sized_sentinel_for<I1, I2>, iter_difference_t<I2>>
 operator-(const reverse_iterator<I1>& x, const reverse_iterator<I2>& y)
 {
     return y.base() - x.base();
 }
 
 template <typename I>
-constexpr std::enable_if_t<RandomAccessIterator<I>, reverse_iterator<I>>
+constexpr std::enable_if_t<random_access_iterator<I>, reverse_iterator<I>>
 operator+(iter_difference_t<I> n, const reverse_iterator<I>& x)
 {
     return reverse_iterator<I>(x.base() - n);
@@ -206,7 +206,7 @@ operator+(iter_difference_t<I> n, const reverse_iterator<I>& x)
 using reverse_iterator_::reverse_iterator;
 
 template <typename I>
-constexpr std::enable_if_t<BidirectionalIterator<I>, reverse_iterator<I>>
+constexpr std::enable_if_t<bidirectional_iterator<I>, reverse_iterator<I>>
 make_reverse_iterator(I i)
 {
     return reverse_iterator<I>(std::move(i));

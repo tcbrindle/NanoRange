@@ -78,9 +78,9 @@ public:
     template <typename I, typename S, typename O, typename F,
               typename Proj = identity>
     constexpr std::enable_if_t<
-        InputIterator<I> && Sentinel<S, I> && WeaklyIncrementable<O> &&
+        input_iterator<I> && sentinel_for<S, I> && weakly_incrementable<O> &&
             copy_constructible<F> &&
-            Writable<O, indirect_result_t<F&, projected<I, Proj>>>,
+            writable<O, indirect_result_t<F&, projected<I, Proj>>>,
         unary_transform_result<I, O>>
     operator()(I first, S last, O result, F op, Proj proj = Proj{}) const
     {
@@ -91,8 +91,8 @@ public:
     // Unary op, range
     template <typename Rng, typename O, typename F, typename Proj = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng> && WeaklyIncrementable<O> && copy_constructible<F> &&
-            Writable<O,
+        InputRange<Rng> && weakly_incrementable<O> && copy_constructible<F> &&
+            writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng>, Proj>>>,
         unary_transform_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, F op, Proj proj = Proj{}) const
@@ -106,10 +106,10 @@ public:
     template <typename I1, typename S1, typename I2, typename S2, typename O,
               typename F, typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
-        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
-            Sentinel<S2, I2> && WeaklyIncrementable<O> &&
+        input_iterator<I1> && sentinel_for<S1, I1> && input_iterator<I2> &&
+            sentinel_for<S2, I2> && weakly_incrementable<O> &&
             copy_constructible<F> &&
-            Writable<O, indirect_result_t<F&, projected<I1, Proj1>,
+            writable<O, indirect_result_t<F&, projected<I1, Proj1>,
                                           projected<I2, Proj2>>>,
         binary_transform_result<I1, I2, O>>
     operator()(I1 first1, S1 last1, I2 first2, S2 last2, O result, F op,
@@ -124,9 +124,9 @@ public:
     template <typename Rng1, typename Rng2, typename O, typename F,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng1> && InputRange<Rng2> && WeaklyIncrementable<O> &&
+        InputRange<Rng1> && InputRange<Rng2> && weakly_incrementable<O> &&
             copy_constructible<F> &&
-            Writable<O,
+            writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng1>, Proj1>,
                                        projected<iterator_t<Rng2>, Proj2>>>,
         binary_transform_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>, O>>
@@ -143,10 +143,11 @@ public:
     template <typename I1, typename S1, typename I2, typename O, typename F,
               typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED constexpr std::enable_if_t<
-        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<std::decay_t<I2>> &&
+        input_iterator<I1> && sentinel_for<S1, I1> &&
+            input_iterator<std::decay_t<I2>> &&
             !InputRange<I2> &&
-            WeaklyIncrementable<O> && copy_constructible<F> &&
-            Writable<O, indirect_result_t<F&, projected<I1, Proj1>,
+            weakly_incrementable<O> && copy_constructible<F> &&
+            writable<O, indirect_result_t<F&, projected<I1, Proj1>,
                                           projected<std::decay_t<I2>, Proj2>>>,
         binary_transform_result<I1, std::decay_t<I2>, O>>
     operator()(I1 first1, S1 last1, I2&& first2, O result, F op,
@@ -161,10 +162,10 @@ public:
     template <typename Rng1, typename I2, typename O, typename F,
               typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED constexpr std::enable_if_t<
-        InputRange<Rng1> && InputIterator<std::decay_t<I2>> &&
-                !InputRange<I2> && WeaklyIncrementable<O> &&
+        InputRange<Rng1> && input_iterator<std::decay_t<I2>> &&
+                !InputRange<I2> && weakly_incrementable<O> &&
             copy_constructible<F> &&
-            Writable<O,
+            writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng1>, Proj1>,
                                        projected<std::decay_t<I2>, Proj2>>>,
         binary_transform_result<safe_iterator_t<Rng1>, std::decay_t<I2>, O>>
