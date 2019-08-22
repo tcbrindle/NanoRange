@@ -90,8 +90,8 @@ public:
     template <typename Rng1, typename Rng2, typename O, typename Comp = ranges::less,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng1> &&
-        InputRange<Rng2> &&
+        input_range<Rng1> &&
+        input_range<Rng2> &&
         weakly_incrementable<O> &&
         mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp, Proj1, Proj2>,
         set_union_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>, O>>

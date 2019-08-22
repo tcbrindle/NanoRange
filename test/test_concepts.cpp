@@ -380,21 +380,21 @@ static_assert(!rng::indirect_unary_invocable<void, void>, "");
 
 
 // Range tests
-static_assert(!rng::Range<void>, "");
-static_assert(rng::Range<std::vector<int>>, "");
+static_assert(!rng::range<void>, "");
+static_assert(rng::range<std::vector<int>>, "");
 
 // SizedRange tests
-static_assert(!rng::SizedRange<void>, "");
-static_assert(rng::SizedRange<std::vector<int>>, "");
+static_assert(!rng::sized_range<void>, "");
+static_assert(rng::sized_range<std::vector<int>>, "");
 
 // ContiguousRange tests
-static_assert(!rng::ContiguousRange<void>, "");
-static_assert(!rng::ContiguousRange<void*>, "");
-static_assert(rng::ContiguousRange<std::vector<int>>, "");
+static_assert(!rng::contiguous_range<void>, "");
+static_assert(!rng::contiguous_range<void*>, "");
+static_assert(rng::contiguous_range<std::vector<int>>, "");
 
 // View tests
-static_assert(!rng::View<void>, "");
-static_assert(!rng::View<std::vector<int>&>, "");
+static_assert(!rng::view<void>, "");
+static_assert(!rng::view<std::vector<int>&>, "");
 
 // common_iterator
 using I = rng::common_iterator<int*, rng::unreachable_sentinel_t>;

@@ -191,14 +191,14 @@ private:
 
     template <typename R>
     static constexpr auto impl(R&& r)
-        -> std::enable_if_t<SizedRange<R>, iter_difference_t<iterator_t<R>>>
+        -> std::enable_if_t<sized_range<R>, iter_difference_t<iterator_t<R>>>
     {
         return static_cast<iter_difference_t<iterator_t<R>>>(ranges::size(r));
     }
 
     template <typename R>
     static constexpr auto impl(R&& r)
-        -> std::enable_if_t<!SizedRange<R>, iter_difference_t<iterator_t<R>>>
+        -> std::enable_if_t<!sized_range<R>, iter_difference_t<iterator_t<R>>>
     {
         return fn::impl(ranges::begin(r), ranges::end(r));
     }
@@ -213,7 +213,7 @@ public:
 
     template <typename R>
     constexpr auto operator()(R&& r) const
-        -> std::enable_if_t<Range<R>, iter_difference_t<iterator_t<R>>>
+        -> std::enable_if_t<range<R>, iter_difference_t<iterator_t<R>>>
     {
         return fn::impl(std::forward<R>(r));
     }

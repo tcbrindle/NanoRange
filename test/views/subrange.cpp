@@ -8,16 +8,16 @@ TEST_CASE("views.subrange") {
 	{
 		using I = nano::subrange<int*, int*>;
 		using CI = nano::subrange<const int*, const int*>;
-		static_assert(models::View<I>, "");
-		static_assert(models::SizedRange<I>, "");
-		static_assert(models::ContiguousRange<I>, "");
-		static_assert(models::RandomAccessRange<I>, "");
-		static_assert(models::CommonRange<I>, "");
-		static_assert(models::View<CI>, "");
-		static_assert(models::SizedRange<CI>, "");
-		static_assert(models::ContiguousRange<CI>, "");
-		static_assert(models::RandomAccessRange<CI>, "");
-		static_assert(models::CommonRange<CI>, "");
+		static_assert(models::view<I>, "");
+		static_assert(models::sized_range<I>, "");
+		static_assert(models::contiguous_range<I>, "");
+		static_assert(models::random_access_range<I>, "");
+		static_assert(models::common_range<I>, "");
+		static_assert(models::view<CI>, "");
+		static_assert(models::sized_range<CI>, "");
+		static_assert(models::contiguous_range<CI>, "");
+		static_assert(models::random_access_range<CI>, "");
+		static_assert(models::common_range<CI>, "");
 	}
 
 	{
@@ -25,11 +25,11 @@ TEST_CASE("views.subrange") {
 		static constexpr std::size_t n = size(some_ints);
 		auto r = subrange(some_ints + 0, some_ints + n);
 		using R = decltype(r);
-		static_assert(models::View<R>, "");
-		static_assert(models::SizedRange<R>, "");
-		static_assert(models::ContiguousRange<R>, "");
-		static_assert(models::RandomAccessRange<R>, "");
-		static_assert(models::CommonRange<R>, "");
+		static_assert(models::view<R>, "");
+		static_assert(models::sized_range<R>, "");
+		static_assert(models::contiguous_range<R>, "");
+		static_assert(models::random_access_range<R>, "");
+		static_assert(models::common_range<R>, "");
 
 		CHECK(begin(r) == some_ints + 0);
 		CHECK(end(r) == some_ints + n);

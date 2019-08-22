@@ -30,12 +30,12 @@ struct Advanceable_req {
     // FIXME: Nasty IOTA-DIFF-T stuff
     template <typename I, typename DiffT = iter_difference_t<I>>
     auto requires_(I i, const I j, const DiffT n) -> decltype(
-        same_lv<I>(i += n),
-        same_lv<I>(i -= n),
+        requires_expr<same_as<decltype(i += n), I&>>{},
+        requires_expr<same_as<decltype(i -= n), I&>>{},
         I(j + n),
         I(n + j),
         I(j - n),
-        convertible_to_helper<DiffT>(j - j)
+        requires_expr<convertible_to<decltype(j - j), DiffT>>{}
     );
 };
 

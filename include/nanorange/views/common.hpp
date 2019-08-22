@@ -15,11 +15,12 @@ NANO_BEGIN_NAMESPACE
 template <typename V>
 class common_view : public view_interface<common_view<V>> {
 
-    static_assert(View<V> && !CommonRange<V>, "");
+    static_assert(view<V> && !common_range<V>, "");
 
     template <typename VV>
     using random_and_sized_t =
-            std::integral_constant<bool, RandomAccessRange<VV> && SizedRange<VV>>;
+            std::integral_constant<bool,
+                               random_access_range<VV> && sized_range<VV>>;
 
 
     V base_ = V();
@@ -59,10 +60,9 @@ public:
     {}
 
     template <typename R,
-        std::enable_if_t<detail::NotSameAs<R, common_view>, int> = 0,
-        std::enable_if_t<
-                ViewableRange<R> &&
-                !CommonRange<R> &&
+        std::enable_if_t<detail::not_same_as<R, common_view>, int> = 0,
+        std::enable_if_t<viewable_range<R> &&
+                !common_range<R> &&
                 constructible_from<V, all_view<R>>, int> = 0>
     constexpr explicit common_view(R&& r)
         : base_(views::all(std::forward<R>(r)))
@@ -70,10 +70,10 @@ public:
 
     constexpr V base() const { return base_; }
 
-    template <typename VV = V, std::enable_if_t<SizedRange<VV>, int> = 0>
+    template <typename VV = V, std::enable_if_t<sized_range<VV>, int> = 0>
     constexpr auto size() { return ranges::size(base_); }
 
-    template <typename VV = V, std::enable_if_t<SizedRange<const VV>, int> = 0>
+    template <typename VV = V, std::enable_if_t<sized_range<const VV>, int> = 0>
     constexpr auto size() const { return ranges::size(base_); }
 
     constexpr auto begin()
@@ -81,7 +81,7 @@ public:
         return do_begin<V>(base_, random_and_sized_t<V>{});
     }
 
-    template <typename VV = V, std::enable_if_t<Range<const VV>, int> = 0>
+    template <typename VV = V, std::enable_if_t<range<const VV>, int> = 0>
     constexpr auto begin() const
     {
         return do_begin<const V>(base_, random_and_sized_t<const V>{});
@@ -92,7 +92,7 @@ public:
         return do_end<V>(base_, random_and_sized_t<V>{});
     }
 
-    template <typename VV = V, std::enable_if_t<Range<const VV>, int> = 0>
+    template <typename VV = V, std::enable_if_t<range<const VV>, int> = 0>
     constexpr auto end() const
     {
         return do_end<const V>(base_, random_and_sized_t<const V>{});
@@ -110,8 +110,7 @@ private:
     template <typename T>
     static constexpr auto impl(T&& t, nano::detail::priority_tag<1>)
         noexcept(noexcept(views::all(std::forward<T>(t))))
-        -> std::enable_if_t<
-            CommonRange<T>,
+        -> std::enable_if_t<common_range<T>,
             decltype(views::all(std::forward<T>(t)))>
     {
         return views::all(std::forward<T>(t));
@@ -127,7 +126,8 @@ private:
 public:
     template <typename T>
     constexpr auto operator()(T&& t) const
-        -> std::enable_if_t<ViewableRange<T>,
+        -> std::enable_if_t<
+        viewable_range<T>,
         decltype(common_view_fn::impl(std::forward<T>(t),
                                     nano::detail::priority_tag<1>{}))>
     {

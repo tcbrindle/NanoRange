@@ -29,9 +29,9 @@ struct reverse_view_cache<false, I> {
 template <typename V>
 struct reverse_view
     : view_interface<reverse_view<V>>,
-      private detail::reverse_view_cache<CommonRange<V>, iterator_t<V>> {
+      private detail::reverse_view_cache<common_range<V>, iterator_t<V>> {
 
-    static_assert(View<V> && BidirectionalRange<V>, "");
+    static_assert(view<V> && bidirectional_range<V>, "");
 
     reverse_view() = default;
 
@@ -41,10 +41,8 @@ struct reverse_view
 
     template <typename R,
               /* FIXME: This is not to spec, but we get in horrible recursive trouble if it's omitted */
-              std::enable_if_t<detail::NotSameAs<R, reverse_view>, int> = 0,
-              std::enable_if_t<
-                  ViewableRange<R> &&
-                  BidirectionalRange<R> &&
+              std::enable_if_t<detail::not_same_as<R, reverse_view>, int> = 0,
+              std::enable_if_t<viewable_range<R> && bidirectional_range<R> &&
                   constructible_from<V, all_view<R>>, int> = 0>
     constexpr explicit reverse_view(R&& r)
         : base_(views::all(std::forward<R>(r)))
@@ -58,7 +56,7 @@ struct reverse_view
 
     constexpr reverse_iterator<iterator_t<V>> begin()
     {
-        if constexpr (CommonRange<V>) {
+        if constexpr (common_range<V>) {
             return nano::make_reverse_iterator(ranges::end(base_));
         } else {
             auto& c = this->cached;
@@ -71,7 +69,7 @@ struct reverse_view
 
     template <typename VV = V>
     constexpr auto begin() const
-        -> std::enable_if_t<CommonRange<const VV>,
+        -> std::enable_if_t<common_range<const VV>,
                             reverse_iterator<iterator_t<const VV>>>
     {
         return nano::make_reverse_iterator(ranges::end(base_));
@@ -84,18 +82,18 @@ struct reverse_view
 
     template <typename VV = V>
     constexpr auto end() const
-        -> std::enable_if_t<CommonRange<const VV>, reverse_iterator<iterator_t<const VV>>>
+        -> std::enable_if_t<common_range<const VV>, reverse_iterator<iterator_t<const VV>>>
     {
         return nano::make_reverse_iterator(ranges::begin(base_));
     }
 
-    template <typename VV = V, std::enable_if_t<SizedRange<VV>, int> = 0>
+    template <typename VV = V, std::enable_if_t<sized_range<VV>, int> = 0>
     constexpr auto size()
     {
         return ranges::size(base_);
     }
 
-    template <typename VV = V, std::enable_if_t<SizedRange<const VV>, int> = 0>
+    template <typename VV = V, std::enable_if_t<sized_range<const VV>, int> = 0>
     constexpr auto size() const
     {
         return ranges::size(base_);

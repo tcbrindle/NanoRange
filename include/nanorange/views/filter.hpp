@@ -38,9 +38,9 @@ namespace filter_view_ {
 template <typename V, typename Pred>
 struct filter_view : view_interface<filter_view<V, Pred>> {
 
-    static_assert(InputRange<V>);
+    static_assert(input_range<V>);
     static_assert(indirect_unary_predicate<Pred, iterator_t<V>>);
-    static_assert(View<V>);
+    static_assert(view<V>);
     static_assert(std::is_object_v<Pred>);
 
 private:
@@ -73,7 +73,7 @@ private:
 
         template <typename VV = V>
         constexpr auto operator->() const
-            -> std::enable_if_t<detail::HasArrow<iterator_t<VV>>, iterator_t<V>>
+            -> std::enable_if_t<detail::has_arrow<iterator_t<VV>>, iterator_t<V>>
         {
             return current_;
         }
@@ -88,7 +88,7 @@ private:
 
         constexpr auto operator++(int)
         {
-            if constexpr (ForwardRange<V>) {
+            if constexpr (forward_range<V>) {
                 auto tmp = *this;
                 ++*this;
                 return tmp;
@@ -99,7 +99,7 @@ private:
 
         template <typename VV = V>
         constexpr auto operator--()
-            -> std::enable_if_t<BidirectionalRange<VV>, iterator&>
+            -> std::enable_if_t<bidirectional_range<VV>, iterator&>
         {
             do {
                 --current_;
@@ -109,7 +109,7 @@ private:
 
         template <typename VV = V>
         constexpr auto operator--(int)
-            -> std::enable_if_t<BidirectionalRange<VV>, iterator>
+            -> std::enable_if_t<bidirectional_range<VV>, iterator>
         {
             auto tmp = *this;
             --*this;
@@ -191,7 +191,7 @@ public:
     {}
 
     template <typename R,
-              std::enable_if_t<InputRange<R> && constructible_from<V, all_view<R>>,
+              std::enable_if_t<input_range<R> && constructible_from<V, all_view<R>>,
                                int> = 0>
     constexpr filter_view(R&& r, Pred pred)
         : base_(views::all(std::forward<R>(r))), pred_(std::move(pred))
@@ -212,7 +212,7 @@ public:
 
     constexpr auto end()
     {
-        if constexpr (CommonRange<V>) {
+        if constexpr (common_range<V>) {
             return iterator{*this, ranges::end(base_)};
         } else {
             return sentinel{*this};

@@ -77,7 +77,7 @@ public:
     // Two ranges
     template <typename IRng, typename ORng>
     std::enable_if_t<
-        InputRange<IRng> &&
+        input_range<IRng> &&
         NoThrowForwardRange<ORng> &&
         constructible_from<iter_value_t<iterator_t<ORng>>, iter_reference_t<iterator_t<IRng>>>,
         uninitialized_copy_result<safe_iterator_t<IRng>, safe_iterator_t<ORng>>>
@@ -106,7 +106,7 @@ public:
     template <typename IRng, typename O>
     NANO_DEPRECATED
     std::enable_if_t<
-        InputRange<IRng> &&
+        input_range<IRng> &&
         NoThrowForwardIterator<std::decay_t<O>> &&
         !NoThrowForwardRange<O> &&
         constructible_from<iter_value_t<std::decay_t<O>>, iter_reference_t<iterator_t<IRng>>>,

@@ -70,8 +70,7 @@ public:
     template <typename Rng1, typename Rng2, typename Comp = ranges::less,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng1> &&
-        RandomAccessRange<Rng2> &&
+        input_range<Rng1> && random_access_range<Rng2> &&
             indirectly_copyable<iterator_t<Rng1>, iterator_t<Rng2>> &&
             sortable<iterator_t<Rng2>, Comp, Proj2> &&
             indirect_strict_weak_order<Comp, projected<iterator_t<Rng1>, Proj1>, projected<iterator_t<Rng2>, Proj2>>,

@@ -88,18 +88,18 @@ struct strange_view3 : strange_view2 {};
 
 namespace nano {
 	template <>
-	struct enable_view<strange_view> : std::true_type {};
+	inline constexpr bool enable_view<strange_view> = true;
 	template <>
-	struct enable_view<strange_view3> : std::false_type {};
+	inline constexpr bool enable_view<strange_view3> = false;
 }
 
 namespace models = nano::ranges;
 
 void ridiculously_exhaustive_range_property_test() {
-	CONCEPT_ASSERT(!models::Range<void>);
-	CONCEPT_ASSERT(!models::SizedRange<void>);
+	CONCEPT_ASSERT(!models::range<void>);
+	CONCEPT_ASSERT(!models::sized_range<void>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<void>);
-	CONCEPT_ASSERT(!models::View<void>);
+	CONCEPT_ASSERT(!models::view<void>);
 
 	using I = int*;
 	using CI = const int*;
@@ -109,316 +109,316 @@ void ridiculously_exhaustive_range_property_test() {
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<int[2]>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<int[2]>, I>);
-	CONCEPT_ASSERT(models::Range<int[2]>);
-	CONCEPT_ASSERT(models::SizedRange<int[2]>);
+	CONCEPT_ASSERT(models::range<int[2]>);
+	CONCEPT_ASSERT(models::sized_range<int[2]>);
 	//CONCEPT_ASSERT(models::_ContainerLike<int[2]>);
-	CONCEPT_ASSERT(!models::View<int[2]>);
+	CONCEPT_ASSERT(!models::view<int[2]>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<int(&)[2]>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<int(&)[2]>, I>);
-	CONCEPT_ASSERT(models::Range<int(&)[2]>);
-	CONCEPT_ASSERT(models::SizedRange<int(&)[2]>);
+	CONCEPT_ASSERT(models::range<int(&)[2]>);
+	CONCEPT_ASSERT(models::sized_range<int(&)[2]>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<int(&)[2]>);
-	CONCEPT_ASSERT(!models::View<int(&)[2]>);
+	CONCEPT_ASSERT(!models::view<int(&)[2]>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<const int[2]>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<const int[2]>, CI>);
-	CONCEPT_ASSERT(models::Range<const int[2]>);
-	CONCEPT_ASSERT(models::SizedRange<const int[2]>);
+	CONCEPT_ASSERT(models::range<const int[2]>);
+	CONCEPT_ASSERT(models::sized_range<const int[2]>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const int[2]>);
-	CONCEPT_ASSERT(!models::View<const int[2]>);
+	CONCEPT_ASSERT(!models::view<const int[2]>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<const int(&)[2]>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<const int(&)[2]>, CI>);
-	CONCEPT_ASSERT(models::Range<const int(&)[2]>);
-	CONCEPT_ASSERT(models::SizedRange<const int(&)[2]>);
+	CONCEPT_ASSERT(models::range<const int(&)[2]>);
+	CONCEPT_ASSERT(models::sized_range<const int(&)[2]>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const int(&)[2]>);
-	CONCEPT_ASSERT(!models::View<const int(&)[2]>);
+	CONCEPT_ASSERT(!models::view<const int(&)[2]>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<mutable_unsized_range>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<mutable_unsized_range>, I>);
-	CONCEPT_ASSERT(models::Range<mutable_unsized_range>);
-	CONCEPT_ASSERT(models::SizedRange<mutable_unsized_range>);
+	CONCEPT_ASSERT(models::range<mutable_unsized_range>);
+	CONCEPT_ASSERT(models::sized_range<mutable_unsized_range>);
 	//CONCEPT_ASSERT(models::_ContainerLike<mutable_unsized_range>);
-	CONCEPT_ASSERT(!models::View<mutable_unsized_range>);
+	CONCEPT_ASSERT(!models::view<mutable_unsized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<mutable_unsized_range&>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<mutable_unsized_range&>, I>);
-	CONCEPT_ASSERT(models::Range<mutable_unsized_range&>);
-	CONCEPT_ASSERT(models::SizedRange<mutable_unsized_range&>);
+	CONCEPT_ASSERT(models::range<mutable_unsized_range&>);
+	CONCEPT_ASSERT(models::sized_range<mutable_unsized_range&>);
 	//CONCEPT_ASSERT(models::_ContainerLike<mutable_unsized_range>);
-	CONCEPT_ASSERT(!models::View<mutable_unsized_range>);
+	CONCEPT_ASSERT(!models::view<mutable_unsized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<const mutable_unsized_range>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<const mutable_unsized_range>, CI>);
-	CONCEPT_ASSERT(models::Range<const mutable_unsized_range>);
-	CONCEPT_ASSERT(models::SizedRange<const mutable_unsized_range>);
+	CONCEPT_ASSERT(models::range<const mutable_unsized_range>);
+	CONCEPT_ASSERT(models::sized_range<const mutable_unsized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const mutable_unsized_range>);
-	CONCEPT_ASSERT(!models::View<const mutable_unsized_range>);
+	CONCEPT_ASSERT(!models::view<const mutable_unsized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<const mutable_unsized_range&>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<const mutable_unsized_range&>, CI>);
-	CONCEPT_ASSERT(models::Range<const mutable_unsized_range&>);
-	CONCEPT_ASSERT(models::SizedRange<const mutable_unsized_range&>);
+	CONCEPT_ASSERT(models::range<const mutable_unsized_range&>);
+	CONCEPT_ASSERT(models::sized_range<const mutable_unsized_range&>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const mutable_unsized_range&>);
-	CONCEPT_ASSERT(!models::View<const mutable_unsized_range&>);
+	CONCEPT_ASSERT(!models::view<const mutable_unsized_range&>);
 
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<mutable_only_unsized_range&>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<mutable_only_unsized_range&>, I>);
-	CONCEPT_ASSERT(models::Range<mutable_only_unsized_range>);
+	CONCEPT_ASSERT(models::range<mutable_only_unsized_range>);
 	// FIXME: This no longer asserts with P0970. Is that intentional?
 //	CONCEPT_ASSERT(!models::SizedRange<mutable_only_unsized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<mutable_only_unsized_range>);
-	CONCEPT_ASSERT(models::View<mutable_only_unsized_range>);
+	CONCEPT_ASSERT(models::view<mutable_only_unsized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<mutable_only_unsized_range&>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<mutable_only_unsized_range&>, I>);
-	CONCEPT_ASSERT(models::Range<mutable_only_unsized_range&>);
+	CONCEPT_ASSERT(models::range<mutable_only_unsized_range&>);
 // FIXME: This no longer asserts with P0970. Is that intentional?
 	//	CONCEPT_ASSERT(!models::SizedRange<mutable_only_unsized_range&>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<mutable_only_unsized_range&>);
-	CONCEPT_ASSERT(!models::View<mutable_only_unsized_range&>);
+	CONCEPT_ASSERT(!models::view<mutable_only_unsized_range&>);
 
-	CONCEPT_ASSERT(!models::Range<const mutable_only_unsized_range>);
-	CONCEPT_ASSERT(!models::SizedRange<const mutable_only_unsized_range>);
+	CONCEPT_ASSERT(!models::range<const mutable_only_unsized_range>);
+	CONCEPT_ASSERT(!models::sized_range<const mutable_only_unsized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const mutable_only_unsized_range>);
-	CONCEPT_ASSERT(!models::View<const mutable_only_unsized_range>);
+	CONCEPT_ASSERT(!models::view<const mutable_only_unsized_range>);
 
-	CONCEPT_ASSERT(!models::Range<const mutable_only_unsized_range&>);
-	CONCEPT_ASSERT(!models::SizedRange<const mutable_only_unsized_range&>);
+	CONCEPT_ASSERT(!models::range<const mutable_only_unsized_range&>);
+	CONCEPT_ASSERT(!models::sized_range<const mutable_only_unsized_range&>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const mutable_only_unsized_range&>);
-	CONCEPT_ASSERT(!models::View<const mutable_only_unsized_range&>);
+	CONCEPT_ASSERT(!models::view<const mutable_only_unsized_range&>);
 
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<immutable_unsized_range>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<immutable_unsized_range>, CI>);
-	CONCEPT_ASSERT(models::Range<immutable_unsized_range>);
-	CONCEPT_ASSERT(models::SizedRange<immutable_unsized_range>);
+	CONCEPT_ASSERT(models::range<immutable_unsized_range>);
+	CONCEPT_ASSERT(models::sized_range<immutable_unsized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<immutable_unsized_range>);
-	CONCEPT_ASSERT(models::View<immutable_unsized_range>);
+	CONCEPT_ASSERT(models::view<immutable_unsized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<immutable_unsized_range&>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<immutable_unsized_range&>, CI>);
-	CONCEPT_ASSERT(models::Range<immutable_unsized_range&>);
-	CONCEPT_ASSERT(models::SizedRange<immutable_unsized_range&>);
+	CONCEPT_ASSERT(models::range<immutable_unsized_range&>);
+	CONCEPT_ASSERT(models::sized_range<immutable_unsized_range&>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<immutable_unsized_range&>);
-	CONCEPT_ASSERT(!models::View<immutable_unsized_range&>);
+	CONCEPT_ASSERT(!models::view<immutable_unsized_range&>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<const immutable_unsized_range>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<const immutable_unsized_range>, CI>);
-	CONCEPT_ASSERT(models::Range<const immutable_unsized_range>);
-	CONCEPT_ASSERT(models::SizedRange<const immutable_unsized_range>);
+	CONCEPT_ASSERT(models::range<const immutable_unsized_range>);
+	CONCEPT_ASSERT(models::sized_range<const immutable_unsized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const immutable_unsized_range>);
-	CONCEPT_ASSERT(!models::View<const immutable_unsized_range>);
+	CONCEPT_ASSERT(!models::view<const immutable_unsized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<const immutable_unsized_range&>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<const immutable_unsized_range&>, CI>);
-	CONCEPT_ASSERT(models::Range<const immutable_unsized_range&>);
-	CONCEPT_ASSERT(models::SizedRange<const immutable_unsized_range&>);
+	CONCEPT_ASSERT(models::range<const immutable_unsized_range&>);
+	CONCEPT_ASSERT(models::sized_range<const immutable_unsized_range&>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const immutable_unsized_range&>);
-	CONCEPT_ASSERT(!models::View<const immutable_unsized_range&>);
+	CONCEPT_ASSERT(!models::view<const immutable_unsized_range&>);
 
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<mutable_sized_range>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<mutable_sized_range>, I>);
-	CONCEPT_ASSERT(models::Range<mutable_sized_range>);
-	CONCEPT_ASSERT(models::SizedRange<mutable_sized_range>);
+	CONCEPT_ASSERT(models::range<mutable_sized_range>);
+	CONCEPT_ASSERT(models::sized_range<mutable_sized_range>);
 	//CONCEPT_ASSERT(models::_ContainerLike<mutable_sized_range>);
-	CONCEPT_ASSERT(!models::View<mutable_sized_range>);
+	CONCEPT_ASSERT(!models::view<mutable_sized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<mutable_sized_range&>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<mutable_sized_range&>, I>);
-	CONCEPT_ASSERT(models::Range<mutable_sized_range&>);
-	CONCEPT_ASSERT(models::SizedRange<mutable_sized_range&>);
+	CONCEPT_ASSERT(models::range<mutable_sized_range&>);
+	CONCEPT_ASSERT(models::sized_range<mutable_sized_range&>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<mutable_sized_range&>);
-	CONCEPT_ASSERT(!models::View<mutable_sized_range&>);
+	CONCEPT_ASSERT(!models::view<mutable_sized_range&>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<const mutable_sized_range>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<const mutable_sized_range>, CI>);
-	CONCEPT_ASSERT(models::Range<const mutable_sized_range>);
-	CONCEPT_ASSERT(models::SizedRange<const mutable_sized_range>);
+	CONCEPT_ASSERT(models::range<const mutable_sized_range>);
+	CONCEPT_ASSERT(models::sized_range<const mutable_sized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const mutable_sized_range>);
-	CONCEPT_ASSERT(!models::View<const mutable_sized_range>);
+	CONCEPT_ASSERT(!models::view<const mutable_sized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<const mutable_sized_range&>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<const mutable_sized_range&>, CI>);
-	CONCEPT_ASSERT(models::Range<const mutable_sized_range&>);
-	CONCEPT_ASSERT(models::SizedRange<const mutable_sized_range&>);
+	CONCEPT_ASSERT(models::range<const mutable_sized_range&>);
+	CONCEPT_ASSERT(models::sized_range<const mutable_sized_range&>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const mutable_sized_range&>);
-	CONCEPT_ASSERT(!models::View<const mutable_sized_range&>);
+	CONCEPT_ASSERT(!models::view<const mutable_sized_range&>);
 
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<mutable_only_sized_range>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<mutable_only_sized_range>, I>);
-	CONCEPT_ASSERT(models::Range<mutable_only_sized_range>);
-	CONCEPT_ASSERT(models::SizedRange<mutable_only_sized_range>);
+	CONCEPT_ASSERT(models::range<mutable_only_sized_range>);
+	CONCEPT_ASSERT(models::sized_range<mutable_only_sized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<mutable_only_sized_range>);
-	CONCEPT_ASSERT(models::View<mutable_only_sized_range>);
+	CONCEPT_ASSERT(models::view<mutable_only_sized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<mutable_only_sized_range&>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<mutable_only_sized_range&>, I>);
-	CONCEPT_ASSERT(models::Range<mutable_only_sized_range&>);
-	CONCEPT_ASSERT(models::SizedRange<mutable_only_sized_range&>);
+	CONCEPT_ASSERT(models::range<mutable_only_sized_range&>);
+	CONCEPT_ASSERT(models::sized_range<mutable_only_sized_range&>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<mutable_only_sized_range&>);
-	CONCEPT_ASSERT(!models::View<mutable_only_sized_range&>);
+	CONCEPT_ASSERT(!models::view<mutable_only_sized_range&>);
 
-	CONCEPT_ASSERT(!models::Range<const mutable_only_sized_range>);
-	CONCEPT_ASSERT(!models::SizedRange<const mutable_only_sized_range>);
+	CONCEPT_ASSERT(!models::range<const mutable_only_sized_range>);
+	CONCEPT_ASSERT(!models::sized_range<const mutable_only_sized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const mutable_only_sized_range>);
-	CONCEPT_ASSERT(!models::View<const mutable_only_sized_range>);
+	CONCEPT_ASSERT(!models::view<const mutable_only_sized_range>);
 
-	CONCEPT_ASSERT(!models::Range<const mutable_only_sized_range&>);
-	CONCEPT_ASSERT(!models::SizedRange<const mutable_only_sized_range&>);
+	CONCEPT_ASSERT(!models::range<const mutable_only_sized_range&>);
+	CONCEPT_ASSERT(!models::sized_range<const mutable_only_sized_range&>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const mutable_only_sized_range&>);
-	CONCEPT_ASSERT(!models::View<const mutable_only_sized_range&>);
+	CONCEPT_ASSERT(!models::view<const mutable_only_sized_range&>);
 
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<immutable_sized_range>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<immutable_sized_range>, CI>);
-	CONCEPT_ASSERT(models::Range<immutable_sized_range>);
-	CONCEPT_ASSERT(models::SizedRange<immutable_sized_range>);
+	CONCEPT_ASSERT(models::range<immutable_sized_range>);
+	CONCEPT_ASSERT(models::sized_range<immutable_sized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<immutable_sized_range>);
-	CONCEPT_ASSERT(models::View<immutable_sized_range>);
+	CONCEPT_ASSERT(models::view<immutable_sized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<immutable_sized_range&>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<immutable_sized_range&>, CI>);
-	CONCEPT_ASSERT(models::Range<immutable_sized_range&>);
-	CONCEPT_ASSERT(models::SizedRange<immutable_sized_range&>);
+	CONCEPT_ASSERT(models::range<immutable_sized_range&>);
+	CONCEPT_ASSERT(models::sized_range<immutable_sized_range&>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<immutable_sized_range&>);
-	CONCEPT_ASSERT(!models::View<immutable_sized_range&>);
+	CONCEPT_ASSERT(!models::view<immutable_sized_range&>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<const immutable_sized_range>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<const immutable_sized_range>, CI>);
-	CONCEPT_ASSERT(models::Range<const immutable_sized_range>);
-	CONCEPT_ASSERT(models::SizedRange<const immutable_sized_range>);
+	CONCEPT_ASSERT(models::range<const immutable_sized_range>);
+	CONCEPT_ASSERT(models::sized_range<const immutable_sized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const immutable_sized_range>);
-	CONCEPT_ASSERT(!models::View<const immutable_sized_range>);
+	CONCEPT_ASSERT(!models::view<const immutable_sized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<const immutable_sized_range&>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<const immutable_sized_range&>, CI>);
-	CONCEPT_ASSERT(models::Range<const immutable_sized_range&>);
-	CONCEPT_ASSERT(models::SizedRange<const immutable_sized_range&>);
+	CONCEPT_ASSERT(models::range<const immutable_sized_range&>);
+	CONCEPT_ASSERT(models::sized_range<const immutable_sized_range&>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const immutable_sized_range&>);
-	CONCEPT_ASSERT(!models::View<const immutable_sized_range&>);
+	CONCEPT_ASSERT(!models::view<const immutable_sized_range&>);
 
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<mutable_badsized_range>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<mutable_badsized_range>, I>);
-	CONCEPT_ASSERT(models::Range<mutable_badsized_range>);
-	CONCEPT_ASSERT(!models::SizedRange<mutable_badsized_range>);
+	CONCEPT_ASSERT(models::range<mutable_badsized_range>);
+	CONCEPT_ASSERT(!models::sized_range<mutable_badsized_range>);
 	//CONCEPT_ASSERT(models::_ContainerLike<mutable_badsized_range>);
-	CONCEPT_ASSERT(!models::View<mutable_badsized_range>);
+	CONCEPT_ASSERT(!models::view<mutable_badsized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<mutable_badsized_range&>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<mutable_badsized_range&>, I>);
-	CONCEPT_ASSERT(models::Range<mutable_badsized_range&>);
-	CONCEPT_ASSERT(!models::SizedRange<mutable_badsized_range&>);
+	CONCEPT_ASSERT(models::range<mutable_badsized_range&>);
+	CONCEPT_ASSERT(!models::sized_range<mutable_badsized_range&>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<mutable_badsized_range&>);
-	CONCEPT_ASSERT(!models::View<mutable_badsized_range&>);
+	CONCEPT_ASSERT(!models::view<mutable_badsized_range&>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<const mutable_badsized_range>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<const mutable_badsized_range>, CI>);
-	CONCEPT_ASSERT(models::Range<const mutable_badsized_range>);
-	CONCEPT_ASSERT(!models::SizedRange<const mutable_badsized_range>);
+	CONCEPT_ASSERT(models::range<const mutable_badsized_range>);
+	CONCEPT_ASSERT(!models::sized_range<const mutable_badsized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const mutable_badsized_range>);
-	CONCEPT_ASSERT(!models::View<const mutable_badsized_range>);
+	CONCEPT_ASSERT(!models::view<const mutable_badsized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<const mutable_badsized_range&>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<const mutable_badsized_range&>, CI>);
-	CONCEPT_ASSERT(models::Range<const mutable_badsized_range&>);
-	CONCEPT_ASSERT(!models::SizedRange<const mutable_badsized_range&>);
+	CONCEPT_ASSERT(models::range<const mutable_badsized_range&>);
+	CONCEPT_ASSERT(!models::sized_range<const mutable_badsized_range&>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const mutable_badsized_range&>);
-	CONCEPT_ASSERT(!models::View<const mutable_badsized_range&>);
+	CONCEPT_ASSERT(!models::view<const mutable_badsized_range&>);
 
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<mutable_only_badsized_range>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<mutable_only_badsized_range>, I>);
-	CONCEPT_ASSERT(models::Range<mutable_only_badsized_range>);
-	CONCEPT_ASSERT(!models::SizedRange<mutable_only_badsized_range>);
+	CONCEPT_ASSERT(models::range<mutable_only_badsized_range>);
+	CONCEPT_ASSERT(!models::sized_range<mutable_only_badsized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<mutable_only_badsized_range>);
-	CONCEPT_ASSERT(models::View<mutable_only_badsized_range>);
+	CONCEPT_ASSERT(models::view<mutable_only_badsized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<mutable_only_badsized_range&>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<mutable_only_badsized_range&>, I>);
-	CONCEPT_ASSERT(models::Range<mutable_only_badsized_range&>);
-	CONCEPT_ASSERT(!models::SizedRange<mutable_only_badsized_range&>);
+	CONCEPT_ASSERT(models::range<mutable_only_badsized_range&>);
+	CONCEPT_ASSERT(!models::sized_range<mutable_only_badsized_range&>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<mutable_only_badsized_range&>);
-	CONCEPT_ASSERT(!models::View<mutable_only_badsized_range&>);
+	CONCEPT_ASSERT(!models::view<mutable_only_badsized_range&>);
 
-	CONCEPT_ASSERT(!models::Range<const mutable_only_badsized_range>);
-	CONCEPT_ASSERT(!models::SizedRange<const mutable_only_badsized_range>);
+	CONCEPT_ASSERT(!models::range<const mutable_only_badsized_range>);
+	CONCEPT_ASSERT(!models::sized_range<const mutable_only_badsized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const mutable_only_badsized_range>);
-	CONCEPT_ASSERT(!models::View<const mutable_only_badsized_range>);
+	CONCEPT_ASSERT(!models::view<const mutable_only_badsized_range>);
 
-	CONCEPT_ASSERT(!models::Range<const mutable_only_badsized_range&>);
-	CONCEPT_ASSERT(!models::SizedRange<const mutable_only_badsized_range&>);
+	CONCEPT_ASSERT(!models::range<const mutable_only_badsized_range&>);
+	CONCEPT_ASSERT(!models::sized_range<const mutable_only_badsized_range&>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const mutable_only_badsized_range&>);
-	CONCEPT_ASSERT(!models::View<const mutable_only_badsized_range&>);
+	CONCEPT_ASSERT(!models::view<const mutable_only_badsized_range&>);
 
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<immutable_badsized_range>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<immutable_badsized_range>, CI>);
-	CONCEPT_ASSERT(models::Range<immutable_badsized_range>);
-	CONCEPT_ASSERT(!models::SizedRange<immutable_badsized_range>);
+	CONCEPT_ASSERT(models::range<immutable_badsized_range>);
+	CONCEPT_ASSERT(!models::sized_range<immutable_badsized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<immutable_badsized_range>);
-	CONCEPT_ASSERT(models::View<immutable_badsized_range>);
+	CONCEPT_ASSERT(models::view<immutable_badsized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<immutable_badsized_range&>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<immutable_badsized_range&>, CI>);
-	CONCEPT_ASSERT(models::Range<immutable_badsized_range&>);
-	CONCEPT_ASSERT(!models::SizedRange<immutable_badsized_range&>);
+	CONCEPT_ASSERT(models::range<immutable_badsized_range&>);
+	CONCEPT_ASSERT(!models::sized_range<immutable_badsized_range&>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<immutable_badsized_range&>);
-	CONCEPT_ASSERT(!models::View<immutable_badsized_range&>);
+	CONCEPT_ASSERT(!models::view<immutable_badsized_range&>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<const immutable_badsized_range>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<const immutable_badsized_range>, CI>);
-	CONCEPT_ASSERT(models::Range<const immutable_badsized_range>);
-	CONCEPT_ASSERT(!models::SizedRange<const immutable_badsized_range>);
+	CONCEPT_ASSERT(models::range<const immutable_badsized_range>);
+	CONCEPT_ASSERT(!models::sized_range<const immutable_badsized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const immutable_badsized_range>);
-	CONCEPT_ASSERT(!models::View<const immutable_badsized_range>);
+	CONCEPT_ASSERT(!models::view<const immutable_badsized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<const immutable_badsized_range&>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<const immutable_badsized_range&>, CI>);
-	CONCEPT_ASSERT(models::Range<const immutable_badsized_range&>);
-	CONCEPT_ASSERT(!models::SizedRange<const immutable_badsized_range&>);
+	CONCEPT_ASSERT(models::range<const immutable_badsized_range&>);
+	CONCEPT_ASSERT(!models::sized_range<const immutable_badsized_range&>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<const immutable_badsized_range&>);
-	CONCEPT_ASSERT(!models::View<const immutable_badsized_range&>);
+	CONCEPT_ASSERT(!models::view<const immutable_badsized_range&>);
 
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<std::vector<int>>, std::vector<int>::iterator>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<std::vector<int>>, std::vector<int>::iterator>);
-	CONCEPT_ASSERT(models::Range<std::vector<int>>);
-	CONCEPT_ASSERT(models::SizedRange<std::vector<int>>);
+	CONCEPT_ASSERT(models::range<std::vector<int>>);
+	CONCEPT_ASSERT(models::sized_range<std::vector<int>>);
 	//CONCEPT_ASSERT(models::_ContainerLike<std::vector<int>>);
-	CONCEPT_ASSERT(!models::View<std::vector<int>>);
+	CONCEPT_ASSERT(!models::view<std::vector<int>>);
 
 
-	CONCEPT_ASSERT(models::Range<strange_view>);
-	CONCEPT_ASSERT(models::Range<strange_view&>);
-	CONCEPT_ASSERT(models::View<strange_view>);
-	CONCEPT_ASSERT(!models::View<strange_view&>);
-	CONCEPT_ASSERT(!models::View<const strange_view>);
+	CONCEPT_ASSERT(models::range<strange_view>);
+	CONCEPT_ASSERT(models::range<strange_view&>);
+	CONCEPT_ASSERT(models::view<strange_view>);
+	CONCEPT_ASSERT(!models::view<strange_view&>);
+	CONCEPT_ASSERT(!models::view<const strange_view>);
 
-	CONCEPT_ASSERT(models::Range<strange_view2>);
-	CONCEPT_ASSERT(models::Range<strange_view2&>);
-	CONCEPT_ASSERT(models::View<strange_view2>);
-	CONCEPT_ASSERT(!models::View<strange_view2&>);
-	CONCEPT_ASSERT(!models::View<const strange_view2>);
+	CONCEPT_ASSERT(models::range<strange_view2>);
+	CONCEPT_ASSERT(models::range<strange_view2&>);
+	CONCEPT_ASSERT(models::view<strange_view2>);
+	CONCEPT_ASSERT(!models::view<strange_view2&>);
+	CONCEPT_ASSERT(!models::view<const strange_view2>);
 
-	CONCEPT_ASSERT(models::Range<strange_view3>);
-	CONCEPT_ASSERT(models::Range<strange_view3&>);
-	CONCEPT_ASSERT(!models::View<strange_view3>);
-	CONCEPT_ASSERT(!models::View<strange_view3&>);
-	CONCEPT_ASSERT(!models::View<const strange_view3>);
+	CONCEPT_ASSERT(models::range<strange_view3>);
+	CONCEPT_ASSERT(models::range<strange_view3&>);
+	CONCEPT_ASSERT(!models::view<strange_view3>);
+	CONCEPT_ASSERT(!models::view<strange_view3&>);
+	CONCEPT_ASSERT(!models::view<const strange_view3>);
 
-	CONCEPT_ASSERT(models::Range<mutable_only_unsized_range&>);
-	CONCEPT_ASSERT(models::Range<mutable_only_unsized_range>);
-	CONCEPT_ASSERT(models::View<mutable_only_unsized_range>);
-	CONCEPT_ASSERT(!models::View<mutable_only_unsized_range&>);
-	CONCEPT_ASSERT(!models::View<mutable_only_unsized_range&&>);
-	CONCEPT_ASSERT(!models::Range<const mutable_only_unsized_range&>);
-	CONCEPT_ASSERT(!models::View<const mutable_only_unsized_range&>);
+	CONCEPT_ASSERT(models::range<mutable_only_unsized_range&>);
+	CONCEPT_ASSERT(models::range<mutable_only_unsized_range>);
+	CONCEPT_ASSERT(models::view<mutable_only_unsized_range>);
+	CONCEPT_ASSERT(!models::view<mutable_only_unsized_range&>);
+	CONCEPT_ASSERT(!models::view<mutable_only_unsized_range&&>);
+	CONCEPT_ASSERT(!models::range<const mutable_only_unsized_range&>);
+	CONCEPT_ASSERT(!models::view<const mutable_only_unsized_range&>);
 }
 
 template <class I, class S,
@@ -436,7 +436,7 @@ I complicated_algorithm(I i, S s) {
 	return i;
 }
 
-template <class R, typename = std::enable_if_t<models::Range<R>>>
+template <class R, typename = std::enable_if_t<models::range<R>>>
 ns::iterator_t<R> complicated_algorithm(R&& r) {
 	return complicated_algorithm(ns::begin(r), ns::end(r));
 }
@@ -457,15 +457,15 @@ struct array_view {
 
 void complicated_algorithm_test() {
 	static int some_ints[] = {2, 3, 5, 7};
-	CONCEPT_ASSERT(models::Range<decltype(some_ints)>);
-	CONCEPT_ASSERT(models::SizedRange<decltype(some_ints)>);
+	CONCEPT_ASSERT(models::range<decltype(some_ints)>);
+	CONCEPT_ASSERT(models::sized_range<decltype(some_ints)>);
 	//CONCEPT_ASSERT(models::_ContainerLike<decltype(some_ints)>);
-	CONCEPT_ASSERT(!models::View<decltype(some_ints)>);
+	CONCEPT_ASSERT(!models::view<decltype(some_ints)>);
 	CHECK(complicated_algorithm(some_ints) == ns::end(some_ints));
-	CONCEPT_ASSERT(models::Range<array_view<int>>);
-	CONCEPT_ASSERT(models::SizedRange<array_view<int>>);
+	CONCEPT_ASSERT(models::range<array_view<int>>);
+	CONCEPT_ASSERT(models::sized_range<array_view<int>>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<array_view<int>>);
-	CONCEPT_ASSERT(models::View<array_view<int>>);
+	CONCEPT_ASSERT(models::view<array_view<int>>);
 	CHECK(complicated_algorithm(array_view<int>{some_ints}) == ns::end(some_ints));
 }
 
@@ -476,18 +476,18 @@ TEST_CASE("concepts.range")
 
 	{
 		using T = int[2];
-		CONCEPT_ASSERT(models::CommonRange<T>);
-		CONCEPT_ASSERT(models::OutputRange<T, int>);
-		CONCEPT_ASSERT(models::OutputRange<T, const int&>);
-		CONCEPT_ASSERT(models::InputRange<T>);
-		CONCEPT_ASSERT(models::ForwardRange<T>);
-		CONCEPT_ASSERT(models::BidirectionalRange<T>);
-		CONCEPT_ASSERT(models::RandomAccessRange<T>);
+		CONCEPT_ASSERT(models::common_range<T>);
+		CONCEPT_ASSERT(models::output_range<T, int>);
+		CONCEPT_ASSERT(models::output_range<T, const int&>);
+		CONCEPT_ASSERT(models::input_range<T>);
+		CONCEPT_ASSERT(models::forward_range<T>);
+		CONCEPT_ASSERT(models::bidirectional_range<T>);
+		CONCEPT_ASSERT(models::random_access_range<T>);
 	}
 
-	CONCEPT_ASSERT(!models::View<std::vector<int>>);
-	CONCEPT_ASSERT(!models::View<std::set<int>>);
-	CONCEPT_ASSERT(!models::View<std::multiset<int>>);
-	CONCEPT_ASSERT(!models::View<std::unordered_set<int>>);
-	CONCEPT_ASSERT(!models::View<std::unordered_multiset<int>>);
+	CONCEPT_ASSERT(!models::view<std::vector<int>>);
+	CONCEPT_ASSERT(!models::view<std::set<int>>);
+	CONCEPT_ASSERT(!models::view<std::multiset<int>>);
+	CONCEPT_ASSERT(!models::view<std::unordered_set<int>>);
+	CONCEPT_ASSERT(!models::view<std::unordered_multiset<int>>);
 }

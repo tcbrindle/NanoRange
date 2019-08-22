@@ -48,7 +48,7 @@ public:
 
     template <typename Rng, typename Proj = identity, typename Fun>
     constexpr std::enable_if_t<
-        InputRange<Rng> &&
+        input_range<Rng> &&
             indirect_unary_invocable<Fun, projected<iterator_t<Rng>, Proj>>,
         for_each_result<safe_iterator_t<Rng>, Fun>>
     operator()(Rng&& rng, Fun fun, Proj proj = Proj{}) const

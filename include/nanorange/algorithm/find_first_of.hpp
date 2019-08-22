@@ -54,7 +54,7 @@ public:
     template <typename Rng1, typename Rng2, typename Proj1 = identity,
               typename Proj2 = identity, typename Pred = ranges::equal_to>
     constexpr std::enable_if_t<
-        InputRange<Rng1> && ForwardRange<Rng2> &&
+        input_range<Rng1> && forward_range<Rng2> &&
             indirect_relation<Pred, projected<iterator_t<Rng1>, Proj1>,
                              projected<iterator_t<Rng2>, Proj2>>,
         safe_iterator_t<Rng1>>

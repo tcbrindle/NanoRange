@@ -41,8 +41,8 @@ struct moveonly {
 
 }
 
-static_assert(InputRange<ranges::basic_istream_view<int, char>>, "");
-static_assert(InputRange<ranges::basic_istream_view<moveonly, char>>, "");
+static_assert(input_range<ranges::basic_istream_view<int, char>>, "");
+static_assert(input_range<ranges::basic_istream_view<moveonly, char>>, "");
 
 TEST_CASE("views.istream")
 {

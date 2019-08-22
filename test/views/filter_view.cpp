@@ -46,12 +46,12 @@ TEST_CASE("views.filter")
 	//auto rng = views::filter(rgi, is_odd());
 	static_assert(same_as<int &, decltype(*begin(rgi))>);
 	static_assert(same_as<int &, decltype(*begin(rng))>);
-	static_assert(View<decltype(rng)>);
-	static_assert(InputRange<decltype(rng)>);
-	static_assert(CommonRange<decltype(rng)>);
-	static_assert(!SizedRange<decltype(rng)>);
-	static_assert(BidirectionalRange<decltype(rng)>);
-	static_assert(!RandomAccessRange<decltype(rng)>);
+	static_assert(view<decltype(rng)>);
+	static_assert(input_range<decltype(rng)>);
+	static_assert(common_range<decltype(rng)>);
+	static_assert(!sized_range<decltype(rng)>);
+	static_assert(bidirectional_range<decltype(rng)>);
+	static_assert(!random_access_range<decltype(rng)>);
 	::check_equal(rng, {1,3,5,7,9});
 
 	//CHECK_EQUAL(rng | views::reverse, {9,7,5,3,1});
@@ -85,9 +85,9 @@ TEST_CASE("views.filter")
 	b = b2;
 	auto mutable_rng = views::filter(rgi, [flag](int) mutable { return flag = !flag;});
 	::check_equal(mutable_rng, {1,3,5,7,9});
-	static_assert(Range<decltype(mutable_rng)>);
+	static_assert(range<decltype(mutable_rng)>);
 	static_assert(copyable<decltype(mutable_rng)>);
-	static_assert(!View<decltype(mutable_rng) const>);
+	static_assert(!view<decltype(mutable_rng) const>);
 
 	// {
 	//	 const std::array<int, 3> a{{0, 1, 2}};

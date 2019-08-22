@@ -25,8 +25,7 @@ struct sort_fn {
     }
 
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
-    constexpr std::enable_if_t<
-        RandomAccessRange<Rng> &&
+    constexpr std::enable_if_t<random_access_range<Rng> &&
                                    sortable<iterator_t<Rng>, Comp, Proj>,
     safe_iterator_t<Rng>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const

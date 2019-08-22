@@ -24,21 +24,21 @@ TEST_CASE("views.common") {
 		auto x = rg | views::common;
 		//auto x = views::common(rg);
 		::check_equal(x, {0,1,2,3,4,5,6,7,8,9});
-		static_assert(View<decltype(x)>, "");
-		static_assert(SizedRange<decltype(x)>, "");
-		static_assert(CommonRange<decltype(x)>, "");
-		static_assert(RandomAccessRange<decltype(x)>, "");
+		static_assert(view<decltype(x)>, "");
+		static_assert(sized_range<decltype(x)>, "");
+		static_assert(common_range<decltype(x)>, "");
+		static_assert(random_access_range<decltype(x)>, "");
 	}
 	{
 		int rg[] = {0,1,2,3,4,5,6,7,8,9};
 		auto x = views::counted(::bidirectional_iterator(rg), 5) | views::common;
 		//auto x = views::common(views::counted(bidirectional_iterator<int*>(rg), 5));
 		::check_equal(x, {0,1,2,3,4});
-		static_assert(View<decltype(x)>, "");
-		static_assert(SizedRange<decltype(x)>, "");
-		static_assert(CommonRange<decltype(x)>, "");
-		static_assert(ForwardRange<decltype(x)>, "");
-		static_assert(!BidirectionalRange<decltype(x)>, "");
+		static_assert(view<decltype(x)>, "");
+		static_assert(sized_range<decltype(x)>, "");
+		static_assert(common_range<decltype(x)>, "");
+		static_assert(forward_range<decltype(x)>, "");
+		static_assert(!bidirectional_range<decltype(x)>, "");
 		static_assert(same_as<decltype(x), decltype(views::common(x))>, "");
 	}
 }

@@ -29,7 +29,7 @@ struct none_of_fn {
 
     template <typename Rng, typename Proj = identity, typename Pred>
     constexpr std::enable_if_t<
-        InputRange<Rng> &&
+        input_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
         bool>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const

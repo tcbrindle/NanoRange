@@ -19,7 +19,7 @@ TEST_CASE("views.iota")
     {
         constexpr auto rng = nano::views::iota(0, 10);
 
-        static_assert(nano::RandomAccessRange<decltype(rng)>);
+        static_assert(nano::random_access_range<decltype(rng)>);
 
         static_assert(nano::distance(rng) == 10);
         static_assert(nano::size(rng) == 10);

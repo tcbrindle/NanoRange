@@ -49,7 +49,7 @@ public:
 
     template <typename Rng, typename Pred, typename Proj = identity>
     constexpr std::enable_if_t<
-        ForwardRange<Rng> && permutable<iterator_t<Rng>> &&
+        forward_range<Rng> && permutable<iterator_t<Rng>> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const

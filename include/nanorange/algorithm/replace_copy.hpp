@@ -56,7 +56,7 @@ public:
     template <typename Rng, typename O, typename T1, typename T2,
               typename Proj = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng> && output_iterator<O, const T2&> &&
+        input_range<Rng> && output_iterator<O, const T2&> &&
             indirectly_copyable<iterator_t<Rng>, O> &&
             indirect_relation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T1*>,

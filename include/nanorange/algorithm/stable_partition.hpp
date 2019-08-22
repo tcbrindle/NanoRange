@@ -157,7 +157,7 @@ public:
 
     template <typename Rng, typename Pred, typename Proj = identity>
     std::enable_if_t<
-        BidirectionalRange<Rng> &&
+        bidirectional_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>> &&
             permutable<iterator_t<Rng>>,
     safe_iterator_t<Rng>>

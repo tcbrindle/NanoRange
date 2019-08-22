@@ -48,7 +48,7 @@ public:
 
     template <typename Rng, typename Gen>
     constexpr std::enable_if_t<
-            RandomAccessRange<Rng> &&
+        random_access_range<Rng> &&
             UniformRandomBitGenerator<std::remove_reference_t<Gen>> &&
             convertible_to<invoke_result_t<Gen&>, iter_difference_t<iterator_t<Rng>>>,
     safe_iterator_t<Rng>>

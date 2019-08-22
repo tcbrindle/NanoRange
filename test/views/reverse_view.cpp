@@ -30,24 +30,24 @@ TEST_CASE("views.reverse") {
 		// check below fails (in fact, even InputRange fails).
 		// It all works fine on GCC7 and 8, Clang and MSVC
 		// I have no idea what's going on.
-		static_assert(ForwardRange<decltype(x)>);
-		static_assert(View<decltype(x)>, "");
-		static_assert(Range<const decltype(x)>, "");
-		static_assert(SizedRange<decltype(x)>, "");
-		static_assert(CommonRange<decltype(x)>, "");
-		static_assert(RandomAccessRange<decltype(x)>, "");
+		static_assert(forward_range<decltype(x)>);
+		static_assert(view<decltype(x)>, "");
+		static_assert(range<const decltype(x)>, "");
+		static_assert(sized_range<decltype(x)>, "");
+		static_assert(common_range<decltype(x)>, "");
+		static_assert(random_access_range<decltype(x)>, "");
 	}
 	{
 		int rg[] = {0,1,2,3,4,5,6,7,8,9};
 		auto x = views::counted(::bidirectional_iterator(rg), 5) | views::reverse;
 		//auto x = views::reverse(views::counted(bidirectional_iterator<int*>(rg), 5));
 		::check_equal(x, {4,3,2,1,0});
-		static_assert(View<decltype(x)>, "");
-		static_assert(!Range<const decltype(x)>, "");
-		static_assert(SizedRange<decltype(x)>, "");
-		static_assert(CommonRange<decltype(x)>, "");
-		static_assert(BidirectionalRange<decltype(x)>, "");
-		static_assert(!RandomAccessRange<decltype(x)>, "");
+		static_assert(view<decltype(x)>, "");
+		static_assert(!range<const decltype(x)>, "");
+		static_assert(sized_range<decltype(x)>, "");
+		static_assert(common_range<decltype(x)>, "");
+		static_assert(bidirectional_range<decltype(x)>, "");
+		static_assert(!random_access_range<decltype(x)>, "");
 	}
     {
         auto ints = views::iota(0, 5)

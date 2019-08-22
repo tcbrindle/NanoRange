@@ -76,7 +76,7 @@ public:
 
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
-        BidirectionalRange<Rng> && sortable<iterator_t<Rng>, Comp, Proj>, bool>
+        bidirectional_range<Rng> && sortable<iterator_t<Rng>, Comp, Proj>, bool>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return next_permutation_fn::impl(nano::begin(rng), nano::end(rng),

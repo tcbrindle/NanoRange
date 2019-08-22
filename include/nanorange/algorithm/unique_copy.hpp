@@ -73,7 +73,7 @@ public:
     constexpr auto
     operator()(Rng&& rng, O result, Comp comp = Comp{}, Proj proj = Proj{}) const
     -> std::enable_if_t<
-            InputRange<Rng> &&
+            input_range<Rng> &&
             weakly_incrementable<O> &&
                 indirect_relation<Comp, projected<iterator_t<Rng>, Proj>> &&
                 indirectly_copyable<iterator_t<Rng>, O> &&

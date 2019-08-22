@@ -152,7 +152,7 @@ public:
 
     template <typename Rng>
     constexpr std::enable_if_t<
-        ForwardRange<Rng> && permutable<iterator_t<Rng>>,
+        forward_range<Rng> && permutable<iterator_t<Rng>>,
         safe_subrange_t<Rng>>
     operator()(Rng&& rng, iterator_t<Rng> middle) const
     {

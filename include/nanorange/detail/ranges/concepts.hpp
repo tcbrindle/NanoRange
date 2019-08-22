@@ -22,281 +22,286 @@ template <typename, typename, typename> class set;
 template <typename, typename, typename> class multiset;
 template <typename, typename, typename, typename> class unordered_set;
 template <typename, typename, typename, typename> class unordered_multiset;
+template <typename, typename> class match_results;
 NANO_END_NAMESPACE_STD
 #else
+#include <regex>
 #include <set>
 #include <unordered_set>
 #endif
 
 NANO_BEGIN_NAMESPACE
 
-template <typename T>
-using iterator_t = decltype(ranges::begin(std::declval<T&>()));
-
-template <typename T>
-using sentinel_t = decltype(ranges::end(std::declval<T&>()));
-
-template <typename T>
-struct enable_view {
-};
-
-struct view_base {
-};
-
-// [range.range]
-
 namespace detail {
 
-struct Range_req {
+struct range_impl_concept {
     template <typename T>
-    auto requires_(T&& t)
-        -> decltype(valid_expr(ranges::begin(std::forward<T>(t)),
-                               ranges::end(std::forward<T>(t))));
-};
-
-template <typename T>
-NANO_CONCEPT RangeImpl = requires_<Range_req, T>;
-
-template <typename>
-auto Range_fn(long) -> std::false_type;
-
-template <typename T>
-auto Range_fn(int) -> std::enable_if_t<RangeImpl<T&>, std::true_type>;
-
-} // namespace detail
-
-template <typename T>
-NANO_CONCEPT Range = decltype(detail::Range_fn<T>(0))::value;
-
-namespace detail {
-
-template <typename T>
-NANO_CONCEPT ForwardingRange = Range<T> && RangeImpl<T>;
-
-}
-
-// [range.sized]
-
-namespace detail {
-
-template <typename T, typename Deduced>
-auto convertible_to_helper(Deduced)
-    -> std::enable_if_t<convertible_to<Deduced, T>, int>;
-
-struct SizedRange_req {
-    template <typename T>
-    auto requires_(T& t) -> decltype(
-        valid_expr(convertible_to_helper<iter_difference_t<iterator_t<T>>>(
-            ranges::size(t))));
-};
-
-} // namespace detail
-
-template <typename T>
-NANO_CONCEPT SizedRange =
-    Range<T> &&
-    !disable_sized_range<std::remove_cv_t<std::remove_reference_t<T>>> &&
-    detail::requires_<detail::SizedRange_req, T>;
-
-// [range.views]
-
-namespace detail {
-
-template <typename, typename = void>
-struct view_predicate : std::true_type {};
-
-template <typename T>
-constexpr bool view_predicate_v = view_predicate<T>::value;
-
-template <typename T>
-using enable_view_t = typename enable_view<T>::type;
-
-template <typename T>
-constexpr bool has_enable_view_v = exists_v<enable_view_t, T>;
-
-template <typename T>
-struct view_predicate<T, std::enable_if_t<has_enable_view_v<T>>> {
-    static constexpr bool value = enable_view<T>::type::value;
-};
-
-template <typename T>
-struct view_predicate<
-    T, std::enable_if_t<!has_enable_view_v<T> && derived_from<T, view_base>>>
-    : std::true_type {};
-
-template <typename T>
-struct view_predicate<std::initializer_list<T>> : std::false_type {};
-
-template <typename K, typename C, typename A>
-struct view_predicate<std::set<K, C, A>> : std::false_type {};
-
-template <typename K, typename C, typename A>
-struct view_predicate<std::multiset<K, C, A>>  : std::false_type {};
-
-template <typename K, typename H, typename E, typename A>
-struct view_predicate<std::unordered_set<K, H, E, A>> : std::false_type {};
-
-template <typename K, typename H, typename E, typename A>
-struct view_predicate<std::unordered_multiset<K, H, E, A>> : std::false_type {};
-
-template <typename>
-auto view_predicate_helper_fn(long) -> std::false_type;
-
-template <typename T>
-auto view_predicate_helper_fn(int) -> std::enable_if_t<
-        !has_enable_view_v<T> &&
-        !derived_from<T, view_base> &&
-        Range<T> &&
-        Range<const T> &&
-        !same_as<iter_reference_t<iterator_t<T>>, iter_reference_t<iterator_t<const T>>>,
-    std::true_type>;
-
-template <typename T>
-constexpr bool view_predicate_helper =
-    decltype(view_predicate_helper_fn<T>(0))::value;
-
-template <typename T>
-struct view_predicate<T, std::enable_if_t<view_predicate_helper<T>>>
-   : std::false_type {};
-
-} // namespace detail
-
-template <typename T>
-NANO_CONCEPT View = Range<T>&& semiregular<T>&& detail::view_predicate_v<T>;
-
-// [range.common]
-namespace detail {
-
-template <typename>
-auto CommonRange_fn(long) -> std::false_type;
-
-template <typename T>
-auto CommonRange_fn(int) -> std::enable_if_t<
-    Range<T> && same_as<iterator_t<T>, sentinel_t<T>>,
-        std::true_type>;
-
-}
-
-template <typename T>
-NANO_CONCEPT CommonRange = decltype(detail::CommonRange_fn<T>(0))::value;
-
-// [ranges.viewable]
-
-template <typename T>
-NANO_CONCEPT ViewableRange = Range<T> && (detail::ForwardingRange<T> ||
-                                          View<std::decay_t<T>>);
-
-// [range.input]
-
-namespace detail {
-
-template <typename>
-auto InputRange_fn(long) -> std::false_type;
-
-template <typename T>
-auto InputRange_fn(int) -> std::enable_if_t<
-        Range<T> && input_iterator<iterator_t<T>>,
-    std::true_type>;
-
-}
-
-template <typename T>
-NANO_CONCEPT InputRange =
-    decltype(detail::InputRange_fn<T>(0))::value;
-
-namespace detail {
-
-template <typename, typename >
-auto OutputRange_fn(long) -> std::false_type;
-
-template <typename R, typename T>
-auto OutputRange_fn(int) -> std::enable_if_t<
-        Range<R> && output_iterator<iterator_t<R>, T>,
-        std::true_type>;
-
-}
-
-template <typename R, typename T>
-NANO_CONCEPT OutputRange =
-    decltype(detail::OutputRange_fn<R, T>(0))::value;
-
-namespace detail {
-
-template <typename>
-auto ForwardRange_fn(long) -> std::false_type;
-
-template <typename T>
-auto ForwardRange_fn(int) -> std::enable_if_t<
-        InputRange<T> && forward_iterator<iterator_t<T>>,
-        std::true_type>;
-
-}
-
-template <typename T>
-NANO_CONCEPT ForwardRange =
-    decltype(detail::ForwardRange_fn<T>(0))::value;
-
-namespace detail {
-
-template <typename>
-auto BidirectionalRange_fn(long) -> std::false_type;
-
-template <typename T>
-auto BidirectionalRange_fn(int) -> std::enable_if_t<
-        ForwardRange<T> && bidirectional_iterator<iterator_t<T>>,
-        std::true_type>;
-
-}
-
-template <typename T>
-NANO_CONCEPT BidirectionalRange =
-    decltype(detail::BidirectionalRange_fn<T>(0))::value;
-
-namespace detail {
-
-template <typename>
-auto RandomAccessRange_fn(long) -> std::false_type;
-
-template <typename T>
-auto RandomAccessRange_fn(int) -> std::enable_if_t<
-        BidirectionalRange<T> &&
-                            random_access_iterator<iterator_t<T>>,
-        std::true_type>;
-
-}
-
-template <typename T>
-NANO_CONCEPT RandomAccessRange =
-    decltype(detail::RandomAccessRange_fn<T>(0))::value;
-
-namespace detail {
-
-// Not to spec: P0944 requires that R's iterator_t models ContiguousIterator,
-// but we only require RandomAccessIterator.
-// This is so that std::vector, std::string etc can model ContiguousRange
-struct ContiguousRange_req {
-    template <typename R>
-    auto requires_(R& r) -> decltype(
-        requires_expr<
-            same_as<decltype(ranges::data(r)), std::add_pointer_t<iter_reference_t<iterator_t<R>>>>>{}
+    auto requires_(T&& t) -> decltype(
+        ranges::begin(std::forward<T>(t)),
+        ranges::end(std::forward<T>(t))
     );
 };
 
+template <typename T>
+NANO_CONCEPT range_impl = detail::requires_<range_impl_concept, T>;
 
-template <typename>
-auto ContiguousRange_fn(long) -> std::false_type;
+struct range_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
+
+    template <typename T>
+    static auto test(int) -> std::enable_if_t<
+        range_impl<T&>,
+        std::true_type>;
+};
+
+}
+
+template <typename T>
+NANO_CONCEPT range = decltype(detail::range_concept::test<T>(0))::value;
+
+namespace detail {
+
+template <typename T>
+NANO_CONCEPT forwarding_range = range<T> && range_impl<T>;
+
+}
+
 
 template <typename R>
-auto ContiguousRange_fn(int) -> std::enable_if_t<
-        Range<R> && random_access_iterator<iterator_t<R>> &&
-        requires_<ContiguousRange_req, R>,
-                std::true_type>;
+using iterator_t = std::enable_if_t<range<R>,
+    decltype(ranges::begin(std::declval<R&>()))>;
+
+template <typename R>
+using sentinel_t = std::enable_if_t<range<R>,
+    decltype(ranges::end(std::declval<R&>()))>;
+
+template <typename R>
+using range_difference_t = std::enable_if_t<range<R>,
+    iter_difference_t<iterator_t<R>>>;
+
+template <typename R>
+using range_value_t = std::enable_if_t<range<R>,
+    iter_value_t<iterator_t<R>>>;
+
+template <typename R>
+using range_reference_t = std::enable_if_t<range<R>,
+    iter_reference_t<iterator_t<R>>>;
+
+template <typename R>
+using range_rvalue_reference_t = std::enable_if_t<range<R>,
+    iter_rvalue_reference_t<iterator_t<R>>>;
+
+
+// [range.sized]
+namespace detail {
+
+struct sized_range_concept {
+    template <typename T>
+    auto requires_(T& t) -> decltype(ranges::size(t));
+};
+
+} // namespace detail
+
+template <typename T>
+NANO_CONCEPT sized_range =
+    range<T> &&
+    !disable_sized_range<detail::remove_cvref_t<T>> &&
+    detail::requires_<detail::sized_range_concept, T>;
+
+
+// [range.views]
+struct view_base { };
+
+namespace detail {
+
+template <typename>
+inline constexpr bool is_std_non_view = false;
+
+template <typename T>
+inline constexpr bool is_std_non_view<std::initializer_list<T>> = true;
+
+template <typename K, typename C, typename A>
+inline constexpr bool is_std_non_view<std::set<K, C, A>> = true;
+
+template <typename K, typename C, typename A>
+inline constexpr bool is_std_non_view<std::multiset<K, C, A>> = true;
+
+template <typename K, typename H, typename E, typename A>
+inline constexpr bool is_std_non_view<std::unordered_set<K, H, E, A>> = true;
+
+template <typename K, typename H, typename E, typename A>
+inline constexpr bool is_std_non_view<std::unordered_multiset<K, H, E, A>> = true;
+
+template <typename B, typename A>
+inline constexpr bool is_std_non_view<std::match_results<B, A>> = true;
+
+template <typename T>
+constexpr bool enable_view_helper()
+{
+    if constexpr (derived_from<T, view_base>) {
+        return true;
+    } else if constexpr (is_std_non_view<T>) {
+        return false;
+    } else if constexpr (range<T> && range<const T>) {
+        return same_as<range_reference_t<T>, range_reference_t<const T>>;
+    } else {
+        return true;
+    }
+}
+
+}
+
+template <typename T>
+inline constexpr bool enable_view = detail::enable_view_helper<T>();
+
+template <typename T>
+NANO_CONCEPT view = range<T> && semiregular<T> && enable_view<T>;
+
+// [range.refinements]
+namespace detail {
+
+struct output_range_concept {
+    template <typename, typename>
+    static auto test(long) -> std::false_type;
+
+    template <typename R, typename T>
+    static auto test(int) -> std::enable_if_t<
+        range<R> && output_iterator<iterator_t<R>, T>,
+        std::true_type>;
+};
+
+}
+
+template <typename R, typename T>
+NANO_CONCEPT output_range =
+    decltype(detail::output_range_concept::test<R, T>(0))::value;
+
+namespace detail {
+
+struct input_range_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
+
+    template <typename T>
+    static auto test(int) -> std::enable_if_t<
+        range<T> && input_iterator<iterator_t<T>>,
+        std::true_type>;
+};
+
+}
+
+template <typename T>
+NANO_CONCEPT input_range =
+    decltype(detail::input_range_concept::test<T>(0))::value;
+
+namespace detail {
+
+struct forward_range_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
+
+    template <typename T>
+    static auto test(int) -> std::enable_if_t<
+        input_range<T> && forward_iterator<iterator_t<T>>,
+        std::true_type>;
+};
+
+}
+
+template <typename T>
+NANO_CONCEPT forward_range =
+    decltype(detail::forward_range_concept::test<T>(0))::value;
+
+namespace detail {
+
+struct bidirectional_range_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
+
+    template <typename T>
+    static auto test(int) -> std::enable_if_t<
+        forward_range<T> && bidirectional_iterator<iterator_t<T>>,
+        std::true_type>;
+};
+
+}
+
+template <typename T>
+NANO_CONCEPT bidirectional_range =
+    decltype(detail::bidirectional_range_concept::test<T>(0))::value;
+
+namespace detail {
+
+struct random_access_range_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
+
+    template <typename T>
+    static auto test(int) -> std::enable_if_t<
+        bidirectional_range<T> && random_access_iterator<iterator_t<T>>,
+        std::true_type>;
+};
+
+}
+
+template <typename T>
+NANO_CONCEPT random_access_range =
+    decltype(detail::random_access_range_concept::test<T>(0))::value;
+
+namespace detail {
+
+// FIXME: Not to spec
+// We only require random_access_iterator, not contiguous_iterator
+// This is so that vector::iterator, string::iterator etc can model
+// contiguous_range.
+// If we do range-v3-style deep integration with iterator_traits then
+// this could be fixed
+struct contiguous_range_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
+
+    template <typename T>
+    static auto test(int) -> std::enable_if_t<
+        random_access_range<T> && /* contiguous_iterator<iterator_t<T>> && */
+        detail::requires_<contiguous_range_concept, T>,
+        std::true_type>;
+
+    template <typename T>
+    auto requires_(T& t) -> decltype(
+        requires_expr<same_as<decltype(ranges::data(t)),
+                      std::add_pointer_t<range_reference_t<T>>>>{}
+    );
+};
 
 }
 
 template <typename R>
-NANO_CONCEPT ContiguousRange =
-    decltype(detail::ContiguousRange_fn<R>(0))::value;
+NANO_CONCEPT contiguous_range =
+    decltype(detail::contiguous_range_concept::test<R>(0))::value;
+
+namespace detail {
+
+struct common_range_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
+
+    template <typename T>
+    static auto test(int) -> std::enable_if_t<
+        range<T> && same_as<iterator_t<T>, sentinel_t<T>>,
+        std::true_type>;
+};
+
+}
+
+template <typename T>
+NANO_CONCEPT common_range =
+    decltype(detail::common_range_concept::test<T>(0))::value;
+
+template <typename T>
+NANO_CONCEPT viewable_range =
+    range<T> && (detail::forwarding_range<T> || view<std::decay_t<T>>);
+
 
 // [range.dangling]
 
@@ -309,28 +314,30 @@ struct dangling {
 
 template <typename R>
 using safe_iterator_t = std::conditional_t<
-    detail::ForwardingRange<R>, iterator_t<R>, dangling>;
+    detail::forwarding_range<R>, iterator_t<R>, dangling>;
 
 // Helper concepts
 
 namespace detail {
 
 template <typename R>
-NANO_CONCEPT SimpleView = View<R> && Range<const R> && same_as<iterator_t<R>, iterator_t<const R>> &&
-        same_as<sentinel_t<R>, sentinel_t<const R>>;
+NANO_CONCEPT simple_view =
+    view<R> && range<const R> &&
+    same_as<iterator_t<R>, iterator_t<const R>> &&
+    same_as<sentinel_t<R>, sentinel_t<const R>>;
 
-struct HasArrow_req {
+struct has_arrow_concept {
     template <typename I>
     auto requires_(I i) -> decltype(i.operator->());
 };
 
 template <typename I>
-NANO_CONCEPT HasArrow = input_iterator<I> &&
-    (std::is_pointer_v<I> || requires_<HasArrow_req, I>);
+NANO_CONCEPT has_arrow = input_iterator<I> &&
+    (std::is_pointer_v<I> || detail::requires_<has_arrow_concept, I>);
 
 
 template <typename T, typename U>
-NANO_CONCEPT NotSameAs = !same_as<remove_cvref_t<T>, remove_cvref_t<U>>;
+NANO_CONCEPT not_same_as = !same_as<remove_cvref_t<T>, remove_cvref_t<U>>;
 
 }
 

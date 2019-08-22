@@ -49,7 +49,7 @@ public:
 
     template <typename Rng, typename Proj = identity, typename Pred>
     constexpr std::enable_if_t<
-        InputRange<Rng> &&
+        input_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
         iter_difference_t<iterator_t<Rng>>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
@@ -79,7 +79,7 @@ struct count_fn {
 
     template <typename Rng, typename T, typename Proj = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng> &&
+        input_range<Rng> &&
             indirect_relation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T*>,
         iter_difference_t<iterator_t<Rng>>>

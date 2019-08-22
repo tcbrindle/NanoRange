@@ -52,8 +52,7 @@ public:
     }
 
     template <typename Rng, typename O>
-    constexpr std::enable_if_t<
-        BidirectionalRange<Rng> &&
+    constexpr std::enable_if_t<bidirectional_range<Rng> &&
         weakly_incrementable<O> &&
                                    indirectly_copyable<iterator_t<Rng>, O>,
         reverse_copy_result<safe_iterator_t<Rng>, O>>

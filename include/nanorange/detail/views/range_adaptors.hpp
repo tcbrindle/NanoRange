@@ -18,8 +18,7 @@ inline constexpr bool is_raco = false;
 
 template <typename R, typename C>
 constexpr auto operator|(R&& lhs, C&& rhs)
-    -> std::enable_if_t<
-        ViewableRange<R> &&
+    -> std::enable_if_t<viewable_range<R> &&
         !is_raco<uncvref_t<R>> &&
         is_raco<uncvref_t<C>>,
         decltype(std::forward<C>(rhs)(std::forward<R>(lhs)))>
@@ -41,8 +40,7 @@ public:
 
     // FIXME: Do I need to do ref-qualified overloads of these too?
 
-    template <typename R, std::enable_if_t<
-        ViewableRange<R>, int> = 0>
+    template <typename R, std::enable_if_t<viewable_range<R>, int> = 0>
     constexpr auto operator()(R&& r)
         -> decltype(rhs_(lhs_(std::forward<R>(r))))
     {
@@ -50,8 +48,7 @@ public:
     }
 
 
-    template <typename R, std::enable_if_t<
-              ViewableRange<R>, int> = 0>
+    template <typename R, std::enable_if_t<viewable_range<R>, int> = 0>
     constexpr auto operator()(R&& r) const
         -> decltype(rhs_(lhs_(std::forward<R>(r))))
     {

@@ -161,14 +161,14 @@ public:
     template <typename Rng1, typename Rng2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
-        ForwardRange<Rng1> && ForwardRange<Rng2> &&
+        forward_range<Rng1> && forward_range<Rng2> &&
             indirectly_comparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred,
                                  Proj1, Proj2>,
         bool>
     operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
-        if (SizedRange<Rng1> && SizedRange<Rng2>) {
+        if (sized_range<Rng1> && sized_range<Rng2>) {
             if (nano::distance(rng1) != nano::distance(rng2)) {
                 return false;
             }
@@ -188,8 +188,8 @@ public:
         typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED
     constexpr std::enable_if_t<
-        ForwardRange<Rng1> && forward_iterator<std::decay_t<I2>> &&
-        !Range<I2> &&
+        forward_range<Rng1> && forward_iterator<std::decay_t<I2>> &&
+        !range<I2> &&
             indirectly_comparable<iterator_t<Rng1>, I2, Pred, Proj1, Proj2>,
         bool>
     operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{},

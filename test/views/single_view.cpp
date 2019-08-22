@@ -24,9 +24,9 @@ namespace {
 template <class V, class T>
 void test_one(V& v, const T& t)
 {
-    static_assert(ranges::ContiguousRange<V>);
-    static_assert(ranges::SizedRange<V>);
-    static_assert(ranges::CommonRange<V>);
+    static_assert(ranges::contiguous_range<V>);
+    static_assert(ranges::sized_range<V>);
+    static_assert(ranges::common_range<V>);
     using I = ranges::iterator_t<V>;
     static_assert(std::is_pointer_v<I>);
     static_assert(ranges::same_as<T, ranges::iter_value_t<I>>);

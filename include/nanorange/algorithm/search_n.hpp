@@ -74,7 +74,7 @@ public:
     operator()(Rng&& rng, iter_difference_t<iterator_t<Rng>> count,
                const T& value, Pred pred = Pred{}, Proj proj = Proj{}) const
     -> std::enable_if_t<
-        ForwardRange<Rng> &&
+            forward_range<Rng> &&
                 indirectly_comparable<iterator_t<Rng>, const T*, Pred, Proj>,
         safe_subrange_t<Rng>>
     {

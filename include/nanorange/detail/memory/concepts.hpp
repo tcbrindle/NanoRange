@@ -34,8 +34,7 @@ template <typename>
 auto NoThrowInputRange_fn(long) -> std::false_type;
 
 template <typename Rng>
-auto NoThrowInputRange_fn(int) -> std::enable_if_t<
-    Range<Rng> &&
+auto NoThrowInputRange_fn(int) -> std::enable_if_t<range<Rng> &&
     NoThrowInputIterator<iterator_t<Rng>> &&
     NoThrowSentinel<sentinel_t<Rng>, iterator_t<Rng>>,
     std::true_type>;

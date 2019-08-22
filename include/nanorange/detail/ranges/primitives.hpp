@@ -13,8 +13,8 @@ NANO_BEGIN_NAMESPACE
 
 // [range.primitives.size]
 
-template <typename T>
-constexpr bool disable_sized_range = false;
+template <typename>
+inline constexpr bool disable_sized_range = false;
 
 namespace detail {
 namespace size_ {

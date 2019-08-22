@@ -50,7 +50,7 @@ public:
 
     template <typename Rng, typename R = ranges::equal_to, typename Proj = identity>
     constexpr std::enable_if_t<
-            ForwardRange<Rng> &&
+        forward_range<Rng> &&
             indirect_relation<R, projected<iterator_t<Rng>, Proj>> &&
             permutable<iterator_t<Rng>>,
             safe_iterator_t<Rng>>

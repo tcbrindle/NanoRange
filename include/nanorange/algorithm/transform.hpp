@@ -91,7 +91,7 @@ public:
     // Unary op, range
     template <typename Rng, typename O, typename F, typename Proj = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng> && weakly_incrementable<O> && copy_constructible<F> &&
+        input_range<Rng> && weakly_incrementable<O> && copy_constructible<F> &&
             writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng>, Proj>>>,
         unary_transform_result<safe_iterator_t<Rng>, O>>
@@ -124,7 +124,7 @@ public:
     template <typename Rng1, typename Rng2, typename O, typename F,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng1> && InputRange<Rng2> && weakly_incrementable<O> &&
+        input_range<Rng1> && input_range<Rng2> && weakly_incrementable<O> &&
             copy_constructible<F> &&
             writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng1>, Proj1>,
@@ -145,7 +145,7 @@ public:
     NANO_DEPRECATED constexpr std::enable_if_t<
         input_iterator<I1> && sentinel_for<S1, I1> &&
             input_iterator<std::decay_t<I2>> &&
-            !InputRange<I2> &&
+            !input_range<I2> &&
             weakly_incrementable<O> && copy_constructible<F> &&
             writable<O, indirect_result_t<F&, projected<I1, Proj1>,
                                           projected<std::decay_t<I2>, Proj2>>>,
@@ -162,8 +162,8 @@ public:
     template <typename Rng1, typename I2, typename O, typename F,
               typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED constexpr std::enable_if_t<
-        InputRange<Rng1> && input_iterator<std::decay_t<I2>> &&
-                !InputRange<I2> && weakly_incrementable<O> &&
+        input_range<Rng1> && input_iterator<std::decay_t<I2>> &&
+                !input_range<I2> && weakly_incrementable<O> &&
             copy_constructible<F> &&
             writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng1>, Proj1>,

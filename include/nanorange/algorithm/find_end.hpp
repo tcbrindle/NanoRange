@@ -66,8 +66,7 @@ public:
     template <typename Rng1, typename Rng2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
-            ForwardRange<Rng1> &&
-            ForwardRange<Rng2> &&
+        forward_range<Rng1> && forward_range<Rng2> &&
             indirectly_comparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred, Proj1, Proj2>,
             safe_subrange_t<Rng1>>
     operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},

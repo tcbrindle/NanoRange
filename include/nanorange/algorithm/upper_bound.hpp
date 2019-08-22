@@ -54,8 +54,7 @@ public:
 
     template <typename Rng, typename T, typename Comp = ranges::less,
               typename Proj = identity>
-    std::enable_if_t<
-        ForwardRange<Rng> &&
+    std::enable_if_t<forward_range<Rng> &&
                          indirect_strict_weak_order<Comp, const T*, projected<iterator_t<Rng>, Proj>>,
     safe_iterator_t<Rng>>
     constexpr operator()(Rng&& rng, const T& value, Comp comp = Comp{},

@@ -46,7 +46,7 @@ public:
     template <typename Rng, typename Pred, typename T2,
               typename Proj = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng> && writable<iterator_t<Rng>, const T2&> &&
+        input_range<Rng> && writable<iterator_t<Rng>, const T2&> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, const T2& new_value,

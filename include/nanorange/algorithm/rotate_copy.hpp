@@ -41,8 +41,7 @@ public:
     }
 
     template <typename Rng, typename O>
-    constexpr std::enable_if_t<
-        ForwardRange<Rng> &&
+    constexpr std::enable_if_t<forward_range<Rng> &&
         weakly_incrementable<O> &&
                                    indirectly_copyable<iterator_t<Rng>, O>,
         rotate_copy_result<safe_iterator_t<Rng>, O>>

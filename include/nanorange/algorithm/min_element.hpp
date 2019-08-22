@@ -50,7 +50,7 @@ public:
 
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
-        ForwardRange<Rng> &&
+        forward_range<Rng> &&
             indirect_strict_weak_order<Comp, projected<iterator_t<Rng>, Proj>>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const

@@ -20,7 +20,7 @@ private:
     template <typename T>
     static constexpr auto impl(T&& t, priority_tag<2>)
         noexcept(noexcept(detail::decay_copy(std::forward<T>(t))))
-        -> std::enable_if_t<View<std::decay_t<T>>,
+        -> std::enable_if_t<view<std::decay_t<T>>,
                             decltype(detail::decay_copy(std::forward<T>(t)))>
     {
         return std::forward<T>(t);
@@ -63,7 +63,7 @@ NANO_INLINE_VAR(nano::detail::all_view_fn, all)
 }
 
 template <typename R>
-using all_view = std::enable_if_t<ViewableRange<R>,
+using all_view = std::enable_if_t<viewable_range<R>,
                                   decltype(views::all(std::declval<R>()))>;
 
 NANO_END_NAMESPACE

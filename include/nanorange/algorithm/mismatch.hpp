@@ -63,7 +63,7 @@ public:
     NANO_DEPRECATED constexpr std::enable_if_t<
         input_iterator<I1> && sentinel_for<S1, I1> &&
             input_iterator<std::decay_t<I2>> &&
-        !InputRange<I1> &&
+        !input_range<I1> &&
             indirect_relation<Pred, projected<I1, Proj1>, projected<std::decay_t<I2>, Proj2>>,
         mismatch_result<I1, std::decay_t<I2>>>
     operator()(I1 first1, S1 last1, I2&& first2, Pred pred = Pred{},
@@ -78,8 +78,8 @@ public:
     template <typename Rng1, typename I2, typename Proj1 = identity,
               typename Proj2 = identity, typename Pred = ranges::equal_to>
     NANO_DEPRECATED constexpr std::enable_if_t<
-        InputRange<Rng1> && input_iterator<std::decay_t<I2>> &&
-                !InputRange<I2> &&
+        input_range<Rng1> && input_iterator<std::decay_t<I2>> &&
+                !input_range<I2> &&
             indirect_relation<Pred, projected<iterator_t<Rng1>, Proj1>,
                              projected<std::decay_t<I2>, Proj2>>,
         mismatch_result<safe_iterator_t<Rng1>, std::decay_t<I2>>>
@@ -113,7 +113,7 @@ public:
     template <typename Rng1, typename Rng2, typename Proj1 = identity,
               typename Proj2 = identity, typename Pred = ranges::equal_to>
     constexpr std::enable_if_t<
-        InputRange<Rng1> && InputRange<Rng2> &&
+        input_range<Rng1> && input_range<Rng2> &&
             indirect_relation<Pred, projected<iterator_t<Rng1>, Proj1>,
                              projected<iterator_t<Rng2>, Proj2>>,
         mismatch_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>>>

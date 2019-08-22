@@ -65,8 +65,7 @@ public:
 
     template <typename Rng1, typename Rng2>
     constexpr std::enable_if_t<
-            ForwardRange<Rng1> &&
-            ForwardRange<Rng2> &&
+        forward_range<Rng1> && forward_range<Rng2> &&
             indirectly_swappable<iterator_t<Rng1>, iterator_t<Rng2>>,
             swap_ranges_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>>>
     operator()(Rng1&& rng1, Rng2&& rng2) const
@@ -79,7 +78,7 @@ public:
     template <typename Rng1, typename I2>
     NANO_DEPRECATED
     constexpr std::enable_if_t<
-            ForwardRange<Rng1> && forward_iterator<I2> &&
+        forward_range<Rng1> && forward_iterator<I2> &&
             indirectly_swappable<iterator_t<Rng1>, I2>,
             swap_ranges_result<safe_iterator_t<Rng1>, I2>>
     operator()(Rng1&& rng1, I2 first2) const

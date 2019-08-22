@@ -205,11 +205,11 @@ static_assert(!ranges::bidirectional_iterator<int>, "");
 static_assert(ranges::random_access_iterator<int*>, "");
 static_assert(!ranges::random_access_iterator<int>, "");
 
-static_assert(ranges::View<ranges::basic_istream_view<int, char>>, "");
+static_assert(ranges::view<ranges::basic_istream_view<int, char>>, "");
 static_assert(ranges::input_iterator<ranges::iterator_t<ranges::basic_istream_view<int, char>>>, "");
-static_assert(!ranges::View<int>, "");
+static_assert(!ranges::view<int>, "");
 
-static_assert(ranges::CommonRange<std::vector<int> >, "");
+static_assert(ranges::common_range<std::vector<int> >, "");
 //static_assert(!ranges::BoundedView<std::vector<int>>, "");
 //static_assert(!ranges::BoundedView<std::vector<int> &>, "");
 static_assert(ranges::random_access_iterator<ranges::iterator_t<std::vector<int> const &>>, "");
@@ -268,7 +268,7 @@ struct myview {
     const char *begin();
     const char *end();
 };
-static_assert(ranges::View<myview>, "");
+static_assert(ranges::view<myview>, "");
 
 TEST_CASE("util.concepts")
 {

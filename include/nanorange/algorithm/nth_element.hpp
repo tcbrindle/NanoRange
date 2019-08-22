@@ -264,8 +264,7 @@ public:
     }
 
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
-    std::enable_if_t<
-        RandomAccessRange<Rng> &&
+    std::enable_if_t<random_access_range<Rng> &&
                          sortable<iterator_t<Rng>, Comp, Proj>,
     safe_iterator_t<Rng>>
     constexpr operator()(Rng&& rng, iterator_t<Rng> nth,

@@ -22,12 +22,12 @@ struct range_common_iterator_impl;
 
 template <typename R>
 struct range_common_iterator_impl<
-    R, std::enable_if_t<Range<R> && !CommonRange<R>>> {
+    R, std::enable_if_t<range<R> && !common_range<R>>> {
     using type = common_iterator<iterator_t<R>, sentinel_t<R>>;
 };
 
 template <typename R>
-struct range_common_iterator_impl<R, std::enable_if_t<CommonRange<R>>> {
+struct range_common_iterator_impl<R, std::enable_if_t<common_range<R>>> {
     using type = iterator_t<R>;
 };
 
@@ -53,14 +53,14 @@ private:
 public:
     template <typename R = D>
     [[nodiscard]] constexpr auto empty()
-        -> std::enable_if_t<ForwardRange<R>, bool>
+        -> std::enable_if_t<forward_range<R>, bool>
     {
         return ranges::begin(derived()) == ranges::end(derived());
     }
 
     template <typename R = D>
     [[nodiscard]] constexpr auto empty() const
-        -> std::enable_if_t<ForwardRange<const R>, bool>
+        -> std::enable_if_t<forward_range<const R>, bool>
     {
         return ranges::begin(derived()) == ranges::end(derived());
     }
@@ -84,14 +84,14 @@ public:
     }
 
     template <typename R = D, typename = std::enable_if_t<
-            Range<const R> && contiguous_iterator<iterator_t<const R>>>>
+                  range<const R> && contiguous_iterator<iterator_t<const R>>>>
     constexpr auto data() const
     {
         return ranges::empty(derived()) ? nullptr : std::addressof(*ranges::begin(derived()));
     }
 
     template <typename R = D, typename = std::enable_if_t<
-                ForwardRange<R> &&
+                  forward_range<R> &&
                   sized_sentinel_for<sentinel_t<R>, iterator_t<R>>>>
     constexpr auto size()
     {
@@ -99,46 +99,46 @@ public:
     }
 
     template <typename R = D, typename = std::enable_if_t<
-            ForwardRange<const R> &&
+                  forward_range<const R> &&
                   sized_sentinel_for<sentinel_t<const R>, iterator_t<const R>>>>
     constexpr auto size() const
     {
         return ranges::end(derived()) - ranges::begin(derived());
     }
 
-    template <typename R = D, typename = std::enable_if_t<ForwardRange<R>>>
+    template <typename R = D, typename = std::enable_if_t<forward_range<R>>>
     constexpr decltype(auto) front()
     {
         return *ranges::begin(derived());
     }
 
-    template <typename R = D, typename = std::enable_if_t<ForwardRange<const R>>>
+    template <typename R = D, typename = std::enable_if_t<forward_range<const R>>>
     constexpr decltype(auto) front() const
     {
         return *ranges::begin(derived());
     }
 
     template <typename R = D, typename = std::enable_if_t<
-            BidirectionalRange<R> && CommonRange<R>>>
+                                  bidirectional_range<R> && common_range<R>>>
     constexpr decltype(auto) back()
     {
         return *ranges::prev(ranges::end(derived()));
     }
 
-    template <typename R = D, typename = std::enable_if_t<
-            BidirectionalRange<const R> && CommonRange<const R>>>
+    template <typename R = D, typename = std::enable_if_t<bidirectional_range<const R> &&
+                                          common_range<const R>>>
     constexpr decltype(auto) back() const
     {
         return *ranges::prev(ranges::end(derived()));
     }
 
-    template <typename R = D, typename = std::enable_if_t<RandomAccessRange<R>>>
+    template <typename R = D, typename = std::enable_if_t<random_access_range<R>>>
     constexpr decltype(auto) operator[](iter_difference_t<iterator_t<R>> n)
     {
         return ranges::begin(derived())[n];
     }
 
-    template <typename R = D,  typename = std::enable_if_t<RandomAccessRange<const R>>>
+    template <typename R = D,  typename = std::enable_if_t<random_access_range<const R>>>
     constexpr decltype(auto) operator[](iter_difference_t<iterator_t<const R>> n) const
     {
         return ranges::begin(derived())[n];

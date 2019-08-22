@@ -27,7 +27,7 @@ struct is_heap_fn {
 
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     std::enable_if_t<
-        RandomAccessRange<Rng> &&
+        random_access_range<Rng> &&
             indirect_strict_weak_order<Comp, projected<iterator_t<Rng>, Proj>>,
         bool>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
