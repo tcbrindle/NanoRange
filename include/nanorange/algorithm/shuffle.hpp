@@ -10,6 +10,8 @@
 #include <nanorange/ranges.hpp>
 #include <nanorange/random.hpp>
 
+#include <random>
+
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
