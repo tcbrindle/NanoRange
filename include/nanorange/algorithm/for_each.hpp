@@ -38,7 +38,7 @@ public:
     template <typename I, typename S, typename Proj = identity, typename Fun>
     constexpr std::enable_if_t<
         input_iterator<I> && sentinel_for<S, I> &&
-            IndirectUnaryInvocable<Fun, projected<I, Proj>>,
+            indirect_unary_invocable<Fun, projected<I, Proj>>,
         for_each_result<I, Fun>>
     operator()(I first, S last, Fun fun, Proj proj = Proj{}) const
     {
@@ -49,7 +49,7 @@ public:
     template <typename Rng, typename Proj = identity, typename Fun>
     constexpr std::enable_if_t<
         InputRange<Rng> &&
-            IndirectUnaryInvocable<Fun, projected<iterator_t<Rng>, Proj>>,
+            indirect_unary_invocable<Fun, projected<iterator_t<Rng>, Proj>>,
         for_each_result<safe_iterator_t<Rng>, Fun>>
     operator()(Rng&& rng, Fun fun, Proj proj = Proj{}) const
     {

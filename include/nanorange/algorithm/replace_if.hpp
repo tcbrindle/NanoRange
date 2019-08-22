@@ -34,7 +34,7 @@ public:
               typename Proj = identity>
     constexpr std::enable_if_t<
         input_iterator<I> && sentinel_for<S, I> && writable<I, const T&> &&
-            IndirectUnaryPredicate<Pred, projected<I, Proj>>,
+            indirect_unary_predicate<Pred, projected<I, Proj>>,
         I>
     operator()(I first, S last, Pred pred, const T& new_value,
                Proj proj = Proj{}) const
@@ -47,7 +47,7 @@ public:
               typename Proj = identity>
     constexpr std::enable_if_t<
         InputRange<Rng> && writable<iterator_t<Rng>, const T2&> &&
-            IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
+            indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, const T2& new_value,
                Proj proj = Proj{}) const

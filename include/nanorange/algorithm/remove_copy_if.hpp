@@ -38,8 +38,8 @@ public:
               typename Proj = identity>
     constexpr std::enable_if_t<
         input_iterator<I> && sentinel_for<S, I> && weakly_incrementable<O> &&
-            IndirectlyCopyable<I, O> &&
-            IndirectUnaryPredicate<Pred, projected<I, Proj>>,
+            indirectly_copyable<I, O> &&
+            indirect_unary_predicate<Pred, projected<I, Proj>>,
         remove_copy_if_result<I, O>>
     operator()(I first, S last, O result, Pred pred,
                Proj proj = Proj{}) const
@@ -51,8 +51,8 @@ public:
     template <typename Rng, typename O, typename Pred, typename Proj = identity>
     constexpr std::enable_if_t<
         InputRange<Rng> && weakly_incrementable<O> &&
-            IndirectlyCopyable<iterator_t<Rng>, O> &&
-            IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
+            indirectly_copyable<iterator_t<Rng>, O> &&
+            indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
         remove_copy_if_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, Pred pred, Proj proj = Proj{}) const
     {

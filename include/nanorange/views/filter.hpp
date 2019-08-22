@@ -39,7 +39,7 @@ template <typename V, typename Pred>
 struct filter_view : view_interface<filter_view<V, Pred>> {
 
     static_assert(InputRange<V>);
-    static_assert(IndirectUnaryPredicate<Pred, iterator_t<V>>);
+    static_assert(indirect_unary_predicate<Pred, iterator_t<V>>);
     static_assert(View<V>);
     static_assert(std::is_object_v<Pred>);
 

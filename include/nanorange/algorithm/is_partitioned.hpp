@@ -26,7 +26,7 @@ public:
     template <typename I, typename S, typename Pred, typename Proj = identity>
     constexpr std::enable_if_t<
         input_iterator<I> && sentinel_for<S, I> &&
-        IndirectUnaryPredicate<Pred, projected<I, Proj>>, bool>
+            indirect_unary_predicate<Pred, projected<I, Proj>>, bool>
     operator()(I first, S last, Pred pred = Pred{}, Proj proj = Proj{}) const
     {
         return is_partitioned_fn::impl(std::move(first), std::move(last),
@@ -36,7 +36,7 @@ public:
     template <typename Rng, typename Pred, typename Proj = identity>
     constexpr std::enable_if_t<
         InputRange<Rng> &&
-        IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>, bool>
+            indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>, bool>
     operator()(Rng&& rng, Pred pred = Pred{}, Proj proj = Proj{}) const
     {
         return is_partitioned_fn::impl(nano::begin(rng), nano::end(rng),

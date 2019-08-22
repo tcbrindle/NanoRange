@@ -147,7 +147,7 @@ private:
 public:
     template <typename I, typename S, typename Pred, typename Proj = identity>
     std::enable_if_t<bidirectional_iterator<I> && sentinel_for<S, I> &&
-        IndirectUnaryPredicate<Pred, projected<I, Proj>> &&
+                         indirect_unary_predicate<Pred, projected<I, Proj>> &&
         Permutable<I>, I>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
@@ -158,7 +158,7 @@ public:
     template <typename Rng, typename Pred, typename Proj = identity>
     std::enable_if_t<
         BidirectionalRange<Rng> &&
-        IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>> &&
+            indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>> &&
         Permutable<iterator_t<Rng>>,
     safe_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const

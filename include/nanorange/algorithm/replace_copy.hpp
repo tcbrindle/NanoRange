@@ -42,9 +42,8 @@ public:
               typename Proj = identity>
     constexpr std::enable_if_t<
         input_iterator<I> && sentinel_for<S, I> &&
-            output_iterator<O, const T2&> &&
-            IndirectlyCopyable<I, O> &&
-            IndirectRelation<ranges::equal_to, projected<I, Proj>, const T1*>,
+            output_iterator<O, const T2&> && indirectly_copyable<I, O> &&
+            indirect_relation<ranges::equal_to, projected<I, Proj>, const T1*>,
         replace_copy_result<I, O>>
     operator()(I first, S last, O result, const T1& old_value,
                const T2& new_value, Proj proj = Proj{}) const
@@ -58,8 +57,8 @@ public:
               typename Proj = identity>
     constexpr std::enable_if_t<
         InputRange<Rng> && output_iterator<O, const T2&> &&
-            IndirectlyCopyable<iterator_t<Rng>, O> &&
-            IndirectRelation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
+            indirectly_copyable<iterator_t<Rng>, O> &&
+            indirect_relation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T1*>,
         replace_copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, const T1& old_value, const T2& new_value,

@@ -45,7 +45,7 @@ public:
     template <typename I, typename S, typename Proj = identity,
               typename Pred = ranges::equal_to>
     constexpr std::enable_if_t<forward_iterator<I> && sentinel_for<S, I> &&
-                                   IndirectRelation<Pred, projected<I, Proj>>,
+                                   indirect_relation<Pred, projected<I, Proj>>,
                                I>
     operator()(I first, S last, Pred pred = Pred{}, Proj proj = Proj{}) const
     {
@@ -57,7 +57,7 @@ public:
               typename Pred = ranges::equal_to>
     constexpr std::enable_if_t<
         ForwardRange<Rng> &&
-            IndirectRelation<Pred, projected<iterator_t<Rng>, Proj>>,
+            indirect_relation<Pred, projected<iterator_t<Rng>, Proj>>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred = Pred{}, Proj proj = Proj{}) const
     {

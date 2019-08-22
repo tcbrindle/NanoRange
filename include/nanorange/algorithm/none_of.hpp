@@ -20,7 +20,7 @@ struct none_of_fn {
     template <typename I, typename S, typename Proj = identity, typename Pred>
     constexpr std::enable_if_t<
         input_iterator<I> && sentinel_for<S, I> &&
-            IndirectUnaryPredicate<Pred, projected<I, Proj>>,
+            indirect_unary_predicate<Pred, projected<I, Proj>>,
         bool>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
@@ -30,7 +30,7 @@ struct none_of_fn {
     template <typename Rng, typename Proj = identity, typename Pred>
     constexpr std::enable_if_t<
         InputRange<Rng> &&
-            IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
+            indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
         bool>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {

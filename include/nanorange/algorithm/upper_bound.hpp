@@ -43,7 +43,7 @@ public:
               typename Proj = identity>
     std::enable_if_t<
         forward_iterator<I> && sentinel_for<S, I> &&
-        IndirectStrictWeakOrder<Comp, const T*, projected<I, Proj>>,
+            indirect_strict_weak_order<Comp, const T*, projected<I, Proj>>,
     I>
     constexpr operator()(I first, S last, const T& value, Comp comp = Comp{},
                          Proj proj = Proj{}) const
@@ -56,7 +56,7 @@ public:
               typename Proj = identity>
     std::enable_if_t<
         ForwardRange<Rng> &&
-        IndirectStrictWeakOrder<Comp, const T*, projected<iterator_t<Rng>, Proj>>,
+                         indirect_strict_weak_order<Comp, const T*, projected<iterator_t<Rng>, Proj>>,
     safe_iterator_t<Rng>>
     constexpr operator()(Rng&& rng, const T& value, Comp comp = Comp{},
                          Proj proj = Proj{}) const

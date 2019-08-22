@@ -50,7 +50,7 @@ public:
     template <typename I, typename S, typename O>
     constexpr std::enable_if_t<input_iterator<I> && sentinel_for<S, I> &&
                                    weakly_incrementable<O> &&
-                                   IndirectlyMovable<I, O>,
+                                   indirectly_movable<I, O>,
                                move_result<I, O>>
     operator()(I first, S last, O result) const
     {
@@ -60,7 +60,7 @@ public:
 
     template <typename Rng, typename O>
     constexpr std::enable_if_t<InputRange<Rng> && weakly_incrementable<O> &&
-                                   IndirectlyMovable<iterator_t<Rng>, O>,
+                                   indirectly_movable<iterator_t<Rng>, O>,
                                move_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
@@ -105,8 +105,7 @@ public:
     template <typename I, typename S, typename O>
     constexpr std::enable_if_t<
         bidirectional_iterator<I> && sentinel_for<S, I> &&
-            bidirectional_iterator<O> &&
-                                   IndirectlyMovable<I, O>,
+            bidirectional_iterator<O> && indirectly_movable<I, O>,
                                move_backward_result<I, O>>
     operator()(I first, S last, O result) const
     {
@@ -117,7 +116,7 @@ public:
     template <typename Rng, typename O>
     constexpr std::enable_if_t<BidirectionalRange<Rng> &&
                                    bidirectional_iterator<O> &&
-                                   IndirectlyMovable<iterator_t<Rng>, O>,
+                                   indirectly_movable<iterator_t<Rng>, O>,
                                move_backward_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {

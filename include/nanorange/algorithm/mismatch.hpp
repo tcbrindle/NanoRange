@@ -64,7 +64,7 @@ public:
         input_iterator<I1> && sentinel_for<S1, I1> &&
             input_iterator<std::decay_t<I2>> &&
         !InputRange<I1> &&
-        IndirectRelation<Pred, projected<I1, Proj1>, projected<std::decay_t<I2>, Proj2>>,
+            indirect_relation<Pred, projected<I1, Proj1>, projected<std::decay_t<I2>, Proj2>>,
         mismatch_result<I1, std::decay_t<I2>>>
     operator()(I1 first1, S1 last1, I2&& first2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
@@ -80,7 +80,7 @@ public:
     NANO_DEPRECATED constexpr std::enable_if_t<
         InputRange<Rng1> && input_iterator<std::decay_t<I2>> &&
                 !InputRange<I2> &&
-            IndirectRelation<Pred, projected<iterator_t<Rng1>, Proj1>,
+            indirect_relation<Pred, projected<iterator_t<Rng1>, Proj1>,
                              projected<std::decay_t<I2>, Proj2>>,
         mismatch_result<safe_iterator_t<Rng1>, std::decay_t<I2>>>
     operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{},
@@ -99,7 +99,7 @@ public:
     constexpr std::enable_if_t<
         input_iterator<I1> && sentinel_for<S1, I1> && input_iterator<I2> &&
             sentinel_for<S2, I2> &&
-            IndirectRelation<Pred, projected<I1, Proj1>, projected<I2, Proj2>>,
+            indirect_relation<Pred, projected<I1, Proj1>, projected<I2, Proj2>>,
         mismatch_result<I1, I2>>
     operator()(I1 first1, S1 last1, I2 first2, S2 last2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
@@ -114,7 +114,7 @@ public:
               typename Proj2 = identity, typename Pred = ranges::equal_to>
     constexpr std::enable_if_t<
         InputRange<Rng1> && InputRange<Rng2> &&
-            IndirectRelation<Pred, projected<iterator_t<Rng1>, Proj1>,
+            indirect_relation<Pred, projected<iterator_t<Rng1>, Proj1>,
                              projected<iterator_t<Rng2>, Proj2>>,
         mismatch_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>>>
     operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},

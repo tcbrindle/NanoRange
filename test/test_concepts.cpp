@@ -376,7 +376,7 @@ static_assert(rng::contiguous_iterator<int*>, "");
 static_assert(rng::contiguous_iterator<const int*>, "");
 
 // IndirectUnaryInvocable tests
-static_assert(!rng::IndirectUnaryInvocable<void, void>, "");
+static_assert(!rng::indirect_unary_invocable<void, void>, "");
 
 
 // Range tests
