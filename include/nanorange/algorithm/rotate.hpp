@@ -143,8 +143,7 @@ private:
 public:
     template <typename I, typename S>
     constexpr std::enable_if_t<
-        forward_iterator<I> && sentinel_for<S, I> &&
-        Permutable<I>,
+        forward_iterator<I> && sentinel_for<S, I> && permutable<I>,
         subrange<I>>
     operator()(I first, I middle, S last) const
     {
@@ -153,8 +152,7 @@ public:
 
     template <typename Rng>
     constexpr std::enable_if_t<
-        ForwardRange<Rng> &&
-        Permutable<iterator_t<Rng>>,
+        ForwardRange<Rng> && permutable<iterator_t<Rng>>,
         safe_subrange_t<Rng>>
     operator()(Rng&& rng, iterator_t<Rng> middle) const
     {

@@ -175,7 +175,7 @@ public:
     }
 
     template <typename I2, typename S2>
-    friend constexpr std::enable_if_t<IndirectlySwappable<I2, I>>
+    friend constexpr std::enable_if_t<indirectly_swappable<I2, I>>
     iter_swap(const common_iterator& x, const common_iterator<I2, S2>& y)
     {
         return ranges::iter_swap(x.iter_, y.iter_);

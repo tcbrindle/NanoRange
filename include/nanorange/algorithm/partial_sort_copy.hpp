@@ -56,8 +56,7 @@ public:
         input_iterator<I1> && sentinel_for<S1, I1> &&
             random_access_iterator<I2> &&
             sentinel_for<S2, I2> &&
-            indirectly_copyable<I1, I2> &&
-        Sortable<I2, Comp, Proj2> &&
+            indirectly_copyable<I1, I2> && sortable<I2, Comp, Proj2> &&
             indirect_strict_weak_order<Comp, projected<I1, Proj1>, projected<I2, Proj2>>,
     I2>
     operator()(I1 first, S1 last, I2 result_first, S2 result_last, Comp comp = Comp{},
@@ -74,7 +73,7 @@ public:
         InputRange<Rng1> &&
         RandomAccessRange<Rng2> &&
             indirectly_copyable<iterator_t<Rng1>, iterator_t<Rng2>> &&
-        Sortable<iterator_t<Rng2>, Comp, Proj2> &&
+            sortable<iterator_t<Rng2>, Comp, Proj2> &&
             indirect_strict_weak_order<Comp, projected<iterator_t<Rng1>, Proj1>, projected<iterator_t<Rng2>, Proj2>>,
     safe_iterator_t<Rng2>>
     operator()(Rng1&& rng, Rng2&& result_rng, Comp comp = Comp{},

@@ -61,7 +61,7 @@ public:
                               const T& value, Pred pred = Pred{},
                               Proj proj = Proj{}) const
     -> std::enable_if_t<forward_iterator<I> && sentinel_for<S, I> &&
-                        IndirectlyComparable<I, const T*, Pred, Proj>,
+                                indirectly_comparable<I, const T*, Pred, Proj>,
         subrange<I>>
     {
         return search_n_fn::impl(std::move(first), std::move(last), count,
@@ -75,7 +75,7 @@ public:
                const T& value, Pred pred = Pred{}, Proj proj = Proj{}) const
     -> std::enable_if_t<
         ForwardRange<Rng> &&
-        IndirectlyComparable<iterator_t<Rng>, const T*, Pred, Proj>,
+                indirectly_comparable<iterator_t<Rng>, const T*, Pred, Proj>,
         safe_subrange_t<Rng>>
     {
         return search_n_fn::impl(nano::begin(rng), nano::end(rng), count, value, pred,

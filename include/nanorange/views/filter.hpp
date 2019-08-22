@@ -141,7 +141,7 @@ private:
         friend constexpr auto
         iter_swap(const iterator& x, const iterator& y) noexcept(
             noexcept(ranges::iter_swap(x.current_, y.current_)))
-            -> std::enable_if_t<IndirectlySwappable<iterator_t<VV>>>
+            -> std::enable_if_t<indirectly_swappable<iterator_t<VV>>>
         {
             ranges::iter_swap(x.current_, y.current_);
         }

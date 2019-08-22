@@ -41,7 +41,7 @@ public:
               typename Proj = identity>
     constexpr std::enable_if_t<forward_iterator<I> && sentinel_for<S, I> &&
                                    indirect_relation<R, projected<I, Proj>> &&
-        Permutable<I>, I>
+                                   permutable<I>, I>
     operator()(I first, S last, R comp = {}, Proj proj = Proj{}) const
     {
         return unique_fn::impl(std::move(first), std::move(last),
@@ -52,7 +52,7 @@ public:
     constexpr std::enable_if_t<
             ForwardRange<Rng> &&
             indirect_relation<R, projected<iterator_t<Rng>, Proj>> &&
-            Permutable<iterator_t<Rng>>,
+            permutable<iterator_t<Rng>>,
             safe_iterator_t<Rng>>
     operator()(Rng&& rng, R comp = {}, Proj proj = Proj{}) const
     {

@@ -42,7 +42,7 @@ void test()
 				sentinel<const int*>(ia + s)));
 	using ra_t = random_access_iterator<const int*>;
 	static_assert(nano::input_iterator<ra_t>, "");
-	static_assert(nano::IndirectlyComparable<ra_t, ra_t, nano::equal_to>, "");
+	static_assert(nano::indirectly_comparable<ra_t, ra_t, nano::equal_to>, "");
 	CHECK(nano::equal(random_access_iterator<const int*>(ia),
 				random_access_iterator<const int*>(ia + s),
 				random_access_iterator<const int*>(ia),

@@ -135,7 +135,7 @@ public:
                   y) noexcept(noexcept(ranges::iter_swap(std::declval<I>(),
                                                          std::declval<I>())) &&
                               noexcept(--std::declval<I&>()))
-        -> std::enable_if_t<IndirectlySwappable<I2, I>>
+        -> std::enable_if_t<indirectly_swappable<I2, I>>
 
     {
         ranges::iter_swap(prev(x.current_), prev(y.base()));

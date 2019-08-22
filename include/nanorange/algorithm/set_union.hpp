@@ -76,7 +76,7 @@ public:
         input_iterator<I2> &&
         sentinel_for<S2, I2> &&
         weakly_incrementable<O> &&
-        Mergeable<I1, I2, O, Comp, Proj1, Proj2>,
+        mergeable<I1, I2, O, Comp, Proj1, Proj2>,
         set_union_result<I1, I2, O>>
     operator()(I1 first1, S1 last1, I2 first2, S2 last2, O result,
                Comp comp = Comp{}, Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
@@ -93,7 +93,7 @@ public:
         InputRange<Rng1> &&
         InputRange<Rng2> &&
         weakly_incrementable<O> &&
-        Mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp, Proj1, Proj2>,
+        mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp, Proj1, Proj2>,
         set_union_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>, O>>
     operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const

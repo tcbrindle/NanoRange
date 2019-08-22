@@ -18,49 +18,55 @@ NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
-struct IndirectlySwappable_req {
+struct indirectly_swappable_concept {
     template <typename I1, typename I2>
-    auto requires_(I1&& i1, I2&& i2) -> decltype(
-        ranges::iter_swap(std::forward<I1>(i1), std::forward<I2>(i2)),
-        ranges::iter_swap(std::forward<I2>(i2), std::forward<I1>(i1)),
-        ranges::iter_swap(std::forward<I1>(i1), std::forward<I1>(i1)),
-        ranges::iter_swap(std::forward<I2>(i2), std::forward<I2>(i2)));
+    auto requires_(I1& i1, I2& i2) -> decltype(
+        ranges::iter_swap(i1, i1),
+        ranges::iter_swap(i2, i2),
+        ranges::iter_swap(i1, i2),
+        ranges::iter_swap(i2, i1));
 };
 
 } // namespace detail
 
 template <typename I1, typename I2 = I1>
-NANO_CONCEPT IndirectlySwappable = readable<I1>&& readable<I2>&&
-    detail::requires_<detail::IndirectlySwappable_req, I1, I2>;
+NANO_CONCEPT indirectly_swappable =
+    readable<I1> && readable<I2> &&
+    detail::requires_<detail::indirectly_swappable_concept, I1, I2>;
 
-// [range.commonalgoreq.indirectlycomparable]
+// [alg.req.ind.cmp]
 
-template <typename I1, typename I2, typename R = ranges::equal_to,
+template <typename I1, typename I2, typename R,
           typename P1 = identity, typename P2 = identity>
-NANO_CONCEPT IndirectlyComparable =
+NANO_CONCEPT indirectly_comparable =
     indirect_relation<R, projected<I1, P1>, projected<I2, P2>>;
 
-// [range.commonalgoreq.permutable]
+// [alg.req.permutable]
 
 template <typename I>
-NANO_CONCEPT Permutable = forward_iterator<I>&&
-    indirectly_movable_storable<I, I>&&
-    IndirectlySwappable<I, I>;
+NANO_CONCEPT permutable =
+    forward_iterator<I> &&
+    indirectly_movable_storable<I, I> &&
+    indirectly_swappable<I, I>;
 
-// [range.commonalgoreq.mergeable]
+// [alg.req.mergeable]
 
 template <typename I1, typename I2, typename Out, typename R = ranges::less,
           typename P1 = identity, typename P2 = identity>
-NANO_CONCEPT Mergeable =
-    input_iterator<I1>&& input_iterator<I2>&& weakly_incrementable<Out>&&
-        indirectly_copyable<I1, Out>&& indirectly_copyable<I2, Out>&&
-            indirect_strict_weak_order<R, projected<I1, P1>, projected<I2, P2>>;
+NANO_CONCEPT mergeable =
+    input_iterator<I1> &&
+    input_iterator<I2> &&
+    weakly_incrementable<Out> &&
+    indirectly_copyable<I1, Out> &&
+    indirectly_copyable<I2, Out> &&
+    indirect_strict_weak_order<R, projected<I1, P1>, projected<I2, P2>>;
 
-// [range.commonalgoreq.sortable]
+// [alg.req.sortable]
 
 template <typename I, typename R = ranges::less, typename P = identity>
-NANO_CONCEPT Sortable =
-    Permutable<I>&& indirect_strict_weak_order<R, projected<I, P>>;
+NANO_CONCEPT sortable =
+    permutable<I> &&
+    indirect_strict_weak_order<R, projected<I, P>>;
 
 NANO_END_NAMESPACE
 

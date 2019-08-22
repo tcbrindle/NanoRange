@@ -67,7 +67,7 @@ public:
     template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
     constexpr std::enable_if_t<bidirectional_iterator<I> && sentinel_for<S, I> &&
-        Sortable<I, Comp, Proj>, bool>
+                                   sortable<I, Comp, Proj>, bool>
     operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return next_permutation_fn::impl(std::move(first), std::move(last),
@@ -76,8 +76,7 @@ public:
 
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
-        BidirectionalRange<Rng> &&
-        Sortable<iterator_t<Rng>, Comp, Proj>, bool>
+        BidirectionalRange<Rng> && sortable<iterator_t<Rng>, Comp, Proj>, bool>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return next_permutation_fn::impl(nano::begin(rng), nano::end(rng),
