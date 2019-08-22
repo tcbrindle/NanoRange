@@ -18,110 +18,52 @@ namespace detail {
 
 // This is a reimplementation of std::invoke, which for some stupid
 // reason is not constexpr in C++17
-inline namespace invoke_ {
+namespace invoke_ {
 
 template <typename>
-constexpr bool is_reference_wrapper_v = false;
+inline constexpr bool is_reference_wrapper_v = false;
 
 template <typename T>
-constexpr bool is_reference_wrapper_v<std::reference_wrapper<T>> = true;
+inline constexpr bool is_reference_wrapper_v<std::reference_wrapper<T>> = true;
 
 struct fn {
 private:
-    template <class Base, class T, class Derived, class... Args>
-    static constexpr auto
-    impl(T Base::*pmf, Derived&& ref,
-         Args&&... args) noexcept(noexcept((std::forward<Derived>(ref).*
-                                            pmf)(std::forward<Args>(args)...)))
-        -> std::enable_if_t<
-            std::is_function<T>::value &&
-                std::is_base_of<Base, std::decay_t<Derived>>::value,
-            decltype((std::forward<Derived>(ref).*
-                      pmf)(std::forward<Args>(args)...))>
+    template <typename T, typename Type, typename T1, typename... Args>
+    static constexpr decltype(auto)
+    impl_member_ptr(Type T::* f, T1&& t1, Args&&... args)
     {
-        return (std::forward<Derived>(ref).*pmf)(std::forward<Args>(args)...);
-    }
-
-    template <class Base, class T, class RefWrap, class... Args>
-    static constexpr auto
-    impl(T Base::*pmf, RefWrap&& ref, Args&&... args) noexcept(
-        noexcept((ref.get().*pmf)(std::forward<Args>(args)...)))
-        -> std::enable_if_t<std::is_function<T>::value &&
-                                is_reference_wrapper_v<std::decay_t<RefWrap>>,
-                            decltype((ref.get().*
-                                      pmf)(std::forward<Args>(args)...))>
-    {
-        return (ref.get().*pmf)(std::forward<Args>(args)...);
-    }
-
-    template <class Base, class T, class Pointer, class... Args>
-    static constexpr auto
-    impl(T Base::*pmf, Pointer&& ptr,
-         Args&&... args) noexcept(noexcept(((*std::forward<Pointer>(ptr)).*
-                                            pmf)(std::forward<Args>(args)...)))
-        -> std::enable_if_t<
-            std::is_function<T>::value &&
-                !is_reference_wrapper_v<std::decay_t<Pointer>> &&
-                !std::is_base_of<Base, std::decay_t<Pointer>>::value,
-            decltype(((*std::forward<Pointer>(ptr)).*
-                      pmf)(std::forward<Args>(args)...))>
-    {
-        return ((*std::forward<Pointer>(ptr)).*
-                pmf)(std::forward<Args>(args)...);
-    }
-
-    template <class Base, class T, class Derived>
-    static constexpr auto
-    impl(T Base::*pmd,
-         Derived&& ref) noexcept(noexcept(std::forward<Derived>(ref).*pmd))
-        -> std::enable_if_t<
-            !std::is_function<T>::value &&
-                std::is_base_of<Base, std::decay_t<Derived>>::value,
-            decltype(std::forward<Derived>(ref).*pmd)>
-    {
-        return std::forward<Derived>(ref).*pmd;
-    }
-
-    template <class Base, class T, class RefWrap>
-    static constexpr auto impl(T Base::*pmd,
-                               RefWrap&& ref) noexcept(noexcept(ref.get().*pmd))
-        -> std::enable_if_t<!std::is_function<T>::value &&
-                                is_reference_wrapper_v<std::decay_t<RefWrap>>,
-                            decltype(ref.get().*pmd)>
-    {
-        return ref.get().*pmd;
-    }
-
-    template <class Base, class T, class Pointer>
-    static constexpr auto
-    impl(T Base::*pmd,
-         Pointer&& ptr) noexcept(noexcept((*std::forward<Pointer>(ptr)).*pmd))
-        -> std::enable_if_t<
-            !std::is_function<T>::value &&
-                !is_reference_wrapper_v<std::decay_t<Pointer>> &&
-                !std::is_base_of<Base, std::decay_t<Pointer>>::value,
-            decltype((*std::forward<Pointer>(ptr)).*pmd)>
-    {
-        return (*std::forward<Pointer>(ptr)).*pmd;
-    }
-
-    template <class F, class... Args>
-    static constexpr auto impl(F&& f, Args&&... args) noexcept(
-        noexcept(std::forward<F>(f)(std::forward<Args>(args)...)))
-        -> std::enable_if_t<
-            !std::is_member_pointer<std::decay_t<F>>::value,
-            decltype(std::forward<F>(f)(std::forward<Args>(args)...))>
-    {
-        return std::forward<F>(f)(std::forward<Args>(args)...);
+        if constexpr (std::is_member_function_pointer_v<decltype(f)>) {
+            if constexpr (std::is_base_of_v<T, std::decay_t<T1>>) {
+                return (std::forward<T1>(t1).*f)(std::forward<Args>(args)...);
+            } else if constexpr (is_reference_wrapper_v<std::decay_t<T1>>) {
+                return (t1.get().*f)(std::forward<Args>(args)...);
+            } else {
+                return ((*std::forward<T1>(t1)).*f)(std::forward<Args>(args)...);
+            }
+        } else {
+            static_assert(std::is_member_object_pointer_v<decltype(f)>);
+            static_assert(sizeof...(args) == 0);
+            if constexpr (std::is_base_of_v<T, std::decay_t<T1>>) {
+                return std::forward<T1>(t1).*f;
+            } else if constexpr (is_reference_wrapper_v<std::decay_t<T1>>) {
+                return t1.get().*f;
+            } else {
+                return (*std::forward<T1>(t1)).*f;
+            }
+        }
     }
 
 public:
     template <typename F, typename... Args>
-    constexpr auto operator()(F&& f, Args&&... args) const noexcept(
-        noexcept(fn::impl(std::forward<F>(f), std::forward<Args>(args)...)))
-        -> decltype(fn::impl(std::forward<F>(f), std::forward<Args>(args)...))
+    constexpr auto operator()(F&& f, Args&&... args) const
+        noexcept(std::is_nothrow_invocable_v<F, Args...>)
+        -> std::invoke_result_t<F, Args...>
     {
-        return fn::impl(std::forward<F>(f), std::forward<Args>(args)...);
+        if constexpr (std::is_member_pointer_v<std::decay_t<F>>) {
+            return impl_member_ptr(std::forward<F>(f), std::forward<Args>(args)...);
+        } else {
+            return std::forward<F>(f)(std::forward<Args>(args)...);
+        }
     }
 };
 
@@ -130,28 +72,11 @@ public:
 
 NANO_INLINE_VAR(nano::detail::invoke_::fn, invoke)
 
-namespace detail {
-
-template <typename Void, typename, typename...>
-struct invoke_result_helper {
-};
+template <typename F, typename... Args>
+using invoke_result = std::invoke_result<F, Args...>;
 
 template <typename F, typename... Args>
-struct invoke_result_helper<
-    void_t<decltype(nano::invoke(std::declval<F>(), std::declval<Args>()...))>,
-    F, Args...> {
-    using type =
-        decltype(nano::invoke(std::declval<F>(), std::declval<Args>()...));
-};
-
-} // namespace detail
-
-template <typename F, typename... Args>
-struct invoke_result : detail::invoke_result_helper<void, F, Args...> {
-};
-
-template <typename F, typename... Args>
-using invoke_result_t = typename invoke_result<F, Args...>::type;
+using invoke_result_t = std::invoke_result_t<F, Args...>;
 
 NANO_END_NAMESPACE
 

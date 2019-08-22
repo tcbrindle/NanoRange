@@ -35,7 +35,7 @@ constexpr int g(int i) { return 2 * i + 1; }
 
 TEST_CASE("func.invoke") {
 	CHECK(stl2::invoke(f) == 13);
-//	CHECK(noexcept(stl2::invoke(f) == 13));
+	CHECK(noexcept(stl2::invoke(f) == 13));
 	CHECK(stl2::invoke(g, 2) == 5);
 	CHECK(stl2::invoke(h, 42) == 42);
 	CHECK(noexcept(stl2::invoke(h, 42) == 42));
@@ -46,15 +46,15 @@ TEST_CASE("func.invoke") {
 	}
 
 	CHECK(stl2::invoke(&A::f, A{}) == 42);
-//	CHECK(noexcept(stl2::invoke(&A::f, A{}) == 42));
+	CHECK(noexcept(stl2::invoke(&A::f, A{}) == 42));
 	CHECK(stl2::invoke(&A::g, A{}, 2) == 4);
 	{
 		A a;
 		const auto& ca = a;
 		CHECK(stl2::invoke(&A::f, a) == 42);
-//		CHECK(noexcept(stl2::invoke(&A::f, a) == 42));
+		CHECK(noexcept(stl2::invoke(&A::f, a) == 42));
 		CHECK(stl2::invoke(&A::f, ca) == 42);
-//		CHECK(noexcept(stl2::invoke(&A::f, ca) == 42));
+		CHECK(noexcept(stl2::invoke(&A::f, ca) == 42));
 		CHECK(stl2::invoke(&A::g, a, 2) == 4);
 	}
 
@@ -62,9 +62,9 @@ TEST_CASE("func.invoke") {
 		A a;
 		const auto& ca = a;
 		CHECK(stl2::invoke(&A::f, &a) == 42);
-//		CHECK(noexcept(stl2::invoke(&A::f, &a) == 42));
+		CHECK(noexcept(stl2::invoke(&A::f, &a) == 42));
 		CHECK(stl2::invoke(&A::f, &ca) == 42);
-//		CHECK(noexcept(stl2::invoke(&A::f, &ca) == 42));
+		CHECK(noexcept(stl2::invoke(&A::f, &ca) == 42));
 		CHECK(stl2::invoke(&A::g, &a, 2) == 4);
 	}
 	{
@@ -75,7 +75,7 @@ TEST_CASE("func.invoke") {
 	{
 		auto sp = std::make_shared<A>();
 		CHECK(stl2::invoke(&A::f, sp) == 42);
-//		CHECK(noexcept(stl2::invoke(&A::f, sp) == 42));
+		CHECK(noexcept(stl2::invoke(&A::f, sp) == 42));
 		CHECK(stl2::invoke(&A::g, sp, 2) == 4);
 	}
 
