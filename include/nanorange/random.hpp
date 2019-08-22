@@ -9,38 +9,36 @@
 
 #include <nanorange/concepts.hpp>
 
-#include <random>
-
 NANO_BEGIN_NAMESPACE
 
 //  [rand.req.urng]
 
 namespace detail {
 
-struct UniformRandomBitGenerator_req {
+struct uniform_random_bit_generator_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
+
     template <typename G>
-    auto requires_() -> decltype(valid_expr(
-        G::min(),
-        requires_expr<Same<decltype(G::min()), invoke_result_t<G&>>>{},
-        G::max(),
-        requires_expr<Same<decltype(G::max()), invoke_result_t<G&>>>{}));
+    static auto test(int) -> std::enable_if_t<
+        invocable<G&> &&
+        unsigned_integral<invoke_result_t<G&>> &&
+        detail::requires_<uniform_random_bit_generator_concept, G>,
+        std::true_type>;
+
+
+    template <typename G>
+    auto requires_() -> decltype(
+        requires_expr<same_as<decltype(G::min()), invoke_result_t<G&>>>{},
+        requires_expr<same_as<decltype(G::max()), invoke_result_t<G&>>>{}
+    );
 };
-
-template <typename>
-auto UniformRandomBitGenerator_fn(long) -> std::false_type;
-
-template <typename G>
-auto UniformRandomBitGenerator_fn(int) -> std::enable_if_t<
-        Invocable<G&> &&
-        UnsignedIntegral<invoke_result_t<G&>> &&
-        requires_<UniformRandomBitGenerator_req, G>,
-    std::true_type>;
 
 } // namespace detail
 
 template <typename G>
-NANO_CONCEPT UniformRandomBitGenerator =
-    decltype(detail::UniformRandomBitGenerator_fn<G>(0))::value;
+NANO_CONCEPT uniform_random_bit_generator =
+    decltype(detail::uniform_random_bit_generator_concept::test<G>(0))::value;
 
 NANO_END_NAMESPACE
 

@@ -28,5 +28,5 @@ TEST_CASE("alg.is_heap_until2")
 
     // Test rvalue range
     auto res = stl2::is_heap_until(std::array<S, 1>{S{1}}, std::greater<int>(), &S::i);
-    static_assert(stl2::Same<decltype(res), stl2::dangling>);
+    static_assert(stl2::same_as<decltype(res), stl2::dangling>);
 }

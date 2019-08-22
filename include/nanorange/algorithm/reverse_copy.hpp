@@ -32,7 +32,7 @@ private:
 
     template <typename I, typename S, typename O>
     static constexpr std::enable_if_t<
-        !Same<I, S>, reverse_copy_result<I, O>>
+        !same_as<I, S>, reverse_copy_result<I, O>>
     impl(I first, S bound, O result)
     {
         return reverse_copy_fn::impl(std::move(first), nano::next(first, bound),
@@ -42,10 +42,8 @@ private:
 public:
     template <typename I, typename S, typename O>
     constexpr std::enable_if_t<
-        BidirectionalIterator<I> &&
-        Sentinel<S, I> &&
-        WeaklyIncrementable<O> &&
-        IndirectlyCopyable<I, O>,
+        bidirectional_iterator<I> && sentinel_for<S, I> &&
+        weakly_incrementable<O> && indirectly_copyable<I, O>,
         reverse_copy_result<I, O>>
     operator()(I first, S last, O result) const
     {
@@ -54,10 +52,9 @@ public:
     }
 
     template <typename Rng, typename O>
-    constexpr std::enable_if_t<
-        BidirectionalRange<Rng> &&
-        WeaklyIncrementable<O> &&
-        IndirectlyCopyable<iterator_t<Rng>, O>,
+    constexpr std::enable_if_t<bidirectional_range<Rng> &&
+        weakly_incrementable<O> &&
+                                   indirectly_copyable<iterator_t<Rng>, O>,
         reverse_copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {

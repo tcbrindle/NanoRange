@@ -46,13 +46,11 @@ public:
     template <typename I, typename S, typename O1, typename O2,
               typename Pred, typename Proj = identity>
     constexpr std::enable_if_t<
-        InputIterator<I> &&
-        Sentinel<S, I> &&
-        WeaklyIncrementable<O1> &&
-        WeaklyIncrementable<O2> &&
-        IndirectUnaryPredicate<Pred, projected<I, Proj>> &&
-        IndirectlyCopyable<I, O1> &&
-        IndirectlyCopyable<I, O2>,
+        input_iterator<I> && sentinel_for<S, I> &&
+        weakly_incrementable<O1> &&
+        weakly_incrementable<O2> &&
+            indirect_unary_predicate<Pred, projected<I, Proj>> &&
+            indirectly_copyable<I, O1> && indirectly_copyable<I, O2>,
         partition_copy_result<I, O1, O2>>
     operator()(I first, S last, O1 out_true, O2 out_false, Pred pred,
                Proj proj = Proj{}) const
@@ -65,12 +63,12 @@ public:
     template <typename Rng, typename O1, typename O2,
             typename Pred, typename Proj = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng> &&
-        WeaklyIncrementable<O1> &&
-        WeaklyIncrementable<O2> &&
-        IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>> &&
-        IndirectlyCopyable<iterator_t<Rng>, O1> &&
-        IndirectlyCopyable<iterator_t<Rng>, O2>,
+        input_range<Rng> &&
+        weakly_incrementable<O1> &&
+        weakly_incrementable<O2> &&
+            indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>> &&
+            indirectly_copyable<iterator_t<Rng>, O1> &&
+            indirectly_copyable<iterator_t<Rng>, O2>,
         partition_copy_result<safe_iterator_t<Rng>, O1, O2>>
     operator()(Rng&& rng, O1 out_true, O2 out_false, Pred pred,
             Proj proj = Proj{}) const

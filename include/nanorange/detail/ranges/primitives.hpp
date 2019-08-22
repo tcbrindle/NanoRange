@@ -13,8 +13,8 @@ NANO_BEGIN_NAMESPACE
 
 // [range.primitives.size]
 
-template <typename T>
-constexpr bool disable_sized_range = false;
+template <typename>
+inline constexpr bool disable_sized_range = false;
 
 namespace detail {
 namespace size_ {
@@ -46,7 +46,7 @@ private:
     static constexpr auto impl(T&& t, priority_tag<2>) noexcept(
         noexcept(decay_copy(std::forward<T>(t).size())))
         -> std::enable_if_t<
-            Integral<I> && !disable_sized_range<remove_cvref_t<T>>, I>
+            integral<I> && !disable_sized_range<remove_cvref_t<T>>, I>
     {
         return decay_copy(std::forward<T>(t).size());
     }
@@ -56,7 +56,7 @@ private:
     static constexpr auto impl(T&& t, priority_tag<1>) noexcept(
         noexcept(decay_copy(size(std::forward<T>(t)))))
         -> std::enable_if_t<
-            Integral<I> && !disable_sized_range<remove_cvref_t<T>>, I>
+            integral<I> && !disable_sized_range<remove_cvref_t<T>>, I>
     {
         return decay_copy(size(std::forward<T>(t)));
     }
@@ -70,7 +70,7 @@ private:
         noexcept(decay_copy(ranges::end(t) - ranges::begin(t))))
         -> std::enable_if_t<
             !std::is_array<remove_cvref_t<T>>::value && // MSVC sillyness?
-                SizedSentinel<S, I> && ForwardIterator<I>,
+                sized_sentinel_for<S, I> && forward_iterator<I>,
             D>
     {
         return decay_copy(ranges::end(t) - ranges::begin(t));
@@ -120,7 +120,7 @@ private:
     static constexpr auto
     impl(T&& t,
          priority_tag<0>) noexcept(noexcept(ranges::begin(t) == ranges::end(t)))
-        -> std::enable_if_t<ForwardIterator<I>,
+        -> std::enable_if_t<forward_iterator<I>,
                             decltype(ranges::begin(t) == ranges::end(t))>
     {
         return ranges::begin(t) == ranges::end(t);

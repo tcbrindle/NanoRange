@@ -31,8 +31,7 @@ private:
         noexcept(iter_value_t<std::remove_reference_t<X>>(ranges::iter_move(x))) &&
         noexcept(*x = ranges::iter_move(y)))
     {
-        iter_value_t<std::remove_reference_t<X>> old_value(
-            ranges::iter_move(x));
+        iter_value_t<std::remove_reference_t<X>> old_value(ranges::iter_move(x));
         *x = ranges::iter_move(y);
         return old_value;
     }
@@ -48,9 +47,10 @@ private:
     template <typename T, typename U>
     static constexpr auto impl(T&& t, U&& u, priority_tag<1>) noexcept(
         noexcept(ranges::swap(*std::forward<T>(t), *std::forward<U>(u))))
-        -> std::enable_if_t<Readable<std::remove_reference_t<T>> &&
-                            Readable<std::remove_reference_t<U>> &&
-                            SwappableWith<iter_reference_t<T>, iter_reference_t<U>>>
+        -> std::enable_if_t<
+                readable<std::remove_reference_t<T>> &&
+                readable<std::remove_reference_t<U>> &&
+                swappable_with<iter_reference_t<T>, iter_reference_t<U>>>
     {
         ranges::swap(*std::forward<T>(t), *std::forward<U>(u));
     }
@@ -58,8 +58,8 @@ private:
     template <typename T, typename U>
     static constexpr auto impl(T&& t, U&& u, priority_tag<0>) noexcept(noexcept(
         *t = fn::iter_exchange_move(std::forward<U>(u), std::forward<T>(t))))
-        -> std::enable_if_t<IndirectlyMovableStorable<T, U> &&
-                            IndirectlyMovableStorable<U, T>>
+        -> std::enable_if_t<indirectly_movable_storable<T, U> &&
+                            indirectly_movable_storable<U, T>>
     {
         return *t = fn::iter_exchange_move(std::forward<U>(u),
                                            std::forward<T>(t));

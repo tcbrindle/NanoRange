@@ -12,31 +12,48 @@
 
 NANO_BEGIN_NAMESPACE
 
+// [concept.swappable]
 namespace detail {
 
-// Implement the Swappable concepts now we have swap()
-
-struct Swappable_req {
+struct swappable_concept {
     template <typename T>
     auto requires_(T& a, T& b) -> decltype(ranges::swap(a, b));
 };
 
-struct SwappableWith_req {
+}
+
+template <typename T>
+NANO_CONCEPT swappable = detail::requires_<detail::swappable_concept, T>;
+
+namespace detail {
+
+struct swappable_with_concept {
     template <typename T, typename U>
-    auto requires_(T&& t, U&& u)
-        -> decltype(ranges::swap(std::forward<T>(t), std::forward<T>(t)),
-                    ranges::swap(std::forward<U>(u), std::forward<U>(u)),
-                    ranges::swap(std::forward<T>(t), std::forward<U>(u)),
-                    ranges::swap(std::forward<U>(u), std::forward<T>(t)));
+    auto requires_(T&& t, U&& u) -> decltype(
+        ranges::swap(std::forward<T>(t), std::forward<T>(t)),
+        ranges::swap(std::forward<U>(u), std::forward<U>(u)),
+        ranges::swap(std::forward<T>(t), std::forward<U>(u)),
+        ranges::swap(std::forward<U>(u), std::forward<T>(t))
+    );
+
+    template <typename, typename>
+    static auto test(long) -> std::false_type;
+
+    template <typename T, typename U>
+    static auto test(int) -> std::enable_if_t<
+        common_reference_with<
+            const std::remove_reference_t<T>&,
+            const std::remove_reference_t<U>&> &&
+        detail::requires_<swappable_with_concept, T, U>,
+        std::true_type>;
+
 };
 
 } // namespace detail
 
-template <typename T>
-NANO_CONCEPT Swappable = detail::requires_<detail::Swappable_req, T>;
-
 template <typename T, typename U>
-NANO_CONCEPT SwappableWith = detail::requires_<detail::SwappableWith_req, T, U>;
+NANO_CONCEPT swappable_with =
+    decltype(detail::swappable_with_concept::test<T, U>(0))::value;
 
 NANO_END_NAMESPACE
 

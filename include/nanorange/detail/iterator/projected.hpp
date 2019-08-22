@@ -25,9 +25,9 @@ struct projected_helper {
 template <typename I, typename Proj>
 struct projected_helper<
     I, Proj,
-    std::enable_if_t<Readable<I> && IndirectRegularUnaryInvocable<Proj, I>>> {
-    using value_type =
-        std::remove_cv_t<std::remove_reference_t<indirect_result_t<Proj&, I>>>;
+    std::enable_if_t<readable<I> &&
+                     indirect_regular_unary_invocable<Proj, I>>> {
+    using value_type = remove_cvref_t<indirect_result_t<Proj&, I>>;
 
     // We shouldn't need to define this, as we only need its return type,
     // but GCC gets stroppy sometimes.
@@ -39,7 +39,7 @@ struct projected_difference_t_helper {};
 
 template <typename I, typename Proj>
 struct projected_difference_t_helper<I, Proj, std::enable_if_t<
-    WeaklyIncrementable<I>>> {
+    weakly_incrementable<I>>> {
     using difference_type = iter_difference_t<I>;
 };
 

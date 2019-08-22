@@ -29,11 +29,11 @@ namespace {
 
 void test_iter()
 {
-    using namespace nano::ranges;
+    using rng::find_first_of;
     int ia[] = {0, 1, 2, 3, 0, 1, 2, 3};
-    static constexpr unsigned sa = size(ia);
+    static constexpr unsigned sa = rng::size(ia);
     int ib[] = {1, 3, 5, 7};
-    static constexpr unsigned sb = size(ib);
+    static constexpr unsigned sb = rng::size(ib);
     CHECK(rng::find_first_of(input_iterator<const int*>(ia),
                              sentinel<const int*>(ia + sa),
                              forward_iterator<const int*>(ib),
@@ -59,11 +59,11 @@ void test_iter()
 
 void test_iter_pred()
 {
-    using namespace nano::ranges;
+    using nano::find_first_of;
     int ia[] = {0, 1, 2, 3, 0, 1, 2, 3};
-    static constexpr unsigned sa = size(ia);
+    static constexpr unsigned sa = nano::size(ia);
     int ib[] = {1, 3, 5, 7};
-    static constexpr unsigned sb = size(ib);
+    static constexpr unsigned sb = nano::size(ib);
     CHECK(rng::find_first_of(input_iterator<const int*>(ia),
                              sentinel<const int*>(ia + sa),
                              forward_iterator<const int*>(ib),
@@ -93,11 +93,12 @@ void test_iter_pred()
 
 void test_rng()
 {
-    using namespace nano::ranges;
+    using nano::find_first_of;
+    using nano::subrange;
     int ia[] = {0, 1, 2, 3, 0, 1, 2, 3};
-    static constexpr unsigned sa = size(ia);
+    static constexpr unsigned sa = nano::size(ia);
     int ib[] = {1, 3, 5, 7};
-    static constexpr unsigned sb = size(ib);
+    static constexpr unsigned sb = nano::size(ib);
     CHECK(rng::find_first_of(
             as_lvalue(subrange(input_iterator<const int*>(ia),
                                  input_iterator<const int*>(ia + sa))),
@@ -151,11 +152,11 @@ void test_rng()
 
 void test_rng_pred()
 {
-    using namespace nano::ranges;
+    using nano::subrange;
     int ia[] = {0, 1, 2, 3, 0, 1, 2, 3};
-    static constexpr unsigned sa = size(ia);
+    static constexpr unsigned sa = nano::size(ia);
     int ib[] = {1, 3, 5, 7};
-    static constexpr unsigned sb = size(ib);
+    static constexpr unsigned sb = nano::size(ib);
     CHECK(rng::find_first_of(
             as_lvalue(subrange(input_iterator<const int*>(ia),
                                  input_iterator<const int*>(ia + sa))),
@@ -193,11 +194,11 @@ struct S {
 
 void test_rng_pred_proj()
 {
-    using namespace nano::ranges;
+    using nano::subrange;
     S ia[] = {S{0}, S{1}, S{2}, S{3}, S{0}, S{1}, S{2}, S{3}};
-    static constexpr unsigned sa = size(ia);
+    static constexpr unsigned sa = nano::size(ia);
     S ib[] = {S{1}, S{3}, S{5}, S{7}};
-    static constexpr unsigned sb = size(ib);
+    static constexpr unsigned sb = nano::size(ib);
     CHECK(rng::find_first_of(as_lvalue(subrange(input_iterator<const S*>(ia),
                                                   input_iterator<const S*>(
                                                           ia + sa))),

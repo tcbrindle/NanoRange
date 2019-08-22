@@ -8,7 +8,7 @@
 #define NANORANGE_ALGORITHM_SEARCH_HPP_INCLUDED
 
 #include <nanorange/ranges.hpp>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/subrange.hpp>
 
 NANO_BEGIN_NAMESPACE
 
@@ -51,11 +51,9 @@ public:
               typename Pred = ranges::equal_to, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr std::enable_if_t<
-         ForwardIterator<I1> &&
-         Sentinel<S1, I1> &&
-         ForwardIterator<I2> &&
-         Sentinel<S2, I2> &&
-         IndirectlyComparable<I1, I2, Pred, Proj1, Proj2>,
+        forward_iterator<I1> && sentinel_for<S1, I1> && forward_iterator<I2> &&
+            sentinel_for<S2, I2> &&
+            indirectly_comparable<I1, I2, Pred, Proj1, Proj2>,
          subrange<I1>>
     operator()(I1 first1, S1 last1, I2 first2, S2 last2,
                Pred pred = Pred{}, Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
@@ -68,9 +66,8 @@ public:
     template <typename Rng1, typename Rng2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
-            ForwardRange<Rng1> &&
-            ForwardRange<Rng2> &&
-            IndirectlyComparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred, Proj1, Proj2>,
+        forward_range<Rng1> && forward_range<Rng2> &&
+            indirectly_comparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred, Proj1, Proj2>,
             safe_subrange_t<Rng1>>
     operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const

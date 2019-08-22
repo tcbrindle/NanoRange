@@ -20,11 +20,11 @@ namespace ns = nano::ranges;
 #include <type_traits>
 
 //CONCEPT_ASSERT(models::Same<>);
-CONCEPT_ASSERT(models::Same<int, int>);
-CONCEPT_ASSERT(models::Same<double, double>);
+CONCEPT_ASSERT(models::same_as<int, int>);
+CONCEPT_ASSERT(models::same_as<double, double>);
 //CONCEPT_ASSERT(models::Same<double>);
-CONCEPT_ASSERT(!models::Same<double, int>);
-CONCEPT_ASSERT(!models::Same<int, double>);
+CONCEPT_ASSERT(!models::same_as<double, int>);
+CONCEPT_ASSERT(!models::same_as<int, double>);
 
 //CONCEPT_ASSERT(models::Same<int, int, int, int>);
 //CONCEPT_ASSERT(!models::Same<int, int, double, int>);
@@ -33,40 +33,40 @@ namespace convertible_to_test {
 struct A {};
 struct B : A {};
 
-CONCEPT_ASSERT(models::ConvertibleTo<A, A>);
-CONCEPT_ASSERT(models::ConvertibleTo<B, B>);
-CONCEPT_ASSERT(!models::ConvertibleTo<A, B>);
-CONCEPT_ASSERT(models::ConvertibleTo<B, A>);
-CONCEPT_ASSERT(models::ConvertibleTo<int, double>);
-CONCEPT_ASSERT(models::ConvertibleTo<double, int>);
-CONCEPT_ASSERT(models::ConvertibleTo<void, void>);
+CONCEPT_ASSERT(models::convertible_to<A, A>);
+CONCEPT_ASSERT(models::convertible_to<B, B>);
+CONCEPT_ASSERT(!models::convertible_to<A, B>);
+CONCEPT_ASSERT(models::convertible_to<B, A>);
+CONCEPT_ASSERT(models::convertible_to<int, double>);
+CONCEPT_ASSERT(models::convertible_to<double, int>);
+CONCEPT_ASSERT(models::convertible_to<void, void>);
 }
 
 namespace common_test {
-CONCEPT_ASSERT(models::Same<ns::common_type_t<int, int>, int>);
-CONCEPT_ASSERT(models::Same<ns::common_type_t<int, float, double>, double>);
+CONCEPT_ASSERT(models::same_as<ns::common_type_t<int, int>, int>);
+CONCEPT_ASSERT(models::same_as<ns::common_type_t<int, float, double>, double>);
 
-CONCEPT_ASSERT(models::Common<int, int>);
-CONCEPT_ASSERT(models::Common<int, double>);
-CONCEPT_ASSERT(models::Common<double, int>);
-CONCEPT_ASSERT(models::Common<double, double>);
-CONCEPT_ASSERT(!models::Common<void, int>);
-CONCEPT_ASSERT(!models::Common<int*, int>);
+CONCEPT_ASSERT(models::common_with<int, int>);
+CONCEPT_ASSERT(models::common_with<int, double>);
+CONCEPT_ASSERT(models::common_with<double, int>);
+CONCEPT_ASSERT(models::common_with<double, double>);
+CONCEPT_ASSERT(!models::common_with<void, int>);
+CONCEPT_ASSERT(!models::common_with<int*, int>);
 // FIXME: MSVC
-//CONCEPT_ASSERT(models::Common<void*, int*>);
-CONCEPT_ASSERT(models::Common<double,long long>);
-CONCEPT_ASSERT(models::Common<void, void>);
-//CONCEPT_ASSERT(models::Common<int, float, double>);
-//CONCEPT_ASSERT(!models::Common<int, float, double, void>);
+//CONCEPT_ASSERT(models::common_with<void*, int*>);
+CONCEPT_ASSERT(models::common_with<double,long long>);
+CONCEPT_ASSERT(models::common_with<void, void>);
+//CONCEPT_ASSERT(models::common_with<int, float, double>);
+//CONCEPT_ASSERT(!models::common_with<int, float, double, void>);
 
 struct B {};
 struct C { C() = default; C(B) {} C(int) {} };
-CONCEPT_ASSERT(models::Common<B,C>);
-//CONCEPT_ASSERT(models::Common<int, C, B>);
+CONCEPT_ASSERT(models::common_with<B,C>);
+//CONCEPT_ASSERT(models::common_with<int, C, B>);
 
 struct incomplete;
 // FIXME: MSVC
-//CONCEPT_ASSERT(models::Common<void*, incomplete*>);
+//CONCEPT_ASSERT(models::common_with<void*, incomplete*>);
 }
 
 namespace {
@@ -83,11 +83,11 @@ result f(A) {
 }
 
 template <class T, class U>
-constexpr bool ConvertibleTo = nano::ConvertibleTo<T, U>;
+constexpr bool convertible_to = nano::convertible_to<T, U>;
 
 template <class T>
 std::enable_if_t<
-	ConvertibleTo<T,A> &&
+	convertible_to<T,A> &&
 		!std::is_same<A,T>::value,
 	result>
 f(T) {
@@ -97,7 +97,7 @@ f(T) {
 
 template <class T>
 std::enable_if_t<
-	!(ConvertibleTo<T, A> ||
+	!(convertible_to<T, A> ||
 		std::is_same<A,T>::value),
 	result>
 f(T) {

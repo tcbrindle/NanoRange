@@ -44,13 +44,13 @@ namespace {
 
 TEST_CASE("iter.ostreambuf_iterator") {
 	using I = ostreambuf_iterator<char>;
-	static_assert(OutputIterator<I, const char&>, "");
+	static_assert(nano::output_iterator<I, const char&>, "");
 	// FIXME: ostreambuf_iterator isn't EqualityComparableWith default_sentinel?
 	//static_assert(Sentinel<default_sentinel, I>);
 	//static_assert(Common<I, default_sentinel>);
 	//static_assert(std::is_same<I, common_type_t<I, default_sentinel>>());
 	// We'll use unreachable instead
-	static_assert(Sentinel<unreachable_sentinel_t, I>, "");
+	static_assert(sentinel_for<unreachable_sentinel_t, I>, "");
 
 	{
 		static const char hw[] = "Hello, world!";

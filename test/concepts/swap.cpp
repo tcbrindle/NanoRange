@@ -23,18 +23,18 @@ using std::declval;
 #include <cstddef>
 
 namespace swappable_test {
-	CONCEPT_ASSERT(models::Swappable<int>);
-	CONCEPT_ASSERT(models::SwappableWith<int&, int&>);
-	CONCEPT_ASSERT(models::Swappable<int[4]>);
+	CONCEPT_ASSERT(models::swappable<int>);
+	CONCEPT_ASSERT(models::swappable_with<int&, int&>);
+	CONCEPT_ASSERT(models::swappable<int[4]>);
 // FIXME MSVC
 #ifndef _MSC_VER
-	CONCEPT_ASSERT(models::SwappableWith<int(&)[4], int(&)[4]>);
+	CONCEPT_ASSERT(models::swappable_with<int(&)[4], int(&)[4]>);
 #endif
-	CONCEPT_ASSERT(!models::SwappableWith<int, int>);
-	CONCEPT_ASSERT(!models::SwappableWith<int&, double&>);
-	CONCEPT_ASSERT(!models::SwappableWith<int(&)[4], bool(&)[4]>);
-	CONCEPT_ASSERT(!models::Swappable<int[]>);
-	CONCEPT_ASSERT(!models::Swappable<int[][4]>);
+	CONCEPT_ASSERT(!models::swappable_with<int, int>);
+	CONCEPT_ASSERT(!models::swappable_with<int&, double&>);
+	CONCEPT_ASSERT(!models::swappable_with<int(&)[4], bool(&)[4]>);
+	CONCEPT_ASSERT(!models::swappable<int[]>);
+	CONCEPT_ASSERT(!models::swappable<int[][4]>);
 
 	CONCEPT_ASSERT(noexcept(ns::swap(ns::declval<int&>(), ns::declval<int&>())));
 	//CONCEPT_ASSERT(ns::is_nothrow_swappable<int&, int&>());
@@ -42,13 +42,13 @@ namespace swappable_test {
 
 //#if VALIDATE_STL2
 	// range-v3 doesn't support swapping multidimensional arrays
-	CONCEPT_ASSERT(models::Swappable<int[3][4]>);
+	CONCEPT_ASSERT(models::swappable<int[3][4]>);
 // FIXME MSVC
 #ifndef _MSC_VER
-	CONCEPT_ASSERT(models::SwappableWith<int(&)[3][4], int(&)[3][4]>);
-	CONCEPT_ASSERT(models::Swappable<int[3][4][1][2]>);
-	CONCEPT_ASSERT(models::SwappableWith<int(&)[3][4][1][2], int(&)[3][4][1][2]>);
-	CONCEPT_ASSERT(!models::SwappableWith<int(&)[3][4][1][2], int(&)[4][4][1][2]>);
+	CONCEPT_ASSERT(models::swappable_with<int(&)[3][4], int(&)[3][4]>);
+	CONCEPT_ASSERT(models::swappable<int[3][4][1][2]>);
+	CONCEPT_ASSERT(models::swappable_with<int(&)[3][4][1][2], int(&)[3][4][1][2]>);
+	CONCEPT_ASSERT(!models::swappable_with<int(&)[3][4][1][2], int(&)[4][4][1][2]>);
 #endif
 	//CONCEPT_ASSERT(ns::is_nothrow_swappable<int(&)[6][7], int(&)[6][7]>());
 
@@ -57,7 +57,7 @@ namespace swappable_test {
 		unswappable(const unswappable&) = delete;
 		unswappable(unswappable&&) = delete;
 	};
-	CONCEPT_ASSERT(!models::SwappableWith<unswappable&, unswappable&>);
+	CONCEPT_ASSERT(!models::swappable_with<unswappable&, unswappable&>);
 #if 0
 	namespace __constrained_swappable {
 		// Has a constrained swap findable via ADL:
@@ -87,7 +87,7 @@ namespace swappable_test {
 			friend void swap(A&, A&) noexcept {}
 		};
 
-		CONCEPT_ASSERT(models::Swappable<A>);
+		CONCEPT_ASSERT(models::swappable<A>);
 		CONCEPT_ASSERT(noexcept(ns::swap(ns::declval<A&>(), ns::declval<A&>())));
 //		CONCEPT_ASSERT(ns::is_nothrow_swappable<A&, A&>());
 	}
@@ -97,7 +97,7 @@ namespace swappable_test {
 			friend void swap(B&, B&) {}
 		};
 
-		CONCEPT_ASSERT(models::Swappable<B>);
+		CONCEPT_ASSERT(models::swappable<B>);
 		CONCEPT_ASSERT(!noexcept(ns::swap(ns::declval<B&>(), ns::declval<B&>())));
 //		CONCEPT_ASSERT(!ns::is_nothrow_swappable<B&, B&>());
 	}
@@ -149,7 +149,7 @@ TEST_CASE("concepts.swap")
 
 // FIXME MSVC
 #ifndef _MSC_VER
-		CONCEPT_ASSERT(models::SwappableWith<decltype((a)),decltype((b))>);
+		CONCEPT_ASSERT(models::swappable_with<decltype((a)),decltype((b))>);
 #endif
 		ns::swap(a, b);
 		CONCEPT_ASSERT(noexcept(ns::swap(a, b)));

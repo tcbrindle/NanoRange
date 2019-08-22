@@ -41,10 +41,8 @@ private:
 
 public:
     template <typename I, typename S, typename Comp = ranges::less, typename Proj = identity>
-    constexpr std::enable_if_t<
-        RandomAccessIterator<I> &&
-        Sentinel<S, I> &&
-        Sortable<I, Comp, Proj>, I>
+    constexpr std::enable_if_t<random_access_iterator<I> && sentinel_for<S, I> &&
+                                   sortable<I, Comp, Proj>, I>
     operator()(I first, I middle, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return partial_sort_fn::impl(std::move(first), std::move(middle),
@@ -52,9 +50,8 @@ public:
     }
 
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
-    constexpr std::enable_if_t<
-        RandomAccessRange<Rng> &&
-        Sortable<iterator_t<Rng>, Comp, Proj>, safe_iterator_t<Rng>>
+    constexpr std::enable_if_t<random_access_range<Rng> &&
+                                   sortable<iterator_t<Rng>, Comp, Proj>, safe_iterator_t<Rng>>
     operator()(Rng&& rng, iterator_t<Rng> middle, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return partial_sort_fn::impl(nano::begin(rng), std::move(middle),

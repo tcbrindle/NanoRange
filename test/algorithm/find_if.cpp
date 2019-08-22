@@ -29,10 +29,10 @@ struct S
 
 TEST_CASE("alg.find_if")
 {
-	using namespace nano;
+	using nano::find_if;
 
 	int ia[] = {0, 1, 2, 3, 4, 5};
-	constexpr unsigned s = size(ia);
+	constexpr unsigned s = nano::size(ia);
 	input_iterator<const int*> r = find_if(input_iterator<const int*>(ia),
 										   input_iterator<const int*>(ia + s),
 										   [](int i){return i == 3;});
@@ -65,5 +65,5 @@ TEST_CASE("alg.find_if")
 	S *ps = find_if(sa, [](int i){return i == 3;}, &S::i_);
 	CHECK(ps->i_ == 3);
 	ps = find_if(sa, [](int i){return i == 10;}, &S::i_);
-	CHECK(ps == end(sa));
+	CHECK(ps == nano::end(sa));
 }

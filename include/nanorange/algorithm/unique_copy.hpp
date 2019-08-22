@@ -42,17 +42,14 @@ private:
     }
 
     template <typename I, typename O>
-    static auto constraint_helper(priority_tag<2>) -> std::enable_if_t<
-        ForwardIterator<I>, std::true_type>;
+    static auto constraint_helper(priority_tag<2>) -> std::enable_if_t<forward_iterator<I>, std::true_type>;
 
     template <typename I, typename O>
-    static auto constraint_helper(priority_tag<1>) -> std::enable_if_t<
-        InputIterator<O> && Same<iter_value_t<I>, iter_value_t<O>>,
+    static auto constraint_helper(priority_tag<1>) -> std::enable_if_t<input_iterator<O> && same_as<iter_value_t<I>, iter_value_t<O>>,
         std::true_type>;
 
     template <typename I, typename O>
-    static auto constraint_helper(priority_tag<0>) -> std::enable_if_t<
-        IndirectlyCopyableStorable<I, O>, std::true_type>;
+    static auto constraint_helper(priority_tag<0>) -> std::enable_if_t<indirectly_copyable_storable<I, O>, std::true_type>;
 
 public:
     template <typename I, typename S, typename O, typename Comp = ranges::equal_to,
@@ -60,11 +57,10 @@ public:
     constexpr auto operator()(I first, S last, O result,
                               Comp comp = Comp{}, Proj proj = Proj{}) const
         -> std::enable_if_t<
-               InputIterator<I> &&
-               Sentinel<S, I> &&
-               WeaklyIncrementable<O> &&
-               IndirectRelation<Comp, projected<I, Proj>> &&
-               IndirectlyCopyable<I, O> &&
+            input_iterator<I> && sentinel_for<S, I> &&
+               weakly_incrementable<O> &&
+                indirect_relation<Comp, projected<I, Proj>> &&
+                indirectly_copyable<I, O> &&
                decltype(constraint_helper<I, O>(priority_tag<2>{}))::value,
         unique_copy_result<I, O>>
     {
@@ -77,10 +73,10 @@ public:
     constexpr auto
     operator()(Rng&& rng, O result, Comp comp = Comp{}, Proj proj = Proj{}) const
     -> std::enable_if_t<
-            InputRange<Rng> &&
-            WeaklyIncrementable<O> &&
-            IndirectRelation<Comp, projected<iterator_t<Rng>, Proj>> &&
-            IndirectlyCopyable<iterator_t<Rng>, O> &&
+            input_range<Rng> &&
+            weakly_incrementable<O> &&
+                indirect_relation<Comp, projected<iterator_t<Rng>, Proj>> &&
+                indirectly_copyable<iterator_t<Rng>, O> &&
             decltype(constraint_helper<iterator_t<Rng>, O>(priority_tag<2>{}))::value,
        unique_copy_result<safe_iterator_t<Rng>, O>>
     {

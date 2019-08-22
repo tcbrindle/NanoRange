@@ -29,7 +29,7 @@ private:
 
     template <typename I, typename S>
     static constexpr std::enable_if_t<
-        !Same<I, S>, I>
+        !same_as<I, S>, I>
     impl(I first, S bound)
     {
         I last = next(first, bound);
@@ -38,9 +38,7 @@ private:
 
 public:
     template <typename I, typename S>
-    constexpr std::enable_if_t<
-        BidirectionalIterator<I> &&
-        Sentinel<S, I>,
+    constexpr std::enable_if_t<bidirectional_iterator<I> && sentinel_for<S, I>,
         I>
     operator()(I first, S last) const
     {
@@ -48,8 +46,7 @@ public:
     }
 
     template <typename Rng>
-    constexpr std::enable_if_t<
-        BidirectionalRange<Rng>,
+    constexpr std::enable_if_t<bidirectional_range<Rng>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng) const
     {

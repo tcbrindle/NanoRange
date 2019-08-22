@@ -289,10 +289,10 @@ TEST_CASE("iter.reverse_iterator") {
 	{
 		namespace models = __stl2;
 		static_assert(
-				models::BidirectionalIterator<
+				models::bidirectional_iterator<
 					__stl2::reverse_iterator<bidirectional_iterator<const char *>>>, "");
 		static_assert(
-				models::RandomAccessIterator<
+				models::random_access_iterator<
 					__stl2::reverse_iterator<random_access_iterator<const char *>>>, "");
 	}
 	{ // test
@@ -510,7 +510,7 @@ TEST_CASE("iter.reverse_iterator") {
 		// Verify that reverse_iterator's constructor that accepts a base iterator
 		// is explicit.
 		using RI = __stl2::reverse_iterator<char*>;
-		static_assert(__stl2::Constructible<RI, char*>, "");
-		static_assert(!__stl2::ConvertibleTo<char*, RI>, "");
+		static_assert(__stl2::constructible_from<RI, char*>, "");
+		static_assert(!__stl2::convertible_to<char*, RI>, "");
 	}
 }

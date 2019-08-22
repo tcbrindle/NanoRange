@@ -8,7 +8,7 @@
 #define NANORANGE_ALGORITHM_SEARCH_N_HPP_INCLUDED
 
 #include <nanorange/ranges.hpp>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/subrange.hpp>
 
 NANO_BEGIN_NAMESPACE
 
@@ -60,8 +60,8 @@ public:
     constexpr auto operator()(I first, S last, iter_difference_t<I> count,
                               const T& value, Pred pred = Pred{},
                               Proj proj = Proj{}) const
-    -> std::enable_if_t<ForwardIterator<I> && Sentinel<S, I> &&
-                        IndirectlyComparable<I, const T*, Pred, Proj>,
+    -> std::enable_if_t<forward_iterator<I> && sentinel_for<S, I> &&
+                                indirectly_comparable<I, const T*, Pred, Proj>,
         subrange<I>>
     {
         return search_n_fn::impl(std::move(first), std::move(last), count,
@@ -74,8 +74,8 @@ public:
     operator()(Rng&& rng, iter_difference_t<iterator_t<Rng>> count,
                const T& value, Pred pred = Pred{}, Proj proj = Proj{}) const
     -> std::enable_if_t<
-        ForwardRange<Rng> &&
-        IndirectlyComparable<iterator_t<Rng>, const T*, Pred, Proj>,
+            forward_range<Rng> &&
+                indirectly_comparable<iterator_t<Rng>, const T*, Pred, Proj>,
         safe_subrange_t<Rng>>
     {
         return search_n_fn::impl(nano::begin(rng), nano::end(rng), count, value, pred,

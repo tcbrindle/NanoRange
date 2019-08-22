@@ -25,7 +25,7 @@ private:
     // If we know the distance between first and last, we can use that
     // information to (potentially) allow better codegen
     template <typename I, typename S, typename O>
-    static constexpr std::enable_if_t<SizedSentinel<S, I>, copy_result<I, O>>
+    static constexpr std::enable_if_t<sized_sentinel_for<S, I>, copy_result<I, O>>
     impl(I first, S last, O result, priority_tag<1>)
     {
         const auto dist = last - first;
@@ -54,9 +54,9 @@ private:
 
 public:
     template <typename I, typename S, typename O>
-    constexpr std::enable_if_t<InputIterator<I> && Sentinel<S, I> &&
-                                   WeaklyIncrementable<O> &&
-                                   IndirectlyCopyable<I, O>,
+    constexpr std::enable_if_t<input_iterator<I> && sentinel_for<S, I> &&
+                                   weakly_incrementable<O> &&
+                                   indirectly_copyable<I, O>,
                                copy_result<I, O>>
     operator()(I first, S last, O result) const
     {
@@ -65,8 +65,8 @@ public:
     }
 
     template <typename Rng, typename O>
-    constexpr std::enable_if_t<InputRange<Rng> && WeaklyIncrementable<O> &&
-                                   IndirectlyCopyable<iterator_t<Rng>, O>,
+    constexpr std::enable_if_t<input_range<Rng> && weakly_incrementable<O> &&
+                                   indirectly_copyable<iterator_t<Rng>, O>,
                                copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
@@ -87,8 +87,8 @@ namespace detail {
 
 struct copy_n_fn {
     template <typename I, typename O>
-    constexpr std::enable_if_t<InputIterator<I> && WeaklyIncrementable<O> &&
-                                   IndirectlyCopyable<I, O>,
+    constexpr std::enable_if_t<input_iterator<I> && weakly_incrementable<O> &&
+                                   indirectly_copyable<I, O>,
                                copy_n_result<I, O>>
     operator()(I first, iter_difference_t<I> n, O result) const
     {
@@ -132,9 +132,9 @@ public:
     template <typename I, typename S, typename O, typename Proj = identity,
               typename Pred>
     constexpr std::enable_if_t<
-        InputIterator<I> && Sentinel<S, I> && WeaklyIncrementable<O> &&
-            IndirectUnaryPredicate<Pred, projected<I, Proj>> &&
-            IndirectlyCopyable<I, O>,
+        input_iterator<I> && sentinel_for<S, I> && weakly_incrementable<O> &&
+            indirect_unary_predicate<Pred, projected<I, Proj>> &&
+            indirectly_copyable<I, O>,
         copy_if_result<I, O>>
     operator()(I first, S last, O result, Pred pred, Proj proj = Proj{}) const
     {
@@ -146,8 +146,8 @@ public:
 
     template <typename Rng, typename O, typename Proj = identity, typename Pred>
     constexpr std::enable_if_t<
-        InputRange<Rng> && WeaklyIncrementable<O> &&
-            IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
+        input_range<Rng> && weakly_incrementable<O> &&
+            indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
         copy_if_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, Pred pred, Proj proj = Proj{}) const
     {
@@ -184,9 +184,9 @@ private:
 
 public:
     template <typename I1, typename S1, typename I2>
-    constexpr std::enable_if_t<BidirectionalIterator<I1> && Sentinel<S1, I1> &&
-                                   BidirectionalIterator<I2> &&
-                                   IndirectlyCopyable<I1, I2>,
+    constexpr std::enable_if_t<
+        bidirectional_iterator<I1> && sentinel_for<S1, I1> &&
+            bidirectional_iterator<I2> && indirectly_copyable<I1, I2>,
                                copy_backward_result<I1, I2>>
     operator()(I1 first, S1 last, I2 result) const
     {
@@ -195,9 +195,9 @@ public:
     }
 
     template <typename Rng, typename I>
-    constexpr std::enable_if_t<BidirectionalRange<Rng> &&
-                                   BidirectionalIterator<I> &&
-                                   IndirectlyCopyable<iterator_t<Rng>, I>,
+    constexpr std::enable_if_t<bidirectional_range<Rng> &&
+                                   bidirectional_iterator<I> &&
+                                   indirectly_copyable<iterator_t<Rng>, I>,
                                copy_backward_result<safe_iterator_t<Rng>, I>>
     operator()(Rng&& rng, I result) const
     {

@@ -99,8 +99,8 @@ TEST_CASE("func.invoke") {
 		CHECK(a.i == 0);
 		stl2::invoke(&A::i, &a) = 1;
 		CHECK(a.i == 1);
-		static_assert(stl2::Same<decltype(stl2::invoke(&A::i, ca)), const int&>, "");
-		static_assert(stl2::Same<decltype(stl2::invoke(&A::i, &ca)), const int&>, "");
+		static_assert(stl2::same_as<decltype(stl2::invoke(&A::i, ca)), const int&>, "");
+		static_assert(stl2::same_as<decltype(stl2::invoke(&A::i, &ca)), const int&>, "");
 	}
 
 	{

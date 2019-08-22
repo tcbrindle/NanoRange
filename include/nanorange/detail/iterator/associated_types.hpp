@@ -64,7 +64,7 @@ template <typename T>
 struct incrementable_traits_helper<
     T, std::enable_if_t<!std::is_pointer<T>::value &&
                         !has_member_difference_type_v<T> &&
-                        Integral<decltype(std::declval<const T&>() -
+                        integral<decltype(std::declval<const T&>() -
                                           std::declval<const T&>())>>>
     : with_difference_type<std::make_signed_t<decltype(std::declval<T>() - std::declval<T>())>> {
 };

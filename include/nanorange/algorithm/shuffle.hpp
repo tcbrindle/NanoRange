@@ -10,6 +10,8 @@
 #include <nanorange/ranges.hpp>
 #include <nanorange/random.hpp>
 
+#include <random>
+
 NANO_BEGIN_NAMESPACE
 
 namespace detail {
@@ -36,10 +38,9 @@ private:
 public:
     template <typename I, typename S, typename Gen>
     constexpr std::enable_if_t<
-        RandomAccessIterator<I> &&
-        Sentinel<S, I> &&
-        UniformRandomBitGenerator<std::remove_reference_t<Gen>> &&
-        ConvertibleTo<invoke_result_t<Gen&>, iter_difference_t<I>>,
+        random_access_iterator<I> && sentinel_for<S, I> &&
+            uniform_random_bit_generator<std::remove_reference_t<Gen>> &&
+        convertible_to<invoke_result_t<Gen&>, iter_difference_t<I>>,
         I>
     operator()(I first, S last, Gen&& gen) const
     {
@@ -49,9 +50,9 @@ public:
 
     template <typename Rng, typename Gen>
     constexpr std::enable_if_t<
-            RandomAccessRange<Rng> &&
-            UniformRandomBitGenerator<std::remove_reference_t<Gen>> &&
-            ConvertibleTo<invoke_result_t<Gen&>, iter_difference_t<iterator_t<Rng>>>,
+        random_access_range<Rng> &&
+            uniform_random_bit_generator<std::remove_reference_t<Gen>> &&
+            convertible_to<invoke_result_t<Gen&>, iter_difference_t<iterator_t<Rng>>>,
     safe_iterator_t<Rng>>
     operator()(Rng&& rng, Gen&& gen) const
     {

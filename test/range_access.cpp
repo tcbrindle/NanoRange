@@ -14,7 +14,7 @@
 #include <iostream>
 #include <vector>
 #include <utility>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/subrange.hpp>
 
 #include <string_view>
 #include <nanorange/algorithm/find.hpp>
@@ -112,9 +112,9 @@ namespace begin_testing {
 
 		// Valid
 		static_assert(can_begin<int(&)[2]>, "");
-		static_assert(models::Same<decltype(ranges::begin(std::declval<int(&)[2]>())), int*>, "");
+		static_assert(models::same_as<decltype(ranges::begin(std::declval<int(&)[2]>())), int*>, "");
 		static_assert(can_begin<const int(&)[2]>, "");
-		static_assert(models::Same<decltype(ranges::begin(std::declval<const int(&)[2]>())), const int*>, "");
+		static_assert(models::same_as<decltype(ranges::begin(std::declval<const int(&)[2]>())), const int*>, "");
 
 		// Ill-formed: array rvalue
 		// FIXME: MSVC
@@ -125,15 +125,15 @@ namespace begin_testing {
 		// Valid: only member begin
 		static_assert(can_begin<A&>, "");
 		static_assert(!can_begin<A>, "");
-		static_assert(models::Same<decltype(ranges::begin(std::declval<A&>())), int*>, "");
+		static_assert(models::same_as<decltype(ranges::begin(std::declval<A&>())), int*>, "");
 		static_assert(can_begin<const A&>, "");
-		static_assert(models::Same<decltype(ranges::begin(std::declval<const A&>())), const int*>, "");
+		static_assert(models::same_as<decltype(ranges::begin(std::declval<const A&>())), const int*>, "");
 
 		// Valid: Both member and non-member begin, but non-member returns non-Iterator.
 		static_assert(can_begin<B&>, "");
-		static_assert(models::Same<decltype(ranges::begin(std::declval<B&>())), int*>, "");
+		static_assert(models::same_as<decltype(ranges::begin(std::declval<B&>())), int*>, "");
 		static_assert(can_begin<const B&>, "");
-		static_assert(models::Same<decltype(ranges::begin(std::declval<const B&>())), const int*>, "");
+		static_assert(models::same_as<decltype(ranges::begin(std::declval<const B&>())), const int*>, "");
 
 		// Valid: Both member and non-member begin, but non-member returns non-Iterator.
 		static_assert(can_begin<C&>, "");
@@ -141,15 +141,15 @@ namespace begin_testing {
 
 		// Valid: Prefer member begin
 		static_assert(can_begin<D&>, "");
-		static_assert(models::Same<int*, decltype(ranges::begin(std::declval<D&>()))>, "");
+		static_assert(models::same_as<int*, decltype(ranges::begin(std::declval<D&>()))>, "");
 		static_assert(can_begin<const D&>, "");
-		static_assert(models::Same<const int*, decltype(ranges::begin(std::declval<const D&>()))>, "");
+		static_assert(models::same_as<const int*, decltype(ranges::begin(std::declval<const D&>()))>, "");
 
 		{
 			using T = std::initializer_list<int>;
 			// Valid: begin accepts lvalue initializer_list
-			static_assert(models::Same<const int*, decltype(ranges::begin(std::declval<T&>()))>, "");
-			static_assert(models::Same<const int*, decltype(ranges::begin(std::declval<const T&>()))>, "");
+			static_assert(models::same_as<const int*, decltype(ranges::begin(std::declval<T&>()))>, "");
+			static_assert(models::same_as<const int*, decltype(ranges::begin(std::declval<const T&>()))>, "");
 		}
 
 		static_assert(can_begin<ranges::subrange<int*, int*>&>, "");
@@ -180,21 +180,21 @@ namespace X {
 
 using I = int*;
 using CI = const int*;
-static_assert(ranges::Iterator<I>, "");
-static_assert(ranges::Iterator<CI>, "");
+static_assert(ranges::input_or_output_iterator<I>, "");
+static_assert(ranges::input_or_output_iterator<CI>, "");
 
 void test_string_view_p0970() {
 	// basic_string_views are non-dangling
 	using I = ranges::iterator_t<std::string_view>;
-	static_assert(ranges::Same<I, decltype(ranges::begin(std::declval<std::string_view>()))>);
-	static_assert(ranges::Same<I, decltype(ranges::end(std::declval<std::string_view>()))>);
-	static_assert(ranges::Same<I, decltype(ranges::begin(std::declval<const std::string_view>()))>);
-	static_assert(ranges::Same<I, decltype(ranges::end(std::declval<const std::string_view>()))>);
+	static_assert(ranges::same_as<I, decltype(ranges::begin(std::declval<std::string_view>()))>);
+	static_assert(ranges::same_as<I, decltype(ranges::end(std::declval<std::string_view>()))>);
+	static_assert(ranges::same_as<I, decltype(ranges::begin(std::declval<const std::string_view>()))>);
+	static_assert(ranges::same_as<I, decltype(ranges::end(std::declval<const std::string_view>()))>);
 
 	{
 		const char hw[] = "Hello, World!";
 		auto result = ranges::find(std::string_view{hw}, 'W');
-		static_assert(ranges::Same<I, decltype(result)>);
+		static_assert(ranges::same_as<I, decltype(result)>);
 		CHECK(result == std::string_view{hw}.begin() + 7);
 	}
 }
@@ -210,8 +210,8 @@ TEST_CASE("range_access") {
 
 	constexpr auto first = begin(some_ints);
 	constexpr auto last = end(some_ints);
-	static_assert(Same<const CI, decltype(first)>, "");
-	static_assert(Same<const CI, decltype(last)>, "");
+	static_assert(same_as<const CI, decltype(first)>, "");
+	static_assert(same_as<const CI, decltype(last)>, "");
 	static_assert(first == cbegin(some_ints), "");
 	static_assert(last == cend(some_ints), "");
 

@@ -30,11 +30,9 @@ private:
 
 public:
     template <typename I, typename S, typename O>
-    constexpr std::enable_if_t<
-        ForwardIterator<I> &&
-        Sentinel<S, I> &&
-        WeaklyIncrementable<O> &&
-        IndirectlyCopyable<I, O>,
+    constexpr std::enable_if_t<forward_iterator<I> && sentinel_for<S, I> &&
+        weakly_incrementable<O> &&
+                                   indirectly_copyable<I, O>,
         rotate_copy_result<I, O>>
     operator()(I first, I middle, S last, O result) const
     {
@@ -43,10 +41,9 @@ public:
     }
 
     template <typename Rng, typename O>
-    constexpr std::enable_if_t<
-        ForwardRange<Rng> &&
-        WeaklyIncrementable<O> &&
-        IndirectlyCopyable<iterator_t<Rng>, O>,
+    constexpr std::enable_if_t<forward_range<Rng> &&
+        weakly_incrementable<O> &&
+                                   indirectly_copyable<iterator_t<Rng>, O>,
         rotate_copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, iterator_t<Rng> middle, O result) const
     {

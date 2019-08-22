@@ -32,10 +32,8 @@ private:
 
 public:
     template <typename I, typename S>
-    std::enable_if_t<
-        NoThrowForwardIterator<I> &&
-        NoThrowSentinel<S, I> &&
-        DefaultConstructible<iter_value_t<I>>, I>
+    std::enable_if_t<no_throw_forward_iterator<I> && no_throw_sentinel<S, I> &&
+        default_constructible<iter_value_t<I>>, I>
     operator()(I first, S last) const
     {
         return uninitialized_value_construct_fn::impl(
@@ -43,9 +41,8 @@ public:
     }
 
     template <typename Rng>
-    std::enable_if_t<
-        NoThrowForwardRange<Rng> &&
-        DefaultConstructible<iter_value_t<iterator_t<Rng>>>,
+    std::enable_if_t<no_throw_forward_range<Rng> &&
+        default_constructible<iter_value_t<iterator_t<Rng>>>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng) const
     {
@@ -63,9 +60,8 @@ namespace detail {
 
 struct uninitialized_value_construct_n_fn {
     template <typename I>
-    std::enable_if_t<
-        NoThrowForwardIterator<I> &&
-        DefaultConstructible<iter_value_t<I>>, I>
+    std::enable_if_t<no_throw_forward_iterator<I> &&
+        default_constructible<iter_value_t<I>>, I>
     operator()(I first, iter_difference_t<I> n) const
     {
         return nano::uninitialized_value_construct(

@@ -29,53 +29,52 @@ namespace {
 
 void test()
 {
-	using namespace ranges;
 	int ia[] = {0, 1, 2, 3, 4, 5};
 	constexpr unsigned s = sizeof(ia)/sizeof(int);
 	//int ib[s] = {0, 1, 2, 5, 4, 5};
 	int* ib = new int[s]{0, 1, 2, 5, 4, 5};
-	CHECK(equal(input_iterator<const int*>(ia),
+	CHECK(nano::equal(input_iterator<const int*>(ia),
 				sentinel<const int*>(ia + s),
 				input_iterator<const int*>(ia)));
-	CHECK(equal(input_iterator<const int*>(ia),
+	CHECK(nano::equal(input_iterator<const int*>(ia),
 				sentinel<const int*>(ia + s),
 				input_iterator<const int*>(ia),
 				sentinel<const int*>(ia + s)));
 	using ra_t = random_access_iterator<const int*>;
-	static_assert(InputIterator<ra_t>, "");
-	static_assert(IndirectlyComparable<ra_t, ra_t, equal_to>, "");
-	CHECK(equal(random_access_iterator<const int*>(ia),
+	static_assert(nano::input_iterator<ra_t>, "");
+	static_assert(nano::indirectly_comparable<ra_t, ra_t, nano::equal_to>, "");
+	CHECK(nano::equal(random_access_iterator<const int*>(ia),
 				random_access_iterator<const int*>(ia + s),
 				random_access_iterator<const int*>(ia),
 				random_access_iterator<const int*>(ia + s)));
-	CHECK(equal(random_access_iterator<const int*>(ia),
+	CHECK(nano::equal(random_access_iterator<const int*>(ia),
 				sentinel<const int*>(ia + s),
 				random_access_iterator<const int*>(ia),
 				sentinel<const int*>(ia + s)));
-	CHECK(!equal(input_iterator<const int*>(ia),
+	CHECK(!nano::equal(input_iterator<const int*>(ia),
 				 sentinel<const int*>(ia + s),
 				 input_iterator<const int*>(ib)));
-	CHECK(!equal(input_iterator<const int*>(ia),
+	CHECK(!nano::equal(input_iterator<const int*>(ia),
 				 sentinel<const int*>(ia + s),
 				 input_iterator<const int*>(ib),
 				 sentinel<const int*>(ib + s)));
-	CHECK(!equal(random_access_iterator<const int*>(ia),
+	CHECK(!nano::equal(random_access_iterator<const int*>(ia),
 				 random_access_iterator<const int*>(ia + s),
 				 random_access_iterator<const int*>(ib),
 				 random_access_iterator<const int*>(ib + s)));
-	CHECK(!equal(random_access_iterator<const int*>(ia),
+	CHECK(!nano::equal(random_access_iterator<const int*>(ia),
 				 sentinel<const int*>(ia + s),
 				 random_access_iterator<const int*>(ib),
 				 sentinel<const int*>(ib + s)));
-	CHECK(!equal(input_iterator<const int*>(ia),
+	CHECK(!nano::equal(input_iterator<const int*>(ia),
 				 sentinel<const int*>(ia + s),
 				 input_iterator<const int*>(ia),
 				 sentinel<const int*>(ia + s - 1)));
-	CHECK(!equal(random_access_iterator<const int*>(ia),
+	CHECK(!nano::equal(random_access_iterator<const int*>(ia),
 				 random_access_iterator<const int*>(ia + s),
 				 random_access_iterator<const int*>(ia),
 				 random_access_iterator<const int*>(ia + s - 1)));
-	CHECK(!equal(random_access_iterator<const int*>(ia),
+	CHECK(!nano::equal(random_access_iterator<const int*>(ia),
 				 sentinel<const int*>(ia + s),
 				 random_access_iterator<const int*>(ia),
 				 sentinel<const int*>(ia + s - 1)));
@@ -84,10 +83,10 @@ void test()
 
 void test_rng()
 {
-	using namespace ranges;
+	using ranges::subrange;
 
 	int ia[] = {0, 1, 2, 3, 4, 5};
-	constexpr unsigned s = size(ia);
+	constexpr unsigned s = nano::size(ia);
 	int ib[s] = {0, 1, 2, 5, 4, 5};
 	/*CHECK(equal(make_subrange(input_iterator<const int*>(ia),
 												 sentinel<const int*>(ia+s)),
@@ -96,7 +95,7 @@ void test_rng()
 												 sentinel<const int*>(ia+s)),
 							make_subrange(input_iterator<const int*>(ia),
 												 sentinel<const int*>(ia+s))));*/
-	CHECK(equal(subrange(random_access_iterator<const int*>(ia),
+	CHECK(nano::equal(subrange(random_access_iterator<const int*>(ia),
 							  random_access_iterator<const int*>(ia + s)),
 				subrange(random_access_iterator<const int*>(ia),
 							  random_access_iterator<const int*>(ia + s))));
@@ -104,31 +103,31 @@ void test_rng()
 												 sentinel<const int*>(ia+s)),
 							make_subrange(random_access_iterator<const int*>(ia),
 												 sentinel<const int*>(ia + s))));*/
-	CHECK(!equal(subrange(input_iterator<const int*>(ia),
+	CHECK(!nano::equal(subrange(input_iterator<const int*>(ia),
 							   input_iterator<const int*>(ia + s)),
 				 input_iterator<const int*>(ib)));
-	CHECK(!equal(subrange(input_iterator<const int*>(ia),
+	CHECK(!nano::equal(subrange(input_iterator<const int*>(ia),
 							   input_iterator<const int*>(ia + s)),
 				 subrange(input_iterator<const int*>(ib),
 							   input_iterator<const int*>(ib + s))));
-	CHECK(!equal(subrange(random_access_iterator<const int*>(ia),
+	CHECK(!nano::equal(subrange(random_access_iterator<const int*>(ia),
 							   random_access_iterator<const int*>(ia + s)),
 				 subrange(random_access_iterator<const int*>(ib),
 							   random_access_iterator<const int*>(ib + s))));
-	CHECK(!equal(subrange(random_access_iterator<const int*>(ia),
+	CHECK(!nano::equal(subrange(random_access_iterator<const int*>(ia),
 							   sentinel<const int*>(ia + s)),
 				 subrange(random_access_iterator<const int*>(ib),
 							   sentinel<const int*>(ib + s))));
-	CHECK(!equal(subrange(input_iterator<const int*>(ia),
+	CHECK(!nano::equal(subrange(input_iterator<const int*>(ia),
 							   sentinel<const int*>(ia + s)),
 				 subrange(input_iterator<const int*>(ia),
 							   sentinel<const int*>(ia + s - 1))));
-	CHECK(!equal(subrange(random_access_iterator<const int*>(ia),
+	CHECK(!nano::equal(subrange(random_access_iterator<const int*>(ia),
 							   random_access_iterator<const int*>(ia + s)),
 				 subrange(random_access_iterator<const int*>(ia),
 							   random_access_iterator<const int*>(
 									   ia + s - 1))));
-	CHECK(!equal(subrange(random_access_iterator<const int*>(ia),
+	CHECK(!nano::equal(subrange(random_access_iterator<const int*>(ia),
 							   sentinel<const int*>(ia + s)),
 				 subrange(random_access_iterator<const int*>(ia),
 							   sentinel<const int*>(ia + s - 1))));
@@ -145,16 +144,14 @@ bool counting_equals(const T& a, const T& b)
 
 void test_pred()
 {
-	using namespace ranges;
-
 	int ia[] = {0, 1, 2, 3, 4, 5};
-	constexpr unsigned s = size(ia);
+	constexpr unsigned s = nano::size(ia);
 	int ib[s] = {0, 1, 2, 5, 4, 5};
-	CHECK(equal(input_iterator<const int*>(ia),
+	CHECK(nano::equal(input_iterator<const int*>(ia),
 				sentinel<const int*>(ia + s),
 				input_iterator<const int*>(ia),
 				std::equal_to<int>()));
-	CHECK(equal(input_iterator<const int*>(ia),
+	CHECK(nano::equal(input_iterator<const int*>(ia),
 				sentinel<const int*>(ia + s),
 				input_iterator<const int*>(ia),
 				sentinel<const int*>(ia + s),
@@ -164,48 +161,48 @@ void test_pred()
 				random_access_iterator<const int*>(ia),
 				random_access_iterator<const int*>(ia + s),
 				std::equal_to<int>()));
-	CHECK(equal(random_access_iterator<const int*>(ia),
+	CHECK(nano::equal(random_access_iterator<const int*>(ia),
 				sentinel<const int*>(ia + s),
 				random_access_iterator<const int*>(ia),
 				sentinel<const int*>(ia + s),
 				std::equal_to<int>()));
 
 	comparison_count = 0;
-	CHECK(!equal(input_iterator<const int*>(ia),
+	CHECK(!nano::equal(input_iterator<const int*>(ia),
 				 sentinel<const int*>(ia + s),
 				 input_iterator<const int*>(ia),
 				 sentinel<const int*>(ia + s - 1),
 				 counting_equals<int>));
 	CHECK(comparison_count > 0);
 	comparison_count = 0;
-	CHECK(!equal(random_access_iterator<const int*>(ia),
+	CHECK(!nano::equal(random_access_iterator<const int*>(ia),
 				 random_access_iterator<const int*>(ia + s),
 				 random_access_iterator<const int*>(ia),
 				 random_access_iterator<const int*>(ia + s - 1),
 				 counting_equals<int>));
 	CHECK(comparison_count == 0);
 	comparison_count = 0;
-	CHECK(!equal(random_access_iterator<const int*>(ia),
+	CHECK(!nano::equal(random_access_iterator<const int*>(ia),
 				 sentinel<const int*>(ia + s),
 				 random_access_iterator<const int*>(ia),
 				 sentinel<const int*>(ia + s - 1),
 				 counting_equals<int>));
 	CHECK(comparison_count > 0);
-	CHECK(!equal(input_iterator<const int*>(ia),
+	CHECK(!nano::equal(input_iterator<const int*>(ia),
 				 sentinel<const int*>(ia + s),
 				 input_iterator<const int*>(ib),
 				 std::equal_to<int>()));
-	CHECK(!equal(input_iterator<const int*>(ia),
+	CHECK(!nano::equal(input_iterator<const int*>(ia),
 				 sentinel<const int*>(ia + s),
 				 input_iterator<const int*>(ib),
 				 sentinel<const int*>(ib + s),
 				 std::equal_to<int>()));
-	CHECK(!equal(random_access_iterator<const int*>(ia),
+	CHECK(!nano::equal(random_access_iterator<const int*>(ia),
 				 random_access_iterator<const int*>(ia + s),
 				 random_access_iterator<const int*>(ib),
 				 random_access_iterator<const int*>(ib + s),
 				 std::equal_to<int>()));
-	CHECK(!equal(random_access_iterator<const int*>(ia),
+	CHECK(!nano::equal(random_access_iterator<const int*>(ia),
 				 sentinel<const int*>(ia + s),
 				 random_access_iterator<const int*>(ib),
 				 sentinel<const int*>(ib + s),
@@ -214,11 +211,10 @@ void test_pred()
 
 void test_rng_pred()
 {
-	using namespace nano::ranges;
 	using nano::ranges::subrange;
 
 	int ia[] = {0, 1, 2, 3, 4, 5};
-	constexpr unsigned s = size(ia);
+	constexpr unsigned s = nano::size(ia);
 	int ib[s] = {0, 1, 2, 5, 4, 5};
 	CHECK(ranges::equal(subrange(input_iterator<const int*>(ia),
 									  sentinel<const int*>(ia + s)),

@@ -23,7 +23,7 @@
 //===----------------------------------------------------------------------===//
 
 #include <nanorange/algorithm/replace_copy.hpp>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/subrange.hpp>
 #include <utility>
 #include "../catch.hpp"
 #include "../test_iterators.hpp"

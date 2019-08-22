@@ -66,9 +66,9 @@ void test_move_iterator() {
 	{
 		auto first = ranges::make_move_iterator(ranges::begin(vec)),
 			last = ranges::make_move_iterator(ranges::end(vec));
-		static_assert(ranges::RandomAccessIterator<decltype(ranges::begin(vec))>, "");
-		static_assert(ranges::InputIterator<decltype(first)>, "");
-		static_assert(!ranges::ForwardIterator<decltype(first)>, "");
+		static_assert(ranges::random_access_iterator<decltype(ranges::begin(vec))>, "");
+		static_assert(ranges::input_iterator<decltype(first)>, "");
+		static_assert(!ranges::forward_iterator<decltype(first)>, "");
 		auto out = ranges::back_inserter(vec2);
 
 		for (; first != last; ++first, ++out) {
@@ -190,21 +190,21 @@ void test_proxy_iterator() {
 	vec2.reserve(ranges::size(vec));
 
 	static_assert(
-		ranges::Same<
+		ranges::same_as<
 			ranges::iter_reference_t<proxy_iterator<A>>,
 			std::reference_wrapper<A>>, "");
 	static_assert(
-		ranges::Same<
+		ranges::same_as<
 			ranges::iter_reference_t<const proxy_iterator<A>>,
 			std::reference_wrapper<A>>, "");
 	static_assert(
-		ranges::Same<
+		ranges::same_as<
 			ranges::iter_rvalue_reference_t<proxy_iterator<A>>,
 			A&&>, "");
 
 	{
 		static_assert(
-			ranges::Same<
+			ranges::same_as<
 				ranges::iter_rvalue_reference_t<
 					ranges::move_iterator<proxy_iterator<A>>>,
 				A&&>, "");
@@ -246,12 +246,12 @@ void test_proxy_iterator() {
 
 	{
 		static_assert(
-			ranges::Same<
+			ranges::same_as<
 				ranges::iter_rvalue_reference_t<
 					ranges::counted_iterator<proxy_iterator<A>>>,
 				A&&>, "");
 		static_assert(
-			ranges::Same<
+			ranges::same_as<
 				ranges::iter_rvalue_reference_t<
 					ranges::move_iterator<
 						ranges::counted_iterator<proxy_iterator<A>>>>,
@@ -274,11 +274,11 @@ void test_proxy_iterator() {
 	{
 		auto first = ranges::make_counted_iterator(vec.begin(), vec.size());
 		auto last = ranges::default_sentinel;
-		static_assert(ranges::SizedSentinel<decltype(last), decltype(first)>, "");
+		static_assert(ranges::sized_sentinel_for<decltype(last), decltype(first)>, "");
 		CHECK((static_cast<std::size_t>(last - first) == vec.size()));
 		auto mfirst = ranges::make_move_iterator(first);
 		auto mlast = ranges::make_move_sentinel(last);
-		static_assert(ranges::SizedSentinel<decltype(mlast), decltype(mfirst)>, "");
+		static_assert(ranges::sized_sentinel_for<decltype(mlast), decltype(mfirst)>, "");
 		CHECK((static_cast<std::size_t>(mlast - mfirst) == vec.size()));
 	}
 }

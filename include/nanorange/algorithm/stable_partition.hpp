@@ -138,7 +138,7 @@ private:
     }
 
     template <typename I, typename S, typename Pred, typename Proj>
-    static std::enable_if_t<!Same<I, S>, I>
+    static std::enable_if_t<!same_as<I, S>, I>
     impl(I first, S last, Pred& pred, Proj& proj)
     {
         return impl(first, nano::next(first, last), pred, proj);
@@ -146,11 +146,9 @@ private:
 
 public:
     template <typename I, typename S, typename Pred, typename Proj = identity>
-    std::enable_if_t<
-        BidirectionalIterator<I> &&
-        Sentinel<S, I> &&
-        IndirectUnaryPredicate<Pred, projected<I, Proj>> &&
-        Permutable<I>, I>
+    std::enable_if_t<bidirectional_iterator<I> && sentinel_for<S, I> &&
+                         indirect_unary_predicate<Pred, projected<I, Proj>> &&
+                         permutable<I>, I>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
         return stable_partition_fn::impl(std::move(first), std::move(last),
@@ -159,9 +157,9 @@ public:
 
     template <typename Rng, typename Pred, typename Proj = identity>
     std::enable_if_t<
-        BidirectionalRange<Rng> &&
-        IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>> &&
-        Permutable<iterator_t<Rng>>,
+        bidirectional_range<Rng> &&
+            indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>> &&
+            permutable<iterator_t<Rng>>,
     safe_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {

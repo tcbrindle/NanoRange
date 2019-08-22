@@ -33,8 +33,8 @@ public:
     template <typename I, typename S, typename T, typename Pred,
               typename Proj = identity>
     constexpr std::enable_if_t<
-        InputIterator<I> && Sentinel<S, I> && Writable<I, const T&> &&
-            IndirectUnaryPredicate<Pred, projected<I, Proj>>,
+        input_iterator<I> && sentinel_for<S, I> && writable<I, const T&> &&
+            indirect_unary_predicate<Pred, projected<I, Proj>>,
         I>
     operator()(I first, S last, Pred pred, const T& new_value,
                Proj proj = Proj{}) const
@@ -46,8 +46,8 @@ public:
     template <typename Rng, typename Pred, typename T2,
               typename Proj = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng> && Writable<iterator_t<Rng>, const T2&> &&
-            IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
+        input_range<Rng> && writable<iterator_t<Rng>, const T2&> &&
+            indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, const T2& new_value,
                Proj proj = Proj{}) const

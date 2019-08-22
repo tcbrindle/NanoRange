@@ -53,13 +53,11 @@ public:
     template <typename I1, typename S1, typename I2, typename S2,
               typename Comp = ranges::less, typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
-        InputIterator<I1> &&
-        Sentinel<S1, I1> &&
-        RandomAccessIterator<I2> &&
-        Sentinel<S2, I2> &&
-        IndirectlyCopyable<I1, I2> &&
-        Sortable<I2, Comp, Proj2> &&
-        IndirectStrictWeakOrder<Comp, projected<I1, Proj1>, projected<I2, Proj2>>,
+        input_iterator<I1> && sentinel_for<S1, I1> &&
+            random_access_iterator<I2> &&
+            sentinel_for<S2, I2> &&
+            indirectly_copyable<I1, I2> && sortable<I2, Comp, Proj2> &&
+            indirect_strict_weak_order<Comp, projected<I1, Proj1>, projected<I2, Proj2>>,
     I2>
     operator()(I1 first, S1 last, I2 result_first, S2 result_last, Comp comp = Comp{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
@@ -72,11 +70,10 @@ public:
     template <typename Rng1, typename Rng2, typename Comp = ranges::less,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng1> &&
-        RandomAccessRange<Rng2> &&
-        IndirectlyCopyable<iterator_t<Rng1>, iterator_t<Rng2>> &&
-        Sortable<iterator_t<Rng2>, Comp, Proj2> &&
-        IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng1>, Proj1>, projected<iterator_t<Rng2>, Proj2>>,
+        input_range<Rng1> && random_access_range<Rng2> &&
+            indirectly_copyable<iterator_t<Rng1>, iterator_t<Rng2>> &&
+            sortable<iterator_t<Rng2>, Comp, Proj2> &&
+            indirect_strict_weak_order<Comp, projected<iterator_t<Rng1>, Proj1>, projected<iterator_t<Rng2>, Proj2>>,
     safe_iterator_t<Rng2>>
     operator()(Rng1&& rng, Rng2&& result_rng, Comp comp = Comp{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const

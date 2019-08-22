@@ -14,7 +14,7 @@
 //  or a copy at http://stlab.adobe.com/licenses.html)
 
 #include <nanorange/algorithm/binary_search.hpp>
-#include <nanorange/view/iota.hpp>
+#include <nanorange/views/iota.hpp>
 #include <utility>
 #include "../catch.hpp"
 

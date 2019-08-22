@@ -29,10 +29,10 @@ struct S
 
 TEST_CASE("alg.find_if_not")
 {
-	using namespace nano;
+	using nano::find_if_not;
 
 	int ia[] = {0, 1, 2, 3, 4, 5};
-	constexpr unsigned s = size(ia);
+	constexpr unsigned s = nano::size(ia);
 	input_iterator<const int*> r = find_if_not(input_iterator<const int*>(ia),
 											   input_iterator<const int*>(ia + s),
 											   [](int i){return i != 3;});
@@ -65,5 +65,5 @@ TEST_CASE("alg.find_if_not")
 	S *ps = find_if_not(sa, [](int i){return i != 3;}, &S::i_);
 	CHECK(ps->i_ == 3);
 	ps = find_if_not(sa, [](int i){return i != 10;}, &S::i_);
-	CHECK(ps == end(sa));
+	CHECK(ps == nano::end(sa));
 }

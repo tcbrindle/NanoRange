@@ -55,7 +55,7 @@ private:
     }
 
     template <typename I, typename S, typename Pred, typename Proj>
-    static constexpr std::enable_if_t<SizedSentinel<S, I>, I>
+    static constexpr std::enable_if_t<sized_sentinel_for<S, I>, I>
     impl(I first, S last, Pred& pred, Proj& proj)
     {
         const auto n = nano::distance(first, std::move(last));
@@ -63,7 +63,7 @@ private:
     }
 
     template <typename I, typename S, typename Pred, typename Proj>
-    static constexpr std::enable_if_t<!SizedSentinel<S, I>, I>
+    static constexpr std::enable_if_t<!sized_sentinel_for<S, I>, I>
     impl(I first, S last, Pred& pred, Proj& proj)
     {
         // Probe exponentially for either end-of-range or an iterator
@@ -85,10 +85,8 @@ private:
 
 public:
     template <typename I, typename S, typename Pred, typename Proj = identity>
-    std::enable_if_t<
-        ForwardIterator<I> &&
-        Sentinel<S, I> &&
-        IndirectUnaryPredicate<Pred, projected<I, Proj>>, I>
+    std::enable_if_t<forward_iterator<I> && sentinel_for<S, I> &&
+                         indirect_unary_predicate<Pred, projected<I, Proj>>, I>
     constexpr operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
         return partition_point_fn::impl(std::move(first), std::move(last),
@@ -97,8 +95,8 @@ public:
 
     template <typename Rng, typename Pred, typename Proj = identity>
     std::enable_if_t<
-        ForwardRange<Rng> &&
-        IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
+        forward_range<Rng> &&
+            indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
         safe_iterator_t<Rng>>
     constexpr operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {

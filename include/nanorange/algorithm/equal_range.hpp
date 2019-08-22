@@ -9,7 +9,7 @@
 
 #include <nanorange/algorithm/lower_bound.hpp>
 #include <nanorange/algorithm/upper_bound.hpp>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/subrange.hpp>
 
 NANO_BEGIN_NAMESPACE
 
@@ -29,9 +29,8 @@ public:
     template <typename I, typename S, typename T, typename Comp = ranges::less,
               typename Proj = identity>
     std::enable_if_t<
-        ForwardIterator<I> &&
-        Sentinel<S, I> &&
-        IndirectStrictWeakOrder<Comp, const T*, projected<I, Proj>>,
+        forward_iterator<I> && sentinel_for<S, I> &&
+            indirect_strict_weak_order<Comp, const T*, projected<I, Proj>>,
     subrange<I>>
     constexpr operator()(I first, S last, const T& value, Comp comp = Comp{},
                Proj proj = Proj{}) const
@@ -42,9 +41,8 @@ public:
 
     template <typename Rng, typename T, typename Comp = ranges::less,
               typename Proj = identity>
-    std::enable_if_t<
-        ForwardRange<Rng> &&
-        IndirectStrictWeakOrder<Comp, const T*, projected<iterator_t<Rng>, Proj>>,
+    std::enable_if_t<forward_range<Rng> &&
+                         indirect_strict_weak_order<Comp, const T*, projected<iterator_t<Rng>, Proj>>,
     safe_subrange_t<Rng>>
     constexpr operator()(Rng&& rng, const T& value, Comp comp = Comp{},
                          Proj proj = Proj{}) const

@@ -82,9 +82,8 @@ public:
     template <typename I, typename S, typename Comp = ranges::less,
             typename Proj = identity>
     constexpr std::enable_if_t<
-        ForwardIterator<I> &&
-        Sentinel<S, I> &&
-        IndirectStrictWeakOrder<Comp, projected<I, Proj>>,
+        forward_iterator<I> && sentinel_for<S, I> &&
+            indirect_strict_weak_order<Comp, projected<I, Proj>>,
         minmax_result<I>>
     operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
@@ -94,8 +93,8 @@ public:
 
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
-        ForwardRange<Rng> &&
-        IndirectStrictWeakOrder<Comp, projected<iterator_t<Rng>, Proj>>,
+        forward_range<Rng> &&
+            indirect_strict_weak_order<Comp, projected<iterator_t<Rng>, Proj>>,
         minmax_result<safe_iterator_t<Rng>>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {

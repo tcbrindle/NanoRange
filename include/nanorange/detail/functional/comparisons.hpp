@@ -20,7 +20,7 @@ NANO_BEGIN_NAMESPACE
 struct equal_to {
     template <typename T, typename U>
     constexpr auto operator()(T&& t, U&& u) const
-        -> std::enable_if_t<EqualityComparableWith<T, U>, bool>
+        -> std::enable_if_t<equality_comparable_with<T, U>, bool>
     {
         return std::equal_to<>{}(std::forward<T>(t), std::forward<U>(u));
     }
@@ -31,7 +31,7 @@ struct equal_to {
 struct not_equal_to {
     template <typename T, typename U>
     constexpr auto operator()(T&& t, U&& u) const
-        -> std::enable_if_t<EqualityComparableWith<T, U>, bool>
+        -> std::enable_if_t<equality_comparable_with<T, U>, bool>
     {
         return !ranges::equal_to{}(std::forward<T>(t), std::forward<U>(u));
     }
@@ -42,7 +42,7 @@ struct not_equal_to {
 struct less {
     template <typename T, typename U>
     constexpr auto operator()(T&& t, U&& u) const
-        -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
+        -> std::enable_if_t<totally_ordered_with<T, U>, bool>
     {
         return std::less<>{}(std::forward<T>(t), std::forward<U>(u));
     }
@@ -53,7 +53,7 @@ struct less {
 struct greater {
     template <typename T, typename U>
     constexpr auto operator()(T&& t, U&& u) const
-        -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
+        -> std::enable_if_t<totally_ordered_with<T, U>, bool>
     {
         return ranges::less{}(std::forward<U>(u), std::forward<T>(t));
     }
@@ -64,7 +64,7 @@ struct greater {
 struct greater_equal {
     template <typename T, typename U>
     constexpr auto operator()(T&& t, U&& u) const
-    -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
+    -> std::enable_if_t<totally_ordered_with<T, U>, bool>
     {
         return !ranges::less{}(std::forward<T>(t), std::forward<U>(u));
     }
@@ -75,7 +75,7 @@ struct greater_equal {
 struct less_equal {
     template <typename T, typename U>
     constexpr auto operator()(T&& t, U&& u) const
-        -> std::enable_if_t<StrictTotallyOrderedWith<T, U>, bool>
+        -> std::enable_if_t<totally_ordered_with<T, U>, bool>
     {
         return !ranges::less{}(std::forward<U>(u), std::forward<T>(t));
     }

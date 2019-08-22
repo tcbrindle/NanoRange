@@ -35,8 +35,8 @@ private:
 public:
     template <typename I, typename S, typename Proj = identity, typename Pred>
     constexpr std::enable_if_t<
-        InputIterator<I> && Sentinel<S, I> &&
-            IndirectUnaryPredicate<Pred, projected<I, Proj>>,
+        input_iterator<I> && sentinel_for<S, I> &&
+            indirect_unary_predicate<Pred, projected<I, Proj>>,
         I>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
@@ -45,8 +45,8 @@ public:
 
     template <typename Rng, typename Proj = identity, typename Pred>
     constexpr std::enable_if_t<
-        InputRange<Rng> &&
-            IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
+        input_range<Rng> &&
+            indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
@@ -62,8 +62,8 @@ namespace detail {
 struct find_fn {
     template <typename I, typename S, typename T, typename Proj = identity>
     constexpr std::enable_if_t<
-        InputIterator<I> && Sentinel<S, I> &&
-            IndirectRelation<ranges::equal_to, projected<I, Proj>, const T*>,
+        input_iterator<I> && sentinel_for<S, I> &&
+            indirect_relation<ranges::equal_to, projected<I, Proj>, const T*>,
         I>
     operator()(I first, S last, const T& value, Proj proj = Proj{}) const
     {
@@ -73,8 +73,8 @@ struct find_fn {
 
     template <typename Rng, typename T, typename Proj = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng> &&
-            IndirectRelation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
+        input_range<Rng> &&
+            indirect_relation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T*>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
@@ -105,8 +105,8 @@ private:
 public:
     template <typename I, typename S, typename Proj = identity, typename Pred>
     constexpr std::enable_if_t<
-        InputIterator<I> && Sentinel<S, I> &&
-            IndirectUnaryPredicate<Pred, projected<I, Proj>>,
+        input_iterator<I> && sentinel_for<S, I> &&
+            indirect_unary_predicate<Pred, projected<I, Proj>>,
         I>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
@@ -117,8 +117,8 @@ public:
 
     template <typename Rng, typename Proj = identity, typename Pred>
     constexpr std::enable_if_t<
-        InputRange<Rng> &&
-            IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
+        input_range<Rng> &&
+            indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {

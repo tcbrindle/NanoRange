@@ -16,28 +16,28 @@ namespace detail {
 template <typename T>
 using with_reference = T&;
 
-struct CanReference_req {
+struct can_reference_concept {
     template <typename T>
     auto requires_() -> with_reference<T>;
 };
 
 template <typename T>
-NANO_CONCEPT CanReference = requires_<CanReference_req, T>;
+NANO_CONCEPT can_reference = detail::requires_<can_reference_concept, T>;
 
-struct Dereferenceable_req {
+struct dereferencable_concept {
     template <typename T>
     auto requires_(T& t)
-        -> decltype(*t, requires_expr<CanReference<decltype(*t)>>{});
+        -> decltype(requires_expr<can_reference<decltype(*t)>>{});
 };
 
 template <typename T>
-NANO_CONCEPT Dereferenceable = requires_<Dereferenceable_req, T>;
+NANO_CONCEPT dereferenceable = requires_<dereferencable_concept, T>;
 
 // GCC and Clang allow dereferencing void* as an extension.
 // Let's kill that off now.
 
 template <>
-NANO_CONCEPT Dereferenceable<void*> = false;
+NANO_CONCEPT dereferenceable<void*> = false;
 
 } // namespace detail
 

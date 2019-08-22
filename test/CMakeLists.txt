@@ -135,7 +135,7 @@ add_executable(test_nanorange
     concepts/fundamental.cpp
     concepts/iterator.cpp
     concepts/object.cpp
-        concepts/ranges.cpp
+    concepts/ranges.cpp
     concepts/swap.cpp
 
     functional/invoke.cpp
@@ -165,29 +165,29 @@ add_executable(test_nanorange
     utility/common_type.cpp
     utility/concepts.cpp
 
-    view/common_view.cpp
-    view/counted_view.cpp
-    #view/drop_view.cpp
-    #view/drop_while_view.cpp
-    view/empty_view.cpp
-    view/filter_view.cpp
-    #view/indirect_view.cpp
-    view/iota.cpp
-    view/istream_view.cpp
-    #view/join_view.cpp
-    #view/move_view.cpp
-    view/ref_view.cpp
-    #view/repeat_n_view.cpp
-    #view/repeat_view.cpp
-    view/reverse_view.cpp
-    view/single_view.cpp
-    #view/span.cpp
-    #view/split_view.cpp
-    view/subrange.cpp
-    #view/take_exactly_view.cpp
-    #view/take_view.cpp
-    #view/take_while_view.cpp
-    #view/transform_view.cpp
+    views/common_view.cpp
+    views/counted_view.cpp
+    #views/drop_view.cpp
+    #views/drop_while_view.cpp
+    views/empty_view.cpp
+    views/filter_view.cpp
+    #views/indirect_view.cpp
+    views/iota.cpp
+    views/istream_view.cpp
+    #views/join_view.cpp
+    #views/move_view.cpp
+    views/ref_view.cpp
+    #views/repeat_n_view.cpp
+    #views/repeat_view.cpp
+    views/reverse_view.cpp
+    views/single_view.cpp
+    #views/span.cpp
+    #views/split_view.cpp
+    views/subrange.cpp
+    #views/take_exactly_view.cpp
+    #views/take_view.cpp
+    #views/take_while_view.cpp
+    #views/transform_view.cpp
 )
 target_compile_definitions(test_nanorange PRIVATE "-DNANORANGE_NO_DEPRECATION_WARNINGS")
 target_link_libraries(test_nanorange PRIVATE nanorange)

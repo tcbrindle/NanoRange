@@ -23,7 +23,7 @@
 //===----------------------------------------------------------------------===//
 
 #include <nanorange/algorithm/reverse_copy.hpp>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/subrange.hpp>
 #include <cstring>
 #include <utility>
 #include "../catch.hpp"

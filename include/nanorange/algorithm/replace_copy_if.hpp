@@ -40,9 +40,9 @@ public:
     template <typename I, typename S, typename O, typename Pred, typename T,
               typename Proj = identity>
     constexpr std::enable_if_t<
-        InputIterator<I> && Sentinel<S, I> && OutputIterator<O, const T&> &&
-            IndirectlyCopyable<I, O> &&
-            IndirectUnaryPredicate<Pred, projected<I, Proj>>,
+        input_iterator<I> && sentinel_for<S, I> &&
+            output_iterator<O, const T&> && indirectly_copyable<I, O> &&
+            indirect_unary_predicate<Pred, projected<I, Proj>>,
         replace_copy_if_result<I, O>>
     operator()(I first, S last, O result, Pred pred, const T& new_value,
                Proj proj = Proj{}) const
@@ -55,9 +55,9 @@ public:
     template <typename Rng, typename O, typename Pred, typename T,
               typename Proj = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng> && OutputIterator<O, const T&> &&
-            IndirectlyCopyable<iterator_t<Rng>, O> &&
-            IndirectUnaryPredicate<Pred, projected<iterator_t<Rng>, Proj>>,
+        input_range<Rng> && output_iterator<O, const T&> &&
+            indirectly_copyable<iterator_t<Rng>, O> &&
+            indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
         replace_copy_if_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, Pred pred, const T& new_value,
                Proj proj = Proj{}) const

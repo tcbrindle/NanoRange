@@ -19,7 +19,7 @@ namespace detail {
 struct move_fn {
 private:
     template <typename I, typename S, typename O>
-    static constexpr std::enable_if_t<SizedSentinel<S, I>, move_result<I, O>>
+    static constexpr std::enable_if_t<sized_sentinel_for<S, I>, move_result<I, O>>
     impl(I first, S last, O result, priority_tag<1>)
     {
         const auto dist = last - first;
@@ -48,9 +48,9 @@ private:
 
 public:
     template <typename I, typename S, typename O>
-    constexpr std::enable_if_t<InputIterator<I> && Sentinel<S, I> &&
-                                   WeaklyIncrementable<O> &&
-                                   IndirectlyMovable<I, O>,
+    constexpr std::enable_if_t<input_iterator<I> && sentinel_for<S, I> &&
+                                   weakly_incrementable<O> &&
+                                   indirectly_movable<I, O>,
                                move_result<I, O>>
     operator()(I first, S last, O result) const
     {
@@ -59,8 +59,8 @@ public:
     }
 
     template <typename Rng, typename O>
-    constexpr std::enable_if_t<InputRange<Rng> && WeaklyIncrementable<O> &&
-                                   IndirectlyMovable<iterator_t<Rng>, O>,
+    constexpr std::enable_if_t<input_range<Rng> && weakly_incrementable<O> &&
+                                   indirectly_movable<iterator_t<Rng>, O>,
                                move_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
@@ -94,7 +94,7 @@ private:
     }
 
     template <typename I, typename S, typename O>
-    static constexpr std::enable_if_t<!Same<I, S>, move_backward_result<I, O>>
+    static constexpr std::enable_if_t<!same_as<I, S>, move_backward_result<I, O>>
     impl(I first, S sent, O result)
     {
         I last = nano::next(first, sent);
@@ -103,9 +103,9 @@ private:
 
 public:
     template <typename I, typename S, typename O>
-    constexpr std::enable_if_t<BidirectionalIterator<I> && Sentinel<S, I> &&
-                                   BidirectionalIterator<O> &&
-                                   IndirectlyMovable<I, O>,
+    constexpr std::enable_if_t<
+        bidirectional_iterator<I> && sentinel_for<S, I> &&
+            bidirectional_iterator<O> && indirectly_movable<I, O>,
                                move_backward_result<I, O>>
     operator()(I first, S last, O result) const
     {
@@ -114,9 +114,9 @@ public:
     }
 
     template <typename Rng, typename O>
-    constexpr std::enable_if_t<BidirectionalRange<Rng> &&
-                                   BidirectionalIterator<O> &&
-                                   IndirectlyMovable<iterator_t<Rng>, O>,
+    constexpr std::enable_if_t<bidirectional_range<Rng> &&
+                                   bidirectional_iterator<O> &&
+                                   indirectly_movable<iterator_t<Rng>, O>,
                                move_backward_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {

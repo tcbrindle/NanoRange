@@ -14,8 +14,8 @@
 //  or a copy at http://stlab.adobe.com/licenses.html)
 
 #include <nanorange/algorithm/lower_bound.hpp>
-#include <nanorange/view/iota.hpp>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/iota.hpp>
+#include <nanorange/views/subrange.hpp>
 #include <vector>
 #include <utility>
 #include "../catch.hpp"

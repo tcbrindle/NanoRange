@@ -291,7 +291,7 @@ TEST_CASE("alg.sort")
 			v[i].j = i;
 		}
 		auto r = stl2::sort(std::move(v), std::less<int>{}, &S::i);
-		static_assert(stl2::Same<decltype(r), stl2::dangling>);
+		static_assert(stl2::same_as<decltype(r), stl2::dangling>);
 		for(int i = 0; (std::size_t)i < v.size(); ++i)
 		{
 			CHECK(v[i].i == i);

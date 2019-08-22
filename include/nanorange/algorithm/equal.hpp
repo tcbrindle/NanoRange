@@ -56,10 +56,10 @@ public:
               typename Pred = ranges::equal_to, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr std::enable_if_t<
-        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
-            Sentinel<S2, I2> &&
-            IndirectlyComparable<I1, I2, Pred, Proj1, Proj2> &&
-            SizedSentinel<S1, I1> && SizedSentinel<S2, I2>,
+        input_iterator<I1> && sentinel_for<S1, I1> && input_iterator<I2> &&
+            sentinel_for<S2, I2> &&
+            indirectly_comparable<I1, I2, Pred, Proj1, Proj2> &&
+            sized_sentinel_for<S1, I1> && sized_sentinel_for<S2, I2>,
         bool>
     operator()(I1 first1, S1 last1, I2 first2, S2 last2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
@@ -80,10 +80,10 @@ public:
               typename Pred = ranges::equal_to, typename Proj1 = identity,
               typename Proj2 = identity>
     constexpr std::enable_if_t<
-        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<I2> &&
-            Sentinel<S2, I2> &&
-            IndirectlyComparable<I1, I2, Pred, Proj1, Proj2> &&
-            !(SizedSentinel<S1, I1> && SizedSentinel<S2, I2>),
+        input_iterator<I1> && sentinel_for<S1, I1> && input_iterator<I2> &&
+            sentinel_for<S2, I2> &&
+            indirectly_comparable<I1, I2, Pred, Proj1, Proj2> &&
+            !(sized_sentinel_for<S1, I1> && sized_sentinel_for<S2, I2>),
         bool>
     operator()(I1 first1, S1 last1, I2 first2, S2 last2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
@@ -97,9 +97,10 @@ public:
     template <typename I1, typename S1, typename I2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED constexpr std::enable_if_t<
-        InputIterator<I1> && Sentinel<S1, I1> && InputIterator<std::decay_t<I2>> &&
-                !InputRange<I2> &&
-            IndirectlyComparable<I1, std::decay_t<I2>, Pred, Proj1, Proj2>,
+        input_iterator<I1> && sentinel_for<S1, I1> &&
+            input_iterator<std::decay_t<I2>> &&
+                !input_range<I2> &&
+            indirectly_comparable<I1, std::decay_t<I2>, Pred, Proj1, Proj2>,
         bool>
     operator()(I1 first1, S1 last1, I2 first2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
@@ -112,10 +113,10 @@ public:
     template <typename Rng1, typename Rng2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng1> && InputRange<Rng2> &&
-            IndirectlyComparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred,
+        input_range<Rng1> && input_range<Rng2> &&
+            indirectly_comparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred,
                                  Proj1, Proj2> &&
-            SizedRange<Rng1> && SizedRange<Rng2>,
+            sized_range<Rng1> && sized_range<Rng2>,
         bool>
     operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
@@ -132,10 +133,10 @@ public:
     template <typename Rng1, typename Rng2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     constexpr std::enable_if_t<
-        InputRange<Rng1> && InputRange<Rng2> &&
-            IndirectlyComparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred,
+        input_range<Rng1> && input_range<Rng2> &&
+            indirectly_comparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred,
                                  Proj1, Proj2> &&
-            !(SizedRange<Rng1> && SizedRange<Rng2>),
+            !(sized_range<Rng1> && sized_range<Rng2>),
         bool>
     operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
@@ -149,9 +150,9 @@ public:
     template <typename Rng1, typename I2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
     NANO_DEPRECATED constexpr std::enable_if_t<
-        InputRange<Rng1> && InputIterator<std::decay_t<I2>> &&
-                !InputRange<I2> &&
-            IndirectlyComparable<iterator_t<Rng1>, std::decay_t<I2>, Pred, Proj1, Proj2>,
+        input_range<Rng1> && input_iterator<std::decay_t<I2>> &&
+                !input_range<I2> &&
+            indirectly_comparable<iterator_t<Rng1>, std::decay_t<I2>, Pred, Proj1, Proj2>,
         bool>
     operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const

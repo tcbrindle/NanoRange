@@ -74,7 +74,7 @@ void test_operator_arrow()
 	{
 		int i = 42;
 		auto ci = ranges::common_iterator<int*, ranges::unreachable_sentinel_t>{&i};
-		static_assert(models::Same<int*, decltype(ci.operator->())>, "");
+		static_assert(models::same_as<int*, decltype(ci.operator->())>, "");
 		CHECK(ci.operator->() == &i);
 	}
 #ifdef NO_BASIC_ITERATOR
@@ -89,13 +89,13 @@ void test_operator_arrow()
 	// the expression *i is a glvalue [lvalue case]
 	{
 		auto ci = ranges::common_iterator<lvalue_iterator, ranges::unreachable_sentinel_t>{};
-		static_assert(models::Same<int*, decltype(ci.operator->())>, "");
+		static_assert(models::same_as<int*, decltype(ci.operator->())>, "");
 		CHECK(ci.operator->() == &forty_two);
 	}
 	// the expression *i is a glvalue [xvalue case]
 	{
 		auto ci = ranges::common_iterator<xvalue_iterator, ranges::unreachable_sentinel_t>{};
-		static_assert(models::Same<int*, decltype(ci.operator->())>, "");
+		static_assert(models::same_as<int*, decltype(ci.operator->())>, "");
 		CHECK(ci.operator->() == &forty_two);
 	}
 #ifdef NO_BASIC_ITERATOR
@@ -135,12 +135,12 @@ TEST_CASE("iter.common_iterator") {
 	namespace __stl2 = nano::ranges;
 	{
 		static_assert(
-			models::ForwardIterator<
+			models::forward_iterator<
 				__stl2::common_iterator<
 					bidirectional_iterator<const char *>,
 					sentinel<const char *>>>, "");
 		static_assert(
-			!models::BidirectionalIterator<
+			!models::bidirectional_iterator<
 				__stl2::common_iterator<
 					bidirectional_iterator<const char *>,
 					sentinel<const char *>>>, "");
@@ -163,7 +163,7 @@ TEST_CASE("iter.common_iterator") {
 			>::value, "");
 		// Sized iterator range tests
 		static_assert(
-			!models::SizedSentinel<
+			!models::sized_sentinel_for<
 				__stl2::common_iterator<
 					forward_iterator<int*>,
 					sentinel<int*, true> >,
@@ -171,7 +171,7 @@ TEST_CASE("iter.common_iterator") {
 					forward_iterator<int*>,
 					sentinel<int*, true> > >, "");
 		static_assert(
-			models::SizedSentinel<
+			models::sized_sentinel_for<
 				__stl2::common_iterator<
 					random_access_iterator<int*>,
 					sentinel<int*, true> >,
@@ -179,7 +179,7 @@ TEST_CASE("iter.common_iterator") {
 					random_access_iterator<int*>,
 					sentinel<int*, true> > >, "");
 		static_assert(
-			!models::SizedSentinel<
+			!models::sized_sentinel_for<
 				__stl2::common_iterator<
 					random_access_iterator<int*>,
 					sentinel<int*, false> >,

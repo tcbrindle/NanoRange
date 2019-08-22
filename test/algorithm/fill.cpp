@@ -19,7 +19,7 @@
 //===----------------------------------------------------------------------===//
 
 #include <nanorange/algorithm/fill.hpp>
-#include <nanorange/view/subrange.hpp>
+#include <nanorange/views/subrange.hpp>
 #include <cstring>
 #include <string>
 #include <vector>

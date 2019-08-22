@@ -39,11 +39,9 @@ private:
 public:
     template <typename I, typename S, typename R = ranges::equal_to,
               typename Proj = identity>
-    constexpr std::enable_if_t<
-        ForwardIterator<I> &&
-        Sentinel<S, I> &&
-        IndirectRelation<R, projected<I, Proj>> &&
-        Permutable<I>, I>
+    constexpr std::enable_if_t<forward_iterator<I> && sentinel_for<S, I> &&
+                                   indirect_relation<R, projected<I, Proj>> &&
+                                   permutable<I>, I>
     operator()(I first, S last, R comp = {}, Proj proj = Proj{}) const
     {
         return unique_fn::impl(std::move(first), std::move(last),
@@ -52,9 +50,9 @@ public:
 
     template <typename Rng, typename R = ranges::equal_to, typename Proj = identity>
     constexpr std::enable_if_t<
-            ForwardRange<Rng> &&
-            IndirectRelation<R, projected<iterator_t<Rng>, Proj>> &&
-            Permutable<iterator_t<Rng>>,
+        forward_range<Rng> &&
+            indirect_relation<R, projected<iterator_t<Rng>, Proj>> &&
+            permutable<iterator_t<Rng>>,
             safe_iterator_t<Rng>>
     operator()(Rng&& rng, R comp = {}, Proj proj = Proj{}) const
     {
