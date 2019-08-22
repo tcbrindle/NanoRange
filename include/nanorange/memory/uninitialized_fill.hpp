@@ -35,9 +35,7 @@ private:
 
 public:
     template <typename I, typename S, typename T>
-    std::enable_if_t<
-        NoThrowForwardIterator<I> &&
-        NoThrowSentinel<S, I> &&
+    std::enable_if_t<no_throw_forward_iterator<I> && no_throw_sentinel<S, I> &&
         constructible_from<iter_value_t<I>, const T&>,
         I>
     operator()(I first, S last, const T& x) const
@@ -47,7 +45,7 @@ public:
 
     template <typename Rng, typename T>
     std::enable_if_t<
-        NoThrowForwardRange<Rng> &&
+        no_throw_forward_range<Rng> &&
         constructible_from<iter_value_t<iterator_t<Rng>>, const T&>,
         safe_iterator_t<Rng>>
     operator()(Rng&& rng, const T& x) const
@@ -64,8 +62,7 @@ namespace detail {
 
 struct uninitialized_fill_n_fn {
     template <typename I, typename T>
-    std::enable_if_t<
-        NoThrowForwardIterator<I> &&
+    std::enable_if_t<no_throw_forward_iterator<I> &&
         constructible_from<iter_value_t<I>, const T&>,
         I>
     operator()(I first, iter_difference_t<I> n, const T& x) const

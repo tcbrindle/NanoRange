@@ -63,8 +63,8 @@ public:
     template <typename I, typename S, typename O, typename S2>
     std::enable_if_t<
         input_iterator<I> && sentinel_for<S, I> &&
-        NoThrowForwardIterator<O> &&
-        NoThrowSentinel<S2, O> &&
+            no_throw_forward_iterator<O> &&
+            no_throw_sentinel<S2, O> &&
         constructible_from<iter_value_t<O>, iter_reference_t<I>>,
         uninitialized_copy_result<I, O>>
     operator()(I ifirst, S ilast, O ofirst, S2 olast) const
@@ -77,8 +77,7 @@ public:
     // Two ranges
     template <typename IRng, typename ORng>
     std::enable_if_t<
-        input_range<IRng> &&
-        NoThrowForwardRange<ORng> &&
+        input_range<IRng> && no_throw_forward_range<ORng> &&
         constructible_from<iter_value_t<iterator_t<ORng>>, iter_reference_t<iterator_t<IRng>>>,
         uninitialized_copy_result<safe_iterator_t<IRng>, safe_iterator_t<ORng>>>
     operator()(IRng&& irng, ORng&& orng) const
@@ -93,7 +92,7 @@ public:
     NANO_DEPRECATED
     std::enable_if_t<
         input_iterator<I> && sentinel_for<S, I> &&
-        NoThrowForwardIterator<O> &&
+            no_throw_forward_iterator<O> &&
         constructible_from<iter_value_t<O>, iter_reference_t<I>>,
         uninitialized_copy_result<I, O>>
     operator()(I ifirst, S ilast, O ofirst) const
@@ -106,9 +105,8 @@ public:
     template <typename IRng, typename O>
     NANO_DEPRECATED
     std::enable_if_t<
-        input_range<IRng> &&
-        NoThrowForwardIterator<std::decay_t<O>> &&
-        !NoThrowForwardRange<O> &&
+        input_range<IRng> && no_throw_forward_iterator<std::decay_t<O>> &&
+        !no_throw_forward_range<O> &&
         constructible_from<iter_value_t<std::decay_t<O>>, iter_reference_t<iterator_t<IRng>>>,
         uninitialized_copy_result<safe_iterator_t<IRng>, std::decay_t<O>>>
     operator()(IRng&& irng, O&& ofirst) const
@@ -130,9 +128,8 @@ namespace detail {
 struct uninitialized_copy_n_fn {
     template <typename I, typename O, typename S>
     std::enable_if_t<
-        input_iterator<I> &&
-        NoThrowForwardIterator<O> &&
-        NoThrowSentinel<S, O> &&
+        input_iterator<I> && no_throw_forward_iterator<O> &&
+            no_throw_sentinel<S, O> &&
         constructible_from<iter_value_t<O>, iter_reference_t<I>>,
         uninitialized_copy_n_result<I, O>>
     operator()(I ifirst, iter_difference_t<I> n, O ofirst, S olast) const
@@ -146,8 +143,7 @@ struct uninitialized_copy_n_fn {
     template <typename I, typename O>
     NANO_DEPRECATED
     std::enable_if_t<
-        input_iterator<I> &&
-        NoThrowForwardIterator<O> &&
+        input_iterator<I> && no_throw_forward_iterator<O> &&
         constructible_from<iter_value_t<O>, iter_reference_t<I>>,
         uninitialized_copy_n_result<I, O>>
     operator()(I ifirst, iter_difference_t<I> n, O ofirst) const

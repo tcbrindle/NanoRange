@@ -21,9 +21,6 @@ using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
 template <typename...>
 using void_t = void;
 
-template <typename... T>
-void valid_expr(T&&...);
-
 struct error_t {
     error_t() = delete;
     error_t(error_t const&) = delete;

@@ -13,53 +13,59 @@ NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
-template <typename>
-auto NoThrowInputIterator_fn(long) -> std::false_type;
+struct no_throw_input_iterator_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
+
+    template <typename I>
+    static auto test(int) -> std::enable_if_t<
+        input_iterator<I> &&
+        std::is_lvalue_reference<iter_reference_t<I>>::value &&
+        same_as<remove_cvref_t<iter_reference_t<I>>, iter_value_t<I>>,
+        std::true_type>;
+};
 
 template <typename I>
-auto NoThrowInputIterator_fn(int) -> std::enable_if_t<
-    input_iterator<I> &&
-    std::is_lvalue_reference<iter_reference_t<I>>::value &&
-    same_as<remove_cvref_t<iter_reference_t<I>>, iter_value_t<I>>,
-    std::true_type>;
-
-template <typename I>
-NANO_CONCEPT NoThrowInputIterator =
-    decltype(NoThrowInputIterator_fn<I>(0))::value;
+NANO_CONCEPT no_throw_input_iterator =
+    decltype(no_throw_input_iterator_concept::test<I>(0))::value;
 
 template <typename S, typename I>
-NANO_CONCEPT NoThrowSentinel = sentinel_for<S, I>;
+NANO_CONCEPT no_throw_sentinel = sentinel_for<S, I>;
 
-template <typename>
-auto NoThrowInputRange_fn(long) -> std::false_type;
+struct no_throw_input_range_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
 
-template <typename Rng>
-auto NoThrowInputRange_fn(int) -> std::enable_if_t<range<Rng> &&
-    NoThrowInputIterator<iterator_t<Rng>> &&
-    NoThrowSentinel<sentinel_t<Rng>, iterator_t<Rng>>,
-    std::true_type>;
+    template <typename R>
+    static auto test(int) -> std::enable_if_t<
+        range<R> &&
+        no_throw_input_iterator<iterator_t<R>> &&
+        no_throw_sentinel<sentinel_t<R>, iterator_t<R>>,
+        std::true_type>;
+};
 
-template <typename Rng>
-NANO_CONCEPT NoThrowInputRange =
-    decltype(NoThrowInputRange_fn<Rng>(0))::value;
+template <typename R>
+NANO_CONCEPT no_throw_input_range =
+    decltype(no_throw_input_range_concept::test<R>(0))::value;
 
 template <typename I>
-NANO_CONCEPT NoThrowForwardIterator =
-    NoThrowInputIterator<I> && forward_iterator<I> &&
-    NoThrowSentinel<I, I>;
+NANO_CONCEPT no_throw_forward_iterator =
+    no_throw_input_iterator<I> && forward_iterator<I> && no_throw_sentinel<I, I>;
 
-template <typename>
-auto NoThrowForwardRange_fn(long) -> std::false_type;
+struct no_throw_forward_range_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
 
-template <typename Rng>
-auto NoThrowForwardRange_fn(int) -> std::enable_if_t<
-    NoThrowInputRange<Rng> &&
-    NoThrowForwardIterator<iterator_t<Rng>>,
-    std::true_type>;
+    template <typename R>
+    static auto test(int) -> std::enable_if_t<
+        no_throw_input_range<R> &&
+        no_throw_forward_iterator<iterator_t<R>>,
+        std::true_type>;
+};
 
-template <typename Rng>
-NANO_CONCEPT NoThrowForwardRange =
-    decltype(NoThrowForwardRange_fn<Rng>(0))::value;
+template <typename R>
+NANO_CONCEPT no_throw_forward_range =
+    decltype(no_throw_forward_range_concept::test<R>(0))::value;
 
 template <typename T>
 void* voidify(T& ptr) noexcept

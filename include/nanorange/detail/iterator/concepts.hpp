@@ -46,12 +46,12 @@ namespace detail {
 
 struct writable_concept {
     template <typename Out, typename T>
-    auto requires_(Out&& o, T&& t) -> decltype(valid_expr(
+    auto requires_(Out&& o, T&& t) -> decltype(
         *o = std::forward<T>(t),
         *std::forward<Out>(o) = std::forward<T>(t),
         const_cast<const iter_reference_t<Out>&&>(*o) = std::forward<T>(t),
         const_cast<const iter_reference_t<Out>&&>(*std::forward<Out>(o)) =
-            std::forward<T>(t)));
+            std::forward<T>(t));
 };
 
 } // namespace detail
@@ -68,9 +68,6 @@ inline constexpr bool is_integer_like = integral<T>;
 
 template <typename T>
 inline constexpr bool is_signed_integer_like = signed_integral<T>;
-
-template <typename T, typename Deduced>
-auto same_lv(Deduced&) -> std::enable_if_t<same_as<T, Deduced>, int>;
 
 struct weakly_incrementable_concept {
     template <typename I>

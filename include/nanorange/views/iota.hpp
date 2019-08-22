@@ -15,40 +15,43 @@ NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
-struct Decrementable_req {
+struct decrementable_concept {
     template <typename I>
     auto requires_(I i) -> decltype(
-        same_lv<I>(--i),
-        requires_expr<same_as<I, decltype(i--)>>{}
+        requires_expr<same_as<decltype(--i), I&>>{},
+        requires_expr<same_as<decltype(i--), I>>{}
     );
 };
 
 template <typename I>
-NANO_CONCEPT Decrementable = incrementable<I> && requires_<Decrementable_req, I>;
+NANO_CONCEPT decrementable = incrementable<I> && requires_<decrementable_concept, I>;
 
-struct Advanceable_req {
-    // FIXME: Nasty IOTA-DIFF-T stuff
-    template <typename I, typename DiffT = iter_difference_t<I>>
-    auto requires_(I i, const I j, const DiffT n) -> decltype(
+template <typename W>
+using iota_diff_t = iter_difference_t<W>;
+
+struct advanceable_concept {
+    template <typename I>
+    auto requires_(I i, const I j, const iota_diff_t<I> n) -> decltype(
         requires_expr<same_as<decltype(i += n), I&>>{},
         requires_expr<same_as<decltype(i -= n), I&>>{},
         I(j + n),
         I(n + j),
         I(j - n),
-        requires_expr<convertible_to<decltype(j - j), DiffT>>{}
+        requires_expr<convertible_to<decltype(j - j), iota_diff_t<I>>>{}
     );
 };
 
 template <typename I>
-NANO_CONCEPT Advanceable = Decrementable<I> && totally_ordered<I> &&
-    requires_<Advanceable_req, I>;
+NANO_CONCEPT advanceable =
+    decrementable<I> && totally_ordered<I> &&
+    requires_<advanceable_concept, I>;
 
 template <typename W>
 constexpr auto iota_view_iter_cat_helper()
 {
-    if constexpr (detail::Advanceable<W>) {
+    if constexpr (detail::advanceable<W>) {
         return random_access_iterator_tag{};
-    } else if constexpr (detail::Decrementable<W>) {
+    } else if constexpr (detail::decrementable<W>) {
         return bidirectional_iterator_tag{};
     } else if constexpr (incrementable<W>) {
         return forward_iterator_tag{};
@@ -75,10 +78,8 @@ private:
 
     public:
         using iterator_category = decltype(detail::iota_view_iter_cat_helper<W>());
-        
         using value_type = W;
-        // FIXME: IOTA_DIFF_T urgh
-        using difference_type = iter_difference_t<W>;
+        using difference_type = detail::iota_diff_t<W>;
 
         iterator() = default;
 
@@ -109,7 +110,7 @@ private:
 
         template <typename WW = W>
         constexpr auto operator--()
-            -> std::enable_if_t<detail::Decrementable<WW>, iterator&>
+            -> std::enable_if_t<detail::decrementable<WW>, iterator&>
         {
             --value_;
             return *this;
@@ -124,7 +125,7 @@ private:
 
         template <typename WW = W>
         constexpr auto operator+=(difference_type n)
-            -> std::enable_if_t<detail::Advanceable<WW>, iterator&>
+            -> std::enable_if_t<detail::advanceable<WW>, iterator&>
         {
             if constexpr (integral<W> && !signed_integral<W>) {
                 if (n >= difference_type(0)) {
@@ -140,7 +141,7 @@ private:
 
         template <typename WW = W>
         constexpr auto operator-=(difference_type n)
-            -> std::enable_if_t<detail::Advanceable<WW>, iterator&>
+            -> std::enable_if_t<detail::advanceable<WW>, iterator&>
         {
             if constexpr (integral<W> && !signed_integral<W>) {
                 if (n >= difference_type(0)) {
@@ -156,7 +157,7 @@ private:
 
         template <typename WW = W>
         constexpr auto operator[](difference_type n) const
-            -> std::enable_if_t<detail::Advanceable<WW>, W>
+            -> std::enable_if_t<detail::advanceable<WW>, W>
         {
             return W(value_ + n);
         }
@@ -205,28 +206,28 @@ private:
 
         template <typename WW = W>
         friend constexpr auto operator+(iterator i, difference_type n)
-            -> std::enable_if_t<detail::Advanceable<WW>, iterator>
+            -> std::enable_if_t<detail::advanceable<WW>, iterator>
         {
             return i += n;
         }
 
         template <typename WW = W>
         friend constexpr auto operator+(difference_type n, iterator i)
-            -> std::enable_if_t<detail::Advanceable<WW>, iterator>
+            -> std::enable_if_t<detail::advanceable<WW>, iterator>
         {
             return i + n;
         }
 
         template <typename WW = W>
         friend constexpr auto operator-(iterator i, difference_type n)
-            -> std::enable_if_t<detail::Advanceable<WW>, iterator>
+            -> std::enable_if_t<detail::advanceable<WW>, iterator>
         {
             return i -= n;
         }
 
         template <typename WW = W>
         friend constexpr auto operator-(const iterator& x, const iterator& y)
-            -> std::enable_if_t<detail::Advanceable<WW>, difference_type>
+            -> std::enable_if_t<detail::advanceable<WW>, difference_type>
         {
             using D = difference_type;
             if constexpr (integral<D>) {
@@ -322,7 +323,7 @@ public:
     }
 
     template <typename WW = W, typename BB = Bound, std::enable_if_t<
-              (same_as<WW, BB> && detail::Advanceable<W>) ||
+              (same_as<WW, BB> && detail::advanceable<W>) ||
               (integral<WW> && integral<BB>) ||
                                    sized_sentinel_for<BB, WW>, int> = 0>
     constexpr auto size() const

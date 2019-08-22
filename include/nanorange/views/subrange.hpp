@@ -42,34 +42,30 @@ using subrange_::subrange;
 
 namespace detail {
 
+struct pair_like_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
 
-struct PairLike_req {
-    template <std::size_t I, typename T>
-    int test_func(const std::tuple_element_t<I, T>&);
-
+    template <typename T,
+              typename = typename std::tuple_size<T>::type,
+              typename = std::enable_if_t<detail::requires_<pair_like_concept, T>>>
+    static auto test(int) -> std::true_type;
 
     template <typename T>
     auto requires_(T t) -> decltype(
-            requires_expr<derived_from<std::tuple_size<T>, std::integral_constant<std::size_t, 2>>>{},
-            std::declval<std::tuple_element_t<0, std::remove_const_t<T>>>(),
-            std::declval<std::tuple_element_t<1, std::remove_const_t<T>>>(),
-            this->test_func<0, T>(std::get<0>(t)),
-            this->test_func<1, T>(std::get<1>(t)));
+        requires_expr<derived_from<std::tuple_size<T>, std::integral_constant<std::size_t, 2>>>{},
+        std::declval<std::tuple_element_t<0, std::remove_const_t<T>>>(),
+        std::declval<std::tuple_element_t<1, std::remove_const_t<T>>>(),
+        requires_expr<convertible_to<decltype(std::get<0>(t)), const std::tuple_element<0, T>&>>{},
+        requires_expr<convertible_to<decltype(std::get<1>(t)), const std::tuple_element<1, T>&>>{}
+    );
 };
 
 template <typename T>
-auto PairLike_fn(long) -> std::false_type;
+NANO_CONCEPT pair_like = !std::is_reference_v<T> &&
+    decltype(pair_like_concept::test<T>(0))::value;
 
-template <typename T,
-          typename = typename std::tuple_size<T>::type,
-          typename = std::enable_if_t<detail::requires_<detail::PairLike_req, T>>>
-auto PairLike_fn(int) -> std::true_type;
-
-template <typename T>
-NANO_CONCEPT PairLike = !std::is_reference<T>::value &&
-        decltype(PairLike_fn<T>(0))::value;
-
-struct PairLikeConvertibleTo_req {
+struct pair_like_convertible_to_concept {
     template <typename T, typename U, typename V>
     auto requires_(T&& t) -> decltype(
         requires_expr<convertible_to<decltype(std::get<0>(std::forward<T>(t))), U>>{},
@@ -78,25 +74,28 @@ struct PairLikeConvertibleTo_req {
 };
 
 template <typename T, typename U, typename V>
-NANO_CONCEPT PairlikeConvertibleTo =
-    !range<T> && PairLike<std::remove_reference_t<T>> &&
-    detail::requires_<PairLikeConvertibleTo_req, T, U, V>;
+NANO_CONCEPT pair_like_convertible_to =
+    !range<T> && pair_like<std::remove_reference_t<T>> &&
+    detail::requires_<pair_like_convertible_to_concept, T, U, V>;
 
 template <typename T, typename U, typename V>
-NANO_CONCEPT PairLikeConvertibleFrom = !range<T> && PairLike<T> &&
-                                       constructible_from<T, U, V>;
+NANO_CONCEPT pair_like_convertible_from =
+    !range<T> && pair_like<T> && constructible_from<T, U, V>;
 
-template <typename T>
-auto IteratorSentinelPair_fn(long) -> std::false_type;
+struct iterator_sentinel_pair_concept {
+    template <typename T>
+    static auto test(long) -> std::false_type;
 
-template <typename T>
-auto IteratorSentinelPair_fn(int) -> std::enable_if_t<
-        !range<T> && PairLike<T> &&
-        sentinel_for<std::tuple_element_t<1, T>, std::tuple_element_t<0, T>>,
+    template <typename T>
+    static auto test(int) -> std::enable_if_t<
+        !range<T> && pair_like<T> &&
+        sentinel_for<std::tuple_element_t<1, T>,  std::tuple_element_t<0, T>>,
         std::true_type>;
+};
 
 template <typename T>
-NANO_CONCEPT IteratorSentinelPair = decltype(IteratorSentinelPair_fn<T>(0))::value;
+NANO_CONCEPT iterator_sentinel_pair =
+    decltype(iterator_sentinel_pair_concept::test<T>(0))::value;
 
 template <typename I, typename S, bool StoreSize = false>
 struct subrange_data {
@@ -207,14 +206,14 @@ public:
     template <typename PairLike_, bool SS = StoreSize,
             std::enable_if_t<detail::not_same_as<PairLike_, subrange>, int> = 0,
             std::enable_if_t<
-                detail::PairlikeConvertibleTo<PairLike_, I, S> && !SS,
+                detail::pair_like_convertible_to<PairLike_, I, S> && !SS,
                     int> = 0>
     constexpr subrange(PairLike_&& r)
             : subrange{std::get<0>(std::forward<PairLike_>(r)),
                        std::get<1>(std::forward<PairLike_>(r))} {}
 
     template <typename PairLike_, subrange_kind KK = K,
-            std::enable_if_t<detail::PairlikeConvertibleTo<PairLike_, I, S> &&
+            std::enable_if_t<detail::pair_like_convertible_to<PairLike_, I, S> &&
                     KK == subrange_kind::sized,
                     int> = 0>
     constexpr subrange(PairLike_&& r, iter_difference_t<I> n)
@@ -223,7 +222,7 @@ public:
 
     template <typename PairLike_,
             std::enable_if_t<detail::not_same_as<PairLike_, subrange>, int> = 0,
-            std::enable_if_t<detail::PairLikeConvertibleFrom<
+            std::enable_if_t<detail::pair_like_convertible_from<
                                 PairLike_, const I&, const S&>, int> = 0>
     constexpr operator PairLike_() const
     {
@@ -297,10 +296,10 @@ subrange(I, S) -> subrange<I, S>;
 template <typename I, typename S, std::enable_if_t<input_or_output_iterator<I> && sentinel_for<S, I>, int> = 0>
 subrange(I, S, iter_difference_t<I>) -> subrange<I, S, subrange_kind::sized>;
 
-template <typename P, std::enable_if_t<detail::IteratorSentinelPair<P>, int> = 0>
+template <typename P, std::enable_if_t<detail::iterator_sentinel_pair<P>, int> = 0>
 subrange(P) -> subrange<std::tuple_element_t<0, P>, std::tuple_element_t<1, P>>;
 
-template <typename P, std::enable_if_t<detail::IteratorSentinelPair<P>, int> = 0>
+template <typename P, std::enable_if_t<detail::iterator_sentinel_pair<P>, int> = 0>
 subrange(P, iter_difference_t<std::tuple_element_t<0, P>>) ->
     subrange<std::tuple_element_t<0, P>, std::tuple_element_t<1, P>, subrange_kind::sized>;
 
