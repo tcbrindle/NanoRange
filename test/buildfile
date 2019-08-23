@@ -19,7 +19,6 @@ exe{test-nanorange}: cxx{**\
     -views/take_exactly_view     \
     -views/take_view             \
     -views/take_while_view       \
-    -views/transform_view        \
 }
 exe{test-nanorange}: hxx{**}
 exe{test-nanorange}: test = true
