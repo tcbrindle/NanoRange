@@ -17,7 +17,6 @@ exe{test-nanorange}: cxx{**\
     -views/span                  \
     -views/split_view            \
     -views/take_exactly_view     \
-    -views/take_view             \
     -views/take_while_view       \
 }
 exe{test-nanorange}: hxx{**}

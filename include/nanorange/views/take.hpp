@@ -39,9 +39,13 @@ private:
             : end_(std::move(end))
         {}
 
-        template <bool C = Const, typename VV = V, std::enable_if_t<
-            C && convertible_to<sentinel_t<VV>, sentinel_t<Base>>, int> = 0>
-        constexpr explicit sentinel(sentinel<!Const> s)
+        // Use deduced type to avoid constraint recursion in GCC8
+        template <typename S,
+            std::enable_if_t<same_as<S, sentinel<!Const>>, int> = 0,
+            bool C = Const, typename VV = V,
+            std::enable_if_t<C &&
+                convertible_to<sentinel_t<VV>, sentinel_t<Base>>, int> = 0>
+        constexpr explicit sentinel(S s)
             : end_(std::move(s.end_))
         {}
 
