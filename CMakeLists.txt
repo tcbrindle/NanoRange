@@ -151,6 +151,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/all.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/common.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/counted.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/drop.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/empty.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/filter.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/interface.hpp

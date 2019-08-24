@@ -7,7 +7,6 @@ exe{test-nanorange}: cxx{**\
     -algorithm/sample           \
     -iterator/incomplete        \
     -iterator/iterator          \
-    -views/drop_view             \
     -views/drop_while_view       \
     -views/indirect_view         \
     -views/join_view             \

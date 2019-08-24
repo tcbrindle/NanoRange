@@ -10,6 +10,7 @@
 #include <nanorange/views/all.hpp>
 #include <nanorange/views/common.hpp>
 #include <nanorange/views/counted.hpp>
+#include <nanorange/views/drop.hpp>
 #include <nanorange/views/empty.hpp>
 #include <nanorange/views/filter.hpp>
 #include <nanorange/views/interface.hpp>
