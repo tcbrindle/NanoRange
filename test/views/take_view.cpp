@@ -98,7 +98,8 @@ TEST_CASE("views.take")
 
 	{
 		int some_ints[] = {1,2,3};
-		take_view{some_ints, 2};
+		take_view v{some_ints, 2};
+		(void) v;
 	}
 
 	{
