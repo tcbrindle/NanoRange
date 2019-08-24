@@ -179,7 +179,8 @@ struct take_view_fn {
 #ifdef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
         return detail::rao_proxy{std::bind(
             [](auto&& r, auto c) {
-                return take_view{std::forward<decltype(r)>(r), std::move(c)};
+                using R = decltype(r);
+                return take_view<all_view<R>>{std::forward<R>(r), c};
             },
             std::placeholders::_1, std::move(c))};
 #else
