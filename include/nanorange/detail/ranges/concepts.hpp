@@ -320,11 +320,21 @@ using safe_iterator_t = std::conditional_t<
 
 namespace detail {
 
+struct simple_view_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
+
+    template <typename R>
+    static auto test(int) -> std::enable_if_t<
+        view<R> && range<const R> &&
+        same_as<iterator_t<R>, iterator_t<const R>> &&
+        same_as<sentinel_t<R>, sentinel_t<const R>>,
+        std::true_type>;
+
+};
+
 template <typename R>
-NANO_CONCEPT simple_view =
-    view<R> && range<const R> &&
-    same_as<iterator_t<R>, iterator_t<const R>> &&
-    same_as<sentinel_t<R>, sentinel_t<const R>>;
+NANO_CONCEPT simple_view = decltype(simple_view_concept::test<R>(0))::value;
 
 struct has_arrow_concept {
     template <typename I>

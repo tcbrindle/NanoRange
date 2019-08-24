@@ -185,7 +185,7 @@ add_executable(test_nanorange
     #views/split_view.cpp
     views/subrange.cpp
     #views/take_exactly_view.cpp
-    #views/take_view.cpp
+    views/take_view.cpp
     #views/take_while_view.cpp
     views/transform_view.cpp
 )

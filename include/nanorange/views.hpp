@@ -19,6 +19,7 @@
 #include <nanorange/views/reverse.hpp>
 #include <nanorange/views/single.hpp>
 #include <nanorange/views/subrange.hpp>
+#include <nanorange/views/take.hpp>
 #include <nanorange/views/transform.hpp>
 
 #endif

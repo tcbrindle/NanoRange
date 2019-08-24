@@ -160,6 +160,7 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/ref.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/single.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/subrange.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/take.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/transform.hpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm.hpp
