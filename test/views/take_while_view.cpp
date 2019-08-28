@@ -24,7 +24,19 @@
 namespace ranges = nano::ranges;
 namespace views = ranges::views;
 
+namespace {
 
+constexpr bool constexpr_test()
+{
+    auto rng = views::iota(0)
+       | views::filter([](int i) { return i % 2 == 0;})
+       | views::take_while([] (int i) { return i < 10; })
+       | views::transform([] (int i) { return i * i; });
+    const std::array<int, 5> check{0, 4, 16, 36, 64};
+    return nano::equal(rng, check);
+}
+
+}
 
 TEST_CASE("views.take_while")
 {
@@ -39,6 +51,7 @@ TEST_CASE("views.take_while")
     static_assert(ranges::random_access_range<decltype(rng1)>);
     ::check_equal(rng1, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
 
+    static_assert(constexpr_test());
 
 #if 0 // DISABLED until generate is migrated to cmcstl2.
     {

@@ -30,6 +30,11 @@ constexpr auto filter_view_iter_cat_helper()
     }
 }
 
+constexpr inline auto as_ref = [](auto& pred) {
+    return [&p = pred] (auto&& arg) {
+        return nano::invoke(p, std::forward<decltype(arg)>(arg));
+    };
+};
 
 }
 
@@ -82,7 +87,7 @@ private:
         {
             current_ = ranges::find_if(++current_,
                                        ranges::end(parent_->base_),
-                                       std::ref(*parent_->pred_));
+                                       detail::as_ref(*parent_->pred_));
             return *this;
         }
 
@@ -206,7 +211,8 @@ public:
         }
 
         assert(pred_.has_value());
-        begin_cache_ = iterator{*this, nano::find_if(base_, std::ref(*pred_))};
+        begin_cache_ = std::optional<iterator>{
+            iterator{*this, nano::find_if(base_, detail::as_ref(*pred_))}};
         return *begin_cache_;
     }
 

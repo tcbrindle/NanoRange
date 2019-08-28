@@ -65,9 +65,11 @@ private:
               parent_(std::addressof(parent))
         {}
 
-        template <bool C = Const, typename VV = V, std::enable_if_t<
+        template <typename I,
+            std::enable_if_t<same_as<I, iterator<!Const>>, int> = 0,
+            bool C = Const, typename VV = V, std::enable_if_t<
             C && convertible_to<iterator_t<VV>, iterator_t<Base>>, int> = 0>
-        constexpr iterator(iterator<!Const> i)
+        constexpr iterator(I i)
             : current_(std::move(i.current_)),
               parent_(i.parent_)
         {}
@@ -238,9 +240,11 @@ private:
             : end_(std::move(end))
         {}
 
-        template <bool C = Const, typename VV = V, std::enable_if_t<
+        template <typename S,
+            std::enable_if_t<same_as<S, sentinel<!Const>>, int> = 0,
+            bool C = Const, typename VV = V, std::enable_if_t<
             C && convertible_to<sentinel_t<VV>, sentinel_t<Base>>, int> = 0>
-        constexpr sentinel(sentinel<!Const> i)
+        constexpr sentinel(S i)
             : end_(std::move(i.end_))
         {}
 
@@ -248,12 +252,12 @@ private:
 
         friend constexpr bool operator==(const iterator<Const>& x, const sentinel& y)
         {
-            return x.current_ == y.end_;
+            return x.base() == y.end_;
         }
 
         friend constexpr bool operator==(const sentinel& x, const iterator<Const>& y)
         {
-            return x.end_ == y.current_;
+            return x.end_ == y.base();
         }
 
         friend constexpr bool operator!=(const iterator<Const>& x, const sentinel& y)
