@@ -31,7 +31,11 @@ struct reverse_view
     : view_interface<reverse_view<V>>,
       private detail::reverse_view_cache<common_range<V>, iterator_t<V>> {
 
-    static_assert(view<V> && bidirectional_range<V>, "");
+    static_assert(view<V>);
+    // FIXME: Workaround strange GCC9 behaviour
+#if !(defined(__GNUC__) && !defined(__clang__) && __GNUC__ == 9)
+    static_assert(bidirectional_range<V>);
+#endif
 
     reverse_view() = default;
 
