@@ -171,24 +171,26 @@ take_view(R&&, range_difference_t<R>) -> take_view<all_view<R>>;
 
 namespace detail {
 
+#ifdef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
+template <typename R>
+using take_view_helper_t = take_view<all_view<R>>;
+#endif
+
 struct take_view_fn {
 
     template <typename C>
     constexpr auto operator()(C c) const
     {
-#ifdef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
-        return detail::rao_proxy{std::bind(
-            [](auto&& r, auto c) {
-                using R = decltype(r);
-                return take_view<all_view<R>>{std::forward<R>(r), c};
-            },
-            std::placeholders::_1, std::move(c))};
-#else
+
         return detail::rao_proxy{[c = std::move(c)](auto&& r) mutable
-             -> decltype(take_view{std::forward<decltype(r)>(r), std::declval<C&&>()}) {
-          return take_view{std::forward<decltype(r)>(r), std::move(c)};
-        }};
+#ifdef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
+            -> take_view_helper_t<decltype(r)>
+#else
+            -> decltype(take_view{std::forward<decltype(r)>(r), std::declval<C&&>()})
 #endif
+        {
+            return take_view{std::forward<decltype(r)>(r), std::move(c)};
+        }};
     }
 
     template <typename E, typename F>

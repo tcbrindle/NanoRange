@@ -114,18 +114,13 @@ struct drop_view_fn {
     template <typename C>
     constexpr auto operator()(C c) const
     {
-#ifdef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
-        return detail::rao_proxy{std::bind(
-            [](auto&& r, auto c) {
-                return drop_view{std::forward<decltype(r)>(r), std::move(c)};
-            },
-            std::placeholders::_1, std::move(c))};
-#else
         return detail::rao_proxy{[c = std::move(c)](auto&& r) mutable
-            -> decltype(drop_view{std::forward<decltype(r)>(r), std::declval<C&&>()}) {
-          return drop_view{std::forward<decltype(r)>(r), std::move(c)};
-        }};
+#ifndef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
+            -> decltype(drop_view{std::forward<decltype(r)>(r), std::declval<C&&>()})
 #endif
+        {
+            return drop_view{std::forward<decltype(r)>(r), std::move(c)};
+        }};
     }
 
 };
