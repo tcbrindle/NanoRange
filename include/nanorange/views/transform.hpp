@@ -371,18 +371,13 @@ struct transform_view_fn {
     template <typename F>
     constexpr auto operator()(F f) const
     {
-#ifdef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
-        return detail::rao_proxy{std::bind(
-            [](auto&& r, auto f) {
-                return transform_view{std::forward<decltype(r)>(r), std::move(f)};
-            },
-            std::placeholders::_1, std::move(f))};
-#else
         return detail::rao_proxy{[f = std::move(f)](auto&& r) mutable
-            -> decltype(transform_view{std::forward<decltype(r)>(r), std::declval<F&&>()}) {
+#ifndef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
+            -> decltype(transform_view{std::forward<decltype(r)>(r), std::declval<F&&>()})
+#endif
+        {
             return transform_view{std::forward<decltype(r)>(r), std::move(f)};
         }};
-#endif
     }
 };
 
