@@ -7,7 +7,6 @@ exe{test-nanorange}: cxx{**\
     -algorithm/sample           \
     -iterator/incomplete        \
     -iterator/iterator          \
-    -views/drop_while_view       \
     -views/indirect_view         \
     -views/join_view             \
     -views/move_view             \
@@ -16,7 +15,6 @@ exe{test-nanorange}: cxx{**\
     -views/span                  \
     -views/split_view            \
     -views/take_exactly_view     \
-    -views/take_while_view       \
 }
 exe{test-nanorange}: hxx{**}
 exe{test-nanorange}: test = true

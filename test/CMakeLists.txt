@@ -186,7 +186,7 @@ add_executable(test_nanorange
     views/subrange.cpp
     #views/take_exactly_view.cpp
     views/take_view.cpp
-    #views/take_while_view.cpp
+    views/take_while_view.cpp
     views/transform_view.cpp
 )
 target_compile_definitions(test_nanorange PRIVATE "-DNANORANGE_NO_DEPRECATION_WARNINGS")
