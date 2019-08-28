@@ -233,17 +233,13 @@ struct filter_view_fn {
     template <typename Pred>
     constexpr auto operator()(Pred pred) const
     {
-#ifdef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
-        return detail::rao_proxy{std::bind([](auto&& r, auto p) {
-            return filter_view{std::forward<decltype(r)>(r), std::move(p)};
-        }, std::placeholders::_1, std::move(pred))};
-#else
         return detail::rao_proxy{[p = std::move(pred)] (auto&& r) mutable
+#ifndef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
             -> decltype(filter_view{std::forward<decltype(r)>(r), std::declval<Pred&&>()})
+#endif
         {
             return filter_view{std::forward<decltype(r)>(r), std::move(p)};
         }};
-#endif
     }
 
     template <typename R, typename Pred>
