@@ -124,7 +124,7 @@ inline namespace ranges                                                        \
 #define NANO_END_NAMESPACE_STD }
 #endif
 
-#if defined(_MSC_VER) && _MSC_VER < 1924
+#if defined(_MSC_VER)
 #define NANO_MSVC_LAMBDA_PIPE_WORKAROUND 1
 #endif
 
@@ -15693,17 +15693,13 @@ struct filter_view_fn {
     template <typename Pred>
     constexpr auto operator()(Pred pred) const
     {
-#ifdef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
-        return detail::rao_proxy{std::bind([](auto&& r, auto p) {
-            return filter_view{std::forward<decltype(r)>(r), std::move(p)};
-        }, std::placeholders::_1, std::move(pred))};
-#else
         return detail::rao_proxy{[p = std::move(pred)] (auto&& r) mutable
+#ifndef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
             -> decltype(filter_view{std::forward<decltype(r)>(r), std::declval<Pred&&>()})
+#endif
         {
             return filter_view{std::forward<decltype(r)>(r), std::move(p)};
         }};
-#endif
     }
 
     template <typename R, typename Pred>
@@ -16853,18 +16849,13 @@ struct transform_view_fn {
     template <typename F>
     constexpr auto operator()(F f) const
     {
-#ifdef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
-        return detail::rao_proxy{std::bind(
-            [](auto&& r, auto f) {
-                return transform_view{std::forward<decltype(r)>(r), std::move(f)};
-            },
-            std::placeholders::_1, std::move(f))};
-#else
         return detail::rao_proxy{[f = std::move(f)](auto&& r) mutable
-            -> decltype(transform_view{std::forward<decltype(r)>(r), std::declval<F&&>()}) {
+#ifndef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
+            -> decltype(transform_view{std::forward<decltype(r)>(r), std::declval<F&&>()})
+#endif
+        {
             return transform_view{std::forward<decltype(r)>(r), std::move(f)};
         }};
-#endif
     }
 };
 
