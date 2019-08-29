@@ -18,7 +18,7 @@ template <typename R, typename Pred>
 struct take_while_view : view_interface<take_while_view<R, Pred>> {
 private:
     static_assert(view<R>);
-    static_assert(input_range<R>);
+    static_assert(input_iterator<iterator_t<R>>);
     static_assert(std::is_object_v<Pred>);
     static_assert(indirect_unary_predicate<const Pred, iterator_t<R>>);
 
