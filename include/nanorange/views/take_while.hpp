@@ -51,21 +51,34 @@ private:
 
         constexpr sentinel_t<base_t> base() const { return end_; }
 
+        // Make these friend functions templates to keep MSVC happy
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
         friend constexpr bool operator==(const iterator_t<base_t>& x, const sentinel& y)
         {
             return y.end_ == x || !nano::invoke(*y.pred_, *x);
         }
 
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
         friend constexpr bool operator==(const sentinel& y, const iterator_t<base_t>& x)
         {
             return x == y;
         }
 
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
         friend constexpr bool operator!=(const iterator_t<base_t>& x, const sentinel& y)
         {
             return !(x == y);
         }
 
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
         friend constexpr bool operator!=(const sentinel& y, const iterator_t<base_t>& x)
         {
             return !(x == y);
