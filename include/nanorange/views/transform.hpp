@@ -316,7 +316,7 @@ public:
 
     template <typename VV = V, std::enable_if_t<
         range<const VV> &&
-        regular_invocable<const F&, range_reference_t<VV>>, int> = 0>
+        regular_invocable<const F&, range_reference_t<const VV>>, int> = 0>
     constexpr iterator<true> begin() const
     {
         return iterator<true>{*this, ranges::begin(base_)};
@@ -333,7 +333,7 @@ public:
 
     template <typename VV = V, std::enable_if_t<
         range<const VV> &&
-        regular_invocable<const F&, range_reference_t<VV>>, int> = 0>
+        regular_invocable<const F&, range_reference_t<const VV>>, int> = 0>
     constexpr auto end() const
     {
         if constexpr (common_range<V>) {
