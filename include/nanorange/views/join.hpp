@@ -87,19 +87,19 @@ private:
         Parent* parent_ = nullptr;
 
         template <typename B = Base>
+        constexpr decltype(auto) update_inner(range_reference_t<Base> x)
+        {
+            if constexpr (ref_is_glvalue<B>) {
+                return (x);
+            } else {
+                return (parent_->data_.inner_ = views::all(x));
+            }
+        }
+
         constexpr void satisfy()
         {
-            // No 'this' capture to avoid spurious warning with Clang -Wall
-            auto update_inner = [](iterator* this_, range_reference_t<Base> x) -> decltype(auto) {
-                if constexpr (ref_is_glvalue<B>) {
-                    return (x);
-                } else {
-                    return (this_->parent_->data_.inner_ = views::all(x));
-                }
-            };
-
             for (; outer_ !=  ranges::end(parent_->data_.base_); ++outer_) {
-                auto& inner = update_inner(this, *outer_);
+                auto& inner = update_inner(*outer_);
                 inner_ = ranges::begin(inner);
                 if (inner_ != ranges::end(inner)) {
                     return;
@@ -140,16 +140,22 @@ private:
             return inner_;
         }
 
+    private:
+        template <typename B = Base>
+        constexpr decltype(auto) get_inner_rng()
+        {
+            if constexpr (ref_is_glvalue<B>) {
+                return (*outer_);
+            } else {
+                return (parent_->data_.inner_);
+            }
+        }
+
+    public:
         template <typename B = Base>
         constexpr iterator& operator++()
         {
-            auto&& inner_rng = [this] () -> decltype(auto) {
-                if constexpr (ref_is_glvalue<B>) {
-                    return *outer_;
-                } else {
-                    return parent_->data_.inner_;
-                }
-            }();
+            auto&& inner_rng = get_inner_rng();
 
             if (++inner_ == ranges::end(inner_rng)) {
                 ++outer_;
@@ -223,9 +229,9 @@ private:
         template <typename B = Base>
         friend constexpr auto operator!=(const iterator& x, const iterator& y)
             -> std::enable_if_t<ref_is_glvalue<B> &&
-            equality_comparable<iterator_t<B>> &&
-            equality_comparable<iterator_t<range_reference_t<B>>>,
-            bool>
+                                equality_comparable<iterator_t<B>> &&
+                                equality_comparable<iterator_t<range_reference_t<B>>>,
+                                bool>
         {
             return !(x == y);
         }
