@@ -86,14 +86,15 @@ private:
             = iterator_t<range_reference_t<Base>>();
         Parent* parent_ = nullptr;
 
+        template <typename B = Base>
         constexpr void satisfy()
         {
             // No 'this' capture to avoid spurious warning with Clang -Wall
-            auto update_inner = [](iterator* _this, range_reference_t<Base> x) -> decltype(auto) {
-                if constexpr (ref_is_glvalue<Base>) {
+            auto update_inner = [](iterator* this_, range_reference_t<Base> x) -> decltype(auto) {
+                if constexpr (ref_is_glvalue<B>) {
                     return (x);
                 } else {
-                    return (_this->parent_->data_.inner_ = views::all(x));
+                    return (this_->parent_->data_.inner_ = views::all(x));
                 }
             };
 
@@ -139,10 +140,11 @@ private:
             return inner_;
         }
 
+        template <typename B = Base>
         constexpr iterator& operator++()
         {
             auto&& inner_rng = [this] () -> decltype(auto) {
-                if constexpr (ref_is_glvalue<Base>) {
+                if constexpr (ref_is_glvalue<B>) {
                     return *outer_;
                 } else {
                     return parent_->data_.inner_;
