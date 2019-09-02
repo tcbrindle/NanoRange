@@ -22,6 +22,7 @@
 #include <nanorange/views/ref.hpp>
 #include <nanorange/views/reverse.hpp>
 #include <nanorange/views/single.hpp>
+#include <nanorange/views/split.hpp>
 #include <nanorange/views/subrange.hpp>
 #include <nanorange/views/take.hpp>
 #include <nanorange/views/take_while.hpp>

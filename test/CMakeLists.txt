@@ -183,7 +183,7 @@ add_executable(test_nanorange
     views/reverse_view.cpp
     views/single_view.cpp
     #views/span.cpp
-    #views/split_view.cpp
+    views/split_view.cpp
     views/subrange.cpp
     #views/take_exactly_view.cpp
     views/take_view.cpp
