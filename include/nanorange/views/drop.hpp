@@ -58,7 +58,7 @@ struct drop_view
         }
     }
 
-    template <typename RR = R, std::enable_if_t<random_access_range<RR>, int> = 0>
+    template <typename RR = R, std::enable_if_t<random_access_range<const RR>, int> = 0>
     constexpr auto begin() const
     {
         return ranges::next(ranges::begin(base_), count_, ranges::end(base_));
