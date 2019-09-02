@@ -24,7 +24,7 @@ namespace ranges = nano::ranges;
 
 namespace {
 
-bool test_split_join()
+constexpr bool test_split_join()
 {
     const std::string_view str = "The quick brown fox";
     const std::string_view out = "Thequickbrownfox";
@@ -230,5 +230,5 @@ TEST_CASE("views.split") {
 		CHECK(i == sv.end());
 	}
 
-	CHECK(test_split_join());
+	static_assert(test_split_join());
 }

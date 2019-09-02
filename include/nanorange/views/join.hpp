@@ -23,8 +23,7 @@ struct join_view_data {
 template <typename V>
 struct join_view_data<V, false> {
     V base_ = V();
-    // https://github.com/ericniebler/stl2/issues/604
-    mutable all_view<range_reference_t<V>> inner_ = all_view<range_reference_t<V>>();
+    all_view<range_reference_t<V>> inner_ = all_view<range_reference_t<V>>();
 };
 
 template <typename B>
@@ -73,13 +72,15 @@ private:
 
         friend struct sentinel<Const>;
 
-        using Parent = std::conditional_t<Const, const join_view, join_view>;
-
-        using Base = std::conditional_t<Const, const V, V>;
-
         template <typename B>
         static constexpr bool ref_is_glvalue =
             std::is_reference_v<range_reference_t<B>>;
+
+        using Base = std::conditional_t<Const, const V, V>;
+
+        // https://github.com/ericniebler/stl2/issues/604
+        using Parent = std::conditional_t<Const && ref_is_glvalue<Base>,
+            const join_view, join_view>;
 
         iterator_t<Base> outer_ = iterator_t<Base>();
         iterator_t<range_reference_t<Base>> inner_
