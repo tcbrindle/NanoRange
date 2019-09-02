@@ -18,6 +18,7 @@
 #include <nanorange/views/interface.hpp>
 #include <nanorange/views/iota.hpp>
 #include <nanorange/views/istream.hpp>
+#include <nanorange/views/join.hpp>
 #include <nanorange/views/ref.hpp>
 #include <nanorange/views/reverse.hpp>
 #include <nanorange/views/single.hpp>

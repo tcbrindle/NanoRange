@@ -159,8 +159,9 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/interface.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/iota.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/istream.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/reverse.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/join.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/ref.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/reverse.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/single.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/subrange.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/take.hpp
