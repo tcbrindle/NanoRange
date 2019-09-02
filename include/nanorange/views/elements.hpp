@@ -189,21 +189,34 @@ private:
             return !(x == y);
         }
 
+        // Make these friend functions templates to keep MSVC happy
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
         friend constexpr bool operator==(const iterator& x, const sentinel_t<base_t>& y)
         {
             return x.current_ == y;
         }
 
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
         friend constexpr bool operator==(const sentinel_t<base_t>& y, const iterator& x)
         {
             return x.current_ == y;
         }
 
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
         friend constexpr bool operator!=(const iterator& x, const sentinel_t<base_t>& y)
         {
             return !(x == y);
         }
 
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
         friend constexpr bool operator!=(const sentinel_t<base_t>& y, const iterator& x)
         {
             return !(x == y);
