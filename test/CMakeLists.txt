@@ -169,6 +169,7 @@ add_executable(test_nanorange
     views/counted_view.cpp
     views/drop_view.cpp
     views/drop_while_view.cpp
+    views/elements_view.cpp
     views/empty_view.cpp
     views/filter_view.cpp
     #views/indirect_view.cpp
