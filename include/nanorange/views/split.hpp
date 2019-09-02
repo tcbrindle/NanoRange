@@ -156,7 +156,7 @@ private:
         template <typename I,
                   std::enable_if_t<same_as<I, outer_iterator<!Const>>, int> = 0,
                   bool C = Const, typename VV = V,
-                  std::enable_if_t<Const &&
+                  std::enable_if_t<C &&
                       convertible_to<iterator_t<VV>, iterator_t<const VV>>, int> = 0>
         constexpr outer_iterator(I i)
             : parent_(i.parent_),

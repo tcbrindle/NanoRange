@@ -230,5 +230,10 @@ TEST_CASE("views.split") {
 		CHECK(i == sv.end());
 	}
 
+#ifdef _MSC_VER
+	// MSVC is insufficiently constexpr-y
+	CHECK(test_split_join());
+#else
 	static_assert(test_split_join());
+#endif
 }
