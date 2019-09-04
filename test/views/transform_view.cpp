@@ -10,18 +10,13 @@
 // Project home: https://github.com/caseycarter/cmcstl2
 //
 #include <nanorange/views/transform.hpp>
-
-#include <memory>
-#include <vector>
-
-#include "../catch.hpp"
-#include "../test_utils.hpp"
-#include <nanorange/algorithm/count.hpp>
-#include <nanorange/algorithm/transform.hpp>
-#include <nanorange/concepts.hpp>
 #include <nanorange/views/filter.hpp>
 #include <nanorange/views/iota.hpp>
 #include <nanorange/views/reverse.hpp>
+
+#include "../catch.hpp"
+#include "../test_utils.hpp"
+
 
 namespace ranges = nano::ranges;
 

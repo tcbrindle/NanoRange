@@ -9,21 +9,22 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <stl2/view/take.hpp>
-#include <stl2/view/iota.hpp>
-#include <stl2/view/filter.hpp>
-#include <stl2/view/subrange.hpp>
-#include <stl2/detail/iterator/istream_iterator.hpp>
+#include <nanorange/views/take.hpp>
+#include <nanorange/views/iota.hpp>
+#include <nanorange/views/filter.hpp>
+#include <nanorange/views/subrange.hpp>
+#include <nanorange/iterator/istream_iterator.hpp>
 #include <list>
 #include <memory>
 #include <vector>
 #include <sstream>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
+#include "../test_utils.hpp"
 
-namespace ranges = __stl2;
+namespace ranges = nano::ranges;
 
 namespace {
-	template <class I, class S>
+	template<class I, class S>
 	struct my_subrange : ranges::subrange<I, S> {
 		my_subrange() = default;
 		my_subrange(I i, S s)
@@ -33,81 +34,80 @@ namespace {
 	};
 }
 
-int main()
+TEST_CASE("views.take")
 {
 	using namespace ranges;
 
 	{
-		auto rng = view::iota(0) | view::take(10);
+		auto rng = views::iota(0) | views::take(10);
 		using R = decltype(rng);
-		static_assert(View<R>);
-		static_assert(!SizedRange<R>);
-		static_assert(!CommonRange<R>);
-		static_assert(RandomAccessRange<R>);
-		static_assert(!ContiguousRange<R>);
-		static_assert(Range<const R>);
-		CHECK_EQUAL(rng, {0,1,2,3,4,5,6,7,8,9});
+		static_assert(view<R>);
+		static_assert(!sized_range<R>);
+		static_assert(!common_range<R>);
+		static_assert(random_access_range<R>);
+		static_assert(!contiguous_range<R>);
+		static_assert(range<const R>);
+		::check_equal(rng, {0,1,2,3,4,5,6,7,8,9});
 	}
 
 	{
-		auto rng = view::iota(0, 100) | view::take(10);
+		auto rng = views::iota(0, 100) | views::take(10);
 		using R = decltype(rng);
-		static_assert(View<R>);
-		static_assert(SizedRange<R>);
-		static_assert(CommonRange<R>);
-		static_assert(RandomAccessRange<R>);
-		static_assert(!ContiguousRange<R>);
-		static_assert(Range<const R>);
-		CHECK_EQUAL(rng, {0,1,2,3,4,5,6,7,8,9});
+		static_assert(view<R>);
+		static_assert(sized_range<R>);
+		static_assert(common_range<R>);
+		static_assert(random_access_range<R>);
+		static_assert(!contiguous_range<R>);
+		static_assert(range<const R>);
+		::check_equal(rng, {0,1,2,3,4,5,6,7,8,9});
 	}
 
 	{
 		auto evens = [](int i) { return i % 2 == 0; };
 		std::stringstream sin{"0 1 2 3 4 5 6 7 8 9"};
 		my_subrange is{istream_iterator<int>{sin}, istream_iterator<int>{}};
-		static_assert(InputRange<decltype(is)>);
-		auto rng = is | view::filter(evens) | view::take(3);
+		static_assert(input_range<decltype(is)>);
+		auto rng = is | views::filter(evens) | views::take(3);
 		using R = decltype(rng);
-		static_assert(View<R>);
-		static_assert(!SizedRange<decltype(rng.base())>);
-		static_assert(!SizedRange<R>);
-		static_assert(!CommonRange<R>);
-		static_assert(InputRange<R>);
-		static_assert(!ForwardRange<R>);
-		static_assert(!Range<const R>);
-		CHECK_EQUAL(rng, {0,2,4});
+		static_assert(view<R>);
+		static_assert(!sized_range<decltype(rng.base())>);
+		static_assert(!sized_range<R>);
+		static_assert(!common_range<R>);
+		static_assert(input_range<R>);
+		static_assert(!forward_range<R>);
+		static_assert(!range<const R>);
+		::check_equal(rng, {0,2,4});
 	}
 
 	{
 		auto odds = [](int i) { return i % 2 == 1; };
 		std::stringstream sin{"0 1 2 3 4 5 6 7 8 9"};
 		my_subrange is{istream_iterator<int>{sin}, istream_iterator<int>{}};
-		auto pipe = view::filter(odds) | view::take(3);
+		auto pipe = views::filter(odds) | views::take(3);
 		auto rng = is | pipe;
 		using R = decltype(rng);
-		static_assert(View<R>);
-		static_assert(!SizedRange<decltype(rng.base())>);
-		static_assert(!SizedRange<R>);
-		static_assert(!CommonRange<R>);
-		static_assert(InputRange<R>);
-		static_assert(!ForwardRange<R>);
-		static_assert(!Range<const R>);
-		CHECK_EQUAL(rng, {1,3,5});
+		static_assert(view<R>);
+		static_assert(!sized_range<decltype(rng.base())>);
+		static_assert(!sized_range<R>);
+		static_assert(!common_range<R>);
+		static_assert(input_range<R>);
+		static_assert(!forward_range<R>);
+		static_assert(!range<const R>);
+		::check_equal(rng, {1,3,5});
 	}
 
 	{
 		int some_ints[] = {1,2,3};
-		take_view{some_ints, 2};
+		take_view v{some_ints, 2};
+		(void) v;
 	}
 
 	{
 		std::list<int> l{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-		auto rng = l | view::take(6);
-		static_assert(ranges::View<decltype(rng)>);
-		static_assert(ranges::SizedRange<decltype(rng)>);
-		static_assert(ranges::BidirectionalIterator<decltype(ranges::begin(rng))>);
-		CHECK_EQUAL(rng, {0, 1, 2, 3, 4, 5});
+		auto rng = l | views::take(6);
+		static_assert(ranges::view<decltype(rng)>);
+		static_assert(ranges::sized_range<decltype(rng)>);
+		static_assert(ranges::bidirectional_iterator<decltype(ranges::begin(rng))>);
+		::check_equal(rng, {0, 1, 2, 3, 4, 5});
 	}
-
-	return ::test_result();
 }

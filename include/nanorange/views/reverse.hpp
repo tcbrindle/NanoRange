@@ -31,7 +31,8 @@ struct reverse_view
     : view_interface<reverse_view<V>>,
       private detail::reverse_view_cache<common_range<V>, iterator_t<V>> {
 
-    static_assert(view<V> && bidirectional_range<V>, "");
+    static_assert(view<V>);
+    static_assert(bidirectional_range<V>);
 
     reverse_view() = default;
 

@@ -16,12 +16,12 @@ namespace detail {
 template <typename>
 inline constexpr bool is_raco = false;
 
-template <typename R, typename C>
+template <typename R, typename C,
+          typename = std::enable_if_t<
+              viewable_range<R> &&
+              !is_raco<remove_cvref_t<R>> && is_raco<remove_cvref_t<C>>>>
 constexpr auto operator|(R&& lhs, C&& rhs)
-    -> std::enable_if_t<viewable_range<R> &&
-        !is_raco<uncvref_t<R>> &&
-        is_raco<uncvref_t<C>>,
-        decltype(std::forward<C>(rhs)(std::forward<R>(lhs)))>
+    -> decltype(std::forward<C>(rhs)(std::forward<R>(lhs)))
 {
     return std::forward<C>(rhs)(std::forward<R>(lhs));
 }

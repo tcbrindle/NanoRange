@@ -167,14 +167,15 @@ add_executable(test_nanorange
 
     views/common_view.cpp
     views/counted_view.cpp
-    #views/drop_view.cpp
-    #views/drop_while_view.cpp
+    views/drop_view.cpp
+    views/drop_while_view.cpp
+    views/elements_view.cpp
     views/empty_view.cpp
     views/filter_view.cpp
     #views/indirect_view.cpp
     views/iota.cpp
     views/istream_view.cpp
-    #views/join_view.cpp
+    views/join_view.cpp
     #views/move_view.cpp
     views/ref_view.cpp
     #views/repeat_n_view.cpp
@@ -182,11 +183,11 @@ add_executable(test_nanorange
     views/reverse_view.cpp
     views/single_view.cpp
     #views/span.cpp
-    #views/split_view.cpp
+    views/split_view.cpp
     views/subrange.cpp
     #views/take_exactly_view.cpp
-    #views/take_view.cpp
-    #views/take_while_view.cpp
+    views/take_view.cpp
+    views/take_while_view.cpp
     views/transform_view.cpp
 )
 target_compile_definitions(test_nanorange PRIVATE "-DNANORANGE_NO_DEPRECATION_WARNINGS")

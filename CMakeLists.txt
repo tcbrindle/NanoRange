@@ -151,15 +151,22 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/all.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/common.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/counted.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/drop.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/drop_while.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/elements.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/empty.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/filter.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/interface.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/iota.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/istream.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/reverse.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/join.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/ref.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/reverse.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/single.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/split.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/subrange.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/take.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/take_while.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/transform.hpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm.hpp

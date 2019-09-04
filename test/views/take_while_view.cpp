@@ -10,45 +10,51 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <stl2/view/take_while.hpp>
-#include <stl2/view/iota.hpp>
+#include <nanorange/views/take_while.hpp>
+#include <nanorange/views/drop.hpp>
+#include <nanorange/views/iota.hpp>
+#include <nanorange/views/filter.hpp>
+#include <nanorange/views/transform.hpp>
+#include <nanorange/algorithm/equal.hpp>
+#include <array>
 #include <list>
 #include <vector>
-#include "../simple_test.hpp"
+#include "../catch.hpp"
+#include "../test_utils.hpp"
 
-namespace ranges = __stl2;
+namespace ranges = nano::ranges;
+namespace views = ranges::views;
 
-namespace view {
-	using namespace ranges::view;
-	using view::ext::take_while;
-} // namespace views
-
-int main()
+TEST_CASE("views.take_while")
 {
-	auto rng0 = view::iota(10) | view::take_while([](int i) { return i != 25; });
-	CHECK_EQUAL(rng0, {10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24});
-	static_assert(ranges::View<decltype(rng0)>);
-	static_assert(!ranges::CommonRange<decltype(rng0)>);
-	static_assert(ranges::RandomAccessIterator<decltype(rng0.begin())>);
+    auto rng0 = views::iota(10) | views::take_while([](int i) { return i != 25; });
+    ::check_equal(rng0, {10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24});
+    static_assert(ranges::view<decltype(rng0)>);
+    static_assert(!ranges::common_range<decltype(rng0)>);
+    static_assert(ranges::random_access_iterator<decltype(rng0.begin())>);
 
-	std::vector<int> vi{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-	auto rng1 = vi | view::take_while([](int i) { return i != 50; });
-	static_assert(ranges::RandomAccessRange<decltype(rng1)>);
-	CHECK_EQUAL(rng1, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+    std::vector<int> vi{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    auto rng1 = vi | views::take_while([](int i) { return i != 50; });
+    static_assert(ranges::random_access_range<decltype(rng1)>);
+    ::check_equal(rng1, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	//																															  //
-	// 								DISABLED until generate is migrated to cmcstl2.							  //
-	//																															  //
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	// {
-	// 	auto ns = views::generate([]() mutable {
-	// 		static int N;
-	// 		return ++N;
-	// 	});
-	// 	auto rng = ns | views::take_while([](int i) { return i < 5; });
-	// 	CHECK_EQUAL(rng, {1,2,3,4});
-	// }
+    {
+        auto rng = views::iota(0)
+                   | views::filter([](int i) { return i % 2 == 0;})
+                   | views::take_while([] (int i) { return i <= 10; })
+                   | views::transform([] (int i) { return i * i; })
+                   | views::drop(1);
+        ::check_equal(rng, {4, 16, 36, 64, 100});
+    }
 
-	return ::test_result();
+#if 0 // DISABLED until generate is migrated to cmcstl2.
+    {
+		auto ns = views::generate([]() mutable {
+			static int N;
+			return ++N;
+		});
+		auto rng = ns | views::take_while([](int i) { return i < 5; });
+		CHECK_EQUAL(rng, {1,2,3,4});
+	}
+#endif
 }

@@ -9,18 +9,33 @@
 //
 // Project home: https://github.com/caseycarter/cmcstl2
 //
-#include <stl2/view/split.hpp>
-#include <stl2/view/empty.hpp>
-#include <stl2/detail/iterator/istreambuf_iterator.hpp>
-#include "../simple_test.hpp"
-#include "../test_iterators.hpp"
+#include <nanorange/views/split.hpp>
+#include <nanorange/views/empty.hpp>
+#include <nanorange/iterator/istreambuf_iterator.hpp>
+#include <nanorange/views/join.hpp>
+#include <nanorange/algorithm/equal.hpp>
+#include "../catch.hpp"
+#include "../test_utils.hpp"
 
 #include <list>
 #include <sstream>
 
-namespace ranges = __stl2;
+namespace ranges = nano::ranges;
 
-int main() {
+namespace {
+
+constexpr bool test_split_join()
+{
+    const std::string_view str = "The quick brown fox";
+    const std::string_view out = "Thequickbrownfox";
+
+    return nano::equal(str | nano::views::split(' ') | nano::views::join, out);
+}
+
+
+}
+
+TEST_CASE("views.split") {
 	using namespace ranges;
 	std::string greeting = "now is the time";
 	std::string pattern = " ";
@@ -28,16 +43,16 @@ int main() {
 	{
 		split_view sv{greeting, pattern};
 		auto i = sv.begin();
-		CHECK_EQUAL(*i, {'n','o','w'});
+		::check_equal(*i, {'n','o','w'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, {'i','s'});
+		::check_equal(*i, {'i','s'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, {'t','h','e'});
+		::check_equal(*i, {'t','h','e'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, {'t','i','m','e'});
+		::check_equal(*i, {'t','i','m','e'});
 		++i;
 		CHECK(i == sv.end());
 	}
@@ -46,16 +61,16 @@ int main() {
 		split_view sv{greeting, ' '};
 		auto i = sv.begin();
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, {'n','o','w'});
+		::check_equal(*i, {'n','o','w'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, {'i','s'});
+		::check_equal(*i, {'i','s'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, {'t','h','e'});
+		::check_equal(*i, {'t','h','e'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, {'t','i','m','e'});
+		::check_equal(*i, {'t','i','m','e'});
 		++i;
 		CHECK(i == sv.end());
 	}
@@ -64,21 +79,21 @@ int main() {
 		std::stringstream sin{greeting};
 		auto rng = subrange{
 			istreambuf_iterator<char>{sin},
-			default_sentinel{}};
+			default_sentinel};
 
 		split_view sv{rng, ' '};
 		auto i = sv.begin();
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, {'n','o','w'});
+		::check_equal(*i, {'n','o','w'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, {'i','s'});
+		::check_equal(*i, {'i','s'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, {'t','h','e'});
+		::check_equal(*i, {'t','h','e'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, {'t','i','m','e'});
+		::check_equal(*i, {'t','i','m','e'});
 		++i;
 		CHECK(i == sv.end());
 	}
@@ -88,16 +103,16 @@ int main() {
 		split_view sv{list, ','};
 		auto i = sv.begin();
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, {'e','g','g','s'});
+		::check_equal(*i, {'e','g','g','s'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, {'m','i','l','k'});
+		::check_equal(*i, {'m','i','l','k'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, view::empty<char>);
+		::check_equal(*i, views::empty<char>);
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, {'b','u','t','t','e','r'});
+		::check_equal(*i, {'b','u','t','t','e','r'});
 		++i;
 		CHECK(i == sv.end());
 	}
@@ -107,42 +122,42 @@ int main() {
 		std::stringstream sin{list};
 		auto rng = subrange{
 			istreambuf_iterator<char>{sin},
-			default_sentinel{}};
-		auto sv = rng | view::split(',');
+			default_sentinel};
+		auto sv = rng | views::split(',');
 		auto i = sv.begin();
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, {'e','g','g','s'});
+		::check_equal(*i, {'e','g','g','s'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, {'m','i','l','k'});
+		::check_equal(*i, {'m','i','l','k'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, view::empty<char>);
+		::check_equal(*i, views::empty<char>);
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, {'b','u','t','t','e','r'});
+		::check_equal(*i, {'b','u','t','t','e','r'});
 		++i;
 		CHECK(i == sv.end());
 	}
 
 	{
 		std::string hello("hello");
-		split_view sv{hello, view::empty<char>};
+		split_view sv{hello, views::empty<char>};
 		auto i = sv.begin();
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, single_view{'h'});
+		::check_equal(*i, single_view{'h'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, single_view{'e'});
+		::check_equal(*i, single_view{'e'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, single_view{'l'});
+		::check_equal(*i, single_view{'l'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, single_view{'l'});
+		::check_equal(*i, single_view{'l'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, single_view{'o'});
+		::check_equal(*i, single_view{'o'});
 		++i;
 		CHECK(i == sv.end());
 	}
@@ -152,40 +167,40 @@ int main() {
 		std::stringstream sin{hello};
 		auto rng = subrange{
 			istreambuf_iterator<char>{sin},
-			default_sentinel{}};
-		auto sv = view::split(rng, view::empty<char>);
+			default_sentinel};
+		auto sv = views::split(rng, views::empty<char>);
 		auto i = sv.begin();
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, single_view{'h'});
+		::check_equal(*i, single_view{'h'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, single_view{'e'});
+		::check_equal(*i, single_view{'e'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, single_view{'l'});
+		::check_equal(*i, single_view{'l'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, single_view{'l'});
+		::check_equal(*i, single_view{'l'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, single_view{'o'});
+		::check_equal(*i, single_view{'o'});
 		++i;
 		CHECK(i == sv.end());
 	}
 
 	{
 		std::string hello{"hello"};
-		auto sv = view::split(hello, view::empty<char>);
+		auto sv = views::split(hello, views::empty<char>);
 		auto i = sv.begin();
 		CHECK(i != sv.end());
 		++i;
 		CHECK(i != sv.end());
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, single_view{'l'});
+		::check_equal(*i, single_view{'l'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, single_view{'l'});
+		::check_equal(*i, single_view{'l'});
 		++i;
 		CHECK(i != sv.end());
 		++i;
@@ -197,23 +212,28 @@ int main() {
 		std::stringstream sin{hello};
 		auto rng = subrange{
 			istreambuf_iterator<char>{sin},
-			default_sentinel{}};
-		auto sv = view::split(rng, view::empty<char>);
+			default_sentinel};
+		auto sv = rng | views::split(views::empty<char>);
 		auto i = sv.begin();
 		CHECK(i != sv.end());
 		++i;
 		CHECK(i != sv.end());
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, single_view{'l'});
+		::check_equal(*i, single_view{'l'});
 		++i;
 		CHECK(i != sv.end());
-		CHECK_EQUAL(*i, single_view{'l'});
+		::check_equal(*i, single_view{'l'});
 		++i;
 		CHECK(i != sv.end());
 		++i;
 		CHECK(i == sv.end());
 	}
 
-	return test_result();
+#ifdef _MSC_VER
+	// MSVC is insufficiently constexpr-y
+	CHECK(test_split_join());
+#else
+	static_assert(test_split_join());
+#endif
 }
