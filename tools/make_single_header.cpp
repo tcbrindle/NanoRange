@@ -6,11 +6,22 @@
 
 #include <deque>
 #include <iostream>
+#include <filesystem>
 #include <fstream>
 #include <regex>
 #include <string>
-#include <functional>
-#include <filesystem>
+#include <vector>
+
+// FIXME: match_results forward decl causes problems with libstdc++
+#ifdef _GLIBCXX_RELEASE
+#define NANORANGE_NO_STD_FORWARD_DECLARATIONS
+#endif
+#include <nanorange/algorithm/copy.hpp>
+#include <nanorange/algorithm/for_each.hpp>
+#include <nanorange/algorithm/find.hpp>
+#include <nanorange/algorithm/sort.hpp>
+#include <nanorange/iterator/istreambuf_iterator.hpp>
+#include <nanorange/iterator/ostreambuf_iterator.hpp>
 
 namespace fs = std::filesystem;
 
@@ -21,22 +32,16 @@ constexpr auto& include_regex = R"(#include <(nanorange(?:/\w*)+.hpp)>)";
 template <typename Rng, typename Value>
 bool contains(const Rng& range, const Value& val)
 {
-    return std::find(range.begin(), range.end(), val) !=
-           range.end();
+    return nano::find(range, val) != nano::end(range);
 }
 
 struct include_processor {
-    include_processor()
-        : regex_(include_regex)
-    {}
 
-    std::string run(const fs::path& start_path)
+    static std::string run(const fs::path& start_file)
     {
-        start_path_ = start_path;
-        start_path_.remove_filename();
-        auto str = process_one(start_path);
-
-        return str;
+        auto start_path = start_file;
+        start_path.remove_filename();
+        return include_processor{std::move(start_path)}.process_one(start_file);
     }
 
 private:
@@ -46,25 +51,24 @@ private:
         std::string text;
     };
 
+    include_processor(fs::path&& start_path)
+        : start_path_(std::move(start_path))
+    {}
+
     std::string process_one(const fs::path& path)
     {
         std::cout << "Processing path " << path << '\n';
 
         std::ifstream infile(path);
-        std::string text;
-        std::copy(std::istreambuf_iterator<char>{infile},
-                  std::istreambuf_iterator<char>{},
-                  std::back_inserter(text));
-        text.shrink_to_fit();
 
-        std::sregex_iterator iter(text.begin(), text.end(), regex_);
-        std::sregex_iterator end;
+        std::string text(nano::istreambuf_iterator<char>{infile},
+                         nano::istreambuf_iterator<char>{});
 
         std::deque<replacement> replacements;
 
-        for (; iter != end; ++iter) {
-            const auto match = *iter;
-
+        nano::for_each(std::sregex_iterator(text.begin(), text.end(), regex_),
+                       std::sregex_iterator{},
+                       [&] (const auto& match) {
             auto rep = replacement{match.position(), match.length()};
 
             auto new_path = start_path_;
@@ -74,8 +78,8 @@ private:
                 rep.text = process_one(new_path);
             }
 
-            replacements.push_back(rep);
-        }
+            replacements.push_back(std::move(rep));
+        });
 
         process_replacements(text, replacements);
         processed_paths_.push_back(path);
@@ -84,23 +88,21 @@ private:
 
     static void process_replacements(std::string& str, std::deque<replacement>& replacements)
     {
-        std::sort(replacements.begin(), replacements.end(), [] (const auto& rep1, const auto& rep2) {
-            return rep1.pos < rep2.pos;
-        });
+        nano::sort(replacements, {}, &replacement::pos);
 
         while (!replacements.empty()) {
-            auto rep = std::move(replacements[0]);
+            auto rep = std::move(replacements.front());
             replacements.pop_front();
             str.replace(rep.pos, rep.len, rep.text);
 
             for (auto& r : replacements) {
-                r.pos = r.pos - rep.len + rep.text.length();
+                r.pos -= rep.len - rep.text.length();
             }
         }
     }
 
-    std::regex regex_;
     fs::path start_path_;
+    std::regex regex_{include_regex};
     std::vector<fs::path> processed_paths_;
 };
 
@@ -116,13 +118,10 @@ int main(int argc, char** argv) try
     const auto infile_path = fs::canonical(fs::path(argv[1]));
     const auto outfile_path = fs::path(argv[2]);
 
-    std::regex regex(include_regex);
-
-    const auto out_str =  include_processor{}.run(infile_path);
+    const auto out_str =  include_processor::run(infile_path);
 
     std::ofstream outfile(outfile_path);
-    std::copy(out_str.begin(), out_str.end(),
-              std::ostreambuf_iterator<char>(outfile));
+    nano::copy(out_str, nano::ostreambuf_iterator<char>(outfile));
 
 } catch (const std::exception& ex) {
     std::cout << ex.what() << '\n';
