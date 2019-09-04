@@ -3342,11 +3342,21 @@ using safe_iterator_t = std::conditional_t<
 
 namespace detail {
 
+struct simple_view_concept {
+    template <typename>
+    static auto test(long) -> std::false_type;
+
+    template <typename R>
+    static auto test(int) -> std::enable_if_t<
+        view<R> && range<const R> &&
+        same_as<iterator_t<R>, iterator_t<const R>> &&
+        same_as<sentinel_t<R>, sentinel_t<const R>>,
+        std::true_type>;
+
+};
+
 template <typename R>
-NANO_CONCEPT simple_view =
-    view<R> && range<const R> &&
-    same_as<iterator_t<R>, iterator_t<const R>> &&
-    same_as<sentinel_t<R>, sentinel_t<const R>>;
+NANO_CONCEPT simple_view = decltype(simple_view_concept::test<R>(0))::value;
 
 struct has_arrow_concept {
     template <typename I>
@@ -14895,12 +14905,12 @@ namespace detail {
 template <typename>
 inline constexpr bool is_raco = false;
 
-template <typename R, typename C>
+template <typename R, typename C,
+          typename = std::enable_if_t<
+              viewable_range<R> &&
+              !is_raco<remove_cvref_t<R>> && is_raco<remove_cvref_t<C>>>>
 constexpr auto operator|(R&& lhs, C&& rhs)
-    -> std::enable_if_t<viewable_range<R> &&
-        !is_raco<uncvref_t<R>> &&
-        is_raco<uncvref_t<C>>,
-        decltype(std::forward<C>(rhs)(std::forward<R>(lhs)))>
+    -> decltype(std::forward<C>(rhs)(std::forward<R>(lhs)))
 {
     return std::forward<C>(rhs)(std::forward<R>(lhs));
 }
@@ -14996,8 +15006,8 @@ public:
 
     template <typename T,
               std::enable_if_t<detail::not_same_as<T, ref_view>, int> = 0,
-              std::enable_if_t<convertible_to<T, R&> &&
-                               detail::requires_<constructor_req, T>, int> = 0>
+              std::enable_if_t<detail::requires_<constructor_req, T>, int> = 0,
+              std::enable_if_t<convertible_to<T, R&>, int> = 0>
     constexpr ref_view(T&& t)
         : r_(std::addressof(static_cast<R&>(std::forward<T>(t))))
     {}
@@ -15324,60 +15334,154 @@ NANO_END_NAMESPACE
 
 #endif
 
-// nanorange/views/empty.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_VIEWS_EMPTY_HPP_INCLUDED
-#define NANORANGE_VIEWS_EMPTY_HPP_INCLUDED
-
-
-
-NANO_BEGIN_NAMESPACE
-
-namespace empty_view_ {
-
-template <typename T>
-class empty_view : view_interface<empty_view<T>> {
-    static_assert(std::is_object<T>::value, "");
-
-public:
-    static constexpr T* begin() noexcept { return nullptr; }
-    static constexpr T* end() noexcept { return nullptr; }
-    static constexpr std::ptrdiff_t size() noexcept { return 0; }
-    static constexpr T* data() noexcept { return nullptr; }
-
-    static constexpr bool empty() noexcept { return true; }
-
-    friend constexpr T* begin(empty_view) noexcept { return nullptr; }
-    friend constexpr T* end(empty_view) noexcept { return nullptr; }
-};
-
-}
-
-using empty_view_::empty_view;
-
-namespace views {
-
-template <typename T, typename = std::enable_if_t<std::is_object<T>::value>>
-inline constexpr empty_view<T> empty{};
-
-}
-
-
-NANO_END_NAMESPACE
-
-#endif
-// nanorange/views/filter.hpp
+// nanorange/views/drop.hpp
 //
 // Copyright (c) 2019 Tristan Brindle (tcbrindle at gmail dot com)
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef NANORANGE_VIEWS_FILTER_HPP_INCLUDED
-#define NANORANGE_VIEWS_FILTER_HPP_INCLUDED
+#ifndef NANORANGE_VIEWS_DROP_HPP_INCLUDED
+#define NANORANGE_VIEWS_DROP_HPP_INCLUDED
+
+
+
+
+
+#include <optional>
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+template <bool IsRandomAccess, typename>
+struct drop_view_cache {};
+
+template <typename I>
+struct drop_view_cache<false, I> {
+    std::optional<I> cached{};
+};
+
+}
+
+template <typename R>
+struct drop_view
+    : view_interface<drop_view<R>>,
+      private detail::drop_view_cache<random_access_range<R>, iterator_t<R>> {
+
+    static_assert(view<R>);
+
+    drop_view() = default;
+
+    constexpr drop_view(R base, range_difference_t<R> count)
+        : base_(std::move(base)),
+          count_(count)
+    {}
+
+    constexpr R base() const { return base_; }
+
+    template <typename RR = R, std::enable_if_t<
+        !(detail::simple_view<RR> && random_access_range<RR>), int> = 0>
+    constexpr auto begin()
+    {
+        if constexpr (random_access_range<R>) {
+            return ranges::next(ranges::begin(base_), count_, ranges::end(base_));
+        } else {
+            auto& c = this->cached;
+            if (!c.has_value()) {
+                c = ranges::next(ranges::begin(base_), count_, ranges::end(base_));
+            }
+            return *c;
+        }
+    }
+
+    template <typename RR = R, std::enable_if_t<random_access_range<const RR>, int> = 0>
+    constexpr auto begin() const
+    {
+        return ranges::next(ranges::begin(base_), count_, ranges::end(base_));
+    }
+
+    template <typename RR = R, std::enable_if_t<!detail::simple_view<RR>, int> = 0>
+    constexpr auto end()
+    {
+        return ranges::end(base_);
+    }
+
+    template <typename RR = R, std::enable_if_t<range<const RR>, int> = 0>
+    constexpr auto end()
+    {
+        return ranges::end(base_);
+    }
+
+    template <typename RR = R, std::enable_if_t<sized_range<RR>, int> = 0>
+    constexpr auto size()
+    {
+        const auto s = ranges::size(base_);
+        const auto c = static_cast<decltype(s)>(count_);
+        return s < c ? 0 : s - c;
+    }
+
+    template <typename RR = R, std::enable_if_t<sized_range<const RR>, int> = 0>
+    constexpr auto size() const
+    {
+        const auto s = ranges::size(base_);
+        const auto c = static_cast<decltype(s)>(count_);
+        return s < c ? 0 : s - c;
+    }
+
+private:
+    R base_ = R();
+    range_difference_t<R> count_ = 0;
+};
+
+template <typename R>
+drop_view(R&&, range_difference_t<R>) -> drop_view<all_view<R>>;
+
+namespace detail {
+
+struct drop_view_fn {
+
+    template <typename E, typename F>
+    constexpr auto operator()(E&& e, F&& f) const
+        -> decltype(drop_view{std::forward<E>(e), std::forward<F>(f)})
+    {
+        return drop_view{std::forward<E>(e), std::forward<F>(f)};
+    }
+
+    template <typename C>
+    constexpr auto operator()(C c) const
+    {
+        return detail::rao_proxy{[c = std::move(c)](auto&& r) mutable
+#ifndef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
+            -> decltype(drop_view{std::forward<decltype(r)>(r), std::declval<C&&>()})
+#endif
+        {
+            return drop_view{std::forward<decltype(r)>(r), std::move(c)};
+        }};
+    }
+
+};
+
+}
+
+namespace views {
+
+NANO_INLINE_VAR(nano::detail::drop_view_fn, drop)
+
+}
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/views/drop_while.hpp
+//
+// Copyright (c) 2019 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEWS_DROP_WHILE_HPP_INCLUDED
+#define NANORANGE_VIEWS_DROP_WHILE_HPP_INCLUDED
+
 
 
 // nanorange/detail/views/semiregular_box.hpp
@@ -15471,6 +15575,496 @@ NANO_END_NAMESPACE
 
 
 
+
+NANO_BEGIN_NAMESPACE
+
+template <typename R, typename Pred>
+struct drop_while_view : view_interface<drop_while_view<R, Pred>> {
+
+    static_assert(view<R>);
+    static_assert(input_range<R>);
+    static_assert(std::is_object_v<Pred>);
+    static_assert(indirect_unary_predicate<const Pred, iterator_t<R>>);
+
+    drop_while_view() = default;
+
+    constexpr drop_while_view(R base, Pred pred)
+        : base_(std::move(base)),
+          pred_(std::move(pred))
+    {}
+
+    constexpr R base() const { return base_; }
+
+    constexpr const Pred& pred() const { return *pred_; }
+
+    constexpr auto begin()
+    {
+        if (!cached_.has_value()) {
+            cached_ = ranges::find_if(base_,
+                [&p = pred()](auto&& arg)
+                {
+                    return !nano::invoke(p, std::forward<decltype(arg)>(arg));
+                });
+        }
+
+        return *cached_;
+    }
+
+    constexpr auto end()
+    {
+        return ranges::end(base_);
+    }
+
+private:
+    R base_;
+    detail::semiregular_box<Pred> pred_;
+    std::optional<iterator_t<R>> cached_;
+};
+
+template <typename R, typename Pred>
+drop_while_view(R&& r, Pred pred) -> drop_while_view<all_view<R>, Pred>;
+
+namespace detail {
+
+struct drop_while_view_fn {
+
+    template <typename E, typename F>
+    constexpr auto operator()(E&& e, F&& f) const
+        -> decltype(drop_while_view{std::forward<E>(e), std::forward<F>(f)})
+    {
+        return drop_while_view{std::forward<E>(e), std::forward<F>(f)};
+    }
+
+    template <typename Pred>
+    constexpr auto operator()(Pred&& pred) const
+    {
+        return detail::rao_proxy{[p = std::forward<Pred>(pred)](auto&& r) mutable
+#ifndef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
+            -> decltype(drop_while_view{std::forward<decltype(r)>(r), std::declval<Pred&&>()})
+#endif
+        {
+            return drop_while_view{std::forward<decltype(r)>(r), std::move(p)};
+        }};
+    }
+
+};
+
+} // namespace detail
+
+namespace views {
+
+NANO_INLINE_VAR(nano::detail::drop_while_view_fn, drop_while)
+
+}
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/views/elements.hpp
+//
+// Copyright (c) 2019 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEWS_ELEMENTS_HPP_INCLUDED
+#define NANORANGE_VIEWS_ELEMENTS_HPP_INCLUDED
+
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct has_tuple_element_concept {
+    template <typename T, typename I,
+              std::size_t N = I::value,
+              typename = typename std::tuple_size<T>::type>
+    auto requires_(T t) -> decltype(
+        requires_expr<(N < std::tuple_size_v<T>)>{},
+        std::declval<std::tuple_element_t<N, T>>(),
+        requires_expr<convertible_to<decltype(std::get<N>(t)), std::tuple_element_t<N, T>>>{}
+    );
+};
+
+template <typename T, std::size_t N>
+NANO_CONCEPT has_tuple_element =
+    detail::requires_<has_tuple_element_concept, T,
+                      std::integral_constant<std::size_t, N>>;
+
+} // namespace detail
+
+template <typename R, std::size_t N>
+struct elements_view : view_interface<elements_view<R, N>> {
+
+    static_assert(input_range<R>);
+    static_assert(view<R>);
+    static_assert(detail::has_tuple_element<range_value_t<R>, N>);
+    static_assert(detail::has_tuple_element<
+        std::remove_reference_t<range_reference_t<R>>, N>);
+
+    elements_view() = default;
+
+    constexpr explicit elements_view(R base)
+        : base_(std::move(base))
+    {}
+
+    template <typename RR = R, std::enable_if_t<!detail::simple_view<RR>, int> = 0>
+    constexpr auto begin()
+    {
+        return iterator<false>(ranges::begin(base_));
+    }
+
+    template <typename RR = R, std::enable_if_t<detail::simple_view<RR>, int> = 0>
+    constexpr auto begin() const
+    {
+        return iterator<true>(ranges::begin(base_));
+    }
+
+    template <typename RR = R, std::enable_if_t<!detail::simple_view<RR>, int> = 0>
+    constexpr auto end()
+    {
+        return ranges::end(base_);
+    }
+
+    template <typename RR = R, std::enable_if_t<detail::simple_view<RR>, int> = 0>
+    constexpr auto end() const
+    {
+        return ranges::end(base_);
+    }
+
+    template <typename RR = R, std::enable_if_t<sized_range<RR>, int> = 0>
+    constexpr auto size()
+    {
+        return ranges::size(base_);
+    }
+
+    template <typename RR = R, std::enable_if_t<sized_range<const RR>, int> = 0>
+    constexpr auto size() const
+    {
+        return ranges::size(base_);
+    }
+
+private:
+    template <bool Const>
+    struct iterator
+    {
+    private:
+        using base_t = std::conditional_t<Const, const R, R>;
+        friend iterator<!Const>;
+
+        iterator_t<base_t> current_;
+
+    public:
+        using iterator_category = iterator_category_t<iterator_t<base_t>>;
+        using value_type =
+            detail::remove_cvref_t<std::tuple_element_t<N, range_value_t<base_t>>>;
+        using difference_type = range_difference_t<base_t>;
+
+        iterator() = default;
+
+        constexpr explicit iterator(iterator_t<base_t> current)
+            : current_(std::move(current))
+        {}
+
+        template <typename I,
+                  std::enable_if_t<same_as<I, iterator<!Const>>, int> = 0,
+                  bool C = Const, typename B = base_t,
+                  std::enable_if_t<C &&
+                      convertible_to<iterator_t<R>, iterator_t<B>>, int> = 0>
+        constexpr iterator(I i)
+            : current_(std::move(i.current_))
+        {}
+
+        constexpr iterator_t<base_t> base() const { return current_; }
+
+        constexpr decltype(auto) operator*() const
+        {
+            return std::get<N>(*current_);
+        }
+
+        constexpr iterator& operator++() { ++current_; return *this; }
+
+        constexpr auto operator++(int)
+        {
+            if constexpr (forward_range<base_t>) {
+                auto temp = *this;
+                ++*this;
+                return temp;
+            } else {
+                ++*this;
+            }
+        }
+
+        template <typename B = base_t>
+        constexpr auto operator--()
+            -> std::enable_if_t<bidirectional_range<B>, iterator&>
+        {
+            --current_;
+            return *this;
+        }
+
+        template <typename B = base_t>
+        constexpr auto operator--(int)
+            -> std::enable_if_t<bidirectional_range<B>, iterator>
+        {
+            auto temp = *this;
+            ++*this;
+            return temp;
+        }
+
+        template <typename B = base_t>
+        constexpr auto operator+=(difference_type x)
+            -> std::enable_if_t<random_access_range<B>, iterator&>
+        {
+            current_ += x;
+            return *this;
+        }
+
+        template <typename B = base_t>
+        constexpr auto operator-=(difference_type x)
+            -> std::enable_if_t<random_access_range<B>, iterator&>
+        {
+            current_ -= x;
+            return *this;
+        }
+
+        template <typename B = base_t,
+                  std::enable_if_t<random_access_range<B>, int> = 0>
+        constexpr decltype(auto) operator[](difference_type n) const
+        {
+            return std::get<N>(*(current_ + n));
+        }
+
+        template <typename B = base_t>
+        friend constexpr auto operator==(const iterator& x, const iterator& y)
+            -> std::enable_if_t<equality_comparable<iterator_t<B>>, bool>
+        {
+            return x.current_ == y.current_;
+        }
+
+        template <typename B = base_t>
+        friend constexpr auto operator!=(const iterator& x, const iterator& y)
+            -> std::enable_if_t<equality_comparable<iterator_t<B>>, bool>
+        {
+            return !(x == y);
+        }
+
+        // Make these friend functions templates to keep MSVC happy
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
+        friend constexpr bool operator==(const iterator& x, const sentinel_t<base_t>& y)
+        {
+            return x.current_ == y;
+        }
+
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
+        friend constexpr bool operator==(const sentinel_t<base_t>& y, const iterator& x)
+        {
+            return x.current_ == y;
+        }
+
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
+        friend constexpr bool operator!=(const iterator& x, const sentinel_t<base_t>& y)
+        {
+            return !(x == y);
+        }
+
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
+        friend constexpr bool operator!=(const sentinel_t<base_t>& y, const iterator& x)
+        {
+            return !(x == y);
+        }
+
+        template <typename B = base_t>
+        friend constexpr auto operator<(const iterator& x, const iterator& y)
+            -> std::enable_if_t<random_access_range<B>, bool>
+        {
+            return x.current_ < y.current_;
+        }
+
+        template <typename B = base_t>
+        friend constexpr auto operator>(const iterator& x, const iterator& y)
+            -> std::enable_if_t<random_access_range<B>, bool>
+        {
+            return (y < x);
+        }
+
+        template <typename B = base_t>
+        friend constexpr auto operator<=(const iterator& x, const iterator& y)
+            -> std::enable_if_t<random_access_range<B>, bool>
+        {
+            return !(y < x);
+        }
+
+        template <typename B = base_t>
+        friend constexpr auto operator>=(const iterator& x, const iterator& y)
+            -> std::enable_if_t<random_access_range<B>, bool>
+        {
+            return !(x < y);
+        }
+
+        template <typename B = base_t>
+        friend constexpr auto operator+(const iterator& x, difference_type y)
+            -> std::enable_if_t<random_access_range<B>, iterator>
+        {
+            return iterator{x} += y;
+        }
+
+        template <typename B = base_t>
+        friend constexpr auto operator+(difference_type x, const iterator& y)
+            -> std::enable_if_t<random_access_range<B>, iterator>
+        {
+            return y + x;
+        }
+
+        template <typename B = base_t>
+        friend constexpr auto operator-(const iterator& x, difference_type y)
+            -> std::enable_if_t<random_access_range<B>, iterator>
+        {
+            return iterator{x} -= y;
+        }
+
+
+        template <typename B = base_t>
+        friend constexpr auto operator-(const iterator& x, const iterator& y)
+            -> std::enable_if_t<random_access_range<B>, difference_type>
+        {
+            return x.current_ - y.current_;
+        }
+
+        template <typename B = base_t>
+        friend constexpr auto operator-(const iterator& x, const sentinel_t<base_t>& y)
+        -> std::enable_if_t<sized_sentinel_for<sentinel_t<B>, iterator_t<B>>,
+            difference_type>
+        {
+            return x.current_ - y;
+        }
+
+        template <typename B = base_t>
+        friend constexpr auto operator-(const sentinel_t<base_t>& x, const iterator& y)
+            -> std::enable_if_t<sized_sentinel_for<sentinel_t<B>, iterator_t<B>>,
+                                difference_type>
+        {
+            return -(y - x);
+        }
+    };
+
+    R base_ = R();
+};
+
+
+template <typename R>
+using keys_view = elements_view<all_view<R>, 0>;
+
+template <typename R>
+using values_view = elements_view<all_view<R>, 1>;
+
+namespace detail {
+
+template <std::size_t N>
+struct elements_view_fn {
+    template <typename E>
+    constexpr auto operator()(E&& e) const
+        -> decltype(elements_view<all_view<decltype(std::forward<E>(e))>, N>{std::forward<E>(e)})
+    {
+        return elements_view<all_view<decltype(std::forward<E>(e))>, N>{std::forward<E>(e)};
+    }
+};
+
+template <std::size_t N>
+inline constexpr bool is_raco<elements_view_fn<N>> = true;
+
+} // namespace detail
+
+namespace views {
+
+inline namespace function_objects {
+
+template <std::size_t N>
+inline constexpr nano::detail::elements_view_fn<N> elements{};
+
+inline constexpr nano::detail::elements_view_fn<0> keys{};
+
+inline constexpr nano::detail::elements_view_fn<1> values{};
+
+}
+
+}
+
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/views/empty.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEWS_EMPTY_HPP_INCLUDED
+#define NANORANGE_VIEWS_EMPTY_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace empty_view_ {
+
+template <typename T>
+class empty_view : view_interface<empty_view<T>> {
+    static_assert(std::is_object<T>::value, "");
+
+public:
+    static constexpr T* begin() noexcept { return nullptr; }
+    static constexpr T* end() noexcept { return nullptr; }
+    static constexpr std::ptrdiff_t size() noexcept { return 0; }
+    static constexpr T* data() noexcept { return nullptr; }
+
+    static constexpr bool empty() noexcept { return true; }
+
+    friend constexpr T* begin(empty_view) noexcept { return nullptr; }
+    friend constexpr T* end(empty_view) noexcept { return nullptr; }
+};
+
+}
+
+using empty_view_::empty_view;
+
+namespace views {
+
+template <typename T, typename = std::enable_if_t<std::is_object<T>::value>>
+inline constexpr empty_view<T> empty{};
+
+}
+
+
+NANO_END_NAMESPACE
+
+#endif
+// nanorange/views/filter.hpp
+//
+// Copyright (c) 2019 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEWS_FILTER_HPP_INCLUDED
+#define NANORANGE_VIEWS_FILTER_HPP_INCLUDED
+
+
+
+
+
 #include <cassert>
 
 NANO_BEGIN_NAMESPACE
@@ -15490,6 +16084,11 @@ constexpr auto filter_view_iter_cat_helper()
     }
 }
 
+constexpr inline auto as_ref = [](auto& pred) {
+    return [&p = pred] (auto&& arg) {
+        return nano::invoke(p, std::forward<decltype(arg)>(arg));
+    };
+};
 
 }
 
@@ -15542,7 +16141,7 @@ private:
         {
             current_ = ranges::find_if(++current_,
                                        ranges::end(parent_->base_),
-                                       std::ref(*parent_->pred_));
+                                       detail::as_ref(*parent_->pred_));
             return *this;
         }
 
@@ -15666,7 +16265,8 @@ public:
         }
 
         assert(pred_.has_value());
-        begin_cache_ = iterator{*this, nano::find_if(base_, std::ref(*pred_))};
+        begin_cache_ = std::optional<iterator>{
+            iterator{*this, nano::find_if(base_, detail::as_ref(*pred_))}};
         return *begin_cache_;
     }
 
@@ -16240,6 +16840,391 @@ NANO_END_NAMESPACE
 
 #endif
 
+// nanorange/views/join.hpp
+//
+// Copyright (c) 2019 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEWS_JOIN_HPP_INCLUDED
+#define NANORANGE_VIEWS_JOIN_HPP_INCLUDED
+
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+template <typename V, bool InnerIsReference>
+struct join_view_data {
+    V base_ = V();
+};
+
+template <typename V>
+struct join_view_data<V, false> {
+    V base_ = V();
+    all_view<range_reference_t<V>> inner_ = all_view<range_reference_t<V>>();
+};
+
+template <typename B>
+constexpr auto join_view_iter_cat_helper()
+{
+    constexpr bool ref_is_glvalue = std::is_reference_v<range_reference_t<B>>;
+
+    if constexpr (ref_is_glvalue) {
+        using OuterCat = iterator_category_t<iterator_t<B>>;
+        using InnerCat = iterator_category_t<iterator_t<range_reference_t<B>>>;
+
+        if constexpr (derived_from<OuterCat, bidirectional_iterator_tag> &&
+                      derived_from<InnerCat, bidirectional_iterator_tag>) {
+            return bidirectional_iterator_tag{};
+        } else if constexpr(derived_from<OuterCat, forward_iterator_tag> &&
+                            derived_from<InnerCat, forward_iterator_tag>) {
+            return forward_iterator_tag{};
+        } else {
+            return input_iterator_tag{};
+        }
+    } else {
+        return input_iterator_tag{};
+    }
+}
+
+}
+
+namespace join_view_ {
+
+template <typename V>
+struct join_view : view_interface<join_view<V>> {
+private:
+
+    static_assert(input_range<V>);
+    static_assert(view<V>);
+    static_assert(input_range<range_reference_t<V>>);
+    static_assert(std::is_reference_v<range_reference_t<V>> ||
+                  view<range_value_t<V>>);
+
+    using InnerRng = range_reference_t<V>;
+
+    template<bool> struct sentinel;
+
+    template <bool Const>
+    struct iterator {
+
+        friend struct sentinel<Const>;
+
+        template <typename B>
+        static constexpr bool ref_is_glvalue =
+            std::is_reference_v<range_reference_t<B>>;
+
+        using Base = std::conditional_t<Const, const V, V>;
+
+        // https://github.com/ericniebler/stl2/issues/604
+        using Parent = std::conditional_t<Const && ref_is_glvalue<Base>,
+            const join_view, join_view>;
+
+        iterator_t<Base> outer_ = iterator_t<Base>();
+        iterator_t<range_reference_t<Base>> inner_
+            = iterator_t<range_reference_t<Base>>();
+        Parent* parent_ = nullptr;
+
+        template <typename B = Base>
+        constexpr decltype(auto) update_inner(range_reference_t<Base> x)
+        {
+            if constexpr (ref_is_glvalue<B>) {
+                return (x);
+            } else {
+                return (parent_->data_.inner_ = views::all(x));
+            }
+        }
+
+        constexpr void satisfy()
+        {
+            for (; outer_ !=  ranges::end(parent_->data_.base_); ++outer_) {
+                auto& inner = update_inner(*outer_);
+                inner_ = ranges::begin(inner);
+                if (inner_ != ranges::end(inner)) {
+                    return;
+                }
+            }
+
+            if constexpr (ref_is_glvalue<Base>) {
+                inner_ = iterator_t<range_reference_t<Base>>();
+            }
+        }
+
+    public:
+        //using iterator_concept = ...
+        using iterator_category = decltype(detail::join_view_iter_cat_helper<Base>());
+
+        using value_type = range_value_t<range_reference_t<Base>>;
+        using difference_type = nano::common_type_t<
+            range_difference_t<Base>,
+            range_difference_t<range_reference_t<Base>>>;
+
+        iterator() = default;
+
+        constexpr iterator(Parent& parent, iterator_t<V> outer)
+            : outer_(std::move(outer)),
+              parent_(std::addressof(parent))
+        {
+            satisfy();
+        }
+
+        // constexpr iterator(iterator<!Const>);
+
+        constexpr decltype(auto) operator*() const { return *inner_; }
+
+        template <typename B = Base>
+        constexpr auto operator->() const
+            -> std::enable_if_t<detail::has_arrow<B>, iterator_t<Base>>
+        {
+            return inner_;
+        }
+
+    private:
+        template <typename B = Base>
+        constexpr decltype(auto) get_inner_rng()
+        {
+            if constexpr (ref_is_glvalue<B>) {
+                return (*outer_);
+            } else {
+                return (parent_->data_.inner_);
+            }
+        }
+
+    public:
+        template <typename B = Base>
+        constexpr iterator& operator++()
+        {
+            auto&& inner_rng = get_inner_rng();
+
+            if (++inner_ == ranges::end(inner_rng)) {
+                ++outer_;
+                satisfy();
+            }
+
+            return *this;
+        }
+
+        template <typename B = Base>
+        constexpr auto operator++(int)
+            -> std::enable_if_t<!(ref_is_glvalue<B> &&
+                                  forward_range<B> &&
+                                  forward_range<range_reference_t<B>>)>
+        {
+            ++*this;
+        }
+
+        template <typename B = Base>
+        constexpr auto operator++(int)
+            -> std::enable_if_t<ref_is_glvalue<B> &&
+                                forward_range<B> &&
+                                forward_range<range_reference_t<B>>,
+                                iterator>
+        {
+            auto tmp = *this;
+            ++*this;
+            return tmp;
+        }
+
+        template <typename B = Base>
+        constexpr auto operator--()
+            -> std::enable_if_t<ref_is_glvalue<B> &&
+                                bidirectional_range<B> &&
+                                bidirectional_range<range_reference_t<B>>,
+                                iterator&>
+        {
+            if (outer_ == ranges::end(parent_->data_.base_)) {
+                inner_ = ranges::end(*outer_);
+            }
+
+            while (inner_ == ranges::begin(*outer_)) {
+                inner_ = ranges::end(*--outer_);
+            }
+            --inner_;
+            return *this;
+        }
+
+        template <typename B = Base>
+        constexpr auto operator--(int)
+            -> std::enable_if_t<ref_is_glvalue<B> &&
+                                bidirectional_range<B> &&
+                                bidirectional_range<range_reference_t<B>>,
+                                iterator>
+        {
+            auto tmp = *this;
+            --*this;
+            return *tmp;
+        }
+
+        template <typename B = Base>
+        friend constexpr auto operator==(const iterator& x, const iterator& y)
+            -> std::enable_if_t<ref_is_glvalue<B> &&
+                                equality_comparable<iterator_t<B>> &&
+                                equality_comparable<iterator_t<range_reference_t<B>>>,
+                                bool>
+        {
+            return x.outer_ == y.outer_ && x.inner_ == y.inner_;
+        }
+
+        template <typename B = Base>
+        friend constexpr auto operator!=(const iterator& x, const iterator& y)
+            -> std::enable_if_t<ref_is_glvalue<B> &&
+                                equality_comparable<iterator_t<B>> &&
+                                equality_comparable<iterator_t<range_reference_t<B>>>,
+                                bool>
+        {
+            return !(x == y);
+        }
+
+        friend constexpr decltype(auto) iter_move(const iterator& i)
+            noexcept(noexcept(ranges::iter_move(i.inner_)))
+        {
+            return ranges::iter_move(i.inner_);
+        }
+
+        friend constexpr void iter_swap(const iterator& x, const iterator& y)
+            noexcept(noexcept(ranges::iter_swap(x.inner_, y.inner_)))
+        {
+            ranges::iter_swap(x.inner_, y.inner_);
+        }
+    };
+
+    template <bool Const>
+    struct sentinel {
+    private:
+        using Parent = std::conditional_t<Const, const join_view, join_view>;
+        using Base = std::conditional_t<Const, const V, V>;
+
+        sentinel_t<Base> end_ = sentinel_t<Base>();
+
+    public:
+        sentinel() = default;
+
+        constexpr explicit sentinel(Parent& parent)
+            : end_(ranges::end(parent.data_.base_))
+        {}
+
+        // constexpr sentinel(sentinel<!Const> s);
+
+        friend constexpr bool operator==(const iterator<Const>& x, const sentinel& y)
+        {
+            return x.outer_ == y.end_;
+        }
+
+        friend constexpr bool operator!=(const iterator<Const>& x, const sentinel& y)
+        {
+            return !(x == y);
+        }
+
+        friend constexpr bool operator==(const sentinel& x, const iterator<Const>& y)
+        {
+            return y == x;
+        }
+
+        friend constexpr bool operator!=(const sentinel& x, const iterator<Const>& y)
+        {
+            return !(y == x);
+        }
+    };
+
+    detail::join_view_data<V, std::is_reference_v<InnerRng>> data_{};
+
+public:
+
+    join_view() = default;
+
+    constexpr explicit join_view(V base)
+        : data_{std::move(base)}
+    {}
+
+    template <typename R,
+              std::enable_if_t<detail::not_same_as<R, join_view>, int> = 0,
+              std::enable_if_t<input_range<R>, int> = 0,
+              std::enable_if_t<viewable_range<R>, int> = 0,
+              std::enable_if_t<constructible_from<V, all_view<R>>, int> = 0>
+    constexpr join_view(R&& r)
+        : data_{views::all(std::forward<R>(r))}
+    {}
+
+    constexpr auto begin()
+    {
+        return iterator<detail::simple_view<V>>{*this, ranges::begin(data_.base_)};
+    }
+
+    template <typename VV = V,
+              std::enable_if_t<input_range<const VV> &&
+                               std::is_reference_v<range_reference_t<const VV>>, int> = 0>
+    constexpr auto begin() const
+    {
+        return iterator<true>{*this, ranges::begin(data_.base_)};
+    }
+
+    constexpr auto end()
+    {
+        if constexpr (forward_range<V> &&
+                      std::is_reference_v<InnerRng> && forward_range<InnerRng> &&
+                      common_range<V> && common_range<InnerRng>) {
+            return iterator<detail::simple_view<V>>{*this, ranges::end(data_.base_)};
+        } else {
+            return sentinel<detail::simple_view<V>>{*this};
+        }
+    }
+
+    template <typename VV = V,
+              std::enable_if_t<input_range<const VV> &&
+                               std::is_reference_v<range_reference_t<const VV>>, int> = 0>
+    constexpr auto end() const
+    {
+        if constexpr (forward_range<const V> &&
+                      std::is_reference_v<range_reference_t<const V>> &&
+                      forward_range<range_reference_t<const V>> &&
+                      common_range<const V> &&
+                      common_range<range_reference_t<const V>>) {
+            return iterator<true>{*this, ranges::end(data_.base_)};
+        } else {
+            return sentinel<true>{*this};
+        }
+    }
+};
+
+template <typename R>
+explicit join_view(R&&) -> join_view<all_view<R>>;
+
+} // namespace join_view_
+
+using join_view_::join_view;
+
+namespace detail {
+
+struct join_view_fn {
+
+    template <typename E>
+    constexpr auto operator()(E&& e) const
+        -> decltype(join_view{std::forward<E>(e)})
+    {
+        return join_view{std::forward<E>(e)};
+    }
+
+};
+
+template <>
+inline constexpr bool is_raco<join_view_fn> = true;
+
+}
+
+namespace views {
+
+NANO_INLINE_VAR(nano::detail::join_view_fn, join)
+
+}
+
+NANO_END_NAMESPACE
+
+#endif
+
 
 // nanorange/views/reverse.hpp
 //
@@ -16274,7 +17259,8 @@ struct reverse_view
     : view_interface<reverse_view<V>>,
       private detail::reverse_view_cache<common_range<V>, iterator_t<V>> {
 
-    static_assert(view<V> && bidirectional_range<V>, "");
+    static_assert(view<V>);
+    static_assert(bidirectional_range<V>);
 
     reverse_view() = default;
 
@@ -16475,6 +17461,849 @@ NANO_INLINE_VAR(detail::single_view_fn, single)
 NANO_END_NAMESPACE
 
 #endif
+// nanorange/views/split.hpp
+//
+// Copyright (c) 2019 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEWS_SPLIT_HPP_INCLUDED
+#define NANORANGE_VIEWS_SPLIT_HPP_INCLUDED
+
+
+
+
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+template <auto> struct require_constant;
+
+struct tiny_range_concept {
+
+    template <typename R>
+    auto requires_() -> decltype(
+        std::declval<require_constant<std::remove_reference_t<R>::size()>>()
+    );
+
+    template <typename R>
+    static auto test(long) -> std::false_type;
+
+    template <typename R>
+    static auto test(int) -> std::enable_if_t<
+        sized_range<R> &&
+        detail::requires_<tiny_range_concept, R> &&
+        (std::remove_reference_t<R>::size() <= 1),
+        std::true_type>;
+};
+
+template <typename R>
+NANO_CONCEPT tiny_range = decltype(tiny_range_concept::test<R>(0))::value;
+
+template <typename V, typename P, bool NotForwardRange>
+struct split_view_data {
+    V base_ = V();
+    P pattern_ = P();
+};
+
+template <typename V, typename P>
+struct split_view_data<V, P, true> {
+    V base_ = V();
+    P pattern_ = P();
+    iterator_t<V> current_ = iterator_t<V>();
+};
+
+} // namespace detail
+
+namespace split_view_ {
+
+template <typename V, typename Pattern>
+struct split_view : view_interface<split_view<V, Pattern>> {
+private:
+
+    static_assert(input_range<V>);
+    static_assert(forward_range<Pattern>);
+    static_assert(view<V>);
+    static_assert(view<Pattern>);
+    static_assert(indirectly_comparable<iterator_t<V>, iterator_t<Pattern>,
+                                        ranges::equal_to>);
+    static_assert(forward_range<V> || detail::tiny_range<Pattern>);
+
+    detail::split_view_data<V, Pattern, !forward_range<V>> data_{};
+
+
+
+    template <bool>
+    struct inner_iterator;
+
+    template <bool Const>
+    struct outer_iterator {
+    private:
+        friend struct outer_iterator<!Const>;
+        friend struct inner_iterator<Const>;
+
+        using Parent = std::conditional_t<Const, const split_view, split_view>;
+        using Base = std::conditional_t<Const, const V, V>;
+        Parent* parent_ = nullptr;
+        iterator_t<Base> current_ = iterator_t<Base>();
+
+        constexpr decltype(auto) get_current()
+        {
+            if constexpr (forward_range<V>) {
+                return (current_);
+            } else {
+                return (parent_->data_.current_);
+            }
+        }
+
+        constexpr decltype(auto) get_current() const
+        {
+            if constexpr (forward_range<V>) {
+                return (current_);
+            } else {
+                return (parent_->data_.current_);
+            }
+        }
+
+        constexpr bool done() const
+        {
+            return get_current() == ranges::end(parent_->data_.base_);
+        }
+
+    public:
+        // FIXME: iterator_concept
+        using iterator_category = std::conditional_t<
+            forward_range<Base>, forward_iterator_tag, input_iterator_tag>;
+
+        struct value_type {
+        private:
+            outer_iterator i_ = outer_iterator();
+
+        public:
+            value_type() = default;
+
+            constexpr explicit value_type(outer_iterator i)
+                : i_(std::move(i))
+            {}
+
+            constexpr inner_iterator<Const> begin() const
+            {
+                return inner_iterator<Const>{i_};
+            }
+
+            constexpr default_sentinel_t end() const
+            {
+                return default_sentinel;
+            }
+        };
+
+        using difference_type = range_difference_t<Base>;
+
+        outer_iterator() = default;
+
+        template <typename B = Base, std::enable_if_t<!forward_range<B>, int> = 0>
+        constexpr explicit outer_iterator(Parent& parent)
+            : parent_(std::addressof(parent))
+        {}
+
+        template <typename B = Base, std::enable_if_t<forward_range<B>, int> = 0>
+        constexpr outer_iterator(Parent& parent, iterator_t<Base> current)
+            : parent_(std::addressof(parent)),
+              current_(std::move(current))
+        {}
+
+        template <typename I,
+                  std::enable_if_t<same_as<I, outer_iterator<!Const>>, int> = 0,
+                  bool C = Const, typename VV = V,
+                  std::enable_if_t<C &&
+                      convertible_to<iterator_t<VV>, iterator_t<const VV>>, int> = 0>
+        constexpr outer_iterator(I i)
+            : parent_(i.parent_),
+              current_(std::move(i.current_))
+        {}
+
+        constexpr value_type operator*() const { return value_type{*this}; }
+
+        constexpr outer_iterator& operator++()
+        {
+            const auto end = ranges::end(parent_->data_.base_);
+            if (get_current() == end) {
+                return *this;
+            }
+            const auto sub = subrange{parent_->data_.pattern_};
+            if (sub.begin() == sub.end()) {
+                ++get_current();
+            } else {
+                do {
+                    const auto res = ranges::mismatch(get_current(), end,
+                                                      sub.begin(), sub.end());
+                    if (res.in2 == sub.end()) {
+                        get_current() = res.in1;
+                        break;
+                    }
+                } while (++get_current() != end);
+            }
+            return *this;
+        }
+
+        constexpr decltype(auto) operator++(int)
+        {
+            if constexpr (forward_range<Base>) {
+                auto tmp = *this;
+                ++*this;
+                return tmp;
+            } else {
+                ++*this;
+            }
+        }
+
+        template <typename B = Base>
+        friend constexpr auto operator==(const outer_iterator& x, const outer_iterator& y)
+            -> std::enable_if_t<forward_range<B>, bool>
+        {
+            return x.current_ == y.current_;
+        }
+
+        template <typename B = Base>
+        friend constexpr auto operator!=(const outer_iterator& x, const outer_iterator& y)
+            -> std::enable_if_t<forward_range<B>, bool>
+        {
+            return !(x == y);
+        }
+
+        friend constexpr bool operator==(const outer_iterator& x, default_sentinel_t)
+        {
+            return x.done();
+        }
+
+        friend constexpr bool operator==(default_sentinel_t d, const outer_iterator& x)
+        {
+            return x == d;
+        }
+
+        friend constexpr bool operator!=(const outer_iterator& x, default_sentinel_t d)
+        {
+            return !(x == d);
+        }
+
+        friend constexpr bool operator!=(default_sentinel_t d, const outer_iterator& x)
+        {
+            return !(x == d);
+        }
+    };
+
+    template <bool Const>
+    struct inner_iterator {
+    private:
+        using Base = std::conditional_t<Const, const V, V>;
+        static constexpr bool NoReallyGccConst = Const;
+        outer_iterator<Const> i_ = outer_iterator<NoReallyGccConst>();
+        bool incremented_ = false;
+
+        constexpr bool done() const
+        {
+            auto cur = i_.get_current();
+            auto end = ranges::end(i_.parent_->data_.base_);
+            if (cur == end) {
+                return true;
+            }
+            auto sub = subrange{i_.parent_->data_.pattern_};
+            auto pcur = sub.begin();
+            auto pend = sub.end();
+            if (pcur == pend) {
+                return incremented_;
+            }
+            do {
+                if (*cur != *pcur) {
+                    return false;
+                }
+                if (++pcur == pend) {
+                    return true;
+                }
+            } while (++cur != end);
+            return false;
+        }
+
+        constexpr decltype(auto) get_outer_current() const { return i_.get_current(); }
+
+    public:
+        using iterator_category = std::conditional_t<
+            derived_from<iterator_category_t<iterator_t<Base>>, forward_iterator_tag>,
+                forward_iterator_tag,
+                input_iterator_tag>;
+        using value_type = range_value_t<Base>;
+        using difference_type = range_difference_t<Base>;
+
+        inner_iterator() = default;
+
+        constexpr explicit inner_iterator(outer_iterator<Const> i)
+            : i_(std::move(i))
+        {}
+
+        constexpr decltype(auto) operator*() const { return *i_.get_current(); }
+
+        constexpr inner_iterator& operator++()
+        {
+            incremented_ = true;
+            if constexpr (!forward_range<Base>) {
+                if constexpr (Pattern::size() == 0) {
+                    return *this;
+                }
+            }
+            ++i_.get_current();
+            return *this;
+        }
+
+
+        constexpr decltype(auto) operator++(int)
+        {
+            if constexpr (forward_range<V>) {
+                auto tmp = *this;
+                ++*this;
+                return tmp;
+            } else {
+                ++*this;
+            }
+        }
+
+        template <typename B = Base>
+        friend constexpr auto operator==(const inner_iterator& x, const inner_iterator& y)
+            -> std::enable_if_t<forward_range<B>, bool>
+        {
+            return x.get_outer_current() == y.get_outer_current();
+        }
+
+        template <typename B = Base>
+        friend constexpr auto operator!=(const inner_iterator& x, const inner_iterator& y)
+        {
+            return !(x == y);
+        }
+
+        friend constexpr bool operator==(const inner_iterator& x, default_sentinel_t)
+        {
+            return x.done();
+        }
+
+        friend constexpr bool operator==(default_sentinel_t d, const inner_iterator& x)
+        {
+            return x == d;
+        }
+
+        friend constexpr bool operator!=(const inner_iterator& x, default_sentinel_t d)
+        {
+            return !(x == d);
+        }
+
+        friend constexpr bool operator!=(default_sentinel_t d, const inner_iterator& x)
+        {
+            return !(x == d);
+        }
+
+        friend constexpr decltype(auto) iter_move(const inner_iterator& i)
+            noexcept(noexcept(ranges::iter_move(i.get_outer_current())))
+        {
+            return ranges::iter_move(i.get_outer_current());
+        }
+
+        template <typename B = Base>
+        friend constexpr auto iter_swap(const inner_iterator& x, const inner_iterator& y)
+            noexcept(noexcept(ranges::iter_swap(x.get_outer_current(), y.get_outer_current())))
+            -> std::enable_if_t<indirectly_swappable<B>>
+        {
+            ranges::iter_swap(x.get_outer_current(), y.get_outer_current());
+        }
+    };
+
+public:
+    split_view() = default;
+
+    constexpr split_view(V base, Pattern pattern)
+        : data_{std::move(base), std::move(pattern)}
+    {}
+
+    template <typename R, typename P,
+              std::enable_if_t<constructible_from<V, all_view<R>>, int> = 0,
+              std::enable_if_t<constructible_from<Pattern, all_view<P>>, int> = 0,
+              std::enable_if_t<input_range<R> && forward_range<P>, int> = 0>
+    constexpr split_view(R&& r, P&& p)
+        : data_{views::all(std::forward<R>(r)) , views::all(std::forward<P>(p))}
+    {}
+
+    template <typename R,
+              std::enable_if_t<constructible_from<V, all_view<R>>, int> = 0,
+              std::enable_if_t<
+                  constructible_from<Pattern, single_view<range_value_t<R>>>, int> = 0,
+              std::enable_if_t<input_range<R>, int> = 0>
+    constexpr split_view(R&& r, range_value_t<R> e)
+        : data_{views::all(std::forward<R>(r)), single_view{std::move(e)}}
+    {}
+
+    constexpr auto begin()
+    {
+        if constexpr (forward_range<V>) {
+            return outer_iterator<detail::simple_view<V>>{*this, ranges::begin(data_.base_)};
+        } else {
+            data_.current_ = ranges::begin(data_.base_);
+            return outer_iterator<false>{*this};
+        }
+    }
+
+    template <typename VV = V,
+              std::enable_if_t<forward_range<VV> && forward_range<const VV>, int> = 0>
+    constexpr auto begin() const
+    {
+        return outer_iterator<true>{*this, ranges::begin(data_.base_)};
+    }
+
+    template <typename VV = V,
+              std::enable_if_t<forward_range<VV> && common_range<VV>, int> = 0>
+    constexpr auto end()
+    {
+        return outer_iterator<detail::simple_view<V>>{*this, ranges::end(data_.base_)};
+    }
+
+    constexpr auto end() const
+    {
+        if constexpr (forward_range<V> &&
+                      forward_range<const V> &&
+                      common_range<const V>) {
+            return outer_iterator<true>{*this, ranges::end(data_.base_)};
+        } else {
+            return default_sentinel;
+        }
+    }
+};
+
+template <typename R, typename P>
+split_view(R&&, P&&) -> split_view<all_view<R>, all_view<P>>;
+
+template <typename R, std::enable_if_t<input_range<R>, int> = 0>
+split_view(R&&, range_value_t<R>)
+    -> split_view<all_view<R>, single_view<range_value_t<R>>>;
+
+} // namespace split_view_
+
+using split_view_::split_view;
+
+namespace detail {
+
+struct split_view_fn {
+
+    template <typename E, typename F>
+    constexpr auto operator()(E&& e, F&& f) const
+        -> decltype(split_view{std::forward<E>(e), std::forward<F>(f)})
+    {
+        return split_view{std::forward<E>(e), std::forward<F>(f)};
+    }
+
+    template <typename P>
+    constexpr auto operator()(P&& p) const
+    {
+        return detail::rao_proxy{
+            [p = std::forward<P>(p)](auto&& r) mutable
+#ifndef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
+                 -> decltype(split_view{std::forward<decltype(r)>(r), std::declval<P&&>()})
+#endif
+            {
+                return split_view{std::forward<decltype(r)>(r), std::move(p)};
+            }};
+    }
+};
+
+} // namespace detail
+
+namespace views {
+
+NANO_INLINE_VAR(nano::detail::split_view_fn, split)
+
+}
+
+NANO_END_NAMESPACE
+
+#endif
+
+
+// nanorange/views/take.hpp
+//
+// Copyright (c) 2019 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEWS_TAKE_HPP_INCLUDED
+#define NANORANGE_VIEWS_TAKE_HPP_INCLUDED
+
+
+
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+template <typename V>
+struct take_view : view_interface<take_view<V>> {
+private:
+    static_assert(view<V>);
+
+    V base_ = V();
+    range_difference_t<V> count_ = 0;
+
+    template <bool Const>
+    struct sentinel {
+    private:
+        friend struct sentinel<!Const>;
+        using Base = std::conditional_t<Const, const V, V>;
+        using CI = counted_iterator<iterator_t<Base>>;
+
+        sentinel_t<Base> end_ = sentinel_t<Base>();
+
+    public:
+        sentinel() = default;
+
+        constexpr explicit sentinel(sentinel_t<Base> end)
+            : end_(std::move(end))
+        {}
+
+        // Use deduced type to avoid constraint recursion in GCC8
+        template <typename S,
+            std::enable_if_t<same_as<S, sentinel<!Const>>, int> = 0,
+            bool C = Const, typename VV = V,
+            std::enable_if_t<C &&
+                convertible_to<sentinel_t<VV>, sentinel_t<Base>>, int> = 0>
+        constexpr explicit sentinel(S s)
+            : end_(std::move(s.end_))
+        {}
+
+        constexpr sentinel_t<Base> base() const { return end_; }
+
+        friend constexpr bool operator==(const CI& y, const sentinel& x)
+        {
+            return y.count() == 0 || y.base() == x.end_;
+        }
+
+        friend constexpr bool operator==(const sentinel& x, const CI& y)
+        {
+            return y == x;
+        }
+
+        friend constexpr bool operator!=(const CI& y, const sentinel& x)
+        {
+            return !(y == x);
+        }
+
+        friend constexpr bool operator!=(const sentinel& x, const CI& y)
+        {
+            return !(y == x);
+        }
+    };
+
+public:
+    take_view() = default;
+
+    constexpr take_view(V base, range_difference_t<V> count)
+        : base_(std::move(base)),
+          count_(count)
+    {}
+
+    template <typename R, std::enable_if_t<
+        viewable_range<R> && constructible_from<V, all_view<R>>, int> = 0>
+    constexpr take_view(R&& r, range_difference_t<V> count)
+        : base_(views::all(std::forward<R>(r))),
+          count_(count)
+    {}
+
+    constexpr V base() const { return base_; }
+
+    template <typename VV = V, std::enable_if_t<!detail::simple_view<VV>, int> = 0>
+    constexpr auto begin()
+    {
+        if constexpr (sized_range<V>) {
+            if constexpr (random_access_range<V>) {
+                return ranges::begin(base_);
+            } else {
+                // N.B spec doesn't static_cast here, but I'm pretty
+                // sure it should
+                return counted_iterator{ranges::begin(base_),
+                                        static_cast<range_difference_t<V>>(size())};
+            }
+        } else {
+            return counted_iterator{ranges::begin(base_), count_};
+        }
+    }
+
+    template <typename VV = V, std::enable_if_t<range<const VV>, int> = 0>
+    constexpr auto begin() const
+    {
+        if constexpr (sized_range<const V>) {
+            if constexpr (random_access_range<V>) {
+                return ranges::begin(base_);
+            } else {
+                // N.B spec doesn't static_cast here, but I'm pretty
+                // sure it should
+                return counted_iterator{ranges::begin(base_),
+                                        static_cast<range_difference_t<V>>(size())};
+            }
+        } else {
+            return counted_iterator{ranges::begin(base_), count_};
+        }
+    }
+
+    template <typename VV = V, std::enable_if_t<!detail::simple_view<VV>, int> = 0>
+    constexpr auto end()
+    {
+        if constexpr (sized_range<V>) {
+            if constexpr (random_access_range<V>) {
+                return ranges::begin(base_) + size();
+            } else {
+                return default_sentinel;
+            }
+        } else {
+            return sentinel<false>{ranges::end(base_)};
+        }
+    }
+
+    template <typename VV = V, std::enable_if_t<range<const VV>, int> = 0>
+    constexpr auto end() const
+    {
+        if constexpr (sized_range<const V>) {
+            if constexpr (random_access_range<const V>) {
+                return ranges::begin(base_) + size();
+            } else {
+                return default_sentinel;
+            }
+        } else {
+            return sentinel<true>{ranges::end(base_)};
+        }
+    }
+
+    template <typename VV = V, std::enable_if_t<sized_range<VV>, int> = 0>
+    constexpr auto size()
+    {
+        auto n = ranges::size(base_);
+        return ranges::min(n, static_cast<decltype(n)>(count_));
+    }
+
+    template <typename VV = V, std::enable_if_t<sized_range<const VV>, int> = 0>
+    constexpr auto size() const
+    {
+        auto n = ranges::size(base_);
+        return ranges::min(n, static_cast<decltype(n)>(count_));
+    }
+};
+
+template <typename R, std::enable_if_t<range<R>, int> = 0>
+take_view(R&&, range_difference_t<R>) -> take_view<all_view<R>>;
+
+namespace detail {
+
+#ifdef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
+template <typename R>
+using take_view_helper_t = take_view<all_view<R>>;
+#endif
+
+struct take_view_fn {
+
+    template <typename C>
+    constexpr auto operator()(C c) const
+    {
+
+        return detail::rao_proxy{[c = std::move(c)](auto&& r) mutable
+#ifdef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
+            -> take_view_helper_t<decltype(r)>
+#else
+            -> decltype(take_view{std::forward<decltype(r)>(r), std::declval<C&&>()})
+#endif
+        {
+            return take_view{std::forward<decltype(r)>(r), std::move(c)};
+        }};
+    }
+
+    template <typename E, typename F>
+    constexpr auto operator()(E&& e, F&& f) const
+        -> decltype(take_view{std::forward<E>(e), std::forward<F>(f)})
+    {
+        return take_view{std::forward<E>(e), std::forward<F>(f)};
+    }
+
+};
+
+}
+
+namespace views {
+
+NANO_INLINE_VAR(nano::detail::take_view_fn, take)
+
+}
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/views/take_while.hpp
+//
+// Copyright (c) 2019 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_VIEWS_TAKE_WHILE_HPP_INCLUDED
+#define NANORANGE_VIEWS_TAKE_WHILE_HPP_INCLUDED
+
+
+
+
+
+
+NANO_BEGIN_NAMESPACE
+
+template <typename R, typename Pred>
+struct take_while_view : view_interface<take_while_view<R, Pred>> {
+private:
+    static_assert(view<R>);
+    // FIXME: Should be input_range (GCC9)
+    static_assert(input_iterator<iterator_t<R>>);
+    static_assert(std::is_object_v<Pred>);
+    static_assert(indirect_unary_predicate<const Pred, iterator_t<R>>);
+
+    template <bool Const>
+    struct sentinel {
+    private:
+        friend struct sentinel<!Const>;
+        using base_t = std::conditional_t<Const, const R, R>;
+        sentinel_t<base_t> end_ = sentinel_t<base_t>();
+        const Pred* pred_{};
+
+    public:
+        sentinel() = default;
+
+        constexpr explicit sentinel(sentinel_t<base_t>(end), const Pred* pred)
+            : end_(std::move(end)),
+              pred_(pred)
+        {}
+
+        // Use deduced type to avoid constraint recursion in GCC8
+        template <typename S,
+                  std::enable_if_t<same_as<S, sentinel<!Const>>, int> = 0,
+                  bool C = Const, typename VV = R,
+                  std::enable_if_t<C &&
+                      convertible_to<sentinel_t<VV>, sentinel_t<base_t>>, int> = 0>
+        constexpr sentinel(S s)
+            : end_(std::move(s.end_)),
+              pred_(s.pred_)
+        {}
+
+        constexpr sentinel_t<base_t> base() const { return end_; }
+
+        // Make these friend functions templates to keep MSVC happy
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
+        friend constexpr bool operator==(const iterator_t<base_t>& x, const sentinel& y)
+        {
+            return y.end_ == x || !nano::invoke(*y.pred_, *x);
+        }
+
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
+        friend constexpr bool operator==(const sentinel& y, const iterator_t<base_t>& x)
+        {
+            return x == y;
+        }
+
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
+        friend constexpr bool operator!=(const iterator_t<base_t>& x, const sentinel& y)
+        {
+            return !(x == y);
+        }
+
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
+        friend constexpr bool operator!=(const sentinel& y, const iterator_t<base_t>& x)
+        {
+            return !(x == y);
+        }
+    };
+
+    R base_;
+    detail::semiregular_box<Pred> pred_;
+
+public:
+    take_while_view() = default;
+
+    constexpr take_while_view(R base, Pred pred)
+        : base_(std::move(base)),
+          pred_(std::move(pred))
+    {}
+
+    constexpr R base() const { return base_; }
+
+    constexpr const Pred& pred() const { return *pred_; }
+
+    template <typename RR = R, std::enable_if_t<!detail::simple_view<RR>, int> = 0>
+    constexpr auto begin() { return ranges::begin(base_); }
+
+    template <typename RR = R, std::enable_if_t<range<const RR>, int> = 0>
+    constexpr auto begin() const { return ranges::begin(base_); }
+
+    template <typename RR = R, std::enable_if_t<!detail::simple_view<RR>, int> = 0>
+    constexpr auto end()
+    {
+        return sentinel<false>{ranges::end(base_), std::addressof(*pred_)};
+    }
+
+    template <typename RR = R, std::enable_if_t<range<const RR>, int> = 0>
+    constexpr auto end() const
+    {
+        return sentinel<true>{ranges::end(base_), std::addressof(*pred_)};
+    }
+};
+
+template <typename R, typename Pred>
+take_while_view(R&&, Pred) -> take_while_view<all_view<R>, Pred>;
+
+namespace detail {
+
+struct take_while_view_fn {
+
+    template <typename E, typename F>
+    constexpr auto operator()(E&& e, F&& f) const
+    -> decltype(take_while_view{std::forward<E>(e), std::forward<F>(f)})
+    {
+        return take_while_view{std::forward<E>(e), std::forward<F>(f)};
+    }
+
+    template <typename Pred>
+    constexpr auto operator()(Pred&& pred) const
+    {
+        return detail::rao_proxy{[p = std::forward<Pred>(pred)](auto&& r) mutable
+#ifndef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
+            -> decltype(take_while_view{std::forward<decltype(r)>(r), std::declval<Pred&&>()})
+#endif
+        {
+            return take_while_view{std::forward<decltype(r)>(r), std::move(p)};
+        }};
+    }
+
+};
+
+}
+
+namespace views {
+
+NANO_INLINE_VAR(nano::detail::take_while_view_fn, take_while)
+
+}
+
+NANO_END_NAMESPACE
+
+#endif
 
 // nanorange/views/transform.hpp
 //
@@ -16543,9 +18372,11 @@ private:
               parent_(std::addressof(parent))
         {}
 
-        template <bool C = Const, typename VV = V, std::enable_if_t<
+        template <typename I,
+            std::enable_if_t<same_as<I, iterator<!Const>>, int> = 0,
+            bool C = Const, typename VV = V, std::enable_if_t<
             C && convertible_to<iterator_t<VV>, iterator_t<Base>>, int> = 0>
-        constexpr iterator(iterator<!Const> i)
+        constexpr iterator(I i)
             : current_(std::move(i.current_)),
               parent_(i.parent_)
         {}
@@ -16716,9 +18547,11 @@ private:
             : end_(std::move(end))
         {}
 
-        template <bool C = Const, typename VV = V, std::enable_if_t<
+        template <typename S,
+            std::enable_if_t<same_as<S, sentinel<!Const>>, int> = 0,
+            bool C = Const, typename VV = V, std::enable_if_t<
             C && convertible_to<sentinel_t<VV>, sentinel_t<Base>>, int> = 0>
-        constexpr sentinel(sentinel<!Const> i)
+        constexpr sentinel(S i)
             : end_(std::move(i.end_))
         {}
 
@@ -16726,12 +18559,12 @@ private:
 
         friend constexpr bool operator==(const iterator<Const>& x, const sentinel& y)
         {
-            return x.current_ == y.end_;
+            return x.base() == y.end_;
         }
 
         friend constexpr bool operator==(const sentinel& x, const iterator<Const>& y)
         {
-            return x.end_ == y.current_;
+            return x.end_ == y.base();
         }
 
         friend constexpr bool operator!=(const iterator<Const>& x, const sentinel& y)
@@ -16790,7 +18623,7 @@ public:
 
     template <typename VV = V, std::enable_if_t<
         range<const VV> &&
-        regular_invocable<const F&, range_reference_t<VV>>, int> = 0>
+        regular_invocable<const F&, range_reference_t<const VV>>, int> = 0>
     constexpr iterator<true> begin() const
     {
         return iterator<true>{*this, ranges::begin(base_)};
@@ -16807,7 +18640,7 @@ public:
 
     template <typename VV = V, std::enable_if_t<
         range<const VV> &&
-        regular_invocable<const F&, range_reference_t<VV>>, int> = 0>
+        regular_invocable<const F&, range_reference_t<const VV>>, int> = 0>
     constexpr auto end() const
     {
         if constexpr (common_range<V>) {
