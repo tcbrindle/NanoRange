@@ -12,8 +12,10 @@
 #include <nanorange/views/filter.hpp>
 #include <nanorange/views/iota.hpp>
 #include <nanorange/views/ref.hpp>
+#include <nanorange/views/istream.hpp>
 #include <memory>
 #include <list>
+#include <sstream>
 
 #include "../catch.hpp"
 #include "../test_utils.hpp"
@@ -139,5 +141,12 @@ TEST_CASE("views.filter")
         auto yes = [](int) { return true; };
         auto const rng = views::iota(0) | views::filter(yes);
         views::all(rng);
+    }
+
+    {
+        std::istringstream ss("1 2 3 4 5 6 7 8 9 10");
+        auto is_even = [](int i) { return i % 2 == 0; };
+        auto rng = nano::istream_view<int>(ss) | views::filter(is_even);
+        ::check_equal(rng, {2, 4, 6, 8, 10});
     }
 }

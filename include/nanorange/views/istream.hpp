@@ -67,11 +67,14 @@ private:
             : parent_(std::addressof(parent))
         {}
 
+        // Disable move-only iterator until views support them properly
+#if 0
         iterator(const iterator&) = delete;
         iterator(iterator&&) = default;
 
         iterator& operator=(const iterator&) = delete;
         iterator& operator=(iterator&&) = default;
+#endif
         iterator& operator++()
         {
             *parent_->stream_ >> parent_->object_;

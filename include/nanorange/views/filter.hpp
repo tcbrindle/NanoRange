@@ -43,7 +43,9 @@ namespace filter_view_ {
 template <typename V, typename Pred>
 struct filter_view : view_interface<filter_view<V, Pred>> {
 
-    static_assert(input_range<V>);
+    // FIXME: GCC9 recursive constraint (?) problems again
+    // static_assert(input_range<V>);
+    static_assert(input_iterator<iterator_t<V>>);
     static_assert(indirect_unary_predicate<Pred, iterator_t<V>>);
     static_assert(view<V>);
     static_assert(std::is_object_v<Pred>);
