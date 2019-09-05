@@ -44,9 +44,6 @@ template <typename T>
 using cref_t = std::add_lvalue_reference_t<const std::remove_reference_t<T>>;
 
 template <typename T>
-using uncvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
-
-template <typename T>
 struct rref_res {
     using type = T;
 };

@@ -106,7 +106,7 @@ struct sized_range_concept {
 template <typename T>
 NANO_CONCEPT sized_range =
     range<T> &&
-    !disable_sized_range<detail::remove_cvref_t<T>> &&
+    !disable_sized_range<remove_cvref_t<T>> &&
     detail::requires_<detail::sized_range_concept, T>;
 
 

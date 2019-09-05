@@ -97,7 +97,7 @@ private:
     public:
         using iterator_category = iterator_category_t<iterator_t<base_t>>;
         using value_type =
-            detail::remove_cvref_t<std::tuple_element_t<N, range_value_t<base_t>>>;
+            remove_cvref_t<std::tuple_element_t<N, range_value_t<base_t>>>;
         using difference_type = range_difference_t<base_t>;
 
         iterator() = default;

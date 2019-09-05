@@ -55,7 +55,7 @@ private:
             iterator_category_t<iterator_t<Base>>>;
 
         using value_type =
-            detail::remove_cvref_t<invoke_result_t<F&, range_reference_t<Base>>>;
+            remove_cvref_t<invoke_result_t<F&, range_reference_t<Base>>>;
         using difference_type = range_difference_t<Base>;
 
         iterator() = default;

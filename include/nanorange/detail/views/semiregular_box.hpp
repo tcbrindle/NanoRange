@@ -42,7 +42,7 @@ public:
     template <typename Arg0, typename... Args,
               std::enable_if_t<
                   constructible_from<std::optional<T>, Arg0, Args...> &&
-                  !same_as<uncvref_t<Arg0>, semiregular_box>, int> = 0>
+                  !same_as<remove_cvref_t<Arg0>, semiregular_box>, int> = 0>
     constexpr semiregular_box(Arg0&& arg0, Args&&... args)
         : std::optional<T>{std::forward<Arg0>(arg0), std::forward<Args>(args)...}
     {}

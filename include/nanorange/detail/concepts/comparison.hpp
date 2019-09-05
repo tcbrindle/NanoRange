@@ -40,7 +40,7 @@ struct boolean_concept {
 } // namespace detail
 
 template <typename B>
-NANO_CONCEPT boolean = movable<detail::remove_cvref_t<B>> &&
+NANO_CONCEPT boolean = movable<remove_cvref_t<B>> &&
     detail::requires_<detail::boolean_concept, B>;
 
 // [concept.equalitycomparable]
