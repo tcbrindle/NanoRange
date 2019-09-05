@@ -143,9 +143,13 @@ NANO_INLINE_VAR(detail::empty_::fn, empty)
 
 namespace detail {
 
+template <typename, typename = void>
+inline constexpr bool is_object_pointer_v = false;
+
 template <typename P>
-constexpr bool is_object_pointer_v =
-    std::is_pointer<P>::value && std::is_object<test_t<iter_value_t, P>>::value;
+inline constexpr bool is_object_pointer_v<P,
+    std::enable_if_t<std::is_pointer_v<P> &&
+                     std::is_object_v<iter_value_t<P>>>> = true;
 
 namespace data_ {
 

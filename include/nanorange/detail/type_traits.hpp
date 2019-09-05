@@ -23,26 +23,6 @@ using remove_cvref_t = typename remove_cvref<T>::type;
 
 namespace detail {
 
-struct error_t {
-    error_t() = delete;
-    error_t(error_t const&) = delete;
-    error_t& operator=(const error_t&) = delete;
-    ~error_t() = delete;
-};
-
-template <typename Void, template <class...> class Trait, typename... Args>
-struct test_ {
-    using type = error_t;
-};
-
-template <template <class...> class Trait, typename... Args>
-struct test_<std::void_t<Trait<Args...>>, Trait, Args...> {
-    using type = Trait<Args...>;
-};
-
-template <template <class...> class Trait, typename... Args>
-using test_t = typename test_<void, Trait, Args...>::type;
-
 // Work around GCC5 bug that won't let us specialise variable templates
 template <typename Void, template <class...> class AliasT, typename... Args>
 struct exists_helper : std::false_type{};
@@ -52,7 +32,7 @@ struct exists_helper<std::void_t<AliasT<Args...>>, AliasT, Args...>
     : std::true_type{};
 
 template <template <class...> class AliasT, typename... Args>
-constexpr bool exists_v = exists_helper<void, AliasT, Args...>::value;
+inline constexpr bool exists_v = exists_helper<void, AliasT, Args...>::value;
 
 template <typename R, typename... Args,
           typename = decltype(&R::template requires_<Args...>)>
@@ -62,7 +42,7 @@ template <typename R, typename... Args>
 using test_requires_t = decltype(test_requires<R, Args...>(std::declval<R&>()));
 
 template <typename R, typename... Args>
-constexpr bool requires_ = exists_v<test_requires_t, R, Args...>;
+inline constexpr bool requires_ = exists_v<test_requires_t, R, Args...>;
 
 template <bool Expr>
 using requires_expr = std::enable_if_t<Expr, int>;
@@ -70,6 +50,7 @@ using requires_expr = std::enable_if_t<Expr, int>;
 template <std::size_t I>
 struct priority_tag : priority_tag<I - 1> {
 };
+
 template <>
 struct priority_tag<0> {
 };
