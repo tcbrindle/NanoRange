@@ -57,8 +57,8 @@ void test_initializer_list() {
 	CHECK(ranges::empty(il) == false);
 }
 
-template <class T, T... Is>
-void test_array(std::integer_sequence<T, Is...>) {
+template <class T, std::size_t... Is>
+void test_array(std::index_sequence<Is...>) {
 	T a[sizeof...(Is)] = { Is... };
 	{
 		int count = 0;
@@ -239,8 +239,8 @@ TEST_CASE("range_access") {
 	if (output) std::cout << "}\n";
 
 	test_initializer_list();
-	test_array(std::make_integer_sequence<int, 3>{});
-	test_array<const int, 0, 1, 2>(std::make_integer_sequence<const int, 3>{});
+	test_array<int>(std::make_index_sequence<3>{});
+	test_array<const int>(std::make_index_sequence<3>{});
 	begin_testing::test();
 
 	test_string_view_p0970();
