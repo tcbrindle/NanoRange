@@ -46,26 +46,25 @@ struct conditional<false> {
 template <bool B, typename T, typename U>
 using conditional_t = typename conditional<B>::template type<T, U>;
 
-// Work around GCC5 bug that won't let us specialise variable templates
-template <typename Void, template <class...> class AliasT, typename... Args>
-struct exists_helper : std::false_type{};
+template <template <class...> class AliasT, typename... Args>
+auto exists_helper(long) -> std::false_type;
+
+template <template <class...> class AliasT, typename... Args,
+          typename = AliasT<Args...>>
+auto exists_helper(int) -> std::true_type;
 
 template <template <class...> class AliasT, typename... Args>
-struct exists_helper<std::void_t<AliasT<Args...>>, AliasT, Args...>
-    : std::true_type{};
+inline constexpr bool exists_v = decltype(exists_helper<AliasT, Args...>(0))::value;
 
-template <template <class...> class AliasT, typename... Args>
-inline constexpr bool exists_v = exists_helper<void, AliasT, Args...>::value;
+template <typename, typename...>
+auto test_requires_fn(long) -> std::false_type;
 
 template <typename R, typename... Args,
           typename = decltype(&R::template requires_<Args...>)>
-auto test_requires(R&) -> void;
+auto test_requires_fn(int) -> std::true_type;
 
 template <typename R, typename... Args>
-using test_requires_t = decltype(test_requires<R, Args...>(std::declval<R&>()));
-
-template <typename R, typename... Args>
-inline constexpr bool requires_ = exists_v<test_requires_t, R, Args...>;
+inline constexpr bool requires_ = decltype(test_requires_fn<R, Args...>(0))::value;
 
 template <bool Expr>
 using requires_expr = std::enable_if_t<Expr, int>;
