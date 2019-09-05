@@ -295,8 +295,7 @@ public:
 
     constexpr explicit iota_view(W value) : value_(value) {}
 
-    constexpr iota_view(detail::type_identity_t<W> value,
-                        detail::type_identity_t<Bound> bound)
+    constexpr iota_view(type_identity_t<W> value, type_identity_t<Bound> bound)
         : value_(value),
           bound_(bound)
     {}

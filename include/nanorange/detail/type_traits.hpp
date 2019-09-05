@@ -21,6 +21,14 @@ struct remove_cvref {
 template <typename T>
 using remove_cvref_t = typename remove_cvref<T>::type;
 
+template <typename T>
+struct type_identity {
+    using type = T;
+};
+
+template <typename T>
+using type_identity_t = typename type_identity<T>::type;
+
 namespace detail {
 
 // Work around GCC5 bug that won't let us specialise variable templates
@@ -54,14 +62,6 @@ struct priority_tag : priority_tag<I - 1> {
 template <>
 struct priority_tag<0> {
 };
-
-template <typename T>
-struct type_identity {
-    using type = T;
-};
-
-template <typename T>
-using type_identity_t = typename type_identity<T>::type;
 
 } // namespace detail
 
