@@ -43,70 +43,61 @@ using copy_cv_t = typename copy_cv<T, U>::type;
 template <typename T>
 using cref_t = std::add_lvalue_reference_t<const std::remove_reference_t<T>>;
 
-template <typename T>
-struct rref_res {
-    using type = T;
-};
-
-template <typename T>
-struct rref_res<T&> {
-    using type = std::remove_reference_t<T>&&;
-};
-
-template <typename T>
-using rref_res_t = typename rref_res<T>::type;
-
 template <typename T, typename U>
-using cond_res_t = decltype(std::declval<bool>() ? std::declval<T (&)()>()()
-                                                 : std::declval<U (&)()>()());
+using cond_res_t = decltype(false ? std::declval<T (&)()>()()
+                                  : std::declval<U (&)()>()());
 
 // For some value of "simple"
-template <typename T, typename U>
-struct simple_common_reference {
-};
+template <typename A, typename B,
+          typename X = std::remove_reference_t<A>,
+          typename Y = std::remove_reference_t<B>,
+          typename = void>
+struct common_ref {};
 
-template <typename T, typename U,
-          typename C = test_t<cond_res_t, copy_cv_t<T, U>&, copy_cv_t<U, T>&>>
-struct lvalue_simple_common_reference
-    : std::enable_if<std::is_reference<C>::value, C> {
-};
+template <typename A, typename B>
+using common_ref_t = typename common_ref<A, B>::type;
 
-template <typename T, typename U>
-using lvalue_scr_t = typename lvalue_simple_common_reference<T, U>::type;
+template <typename A, typename B,
+          typename X = std::remove_reference_t<A>,
+          typename Y = std::remove_reference_t<B>,
+          typename = void>
+struct lval_common_ref {};
 
-template <typename T, typename U>
-struct simple_common_reference<T&, U&> : lvalue_simple_common_reference<T, U> {
-};
-
-template <typename T, typename U, typename LCR = test_t<lvalue_scr_t, T, U>,
-          typename C = rref_res_t<LCR>>
-struct rvalue_simple_common_reference
-    : std::enable_if<std::is_convertible<T&&, C>::value &&
-                         std::is_convertible<U&&, C>::value,
-                     C> {
-};
-
-template <typename T, typename U>
-struct simple_common_reference<T&&, U&&>
-    : rvalue_simple_common_reference<T, U> {
-};
-
-template <typename A, typename B, typename C = test_t<lvalue_scr_t, A, const B>>
-struct mixed_simple_common_reference
-    : std::enable_if<std::is_convertible<B&&, C>::value, C> {
+template <typename A, typename B, typename X, typename Y>
+struct lval_common_ref<A, B, X, Y, std::enable_if_t<
+    std::is_reference_v<cond_res_t<copy_cv_t<X, Y>&, copy_cv_t<Y, X>&>>>>
+{
+    using type = cond_res_t<copy_cv_t<X, Y>&, copy_cv_t<Y, X>&>;
 };
 
 template <typename A, typename B>
-struct simple_common_reference<A&, B&&> : mixed_simple_common_reference<A, B> {
+using lval_common_ref_t = typename lval_common_ref<A, B>::type;
+
+template <typename A, typename B, typename X, typename Y>
+struct common_ref<A&, B&, X, Y> : lval_common_ref<A&, B&> {};
+
+template <typename X, typename Y>
+using rref_cr_helper_t = std::remove_reference_t<lval_common_ref_t<X&, Y&>>&&;
+
+template <typename A, typename B, typename X, typename Y>
+struct common_ref<A&&, B&&, X, Y, std::enable_if_t<
+    std::is_convertible_v<A&&, rref_cr_helper_t<X, Y>> &&
+    std::is_convertible_v<B&&, rref_cr_helper_t<X, Y>>>>
+{
+    using type = rref_cr_helper_t<X, Y>;
 };
 
-template <typename A, typename B>
-struct simple_common_reference<A&&, B&> : simple_common_reference<B&, A&&> {
+template <typename A, typename B, typename X, typename Y>
+struct common_ref<A&&, B&, X, Y, std::enable_if_t<
+    std::is_convertible_v<A&&, lval_common_ref_t<const X&, Y&>>>>
+{
+    using type = lval_common_ref_t<const X&, Y&>;
 };
 
-template <typename T, typename U>
-using simple_common_reference_t = typename simple_common_reference<T, U>::type;
-
+template <typename A, typename B, typename X, typename Y>
+struct common_ref<A&, B&&, X, Y>
+    : common_ref<B&&, A&>
+{};
 
 template <typename>
 struct xref { template <typename U> using type = U; };
@@ -166,8 +157,8 @@ struct common_reference<T0> {
 namespace detail {
 
 template <typename T, typename U>
-constexpr bool has_simple_common_ref_v =
-    exists_v<simple_common_reference_t, T, U>;
+inline constexpr bool has_common_ref_v =
+    exists_v<common_ref_t, T, U>;
 
 template <typename T, typename U>
 using basic_common_ref_t =
@@ -175,25 +166,24 @@ using basic_common_ref_t =
                                     detail::xref<T>::template type, detail::xref<U>::template type>::type;
 
 template <typename T, typename U>
-constexpr bool has_basic_common_ref_v =
+inline constexpr bool has_basic_common_ref_v =
     exists_v<basic_common_ref_t, T, U>;
 
 template <typename T, typename U>
-constexpr bool has_cond_res_v = exists_v<cond_res_t, T, U>;
+inline constexpr bool has_cond_res_v = exists_v<cond_res_t, T, U>;
 
 template <typename T, typename U, typename = void>
 struct binary_common_ref : common_type<T, U> {
 };
 
 template <typename T, typename U>
-struct binary_common_ref<T, U, std::enable_if_t<has_simple_common_ref_v<T, U>>>
-    : simple_common_reference<T, U> {
-};
+struct binary_common_ref<T, U, std::enable_if_t<has_common_ref_v<T, U>>>
+    : common_ref<T, U> {};
 
 template <typename T, typename U>
 struct binary_common_ref<T, U,
                          std::enable_if_t<has_basic_common_ref_v<T, U> &&
-                                          !has_simple_common_ref_v<T, U>>>
+                                          !has_common_ref_v<T, U>>>
 {
     using type = basic_common_ref_t<T, U>;
 };
@@ -202,7 +192,7 @@ template <typename T, typename U>
 struct binary_common_ref<T, U,
                          std::enable_if_t<has_cond_res_v<T, U> &&
                                           !has_basic_common_ref_v<T, U> &&
-                                          !has_simple_common_ref_v<T, U>>>
+                                          !has_common_ref_v<T, U>>>
 {
     using type = cond_res_t<T, U>;
 };
