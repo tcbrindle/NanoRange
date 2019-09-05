@@ -48,7 +48,7 @@ template <typename, typename = void>
 struct has_member_difference_type : std::false_type {};
 
 template <typename T>
-struct has_member_difference_type<T, void_t<typename T::difference_type>>
+struct has_member_difference_type<T, std::void_t<typename T::difference_type>>
     : std::true_type{};
 
 template <typename T>

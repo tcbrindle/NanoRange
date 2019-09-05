@@ -23,9 +23,6 @@ using remove_cvref_t = typename remove_cvref<T>::type;
 
 namespace detail {
 
-template <typename...>
-using void_t = void;
-
 struct error_t {
     error_t() = delete;
     error_t(error_t const&) = delete;
@@ -39,7 +36,7 @@ struct test_ {
 };
 
 template <template <class...> class Trait, typename... Args>
-struct test_<void_t<Trait<Args...>>, Trait, Args...> {
+struct test_<std::void_t<Trait<Args...>>, Trait, Args...> {
     using type = Trait<Args...>;
 };
 
@@ -51,7 +48,7 @@ template <typename Void, template <class...> class AliasT, typename... Args>
 struct exists_helper : std::false_type{};
 
 template <template <class...> class AliasT, typename... Args>
-struct exists_helper<void_t<AliasT<Args...>>, AliasT, Args...>
+struct exists_helper<std::void_t<AliasT<Args...>>, AliasT, Args...>
     : std::true_type{};
 
 template <template <class...> class AliasT, typename... Args>

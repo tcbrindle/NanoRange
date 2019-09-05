@@ -220,7 +220,7 @@ struct multiple_common_reference {
 };
 
 template <typename T1, typename T2, typename... Rest>
-struct multiple_common_reference<void_t<common_reference_t<T1, T2>>, T1, T2,
+struct multiple_common_reference<std::void_t<common_reference_t<T1, T2>>, T1, T2,
                                  Rest...>
     : common_reference<common_reference_t<T1, T2>, Rest...> {
 };

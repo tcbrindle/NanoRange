@@ -138,7 +138,7 @@ struct invoke_result_helper {
 
 template <typename F, typename... Args>
 struct invoke_result_helper<
-    void_t<decltype(nano::invoke(std::declval<F>(), std::declval<Args>()...))>,
+    std::void_t<decltype(nano::invoke(std::declval<F>(), std::declval<Args>()...))>,
     F, Args...> {
     using type =
         decltype(nano::invoke(std::declval<F>(), std::declval<Args>()...));
