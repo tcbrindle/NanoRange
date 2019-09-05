@@ -39,8 +39,8 @@ private:
         friend struct sentinel<Const>;
 
         using Parent =
-            std::conditional_t<Const, const transform_view, transform_view>;
-        using Base = std::conditional_t<Const, const V, V>;
+            detail::conditional_t<Const, const transform_view, transform_view>;
+        using Base = detail::conditional_t<Const, const V, V>;
 
         iterator_t<Base> current_ = iterator_t<Base>();
         Parent* parent_ = nullptr;
@@ -49,7 +49,7 @@ private:
             noexcept(nano::invoke(*parent_->fun_, *current_));
 
     public:
-        using iterator_category = std::conditional_t<
+        using iterator_category = detail::conditional_t<
             derived_from<iterator_category_t<iterator_t<Base>>, contiguous_iterator_tag>,
             random_access_iterator_tag,
             iterator_category_t<iterator_t<Base>>>;
@@ -229,8 +229,8 @@ private:
         friend struct sentinel<!Const>;
 
         using Parent =
-            std::conditional_t<Const, const transform_view, transform_view>;
-        using Base = std::conditional_t<Const, const V, V>;
+            detail::conditional_t<Const, const transform_view, transform_view>;
+        using Base = detail::conditional_t<Const, const V, V>;
         sentinel_t<Base> end_ = sentinel_t<Base>();
 
     public:

@@ -36,7 +36,7 @@ struct incrementable_traits_helper<void*> {};
 
 template <typename T>
 struct incrementable_traits_helper<T*>
-    : std::conditional_t<std::is_object<T>::value,
+    : detail::conditional_t<std::is_object<T>::value,
             with_difference_type<std::ptrdiff_t>, empty> {
 };
 
@@ -95,7 +95,7 @@ struct readable_traits_helper {};
 
 template <typename T>
 struct readable_traits_helper<T*>
-    : std::conditional_t<std::is_object<T>::value,
+    : detail::conditional_t<std::is_object<T>::value,
             with_value_type<std::remove_cv_t<T>>,
             empty> {};
 
@@ -109,12 +109,12 @@ struct readable_traits_helper<const I, std::enable_if_t<!std::is_array<I>::value
 
 template <typename T, typename V = typename T::value_type>
 struct member_value_type
-    : std::conditional_t<std::is_object<V>::value,
+    : detail::conditional_t<std::is_object<V>::value,
             with_value_type<V>, empty> {};
 
 template <typename T, typename E = typename T::element_type>
 struct member_element_type
-    : std::conditional_t<std::is_object<E>::value,
+    : detail::conditional_t<std::is_object<E>::value,
             with_value_type<std::remove_cv_t<E>>, empty> {};
 
 template <typename T>

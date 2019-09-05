@@ -76,10 +76,10 @@ private:
         static constexpr bool ref_is_glvalue =
             std::is_reference_v<range_reference_t<B>>;
 
-        using Base = std::conditional_t<Const, const V, V>;
+        using Base = detail::conditional_t<Const, const V, V>;
 
         // https://github.com/ericniebler/stl2/issues/604
-        using Parent = std::conditional_t<Const && ref_is_glvalue<Base>,
+        using Parent = detail::conditional_t<Const && ref_is_glvalue<Base>,
             const join_view, join_view>;
 
         iterator_t<Base> outer_ = iterator_t<Base>();
@@ -253,8 +253,8 @@ private:
     template <bool Const>
     struct sentinel {
     private:
-        using Parent = std::conditional_t<Const, const join_view, join_view>;
-        using Base = std::conditional_t<Const, const V, V>;
+        using Parent = detail::conditional_t<Const, const join_view, join_view>;
+        using Base = detail::conditional_t<Const, const V, V>;
 
         sentinel_t<Base> end_ = sentinel_t<Base>();
 

@@ -83,8 +83,8 @@ private:
         friend struct outer_iterator<!Const>;
         friend struct inner_iterator<Const>;
 
-        using Parent = std::conditional_t<Const, const split_view, split_view>;
-        using Base = std::conditional_t<Const, const V, V>;
+        using Parent = detail::conditional_t<Const, const split_view, split_view>;
+        using Base = detail::conditional_t<Const, const V, V>;
         Parent* parent_ = nullptr;
         iterator_t<Base> current_ = iterator_t<Base>();
 
@@ -113,7 +113,7 @@ private:
 
     public:
         // FIXME: iterator_concept
-        using iterator_category = std::conditional_t<
+        using iterator_category = detail::conditional_t<
             forward_range<Base>, forward_iterator_tag, input_iterator_tag>;
 
         struct value_type {
@@ -236,7 +236,7 @@ private:
     template <bool Const>
     struct inner_iterator {
     private:
-        using Base = std::conditional_t<Const, const V, V>;
+        using Base = detail::conditional_t<Const, const V, V>;
         static constexpr bool NoReallyGccConst = Const;
         outer_iterator<Const> i_ = outer_iterator<NoReallyGccConst>();
         bool incremented_ = false;
@@ -268,7 +268,7 @@ private:
         constexpr decltype(auto) get_outer_current() const { return i_.get_current(); }
 
     public:
-        using iterator_category = std::conditional_t<
+        using iterator_category = detail::conditional_t<
             derived_from<iterator_category_t<iterator_t<Base>>, forward_iterator_tag>,
                 forward_iterator_tag,
                 input_iterator_tag>;

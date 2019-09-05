@@ -31,6 +31,21 @@ using type_identity_t = typename type_identity<T>::type;
 
 namespace detail {
 
+template <bool>
+struct conditional {
+    template <typename T, typename>
+    using type = T;
+};
+
+template <>
+struct conditional<false> {
+    template <typename, typename U>
+    using type = U;
+};
+
+template <bool B, typename T, typename U>
+using conditional_t = typename conditional<B>::template type<T, U>;
+
 // Work around GCC5 bug that won't let us specialise variable templates
 template <typename Void, template <class...> class AliasT, typename... Args>
 struct exists_helper : std::false_type{};

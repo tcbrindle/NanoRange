@@ -27,7 +27,7 @@ private:
     struct sentinel {
     private:
         friend struct sentinel<!Const>;
-        using Base = std::conditional_t<Const, const V, V>;
+        using Base = detail::conditional_t<Const, const V, V>;
         using CI = counted_iterator<iterator_t<Base>>;
 
         sentinel_t<Base> end_ = sentinel_t<Base>();

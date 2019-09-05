@@ -313,7 +313,7 @@ struct dangling {
 };
 
 template <typename R>
-using safe_iterator_t = std::conditional_t<
+using safe_iterator_t = detail::conditional_t<
     detail::forwarding_range<R>, iterator_t<R>, dangling>;
 
 // Helper concepts

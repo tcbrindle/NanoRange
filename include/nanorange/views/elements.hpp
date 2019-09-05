@@ -89,7 +89,7 @@ private:
     struct iterator
     {
     private:
-        using base_t = std::conditional_t<Const, const R, R>;
+        using base_t = detail::conditional_t<Const, const R, R>;
         friend iterator<!Const>;
 
         iterator_t<base_t> current_;

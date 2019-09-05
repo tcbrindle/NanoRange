@@ -44,7 +44,7 @@ struct projected_difference_t_helper<I, Proj, std::enable_if_t<
 } // namespace detail
 
 template <typename I, typename Proj>
-using projected = std::conditional_t<
+using projected = detail::conditional_t<
     same_as<Proj, identity>, I, detail::projected_helper<I, Proj>>;
 
 template <typename I, typename Proj>
