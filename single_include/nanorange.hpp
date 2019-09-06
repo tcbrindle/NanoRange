@@ -17637,15 +17637,15 @@ private:
             if (get_current() == end) {
                 return *this;
             }
-            const auto sub = subrange{parent_->data_.pattern_};
-            if (sub.begin() == sub.end()) {
+            const auto [pbegin, pend] = subrange{parent_->data_.pattern_};
+            if (pbegin == pend) {
                 ++get_current();
             } else {
                 do {
-                    const auto res = ranges::mismatch(get_current(), end,
-                                                      sub.begin(), sub.end());
-                    if (res.in2 == sub.end()) {
-                        get_current() = res.in1;
+                    const auto [b, p] = ranges::mismatch(get_current(), end,
+                                                         pbegin, pend);
+                    if (p == pend) {
+                        get_current() = b;
                         break;
                     }
                 } while (++get_current() != end);
@@ -17714,9 +17714,7 @@ private:
             if (cur == end) {
                 return true;
             }
-            auto sub = subrange{i_.parent_->data_.pattern_};
-            auto pcur = sub.begin();
-            auto pend = sub.end();
+            auto [pcur, pend] = subrange{i_.parent_->data_.pattern_};
             if (pcur == pend) {
                 return incremented_;
             }
@@ -17782,6 +17780,7 @@ private:
 
         template <typename B = Base>
         friend constexpr auto operator!=(const inner_iterator& x, const inner_iterator& y)
+            -> std::enable_if_t<forward_range<B>, bool>
         {
             return !(x == y);
         }
