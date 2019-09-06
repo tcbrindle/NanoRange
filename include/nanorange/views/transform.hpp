@@ -57,6 +57,9 @@ private:
         using value_type =
             remove_cvref_t<invoke_result_t<F&, range_reference_t<Base>>>;
         using difference_type = range_difference_t<Base>;
+        // Extension: legacy typedefs
+        using pointer = void;
+        using reference = invoke_result_t<F&, range_reference_t<Base>>;
 
         iterator() = default;
 

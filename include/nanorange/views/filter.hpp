@@ -65,6 +65,9 @@ private:
             decltype(detail::filter_view_iter_cat_helper<V>());
         using value_type = iter_value_t<iterator_t<V>>;
         using difference_type = iter_difference_t<iterator_t<V>>;
+        // Extension: legacy typedefs
+        using pointer = iterator_t<V>;
+        using reference = iter_reference_t<iterator_t<V>>;
 
         iterator() = default;
         constexpr iterator(filter_view& parent, iterator_t<V> current)

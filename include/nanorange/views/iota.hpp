@@ -80,6 +80,9 @@ private:
         using iterator_category = decltype(detail::iota_view_iter_cat_helper<W>());
         using value_type = W;
         using difference_type = detail::iota_diff_t<W>;
+        // Extension: legacy typedefs
+        using pointer = void;
+        using reference = W;
 
         iterator() = default;
 

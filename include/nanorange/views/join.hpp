@@ -115,11 +115,13 @@ private:
     public:
         //using iterator_concept = ...
         using iterator_category = decltype(detail::join_view_iter_cat_helper<Base>());
-
         using value_type = range_value_t<range_reference_t<Base>>;
         using difference_type = nano::common_type_t<
             range_difference_t<Base>,
             range_difference_t<range_reference_t<Base>>>;
+        // Extension: legacy typedefs
+        using pointer = iterator_t<Base>;
+        using reference = range_reference_t<range_reference_t<Base>>;
 
         iterator() = default;
 

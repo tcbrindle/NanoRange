@@ -139,6 +139,9 @@ private:
         };
 
         using difference_type = range_difference_t<Base>;
+        // Extension: legacy typedefs
+        using pointer = void;
+        using reference = value_type;
 
         outer_iterator() = default;
 
