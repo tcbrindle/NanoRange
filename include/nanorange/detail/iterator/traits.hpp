@@ -42,7 +42,7 @@ struct iterator_category_<const T> : iterator_category<T> {
 };
 
 template <typename T>
-struct iterator_category_<T, void_t<typename T::iterator_category>> {
+struct iterator_category_<T, std::void_t<typename T::iterator_category>> {
     using type = typename T::iterator_category;
 };
 

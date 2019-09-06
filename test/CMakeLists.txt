@@ -202,6 +202,7 @@ endif()
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(test_nanorange PRIVATE -Wall -Wextra -pedantic
         -Wno-unused-function -Wno-unneeded-internal-declaration -Wno-missing-braces
+        -Wno-void-ptr-dereference
         -ftemplate-backtrace-limit=0)
 endif()
 

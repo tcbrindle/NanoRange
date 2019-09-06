@@ -27,7 +27,7 @@ private:
     struct sentinel {
     private:
         friend struct sentinel<!Const>;
-        using base_t = std::conditional_t<Const, const R, R>;
+        using base_t = detail::conditional_t<Const, const R, R>;
         sentinel_t<base_t> end_ = sentinel_t<base_t>();
         const Pred* pred_{};
 

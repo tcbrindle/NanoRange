@@ -216,7 +216,7 @@ struct iterator_traits<::nano::common_iterator<I, S>> {
         std::add_pointer_t<::nano::iter_reference_t<::nano::common_iterator<I, S>>>;
     using reference = ::nano::iter_reference_t<::nano::common_iterator<I, S>>;
     using iterator_category =
-        std::conditional_t<::nano::forward_iterator<I>,
+        ::nano::detail::conditional_t<::nano::forward_iterator<I>,
                            std::forward_iterator_tag,
                            std::input_iterator_tag>;
 };

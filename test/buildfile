@@ -36,5 +36,5 @@ if ($cxx.id.type == 'clang')
 {
     cxx.coptions += "-Wall" "-Wextra" "-pedantic"\
         "-Wno-unneeded-internal-declaration" "-Wno-missing-braces" "-Wno-unused-function"\
-        "-Wno-mismatched-tags" "-Wno-undefined-internal"
+        "-Wno-mismatched-tags" "-Wno-undefined-internal" "-Wno-void-ptr-dereference"
 }

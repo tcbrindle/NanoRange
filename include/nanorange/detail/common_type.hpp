@@ -71,7 +71,7 @@ template <typename Void, typename...>
 struct multiple_common_type {};
 
 template <typename T1, typename T2, typename... R>
-struct multiple_common_type<void_t<common_type_t<T1, T2>>, T1, T2, R...>
+struct multiple_common_type<std::void_t<common_type_t<T1, T2>>, T1, T2, R...>
     : common_type<common_type_t<T1, T2>, R...> {};
 
 }

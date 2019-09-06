@@ -62,7 +62,7 @@ inline constexpr bool is_raco<raco_pipe<LHS, RHS>> = true;
 template <typename LHS, typename RHS>
 constexpr auto operator|(LHS&& lhs, RHS&& rhs)
     -> std::enable_if_t<
-        is_raco<uncvref_t<LHS>> && is_raco<uncvref_t<RHS>>,
+        is_raco<remove_cvref_t<LHS>> && is_raco<remove_cvref_t<RHS>>,
         raco_pipe<LHS, RHS>>
 {
     return raco_pipe<LHS, RHS>{std::forward<LHS>(lhs), std::forward<RHS>(rhs)};

@@ -13,8 +13,8 @@ NANO_BEGIN_NAMESPACE
 
 // [range.projected]
 
-template <typename I, typename Proj>
-struct projected;
+//template <typename I, typename Proj>
+//struct projected;
 
 namespace detail {
 
@@ -29,9 +29,7 @@ struct projected_helper<
                      indirect_regular_unary_invocable<Proj, I>>> {
     using value_type = remove_cvref_t<indirect_result_t<Proj&, I>>;
 
-    // We shouldn't need to define this, as we only need its return type,
-    // but GCC gets stroppy sometimes.
-    indirect_result_t<Proj&, I> operator*() const { throw 0; }
+    indirect_result_t<Proj&, I> operator*() const;
 };
 
 template <typename, typename, typename = void>
@@ -46,11 +44,11 @@ struct projected_difference_t_helper<I, Proj, std::enable_if_t<
 } // namespace detail
 
 template <typename I, typename Proj>
-struct projected : detail::projected_helper<I, Proj> {
-};
+using projected = detail::conditional_t<
+    same_as<Proj, identity>, I, detail::projected_helper<I, Proj>>;
 
 template <typename I, typename Proj>
-struct incrementable_traits<projected<I, Proj>>
+struct incrementable_traits<detail::projected_helper<I, Proj>>
     : detail::projected_difference_t_helper<I, Proj> {};
 
 NANO_END_NAMESPACE
