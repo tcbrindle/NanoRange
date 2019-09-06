@@ -47,9 +47,8 @@ public:
         rotate_copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, iterator_t<Rng> middle, O result) const
     {
-        auto ret = rotate_copy_fn::impl(nano::begin(rng), std::move(middle),
-                                        nano::end(rng), std::move(result));
-        return {std::move(ret).in, std::move(ret).out};
+        return rotate_copy_fn::impl(nano::begin(rng), std::move(middle),
+                                    nano::end(rng), std::move(result));
     }
 };
 

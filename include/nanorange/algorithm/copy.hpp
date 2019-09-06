@@ -70,9 +70,8 @@ public:
                                copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
-        auto res = copy_fn::impl(nano::begin(rng), nano::end(rng),
+        return copy_fn::impl(nano::begin(rng), nano::end(rng),
                              std::move(result), priority_tag<1>{});
-        return {std::move(res).in, std::move(res).out};
     }
 };
 
@@ -138,10 +137,9 @@ public:
         copy_if_result<I, O>>
     operator()(I first, S last, O result, Pred pred, Proj proj = Proj{}) const
     {
-        auto res = copy_if_fn::impl(std::move(first), std::move(last),
-                                    std::move(result), std::move(pred),
-                                    std::move(proj));
-        return {std::move(res).in, std::move(res).out};
+        return copy_if_fn::impl(std::move(first), std::move(last),
+                                std::move(result), std::move(pred),
+                                std::move(proj));
     }
 
     template <typename Rng, typename O, typename Proj = identity, typename Pred>
@@ -201,9 +199,8 @@ public:
                                copy_backward_result<safe_iterator_t<Rng>, I>>
     operator()(Rng&& rng, I result) const
     {
-        auto res = copy_backward_fn::impl(nano::begin(rng), nano::end(rng),
-                                          std::move(result));
-        return {std::move(res).in, std::move(res).out};
+        return copy_backward_fn::impl(nano::begin(rng), nano::end(rng),
+                                      std::move(result));
     }
 };
 

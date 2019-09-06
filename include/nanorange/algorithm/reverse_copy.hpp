@@ -58,9 +58,8 @@ public:
         reverse_copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
-        auto ret = reverse_copy_fn::impl(nano::begin(rng), nano::end(rng),
-                                         std::move(result));
-        return {std::move(ret).in, std::move(ret).out};
+        return reverse_copy_fn::impl(nano::begin(rng), nano::end(rng),
+                                     std::move(result));
     }
 };
 

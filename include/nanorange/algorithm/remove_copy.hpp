@@ -58,9 +58,8 @@ public:
         remove_copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, const T& value, Proj proj = Proj{}) const
     {
-        auto res = remove_copy_fn::impl(nano::begin(rng), nano::end(rng),
-                                        std::move(result), value, proj);
-        return {std::move(res).in, std::move(res).out};
+        return remove_copy_fn::impl(nano::begin(rng), nano::end(rng),
+                               std::move(result), value, proj);
     }
 };
 

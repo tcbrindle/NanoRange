@@ -70,9 +70,8 @@ public:
             swap_ranges_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>>>
     operator()(Rng1&& rng1, Rng2&& rng2) const
     {
-        auto ret = swap_ranges_fn::impl4(nano::begin(rng1), nano::end(rng1),
-                                         nano::begin(rng2), nano::end(rng2));
-        return {std::move(ret).in1, std::move(ret).in2};
+        return swap_ranges_fn::impl4(nano::begin(rng1), nano::end(rng1),
+                                     nano::begin(rng2), nano::end(rng2));
     }
 
     template <typename Rng1, typename I2>
@@ -83,9 +82,8 @@ public:
             swap_ranges_result<safe_iterator_t<Rng1>, I2>>
     operator()(Rng1&& rng1, I2 first2) const
     {
-        auto ret = swap_ranges_fn::impl3(nano::begin(rng1), nano::end(rng1),
+        return swap_ranges_fn::impl3(nano::begin(rng1), nano::end(rng1),
                                      std::move(first2));
-        return {std::move(ret).in1, std::move(ret).in2};
     }
 };
 

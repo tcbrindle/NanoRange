@@ -64,9 +64,8 @@ public:
                                move_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
-        auto res = move_fn::impl(nano::begin(rng), nano::end(rng),
-                                 std::move(result), priority_tag<1>{});
-        return {std::move(res).in, std::move(res).out};
+        return move_fn::impl(nano::begin(rng), nano::end(rng),
+                             std::move(result), priority_tag<1>{});
     }
 };
 
@@ -120,9 +119,8 @@ public:
                                move_backward_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
-        auto res = move_backward_fn::impl(nano::begin(rng), nano::end(rng),
-                                          std::move(result));
-        return {std::move(res).in, std::move(res).out};
+        return move_backward_fn::impl(nano::begin(rng), nano::end(rng),
+                                      std::move(result));
     }
 };
 

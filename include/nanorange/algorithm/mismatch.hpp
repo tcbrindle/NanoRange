@@ -86,10 +86,9 @@ public:
     operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
-        auto res = mismatch_fn::impl3(nano::begin(rng1), nano::end(rng1),
-                                      std::forward<I2>(first2), pred,
-                                      proj1, proj2);
-        return {std::move(res).in1, std::move(res).in2};
+        return mismatch_fn::impl3(nano::begin(rng1), nano::end(rng1),
+                                  std::forward<I2>(first2), pred,
+                                  proj1, proj2);
     }
 
     // four legged
@@ -120,10 +119,9 @@ public:
     operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
-        auto res = mismatch_fn::impl4(nano::begin(rng1), nano::end(rng1),
-                                      nano::begin(rng2), nano::end(rng2),
-                                      pred, proj1, proj2);
-        return {std::move(res).in1, std::move(res).in2};
+        return mismatch_fn::impl4(nano::begin(rng1), nano::end(rng1),
+                                  nano::begin(rng2), nano::end(rng2),
+                                  pred, proj1, proj2);
     }
 };
 

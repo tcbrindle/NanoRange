@@ -73,10 +73,9 @@ public:
     operator()(Rng&& rng, O1 out_true, O2 out_false, Pred pred,
             Proj proj = Proj{}) const
     {
-        auto res = partition_copy_fn::impl(nano::begin(rng), nano::end(rng),
-                                           std::move(out_true), std::move(out_false),
-                                           pred, proj);
-        return {std::move(res).in, std::move(res).out1, std::move(res).out2};
+        return partition_copy_fn::impl(nano::begin(rng), nano::end(rng),
+                                       std::move(out_true), std::move(out_false),
+                                       pred, proj);
     }
 };
 

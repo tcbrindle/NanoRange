@@ -62,10 +62,9 @@ public:
     operator()(Rng&& rng, O result, Pred pred, const T& new_value,
                Proj proj = Proj{}) const
     {
-        auto ret = replace_copy_if_fn::impl(nano::begin(rng), nano::end(rng),
-                                            std::move(result), pred, new_value,
-                                            proj);
-        return {std::move(ret).in, std::move(ret).out};
+        return replace_copy_if_fn::impl(nano::begin(rng), nano::end(rng),
+                                        std::move(result), pred, new_value,
+                                        proj);
     }
 };
 
