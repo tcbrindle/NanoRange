@@ -42,12 +42,12 @@ TEST_CASE("alg.basic.next_permutation")
     }();
 
     SECTION("with iters") {
-        CHECK(nano::next_permutation(l1.begin(), l1.end()));
+        CHECK(nano::next_permutation(l1.begin(), l1.end()).found);
         CHECK(l1 == result);
     }
 
     SECTION("with range") {
-        CHECK(nano::next_permutation(l1));
+        CHECK(nano::next_permutation(l1).found);
         CHECK(l1 == result);
     }
 }
@@ -65,12 +65,12 @@ TEST_CASE("alg.basic.prev_permutation")
     }();
 
     SECTION("with iters") {
-        CHECK(nano::prev_permutation(l1.begin(), l1.end()));
+        CHECK(nano::prev_permutation(l1.begin(), l1.end()).found);
         CHECK(l1 == result);
     }
 
     SECTION("with range") {
-        CHECK(nano::prev_permutation(l1));
+        CHECK(nano::prev_permutation(l1).found);
         CHECK(l1 == result);
     }
 }

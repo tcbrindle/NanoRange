@@ -20,26 +20,30 @@
 #ifndef NANORANGE_ALGORITHM_PREV_PERMUTATION_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_PREV_PERMUTATION_HPP_INCLUDED
 
-#include <nanorange/algorithm/reverse.hpp>
+#include <nanorange/algorithm/next_permutation.hpp>
 
 NANO_BEGIN_NAMESPACE
+
+template <typename I>
+using prev_permutation_result = next_permutation_result<I>;
 
 namespace detail {
 
 struct prev_permutation_fn {
 private:
     template <typename I, typename S, typename Comp, typename Proj>
-    static constexpr bool impl(I first, S last, Comp& comp, Proj& proj)
+    static constexpr prev_permutation_result<I>
+    impl(I first, S last, Comp& comp, Proj& proj)
     {
         if (first == last) {
-            return false;
+            return {false, std::move(first)};
         }
 
-        const I last_it = nano::next(first, last);
+        I last_it = nano::next(first, last);
         I i = last_it;
 
         if (first == --i) {
-            return false;
+            return {false, std::move(last_it)};
         }
 
         while (true) {
@@ -54,12 +58,12 @@ private:
 
                 nano::iter_swap(i, j);
                 nano::reverse(ip1, last_it);
-                return true;
+                return {true, std::move(last_it)};
             }
 
             if (i == first) {
                 nano::reverse(first, last_it);
-                return false;
+                return {false, std::move(last_it)};
             }
         }
     }
@@ -69,7 +73,8 @@ public:
     template <typename I, typename S, typename Comp = ranges::less,
               typename Proj = identity>
     constexpr std::enable_if_t<bidirectional_iterator<I> && sentinel_for<S, I> &&
-                                   sortable<I, Comp, Proj>, bool>
+                                   sortable<I, Comp, Proj>,
+        prev_permutation_result<I>>
     operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return prev_permutation_fn::impl(std::move(first), std::move(last),
@@ -78,7 +83,8 @@ public:
 
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
-        bidirectional_range<Rng> && sortable<iterator_t<Rng>, Comp, Proj>, bool>
+        bidirectional_range<Rng> && sortable<iterator_t<Rng>, Comp, Proj>,
+        prev_permutation_result<safe_iterator_t<Rng>>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return prev_permutation_fn::impl(nano::begin(rng), nano::end(rng),
