@@ -43,7 +43,9 @@ namespace filter_view_ {
 template <typename V, typename Pred>
 struct filter_view : view_interface<filter_view<V, Pred>> {
 
-    static_assert(input_range<V>);
+    // FIXME: GCC9 recursive constraint (?) problems again
+    // static_assert(input_range<V>);
+    static_assert(input_iterator<iterator_t<V>>);
     static_assert(indirect_unary_predicate<Pred, iterator_t<V>>);
     static_assert(view<V>);
     static_assert(std::is_object_v<Pred>);
@@ -165,21 +167,34 @@ private:
 
         constexpr sentinel_t<V> base() const { return end_; }
 
+        // Make these friend functions templates to keep MSVC happy
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
         friend constexpr bool operator==(const iterator& i, const sentinel& s)
         {
             return i.base() == s.end_;
         }
 
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
         friend constexpr bool operator==(const sentinel& s, const iterator& i)
         {
             return i == s;
         }
 
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
         friend constexpr bool operator!=(const iterator& i, const sentinel& s)
         {
             return !(i == s);
         }
 
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
         friend constexpr bool operator!=(const sentinel& s, const iterator& i)
         {
             return !(i == s);
