@@ -316,6 +316,7 @@ private:
 
         template <typename B = Base>
         friend constexpr auto operator!=(const inner_iterator& x, const inner_iterator& y)
+            -> std::enable_if_t<forward_range<B>, bool>
         {
             return !(x == y);
         }
