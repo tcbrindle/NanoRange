@@ -15243,7 +15243,7 @@ inline constexpr bool is_raco<common_view_fn> = true;
 
 namespace views {
 
-NANO_INLINE_VAR(detail::common_view_fn, common)
+NANO_INLINE_VAR(::nano::detail::common_view_fn, common)
 
 } // namespace views
 
@@ -16105,6 +16105,9 @@ private:
             decltype(detail::filter_view_iter_cat_helper<V>());
         using value_type = iter_value_t<iterator_t<V>>;
         using difference_type = iter_difference_t<iterator_t<V>>;
+        // Extension: legacy typedefs
+        using pointer = iterator_t<V>;
+        using reference = iter_reference_t<iterator_t<V>>;
 
         iterator() = default;
         constexpr iterator(filter_view& parent, iterator_t<V> current)
@@ -16407,6 +16410,9 @@ private:
         using iterator_category = decltype(detail::iota_view_iter_cat_helper<W>());
         using value_type = W;
         using difference_type = detail::iota_diff_t<W>;
+        // Extension: legacy typedefs
+        using pointer = void;
+        using reference = W;
 
         iterator() = default;
 
@@ -16960,11 +16966,13 @@ private:
     public:
         //using iterator_concept = ...
         using iterator_category = decltype(detail::join_view_iter_cat_helper<Base>());
-
         using value_type = range_value_t<range_reference_t<Base>>;
         using difference_type = nano::common_type_t<
             range_difference_t<Base>,
             range_difference_t<range_reference_t<Base>>>;
+        // Extension: legacy typedefs
+        using pointer = iterator_t<Base>;
+        using reference = range_reference_t<range_reference_t<Base>>;
 
         iterator() = default;
 
@@ -17605,6 +17613,9 @@ private:
         };
 
         using difference_type = range_difference_t<Base>;
+        // Extension: legacy typedefs
+        using pointer = void;
+        using reference = value_type;
 
         outer_iterator() = default;
 
@@ -18366,6 +18377,9 @@ private:
         using value_type =
             remove_cvref_t<invoke_result_t<F&, range_reference_t<Base>>>;
         using difference_type = range_difference_t<Base>;
+        // Extension: legacy typedefs
+        using pointer = void;
+        using reference = invoke_result_t<F&, range_reference_t<Base>>;
 
         iterator() = default;
 
