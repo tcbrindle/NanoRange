@@ -167,21 +167,34 @@ private:
 
         constexpr sentinel_t<V> base() const { return end_; }
 
+        // Make these friend functions templates to keep MSVC happy
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
         friend constexpr bool operator==(const iterator& i, const sentinel& s)
         {
             return i.base() == s.end_;
         }
 
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
         friend constexpr bool operator==(const sentinel& s, const iterator& i)
         {
             return i == s;
         }
 
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
         friend constexpr bool operator!=(const iterator& i, const sentinel& s)
         {
             return !(i == s);
         }
 
+#if (defined(_MSC_VER) && _MSC_VER < 1922)
+        template <typename = void>
+#endif
         friend constexpr bool operator!=(const sentinel& s, const iterator& i)
         {
             return !(i == s);
