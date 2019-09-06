@@ -14,8 +14,24 @@ NANO_BEGIN_NAMESPACE
 
 template <typename I, typename O>
 struct copy_result {
-    I in;
-    O out;
+    NANO_NO_UNIQUE_ADDRESS I in;
+    NANO_NO_UNIQUE_ADDRESS O out;
+
+    template <typename I2, typename O2,
+              std::enable_if_t<convertible_to<const I&, I2> &&
+                               convertible_to<const O&, O2>, int> = 0>
+    constexpr operator copy_result<I2, O2>() const &
+    {
+        return {in, out};
+    }
+
+    template <typename I2, typename O2,
+              std::enable_if_t<convertible_to<I, I2> &&
+                               convertible_to<O, O2>, int> = 0>
+    constexpr operator copy_result<I2, O2>() &&
+    {
+        return {std::move(in), std::move(out)};
+    }
 };
 
 namespace detail {

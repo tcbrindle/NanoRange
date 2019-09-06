@@ -15,8 +15,24 @@ NANO_BEGIN_NAMESPACE
 
 template <typename I, typename F>
 struct for_each_result {
-    I in;
-    F fun;
+    NANO_NO_UNIQUE_ADDRESS I in;
+    NANO_NO_UNIQUE_ADDRESS F fun;
+
+    template <typename I2, typename F2,
+              std::enable_if_t<convertible_to<const I&, I2> &&
+                               convertible_to<const F&, F2>, int> = 0>
+    constexpr operator for_each_result<I2, F2>() const &
+    {
+        return {in, fun};
+    }
+
+    template <typename I2, typename F2,
+        std::enable_if_t<convertible_to<I, I2> &&
+                         convertible_to<F, F2>, int> = 0>
+    constexpr operator for_each_result<I2, F2>() &&
+    {
+        return {std::move(in), std::move(fun)};
+    }
 };
 
 namespace detail {
