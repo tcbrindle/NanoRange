@@ -164,64 +164,13 @@ inline namespace ranges                                                        \
 
 NANO_BEGIN_NAMESPACE
 
-namespace detail {
+template <typename T>
+struct remove_cvref {
+    using type = std::remove_cv_t<std::remove_reference_t<T>>;
+};
 
 template <typename T>
-using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
-
-template <typename...>
-using void_t = void;
-
-struct error_t {
-    error_t() = delete;
-    error_t(error_t const&) = delete;
-    error_t& operator=(const error_t&) = delete;
-    ~error_t() = delete;
-};
-
-template <typename Void, template <class...> class Trait, typename... Args>
-struct test_ {
-    using type = error_t;
-};
-
-template <template <class...> class Trait, typename... Args>
-struct test_<void_t<Trait<Args...>>, Trait, Args...> {
-    using type = Trait<Args...>;
-};
-
-template <template <class...> class Trait, typename... Args>
-using test_t = typename test_<void, Trait, Args...>::type;
-
-// Work around GCC5 bug that won't let us specialise variable templates
-template <typename Void, template <class...> class AliasT, typename... Args>
-struct exists_helper : std::false_type{};
-
-template <template <class...> class AliasT, typename... Args>
-struct exists_helper<void_t<AliasT<Args...>>, AliasT, Args...>
-    : std::true_type{};
-
-template <template <class...> class AliasT, typename... Args>
-constexpr bool exists_v = exists_helper<void, AliasT, Args...>::value;
-
-template <typename R, typename... Args,
-          typename = decltype(&R::template requires_<Args...>)>
-auto test_requires(R&) -> void;
-
-template <typename R, typename... Args>
-using test_requires_t = decltype(test_requires<R, Args...>(std::declval<R&>()));
-
-template <typename R, typename... Args>
-constexpr bool requires_ = exists_v<test_requires_t, R, Args...>;
-
-template <bool Expr>
-using requires_expr = std::enable_if_t<Expr, int>;
-
-template <std::size_t I>
-struct priority_tag : priority_tag<I - 1> {
-};
-template <>
-struct priority_tag<0> {
-};
+using remove_cvref_t = typename remove_cvref<T>::type;
 
 template <typename T>
 struct type_identity {
@@ -230,6 +179,54 @@ struct type_identity {
 
 template <typename T>
 using type_identity_t = typename type_identity<T>::type;
+
+namespace detail {
+
+template <bool>
+struct conditional {
+    template <typename T, typename>
+    using type = T;
+};
+
+template <>
+struct conditional<false> {
+    template <typename, typename U>
+    using type = U;
+};
+
+template <bool B, typename T, typename U>
+using conditional_t = typename conditional<B>::template type<T, U>;
+
+template <template <class...> class AliasT, typename... Args>
+auto exists_helper(long) -> std::false_type;
+
+template <template <class...> class AliasT, typename... Args,
+          typename = AliasT<Args...>>
+auto exists_helper(int) -> std::true_type;
+
+template <template <class...> class AliasT, typename... Args>
+inline constexpr bool exists_v = decltype(exists_helper<AliasT, Args...>(0))::value;
+
+template <typename, typename...>
+auto test_requires_fn(long) -> std::false_type;
+
+template <typename R, typename... Args,
+          typename = decltype(&R::template requires_<Args...>)>
+auto test_requires_fn(int) -> std::true_type;
+
+template <typename R, typename... Args>
+inline constexpr bool requires_ = decltype(test_requires_fn<R, Args...>(0))::value;
+
+template <bool Expr>
+using requires_expr = std::enable_if_t<Expr, int>;
+
+template <std::size_t I>
+struct priority_tag : priority_tag<I - 1> {
+};
+
+template <>
+struct priority_tag<0> {
+};
 
 } // namespace detail
 
@@ -271,73 +268,61 @@ using copy_cv_t = typename copy_cv<T, U>::type;
 template <typename T>
 using cref_t = std::add_lvalue_reference_t<const std::remove_reference_t<T>>;
 
-template <typename T>
-using uncvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
-
-template <typename T>
-struct rref_res {
-    using type = T;
-};
-
-template <typename T>
-struct rref_res<T&> {
-    using type = std::remove_reference_t<T>&&;
-};
-
-template <typename T>
-using rref_res_t = typename rref_res<T>::type;
-
 template <typename T, typename U>
-using cond_res_t = decltype(std::declval<bool>() ? std::declval<T (&)()>()()
-                                                 : std::declval<U (&)()>()());
+using cond_res_t = decltype(false ? std::declval<T (&)()>()()
+                                  : std::declval<U (&)()>()());
 
 // For some value of "simple"
-template <typename T, typename U>
-struct simple_common_reference {
-};
+template <typename A, typename B,
+          typename X = std::remove_reference_t<A>,
+          typename Y = std::remove_reference_t<B>,
+          typename = void>
+struct common_ref {};
 
-template <typename T, typename U,
-          typename C = test_t<cond_res_t, copy_cv_t<T, U>&, copy_cv_t<U, T>&>>
-struct lvalue_simple_common_reference
-    : std::enable_if<std::is_reference<C>::value, C> {
-};
+template <typename A, typename B>
+using common_ref_t = typename common_ref<A, B>::type;
 
-template <typename T, typename U>
-using lvalue_scr_t = typename lvalue_simple_common_reference<T, U>::type;
+template <typename A, typename B,
+          typename X = std::remove_reference_t<A>,
+          typename Y = std::remove_reference_t<B>,
+          typename = void>
+struct lval_common_ref {};
 
-template <typename T, typename U>
-struct simple_common_reference<T&, U&> : lvalue_simple_common_reference<T, U> {
-};
-
-template <typename T, typename U, typename LCR = test_t<lvalue_scr_t, T, U>,
-          typename C = rref_res_t<LCR>>
-struct rvalue_simple_common_reference
-    : std::enable_if<std::is_convertible<T&&, C>::value &&
-                         std::is_convertible<U&&, C>::value,
-                     C> {
-};
-
-template <typename T, typename U>
-struct simple_common_reference<T&&, U&&>
-    : rvalue_simple_common_reference<T, U> {
-};
-
-template <typename A, typename B, typename C = test_t<lvalue_scr_t, A, const B>>
-struct mixed_simple_common_reference
-    : std::enable_if<std::is_convertible<B&&, C>::value, C> {
+template <typename A, typename B, typename X, typename Y>
+struct lval_common_ref<A, B, X, Y, std::enable_if_t<
+    std::is_reference_v<cond_res_t<copy_cv_t<X, Y>&, copy_cv_t<Y, X>&>>>>
+{
+    using type = cond_res_t<copy_cv_t<X, Y>&, copy_cv_t<Y, X>&>;
 };
 
 template <typename A, typename B>
-struct simple_common_reference<A&, B&&> : mixed_simple_common_reference<A, B> {
+using lval_common_ref_t = typename lval_common_ref<A, B>::type;
+
+template <typename A, typename B, typename X, typename Y>
+struct common_ref<A&, B&, X, Y> : lval_common_ref<A&, B&> {};
+
+template <typename X, typename Y>
+using rref_cr_helper_t = std::remove_reference_t<lval_common_ref_t<X&, Y&>>&&;
+
+template <typename A, typename B, typename X, typename Y>
+struct common_ref<A&&, B&&, X, Y, std::enable_if_t<
+    std::is_convertible_v<A&&, rref_cr_helper_t<X, Y>> &&
+    std::is_convertible_v<B&&, rref_cr_helper_t<X, Y>>>>
+{
+    using type = rref_cr_helper_t<X, Y>;
 };
 
-template <typename A, typename B>
-struct simple_common_reference<A&&, B&> : simple_common_reference<B&, A&&> {
+template <typename A, typename B, typename X, typename Y>
+struct common_ref<A&&, B&, X, Y, std::enable_if_t<
+    std::is_convertible_v<A&&, lval_common_ref_t<const X&, Y&>>>>
+{
+    using type = lval_common_ref_t<const X&, Y&>;
 };
 
-template <typename T, typename U>
-using simple_common_reference_t = typename simple_common_reference<T, U>::type;
-
+template <typename A, typename B, typename X, typename Y>
+struct common_ref<A&, B&&, X, Y>
+    : common_ref<B&&, A&>
+{};
 
 template <typename>
 struct xref { template <typename U> using type = U; };
@@ -397,8 +382,8 @@ struct common_reference<T0> {
 namespace detail {
 
 template <typename T, typename U>
-constexpr bool has_simple_common_ref_v =
-    exists_v<simple_common_reference_t, T, U>;
+inline constexpr bool has_common_ref_v =
+    exists_v<common_ref_t, T, U>;
 
 template <typename T, typename U>
 using basic_common_ref_t =
@@ -406,25 +391,24 @@ using basic_common_ref_t =
                                     detail::xref<T>::template type, detail::xref<U>::template type>::type;
 
 template <typename T, typename U>
-constexpr bool has_basic_common_ref_v =
+inline constexpr bool has_basic_common_ref_v =
     exists_v<basic_common_ref_t, T, U>;
 
 template <typename T, typename U>
-constexpr bool has_cond_res_v = exists_v<cond_res_t, T, U>;
+inline constexpr bool has_cond_res_v = exists_v<cond_res_t, T, U>;
 
 template <typename T, typename U, typename = void>
 struct binary_common_ref : common_type<T, U> {
 };
 
 template <typename T, typename U>
-struct binary_common_ref<T, U, std::enable_if_t<has_simple_common_ref_v<T, U>>>
-    : simple_common_reference<T, U> {
-};
+struct binary_common_ref<T, U, std::enable_if_t<has_common_ref_v<T, U>>>
+    : common_ref<T, U> {};
 
 template <typename T, typename U>
 struct binary_common_ref<T, U,
                          std::enable_if_t<has_basic_common_ref_v<T, U> &&
-                                          !has_simple_common_ref_v<T, U>>>
+                                          !has_common_ref_v<T, U>>>
 {
     using type = basic_common_ref_t<T, U>;
 };
@@ -433,7 +417,7 @@ template <typename T, typename U>
 struct binary_common_ref<T, U,
                          std::enable_if_t<has_cond_res_v<T, U> &&
                                           !has_basic_common_ref_v<T, U> &&
-                                          !has_simple_common_ref_v<T, U>>>
+                                          !has_common_ref_v<T, U>>>
 {
     using type = cond_res_t<T, U>;
 };
@@ -451,7 +435,7 @@ struct multiple_common_reference {
 };
 
 template <typename T1, typename T2, typename... Rest>
-struct multiple_common_reference<void_t<common_reference_t<T1, T2>>, T1, T2,
+struct multiple_common_reference<std::void_t<common_reference_t<T1, T2>>, T1, T2,
                                  Rest...>
     : common_reference<common_reference_t<T1, T2>, Rest...> {
 };
@@ -539,7 +523,7 @@ template <typename Void, typename...>
 struct multiple_common_type {};
 
 template <typename T1, typename T2, typename... R>
-struct multiple_common_type<void_t<common_type_t<T1, T2>>, T1, T2, R...>
+struct multiple_common_type<std::void_t<common_type_t<T1, T2>>, T1, T2, R...>
     : common_type<common_type_t<T1, T2>, R...> {};
 
 }
@@ -947,7 +931,7 @@ struct boolean_concept {
 } // namespace detail
 
 template <typename B>
-NANO_CONCEPT boolean = movable<detail::remove_cvref_t<B>> &&
+NANO_CONCEPT boolean = movable<remove_cvref_t<B>> &&
     detail::requires_<detail::boolean_concept, B>;
 
 // [concept.equalitycomparable]
@@ -1336,7 +1320,7 @@ struct invoke_result_helper {
 
 template <typename F, typename... Args>
 struct invoke_result_helper<
-    void_t<decltype(nano::invoke(std::declval<F>(), std::declval<Args>()...))>,
+    std::void_t<decltype(nano::invoke(std::declval<F>(), std::declval<Args>()...))>,
     F, Args...> {
     using type =
         decltype(nano::invoke(std::declval<F>(), std::declval<Args>()...));
@@ -1480,7 +1464,7 @@ struct incrementable_traits_helper<void*> {};
 
 template <typename T>
 struct incrementable_traits_helper<T*>
-    : std::conditional_t<std::is_object<T>::value,
+    : detail::conditional_t<std::is_object<T>::value,
             with_difference_type<std::ptrdiff_t>, empty> {
 };
 
@@ -1492,7 +1476,7 @@ template <typename, typename = void>
 struct has_member_difference_type : std::false_type {};
 
 template <typename T>
-struct has_member_difference_type<T, void_t<typename T::difference_type>>
+struct has_member_difference_type<T, std::void_t<typename T::difference_type>>
     : std::true_type{};
 
 template <typename T>
@@ -1539,7 +1523,7 @@ struct readable_traits_helper {};
 
 template <typename T>
 struct readable_traits_helper<T*>
-    : std::conditional_t<std::is_object<T>::value,
+    : detail::conditional_t<std::is_object<T>::value,
             with_value_type<std::remove_cv_t<T>>,
             empty> {};
 
@@ -1553,12 +1537,12 @@ struct readable_traits_helper<const I, std::enable_if_t<!std::is_array<I>::value
 
 template <typename T, typename V = typename T::value_type>
 struct member_value_type
-    : std::conditional_t<std::is_object<V>::value,
+    : detail::conditional_t<std::is_object<V>::value,
             with_value_type<V>, empty> {};
 
 template <typename T, typename E = typename T::element_type>
 struct member_element_type
-    : std::conditional_t<std::is_object<E>::value,
+    : detail::conditional_t<std::is_object<E>::value,
             with_value_type<std::remove_cv_t<E>>, empty> {};
 
 template <typename T>
@@ -1762,7 +1746,7 @@ struct iterator_category_<const T> : iterator_category<T> {
 };
 
 template <typename T>
-struct iterator_category_<T, void_t<typename T::iterator_category>> {
+struct iterator_category_<T, std::void_t<typename T::iterator_category>> {
     using type = typename T::iterator_category;
 };
 
@@ -2452,8 +2436,8 @@ NANO_BEGIN_NAMESPACE
 
 // [range.projected]
 
-template <typename I, typename Proj>
-struct projected;
+//template <typename I, typename Proj>
+//struct projected;
 
 namespace detail {
 
@@ -2468,9 +2452,7 @@ struct projected_helper<
                      indirect_regular_unary_invocable<Proj, I>>> {
     using value_type = remove_cvref_t<indirect_result_t<Proj&, I>>;
 
-    // We shouldn't need to define this, as we only need its return type,
-    // but GCC gets stroppy sometimes.
-    indirect_result_t<Proj&, I> operator*() const { throw 0; }
+    indirect_result_t<Proj&, I> operator*() const;
 };
 
 template <typename, typename, typename = void>
@@ -2485,11 +2467,11 @@ struct projected_difference_t_helper<I, Proj, std::enable_if_t<
 } // namespace detail
 
 template <typename I, typename Proj>
-struct projected : detail::projected_helper<I, Proj> {
-};
+using projected = detail::conditional_t<
+    same_as<Proj, identity>, I, detail::projected_helper<I, Proj>>;
 
 template <typename I, typename Proj>
-struct incrementable_traits<projected<I, Proj>>
+struct incrementable_traits<detail::projected_helper<I, Proj>>
     : detail::projected_difference_t_helper<I, Proj> {};
 
 NANO_END_NAMESPACE
@@ -2986,9 +2968,13 @@ NANO_INLINE_VAR(detail::empty_::fn, empty)
 
 namespace detail {
 
+template <typename, typename = void>
+inline constexpr bool is_object_pointer_v = false;
+
 template <typename P>
-constexpr bool is_object_pointer_v =
-    std::is_pointer<P>::value && std::is_object<test_t<iter_value_t, P>>::value;
+inline constexpr bool is_object_pointer_v<P,
+    std::enable_if_t<std::is_pointer_v<P> &&
+                     std::is_object_v<iter_value_t<P>>>> = true;
 
 namespace data_ {
 
@@ -3128,7 +3114,7 @@ struct sized_range_concept {
 template <typename T>
 NANO_CONCEPT sized_range =
     range<T> &&
-    !disable_sized_range<detail::remove_cvref_t<T>> &&
+    !disable_sized_range<remove_cvref_t<T>> &&
     detail::requires_<detail::sized_range_concept, T>;
 
 
@@ -3335,7 +3321,7 @@ struct dangling {
 };
 
 template <typename R>
-using safe_iterator_t = std::conditional_t<
+using safe_iterator_t = detail::conditional_t<
     detail::forwarding_range<R>, iterator_t<R>, dangling>;
 
 // Helper concepts
@@ -5336,7 +5322,7 @@ struct iterator_traits<::nano::common_iterator<I, S>> {
         std::add_pointer_t<::nano::iter_reference_t<::nano::common_iterator<I, S>>>;
     using reference = ::nano::iter_reference_t<::nano::common_iterator<I, S>>;
     using iterator_category =
-        std::conditional_t<::nano::forward_iterator<I>,
+        ::nano::detail::conditional_t<::nano::forward_iterator<I>,
                            std::forward_iterator_tag,
                            std::input_iterator_tag>;
 };
@@ -5803,7 +5789,7 @@ constexpr auto get(const subrange<I, S, K>& r)
 
 template <typename R>
 using safe_subrange_t =
-    std::conditional_t<detail::forwarding_range<R>,
+    detail::conditional_t<detail::forwarding_range<R>,
                        subrange<iterator_t<R>>, dangling>;
 
 NANO_END_NAMESPACE
@@ -14951,7 +14937,7 @@ inline constexpr bool is_raco<raco_pipe<LHS, RHS>> = true;
 template <typename LHS, typename RHS>
 constexpr auto operator|(LHS&& lhs, RHS&& rhs)
     -> std::enable_if_t<
-        is_raco<uncvref_t<LHS>> && is_raco<uncvref_t<RHS>>,
+        is_raco<remove_cvref_t<LHS>> && is_raco<remove_cvref_t<RHS>>,
         raco_pipe<LHS, RHS>>
 {
     return raco_pipe<LHS, RHS>{std::forward<LHS>(lhs), std::forward<RHS>(rhs)};
@@ -15528,7 +15514,7 @@ public:
     template <typename Arg0, typename... Args,
               std::enable_if_t<
                   constructible_from<std::optional<T>, Arg0, Args...> &&
-                  !same_as<uncvref_t<Arg0>, semiregular_box>, int> = 0>
+                  !same_as<remove_cvref_t<Arg0>, semiregular_box>, int> = 0>
     constexpr semiregular_box(Arg0&& arg0, Args&&... args)
         : std::optional<T>{std::forward<Arg0>(arg0), std::forward<Args>(args)...}
     {}
@@ -15752,7 +15738,7 @@ private:
     struct iterator
     {
     private:
-        using base_t = std::conditional_t<Const, const R, R>;
+        using base_t = detail::conditional_t<Const, const R, R>;
         friend iterator<!Const>;
 
         iterator_t<base_t> current_;
@@ -15760,7 +15746,7 @@ private:
     public:
         using iterator_category = iterator_category_t<iterator_t<base_t>>;
         using value_type =
-            detail::remove_cvref_t<std::tuple_element_t<N, range_value_t<base_t>>>;
+            remove_cvref_t<std::tuple_element_t<N, range_value_t<base_t>>>;
         using difference_type = range_difference_t<base_t>;
 
         iterator() = default;
@@ -16636,8 +16622,7 @@ public:
 
     constexpr explicit iota_view(W value) : value_(value) {}
 
-    constexpr iota_view(detail::type_identity_t<W> value,
-                        detail::type_identity_t<Bound> bound)
+    constexpr iota_view(type_identity_t<W> value, type_identity_t<Bound> bound)
         : value_(value),
           bound_(bound)
     {}
@@ -16936,10 +16921,10 @@ private:
         static constexpr bool ref_is_glvalue =
             std::is_reference_v<range_reference_t<B>>;
 
-        using Base = std::conditional_t<Const, const V, V>;
+        using Base = detail::conditional_t<Const, const V, V>;
 
         // https://github.com/ericniebler/stl2/issues/604
-        using Parent = std::conditional_t<Const && ref_is_glvalue<Base>,
+        using Parent = detail::conditional_t<Const && ref_is_glvalue<Base>,
             const join_view, join_view>;
 
         iterator_t<Base> outer_ = iterator_t<Base>();
@@ -17113,8 +17098,8 @@ private:
     template <bool Const>
     struct sentinel {
     private:
-        using Parent = std::conditional_t<Const, const join_view, join_view>;
-        using Base = std::conditional_t<Const, const V, V>;
+        using Parent = detail::conditional_t<Const, const join_view, join_view>;
+        using Base = detail::conditional_t<Const, const V, V>;
 
         sentinel_t<Base> end_ = sentinel_t<Base>();
 
@@ -17564,8 +17549,8 @@ private:
         friend struct outer_iterator<!Const>;
         friend struct inner_iterator<Const>;
 
-        using Parent = std::conditional_t<Const, const split_view, split_view>;
-        using Base = std::conditional_t<Const, const V, V>;
+        using Parent = detail::conditional_t<Const, const split_view, split_view>;
+        using Base = detail::conditional_t<Const, const V, V>;
         Parent* parent_ = nullptr;
         iterator_t<Base> current_ = iterator_t<Base>();
 
@@ -17594,7 +17579,7 @@ private:
 
     public:
         // FIXME: iterator_concept
-        using iterator_category = std::conditional_t<
+        using iterator_category = detail::conditional_t<
             forward_range<Base>, forward_iterator_tag, input_iterator_tag>;
 
         struct value_type {
@@ -17717,7 +17702,7 @@ private:
     template <bool Const>
     struct inner_iterator {
     private:
-        using Base = std::conditional_t<Const, const V, V>;
+        using Base = detail::conditional_t<Const, const V, V>;
         static constexpr bool NoReallyGccConst = Const;
         outer_iterator<Const> i_ = outer_iterator<NoReallyGccConst>();
         bool incremented_ = false;
@@ -17749,7 +17734,7 @@ private:
         constexpr decltype(auto) get_outer_current() const { return i_.get_current(); }
 
     public:
-        using iterator_category = std::conditional_t<
+        using iterator_category = detail::conditional_t<
             derived_from<iterator_category_t<iterator_t<Base>>, forward_iterator_tag>,
                 forward_iterator_tag,
                 input_iterator_tag>;
@@ -17974,7 +17959,7 @@ private:
     struct sentinel {
     private:
         friend struct sentinel<!Const>;
-        using Base = std::conditional_t<Const, const V, V>;
+        using Base = detail::conditional_t<Const, const V, V>;
         using CI = counted_iterator<iterator_t<Base>>;
 
         sentinel_t<Base> end_ = sentinel_t<Base>();
@@ -18190,7 +18175,7 @@ private:
     struct sentinel {
     private:
         friend struct sentinel<!Const>;
-        using base_t = std::conditional_t<Const, const R, R>;
+        using base_t = detail::conditional_t<Const, const R, R>;
         sentinel_t<base_t> end_ = sentinel_t<base_t>();
         const Pred* pred_{};
 
@@ -18364,8 +18349,8 @@ private:
         friend struct sentinel<Const>;
 
         using Parent =
-            std::conditional_t<Const, const transform_view, transform_view>;
-        using Base = std::conditional_t<Const, const V, V>;
+            detail::conditional_t<Const, const transform_view, transform_view>;
+        using Base = detail::conditional_t<Const, const V, V>;
 
         iterator_t<Base> current_ = iterator_t<Base>();
         Parent* parent_ = nullptr;
@@ -18374,13 +18359,13 @@ private:
             noexcept(nano::invoke(*parent_->fun_, *current_));
 
     public:
-        using iterator_category = std::conditional_t<
+        using iterator_category = detail::conditional_t<
             derived_from<iterator_category_t<iterator_t<Base>>, contiguous_iterator_tag>,
             random_access_iterator_tag,
             iterator_category_t<iterator_t<Base>>>;
 
         using value_type =
-            detail::remove_cvref_t<invoke_result_t<F&, range_reference_t<Base>>>;
+            remove_cvref_t<invoke_result_t<F&, range_reference_t<Base>>>;
         using difference_type = range_difference_t<Base>;
 
         iterator() = default;
@@ -18554,8 +18539,8 @@ private:
         friend struct sentinel<!Const>;
 
         using Parent =
-            std::conditional_t<Const, const transform_view, transform_view>;
-        using Base = std::conditional_t<Const, const V, V>;
+            detail::conditional_t<Const, const transform_view, transform_view>;
+        using Base = detail::conditional_t<Const, const V, V>;
         sentinel_t<Base> end_ = sentinel_t<Base>();
 
     public:
