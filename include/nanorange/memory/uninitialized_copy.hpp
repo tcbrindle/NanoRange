@@ -7,15 +7,13 @@
 #ifndef NANORANGE_MEMORY_UNINITIALIZED_COPY_HPP_INCLUDED
 #define NANORANGE_MEMORY_UNINITIALIZED_COPY_HPP_INCLUDED
 
+#include <nanorange/algorithm/copy.hpp>
 #include <nanorange/memory/destroy.hpp>
 
 NANO_BEGIN_NAMESPACE
 
 template <typename I, typename O>
-struct uninitialized_copy_result {
-    I in;
-    O out;
-};
+using uninitialized_copy_result = copy_result<I, O>;
 
 namespace detail {
 
