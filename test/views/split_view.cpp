@@ -13,6 +13,8 @@
 #include <nanorange/views/empty.hpp>
 #include <nanorange/iterator/istreambuf_iterator.hpp>
 #include <nanorange/views/join.hpp>
+#include <nanorange/views/common.hpp>
+#include <nanorange/views/transform.hpp>
 #include <nanorange/algorithm/equal.hpp>
 #include "../catch.hpp"
 #include "../test_utils.hpp"
@@ -228,6 +230,21 @@ TEST_CASE("views.split") {
 		CHECK(i != sv.end());
 		++i;
 		CHECK(i == sv.end());
+	}
+
+	// Check conversion to vector
+	{
+	    const auto to_string = [](auto&& r) {
+	        auto c = std::forward<decltype(r)>(r) | views::common;
+	        return std::string(begin(c), end(c));
+	    };
+	    const std::string hello = "Hello World";
+	    auto rng = hello
+	        | views::split(' ')
+	        | views::transform(to_string);
+	    static_assert(common_range<decltype(rng)>);
+	    const auto vec = std::vector<std::string>(rng.begin(), rng.end());
+	    ::check_equal(vec, {"Hello", "World"});
 	}
 
 #ifdef _MSC_VER

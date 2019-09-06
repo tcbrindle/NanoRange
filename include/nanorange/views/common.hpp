@@ -143,7 +143,7 @@ inline constexpr bool is_raco<common_view_fn> = true;
 
 namespace views {
 
-NANO_INLINE_VAR(detail::common_view_fn, common)
+NANO_INLINE_VAR(::nano::detail::common_view_fn, common)
 
 } // namespace views
 

@@ -13,6 +13,7 @@
 #include <nanorange/views/filter.hpp>
 #include <nanorange/views/iota.hpp>
 #include <nanorange/views/reverse.hpp>
+#include <nanorange/views/common.hpp>
 
 #include "../catch.hpp"
 #include "../test_utils.hpp"
@@ -73,4 +74,12 @@ TEST_CASE("views.transform") {
             views::iota(0) | views::filter(id) | views::transform(id);
         }
 
+        // Check conversion to vector
+        {
+            auto square = [](int i) { return i * i; };
+
+            auto rng = views::iota(0, 5) | views::transform(square);
+            auto vec = std::vector<int>(begin(rng), end(rng));
+            ::check_equal(vec, {0, 1, 4, 9, 16});
+        }
 }

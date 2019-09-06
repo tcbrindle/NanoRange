@@ -75,4 +75,12 @@ TEST_CASE("views.iota")
 
         ::check_equal(vec, {0, 0, 0, 4, 5});
     }
+
+    {
+        // Check conversion to vector
+        auto rng = nano::views::iota(0, 5);
+        static_assert(nano::common_range<decltype(rng)>);
+        auto vec = std::vector<int>(rng.begin(), rng.end());
+        ::check_equal(vec, {0, 1, 2, 3, 4});
+    }
 }
