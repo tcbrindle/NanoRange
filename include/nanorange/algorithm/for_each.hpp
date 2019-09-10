@@ -15,8 +15,24 @@ NANO_BEGIN_NAMESPACE
 
 template <typename I, typename F>
 struct for_each_result {
-    I in;
-    F fun;
+    NANO_NO_UNIQUE_ADDRESS I in;
+    NANO_NO_UNIQUE_ADDRESS F fun;
+
+    template <typename I2, typename F2,
+              std::enable_if_t<convertible_to<const I&, I2> &&
+                               convertible_to<const F&, F2>, int> = 0>
+    constexpr operator for_each_result<I2, F2>() const &
+    {
+        return {in, fun};
+    }
+
+    template <typename I2, typename F2,
+        std::enable_if_t<convertible_to<I, I2> &&
+                         convertible_to<F, F2>, int> = 0>
+    constexpr operator for_each_result<I2, F2>() &&
+    {
+        return {std::move(in), std::move(fun)};
+    }
 };
 
 namespace detail {
@@ -53,9 +69,8 @@ public:
         for_each_result<safe_iterator_t<Rng>, Fun>>
     operator()(Rng&& rng, Fun fun, Proj proj = Proj{}) const
     {
-        auto res = for_each_fn::impl(nano::begin(rng), nano::end(rng),
-                                     fun, proj);
-        return {std::move(res).in, std::move(res).fun};
+        return for_each_fn::impl(nano::begin(rng), nano::end(rng),
+                                 fun, proj);
     }
 };
 } // namespace detail

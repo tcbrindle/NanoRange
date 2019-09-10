@@ -16,9 +16,27 @@ using unary_transform_result = copy_result<I, O>;
 
 template <typename I1, typename I2, typename O>
 struct binary_transform_result {
-    I1 in1;
-    I2 in2;
-    O out;
+    NANO_NO_UNIQUE_ADDRESS I1 in1;
+    NANO_NO_UNIQUE_ADDRESS I2 in2;
+    NANO_NO_UNIQUE_ADDRESS O out;
+
+    template <typename II1, typename II2, typename O2,
+              std::enable_if_t<convertible_to<const I1&, II1> &&
+                               convertible_to<const I2&, II2> &&
+                               convertible_to<const O&, O2>, int> = 0>
+    constexpr operator binary_transform_result<II1, II2, O2>() const &
+    {
+        return {in1, in2, out};
+    }
+
+    template <typename II1, typename II2, typename O2,
+              std::enable_if_t<convertible_to<I1, II1> &&
+                               convertible_to<I2, II2> &&
+                               convertible_to<O, O2>, int> = 0>
+    constexpr operator binary_transform_result<II1, II2, O2>() &&
+    {
+        return {std::move(in1), std::move(in2), std::move(out)};
+    }
 };
 
 
@@ -97,9 +115,8 @@ public:
         unary_transform_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, F op, Proj proj = Proj{}) const
     {
-        auto ret = transform_fn::unary_impl(nano::begin(rng), nano::end(rng),
-                                            std::move(result), op, proj);
-        return {std::move(ret).in, std::move(ret).out};
+        return transform_fn::unary_impl(nano::begin(rng), nano::end(rng),
+                                        std::move(result), op, proj);
     }
 
     // Binary op, four-legged
@@ -133,10 +150,9 @@ public:
     operator()(Rng1&& rng1, Rng2&& rng2, O result, F op, Proj1 proj1 = Proj1{},
                Proj2 proj2 = Proj2{}) const
     {
-        auto ret = transform_fn::binary_impl4(nano::begin(rng1), nano::end(rng1),
-                                              nano::begin(rng2), nano::end(rng2),
-                                              std::move(result), op, proj1, proj2);
-        return {std::move(ret).in1, std::move(ret).in2, std::move(ret).out};
+        return transform_fn::binary_impl4(nano::begin(rng1), nano::end(rng1),
+                                          nano::begin(rng2), nano::end(rng2),
+                                          std::move(result), op, proj1, proj2);
     }
 
     // Binary op, three-legged
@@ -172,10 +188,9 @@ public:
     operator()(Rng1&& rng1, I2&& first2, O result, F op, Proj1 proj1 = Proj1{},
                Proj2 proj2 = Proj2{}) const
     {
-        auto ret = transform_fn::binary_impl3(nano::begin(rng1), nano::end(rng1),
-                                              std::forward<I2>(first2), std::move(result),
-                                              op, proj1, proj2);
-        return {std::move(ret).in1, std::move(ret).in2, std::move(ret).out};
+        return transform_fn::binary_impl3(nano::begin(rng1), nano::end(rng1),
+                                          std::forward<I2>(first2), std::move(result),
+                                          op, proj1, proj2);
     }
 };
 

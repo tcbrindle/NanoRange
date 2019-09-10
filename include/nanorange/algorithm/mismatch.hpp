@@ -15,8 +15,24 @@ NANO_BEGIN_NAMESPACE
 
 template <typename I1, typename I2>
 struct mismatch_result {
-    I1 in1;
-    I2 in2;
+    NANO_NO_UNIQUE_ADDRESS I1 in1;
+    NANO_NO_UNIQUE_ADDRESS I2 in2;
+
+    template <typename II1, typename II2,
+        std::enable_if_t<convertible_to<const I1&, II1> &&
+                         convertible_to<const I2&, II2>, int> = 0>
+    constexpr operator mismatch_result<II1, II2>() const &
+    {
+        return {in1, in2};
+    }
+
+    template <typename II1, typename II2,
+        std::enable_if_t<convertible_to<I1, II1> &&
+                         convertible_to<I2, II2>, int> = 0>
+    constexpr operator mismatch_result<II1, II2>() &&
+    {
+        return {std::move(in1), std::move(in2)};
+    }
 };
 
 namespace detail {
@@ -86,10 +102,9 @@ public:
     operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
-        auto res = mismatch_fn::impl3(nano::begin(rng1), nano::end(rng1),
-                                      std::forward<I2>(first2), pred,
-                                      proj1, proj2);
-        return {std::move(res).in1, std::move(res).in2};
+        return mismatch_fn::impl3(nano::begin(rng1), nano::end(rng1),
+                                  std::forward<I2>(first2), pred,
+                                  proj1, proj2);
     }
 
     // four legged
@@ -120,10 +135,9 @@ public:
     operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
-        auto res = mismatch_fn::impl4(nano::begin(rng1), nano::end(rng1),
-                                      nano::begin(rng2), nano::end(rng2),
-                                      pred, proj1, proj2);
-        return {std::move(res).in1, std::move(res).in2};
+        return mismatch_fn::impl4(nano::begin(rng1), nano::end(rng1),
+                                  nano::begin(rng2), nano::end(rng2),
+                                  pred, proj1, proj2);
     }
 };
 

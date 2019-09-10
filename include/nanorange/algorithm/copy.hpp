@@ -14,8 +14,24 @@ NANO_BEGIN_NAMESPACE
 
 template <typename I, typename O>
 struct copy_result {
-    I in;
-    O out;
+    NANO_NO_UNIQUE_ADDRESS I in;
+    NANO_NO_UNIQUE_ADDRESS O out;
+
+    template <typename I2, typename O2,
+              std::enable_if_t<convertible_to<const I&, I2> &&
+                               convertible_to<const O&, O2>, int> = 0>
+    constexpr operator copy_result<I2, O2>() const &
+    {
+        return {in, out};
+    }
+
+    template <typename I2, typename O2,
+              std::enable_if_t<convertible_to<I, I2> &&
+                               convertible_to<O, O2>, int> = 0>
+    constexpr operator copy_result<I2, O2>() &&
+    {
+        return {std::move(in), std::move(out)};
+    }
 };
 
 namespace detail {
@@ -70,9 +86,8 @@ public:
                                copy_result<safe_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
-        auto res = copy_fn::impl(nano::begin(rng), nano::end(rng),
+        return copy_fn::impl(nano::begin(rng), nano::end(rng),
                              std::move(result), priority_tag<1>{});
-        return {std::move(res).in, std::move(res).out};
     }
 };
 
@@ -138,10 +153,9 @@ public:
         copy_if_result<I, O>>
     operator()(I first, S last, O result, Pred pred, Proj proj = Proj{}) const
     {
-        auto res = copy_if_fn::impl(std::move(first), std::move(last),
-                                    std::move(result), std::move(pred),
-                                    std::move(proj));
-        return {std::move(res).in, std::move(res).out};
+        return copy_if_fn::impl(std::move(first), std::move(last),
+                                std::move(result), std::move(pred),
+                                std::move(proj));
     }
 
     template <typename Rng, typename O, typename Proj = identity, typename Pred>
@@ -201,9 +215,8 @@ public:
                                copy_backward_result<safe_iterator_t<Rng>, I>>
     operator()(Rng&& rng, I result) const
     {
-        auto res = copy_backward_fn::impl(nano::begin(rng), nano::end(rng),
-                                          std::move(result));
-        return {std::move(res).in, std::move(res).out};
+        return copy_backward_fn::impl(nano::begin(rng), nano::end(rng),
+                                      std::move(result));
     }
 };
 

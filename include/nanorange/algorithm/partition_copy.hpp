@@ -13,9 +13,27 @@ NANO_BEGIN_NAMESPACE
 
 template <typename I, typename O1, typename O2>
 struct partition_copy_result {
-    I in;
-    O1 out1;
-    O2 out2;
+    NANO_NO_UNIQUE_ADDRESS I in;
+    NANO_NO_UNIQUE_ADDRESS O1 out1;
+    NANO_NO_UNIQUE_ADDRESS O2 out2;
+
+    template <typename II, typename OO1, typename OO2,
+              std::enable_if_t<convertible_to<const I&, II> &&
+                               convertible_to<const O1&, OO1> &&
+                               convertible_to<const O2&, OO2>, int> = 0>
+    constexpr operator partition_copy_result<II, OO1, OO2>() const &
+    {
+        return {in, out1, out2};
+    }
+
+    template <typename II, typename OO1, typename OO2,
+        std::enable_if_t<convertible_to<I, II> &&
+                         convertible_to<O1, OO1> &&
+                         convertible_to<O2, OO2>, int> = 0>
+    constexpr operator partition_copy_result<II, OO1, OO2>() &&
+    {
+        return {std::move(in), std::move(out1), std::move(out2)};
+    }
 };
 
 namespace detail {
@@ -73,10 +91,9 @@ public:
     operator()(Rng&& rng, O1 out_true, O2 out_false, Pred pred,
             Proj proj = Proj{}) const
     {
-        auto res = partition_copy_fn::impl(nano::begin(rng), nano::end(rng),
-                                           std::move(out_true), std::move(out_false),
-                                           pred, proj);
-        return {std::move(res).in, std::move(res).out1, std::move(res).out2};
+        return partition_copy_fn::impl(nano::begin(rng), nano::end(rng),
+                                       std::move(out_true), std::move(out_false),
+                                       pred, proj);
     }
 };
 

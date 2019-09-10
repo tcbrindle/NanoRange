@@ -17,6 +17,16 @@
 #define NANO_DEPRECATED_FOR(x) [[deprecated(x)]]
 #endif
 
+#ifdef __has_cpp_attribute
+#if __has_cpp_attribute(no_unique_address) >= 201803L
+#define NANO_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#else
+#define NANO_NO_UNIQUE_ADDRESS
+#endif // __has_cpp_attribute(no_unique_address)
+#else
+#define NANO_NO_UNIQUE_ADDRESS
+#endif // defined(__has_cpp_attribute)
+
 #define NANO_CONCEPT inline constexpr bool
 
 #define NANO_BEGIN_NAMESPACE                                                   \

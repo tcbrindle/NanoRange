@@ -53,7 +53,7 @@ void test_iter()
 		bool x;
 		do {
 			std::copy(ia, ia + e, prev);
-			x = ranges::next_permutation(Iter(ia), Sent(ia + e));
+			x = ranges::next_permutation(Iter(ia), Sent(ia + e)).found;
 			if (e > 1) {
 				if (x)
 					CHECK(std::lexicographical_compare(prev, prev + e, ia,
@@ -81,7 +81,7 @@ void test_range()
 		do {
 			std::copy(ia, ia + e, prev);
 			x = ranges::next_permutation(
-					ranges::subrange(Iter(ia), Sent(ia + e)));
+					ranges::subrange(Iter(ia), Sent(ia + e))).found;
 			if (e > 1) {
 				if (x)
 					CHECK(std::lexicographical_compare(prev, prev + e, ia,
@@ -109,7 +109,7 @@ void test_iter_comp()
 		bool x;
 		do {
 			std::copy(ia, ia + e, prev);
-			x = ranges::next_permutation(Iter(ia), Sent(ia + e), C());
+			x = ranges::next_permutation(Iter(ia), Sent(ia + e), C()).found;
 			if (e > 1) {
 				if (x)
 					CHECK(std::lexicographical_compare(prev, prev + e, ia,
@@ -138,7 +138,7 @@ void test_range_comp()
 		do {
 			std::copy(ia, ia + e, prev);
 			x = ranges::next_permutation(
-					ranges::subrange(Iter(ia), Sent(ia + e)), C());
+					ranges::subrange(Iter(ia), Sent(ia + e)), C()).found;
 			if (e > 1) {
 				if (x)
 					CHECK(std::lexicographical_compare(prev, prev + e, ia,
@@ -210,11 +210,11 @@ TEST_CASE("alg.next_permutation")
 
 	typedef std::greater<int> C;
 	std::pair<int, c_str> ia[] = {{6, {"six"}}, {5,{"five"}}, {4,{"four"}}, {3,{"three"}}, {2,{"two"}}, {1,{"one"}}};
-	CHECK(ranges::next_permutation(ia, C(), &std::pair<int,c_str>::first));
+	CHECK(ranges::next_permutation(ia, C(), &std::pair<int,c_str>::first).found);
 	::check_equal<std::pair<int, c_str>>(ia, {{6, {"six"}}, {5,{"five"}}, {4,{"four"}}, {3,{"three"}}, {1,{"one"}}, {2,{"two"}}});
-	CHECK(ranges::next_permutation(ia, C(), &std::pair<int,c_str>::first));
+	CHECK(ranges::next_permutation(ia, C(), &std::pair<int,c_str>::first).found);
 	::check_equal<std::pair<int, c_str>>(ia, {{6, {"six"}}, {5,{"five"}}, {4,{"four"}}, {2,{"two"}}, {3,{"three"}}, {1,{"one"}}});
-	CHECK(ranges::next_permutation(ia, C(), &std::pair<int,c_str>::first));
+	CHECK(ranges::next_permutation(ia, C(), &std::pair<int,c_str>::first).found);
 	::check_equal<std::pair<int, c_str>>(ia, {{6, {"six"}}, {5,{"five"}}, {4,{"four"}}, {2,{"two"}}, {1,{"one"}}, {3,{"three"}}});
 	// etc..
 }
