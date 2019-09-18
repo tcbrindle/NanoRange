@@ -212,13 +212,6 @@ int main()
 }
 ```
 
-## What's missing ##
-
-NanoRange is a new library, and certain features haven't been implemented yet.
-
-In particular, NanoRange doesn't yet provide any of the Views from [P0896].
-These will be added as the library evolves.
-
 ## Ranges papers ##
 
 The Ranges proposals have been consolidated into two main papers:
