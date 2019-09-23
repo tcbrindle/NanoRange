@@ -43,9 +43,28 @@ using copy_cv_t = typename copy_cv<T, U>::type;
 template <typename T>
 using cref_t = std::add_lvalue_reference_t<const std::remove_reference_t<T>>;
 
+// Workaround for "term does not evaluate to a function taking 0 arguments"
+// error in MSVC 19.22 (issue #75)
+#if defined(_MSC_VER) && _MSC_VER >= 1922
+template <typename, typename, typename = void>
+struct cond_res {};
+
+template <typename T, typename U>
+struct cond_res<T, U, std::void_t<decltype(false ? std::declval<T (&)()>()()
+                                                 : std::declval<U (&)()>()())>>
+{
+    using type = decltype(false ? std::declval<T (&)()>()()
+                                : std::declval<U (&)()>()());
+};
+
+template <typename T, typename U>
+using cond_res_t = typename cond_res<T, U>::type;
+#else
 template <typename T, typename U>
 using cond_res_t = decltype(false ? std::declval<T (&)()>()()
                                   : std::declval<U (&)()>()());
+#endif
+
 
 // For some value of "simple"
 template <typename A, typename B,
