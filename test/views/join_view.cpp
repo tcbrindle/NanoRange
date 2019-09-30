@@ -11,6 +11,7 @@
 //
 #include <nanorange/views/join.hpp>
 #include <nanorange/views/iota.hpp>
+#include <nanorange/views/single.hpp>
 #include <nanorange/views/transform.hpp>
 #include <nanorange/views/filter.hpp>
 #include <nanorange/algorithm/count.hpp>
@@ -79,13 +80,16 @@ TEST_CASE("views.join")
 		static_assert(!forward_range<decltype(rng2)>);
 		static_assert(!common_range<decltype(rng2)>);
 	}
-
 	// Check conversion to string
 	{
-	    const std::vector<std::string> vec{"the", "quick", "brown", "fox"};
-            auto rng = vec | views::join;
-            static_assert(common_range<decltype(rng)>);
-            const std::string out(rng.begin(), rng.end());
-            CHECK(out == "thequickbrownfox");
+		const std::vector<std::string> vec{"the", "quick", "brown", "fox"};
+		auto rng = vec | views::join;
+		static_assert(common_range<decltype(rng)>);
+		const std::string out(rng.begin(), rng.end());
+		CHECK(out == "thequickbrownfox");
+	}
+	{
+		auto rng = views::single(std::vector{1, 2, 3}) | views::join;
+		::check_equal(rng, {1, 2, 3});
 	}
 }
