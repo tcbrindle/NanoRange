@@ -125,7 +125,7 @@ private:
 
         iterator() = default;
 
-        constexpr iterator(Parent& parent, iterator_t<V> outer)
+        constexpr iterator(Parent& parent, iterator_t<Base> outer)
             : outer_(std::move(outer)),
               parent_(std::addressof(parent))
         {
