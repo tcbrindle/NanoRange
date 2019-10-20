@@ -170,10 +170,10 @@ install:
 before_script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir -p -v build
-  - cd build
-  - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=$COMPILER
 
 script:
+  - cd build
+  - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=$COMPILER
   - cmake --build . --target test_nanorange -- -j2
   - ctest -j2
 

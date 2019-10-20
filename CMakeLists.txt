@@ -6,7 +6,7 @@ project(nanorange LANGUAGES CXX VERSION 0.1.0)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 option(ENABLE_BENCHMARKS "Build benchmarking support" Off)
-option(BUILD_TOOLS "Build tools" FALSE)
+option(BUILD_TOOLS "Build tools" $ENV{BUILD_SINGLE_HEADER})
 option(USE_SINGLE_HEADER "Use single header" FALSE)
 option(DO_INSTALL "Install the library" FALSE)
 
