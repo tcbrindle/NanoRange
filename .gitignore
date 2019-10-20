@@ -23,4 +23,5 @@ cmake-build*/
 .vs/
 CMakeSettings.json
 
-
+# conan
+.conan/test_package/build

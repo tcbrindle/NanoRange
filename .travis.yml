@@ -117,6 +117,19 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-5.0
 
+    # Conan
+    - language: python
+      python:
+        - "3.7"
+      dist: xenial
+      install:
+        - pip install conan==1.10.2 conan-package-tools
+      env:
+        - CONAN_GCC_VERSIONS=8
+        - CONAN_DOCKER_IMAGE=conanio/gcc8
+      script:
+        - python .conan/build.py
+
 install:
   - DEPS_DIR="${HOME}/deps"
   - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
