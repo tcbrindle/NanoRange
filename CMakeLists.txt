@@ -275,8 +275,8 @@ if (ENABLE_BENCHMARKS)
     add_subdirectory(benchmarks)
 endif()
 
+include(CTest)
 if (BUILD_TESTING)
-    enable_testing()
     add_subdirectory(test)
 endif()
 
