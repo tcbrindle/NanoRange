@@ -47,7 +47,17 @@ matrix:
     # Linux builds
     #
     # GCC 9
-    - env: COMPILER=g++-9 BUILD_SINGLE_HEADER=true
+    - language: python
+      python:
+        - "3.7"
+      dist: xenial
+      install:
+        - pip install conan==1.10.2 conan-package-tools
+      env:
+        - COMPILER=g++-9 
+        - BUILD_SINGLE_HEADER=true
+        - CONAN_GCC_VERSIONS=9
+        - CONAN_DOCKER_IMAGE=conanio/gcc9
       addons:
         apt:
           packages:
@@ -117,19 +127,6 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-5.0
 
-    # Conan
-    - language: python
-      python:
-        - "3.7"
-      dist: xenial
-      install:
-        - pip install conan==1.10.2 conan-package-tools
-      env:
-        - CONAN_GCC_VERSIONS=8
-        - CONAN_DOCKER_IMAGE=conanio/gcc8
-      script:
-        - python .conan/build.py
-
 install:
   - DEPS_DIR="${HOME}/deps"
   - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
@@ -196,8 +193,9 @@ after_success:
             # Suppress output to avoid leaking the token
             travis_retry git push origin master &>/dev/null
             popd
-          fi
         fi
+        python .conan/build.py
+      fi
 
 
 notifications:
