@@ -5,7 +5,7 @@
 
 image:
   - Visual Studio 2017
-  - Visual Studio 2019 Preview
+  - Visual Studio 2019
 
 # Do not build branches of the form "pr/*". By prefixing pull requests coming
 # from branches inside the repository with pr/, this avoids building both the
