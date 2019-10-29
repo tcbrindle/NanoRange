@@ -6,6 +6,7 @@ import re
 from cpt.packager import ConanMultiPackager
 from cpt.ci_manager import CIManager
 from cpt.printer import Printer
+from conans import tools
 
 
 class BuilderSettings(object):
@@ -46,29 +47,10 @@ class BuilderSettings(object):
         return os.getenv("CONAN_STABLE_BRANCH_PATTERN", r"v\d+\.\d+\.\d+")
 
     @property
-    def reference(self):
-        """ Read project version from branch create Conan reference
-        """
-        return os.getenv("CONAN_REFERENCE", "nanorange/{}".format(self._version))
-
-    @property
     def channel(self):
         """ Default Conan package channel when not stable
         """
         return os.getenv("CONAN_CHANNEL", "testing")
-
-    @property
-    def _version(self):
-        """ Get version name from cmake file
-        """
-        pattern = re.compile(r"project\(nanorange LANGUAGES CXX VERSION (\d+\.\d+\.\d+)\)")
-        version = "latest"
-        with open("CMakeLists.txt") as file:
-            for line in file:
-                result = pattern.search(line)
-                if result:
-                    version = result.group(1)
-        return version
 
     @property
     def _branch(self):
@@ -82,7 +64,6 @@ class BuilderSettings(object):
 if __name__ == "__main__":
     settings = BuilderSettings()
     builder = ConanMultiPackager(
-        reference=settings.reference,
         channel=settings.channel,
         upload=settings.upload,
         upload_only_when_stable=settings.upload_only_when_stable,

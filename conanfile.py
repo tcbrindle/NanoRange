@@ -1,9 +1,16 @@
 from conans import ConanFile, CMake, tools
 import ptvsd
 
+def get_version():
+    git = tools.Git()
+    try:
+        return git.run("rev-parse --short=8 HEAD")
+    except:
+        return None
+
 class NanorangeConan(ConanFile):
     name = "nanorange"
-    version = "0.1.0"
+    version = get_version()
     license = "BSL-1.0"
     author = "Tristan Brindle (tcbrindle at gmail dot com)"
     url = "https://github.com/tcbrindle/NanoRange"

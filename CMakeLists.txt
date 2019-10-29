@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.1)
 
-project(nanorange LANGUAGES CXX VERSION 0.1.0)
+project(nanorange CXX)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -239,14 +239,14 @@ if (DO_INSTALL)
     # indirectly by temporarily redefining `CMAKE_SIZEOF_VOID_P` to an
     # empty string. Note that just undefining the variable could be
     # insufficient in cases where the variable was already in CMake cache
-    set(NANORANGE_CMAKE_SIZEOF_VOID_P ${CMAKE_SIZEOF_VOID_P})
-    set(CMAKE_SIZEOF_VOID_P "")
-    write_basic_package_version_file(
-      "${CMAKE_CURRENT_BINARY_DIR}/nanorangeConfigVersion.cmake"
-      COMPATIBILITY
-        SameMajorVersion
-    )
-    set(CMAKE_SIZEOF_VOID_P ${NANORANGE_CMAKE_SIZEOF_VOID_P})
+    # set(NANORANGE_CMAKE_SIZEOF_VOID_P ${CMAKE_SIZEOF_VOID_P})
+    # set(CMAKE_SIZEOF_VOID_P "")
+    # write_basic_package_version_file(
+    #   "${CMAKE_CURRENT_BINARY_DIR}/nanorangeConfigVersion.cmake"
+    #   COMPATIBILITY
+    #     SameMajorVersion
+    # )
+    # set(CMAKE_SIZEOF_VOID_P ${NANORANGE_CMAKE_SIZEOF_VOID_P})
 
     install(
         DIRECTORY
@@ -258,7 +258,7 @@ if (DO_INSTALL)
     install(
         FILES
             "${CMAKE_CURRENT_BINARY_DIR}/nanorangeConfig.cmake"
-            "${CMAKE_CURRENT_BINARY_DIR}/nanorangeConfigVersion.cmake"
+            # "${CMAKE_CURRENT_BINARY_DIR}/nanorangeConfigVersion.cmake"
         DESTINATION
             ${NANORANGE_CMAKE_CONFIG_DESTINATION}
     )
