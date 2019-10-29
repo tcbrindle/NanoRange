@@ -1,5 +1,4 @@
 from conans import ConanFile, CMake, tools
-import ptvsd
 
 def get_version():
     git = tools.Git()
@@ -19,7 +18,6 @@ class NanorangeConan(ConanFile):
     generators = "cmake"
 
     def package(self):
-        ptvsd.break_into_debugger()
         self.copy("", "", "")
         cmake = CMake(self)
         cmake.definitions["BUILD_TESTING"] = "OFF"

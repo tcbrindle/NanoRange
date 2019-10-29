@@ -52,7 +52,7 @@ matrix:
         - "3.7"
       dist: xenial
       install:
-        - pip install conan==1.10.2 conan-package-tools
+        - pip install conan-package-tools
       env:
         - COMPILER=g++-9 
         - BUILD_SINGLE_HEADER=true

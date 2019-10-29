@@ -24,7 +24,7 @@ class BuilderSettings(object):
 
     @property
     def upload(self):
-        """ Set Catch2 repository to be used on upload.
+        """ Set repository to be used on upload.
             The upload server address could be customized by env var
             CONAN_UPLOAD. If not defined, the method will check the branch name.
             Only master or CONAN_STABLE_BRANCH_PATTERN will be accepted.
