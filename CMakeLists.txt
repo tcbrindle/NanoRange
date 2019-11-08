@@ -202,7 +202,7 @@ if (DO_INSTALL)
 
     include(CMakePackageConfigHelpers)
     configure_package_config_file(
-        ${CMAKE_CURRENT_LIST_DIR}/CMake/nanorangeConfig.cmake.in
+        ${CMAKE_CURRENT_LIST_DIR}/cmake/nanorangeConfig.cmake.in
         ${CMAKE_CURRENT_BINARY_DIR}/nanorangeConfig.cmake
         INSTALL_DESTINATION
             ${NANORANGE_CMAKE_CONFIG_DESTINATION}
@@ -265,7 +265,7 @@ if (DO_INSTALL)
 
     install(
         FILES
-            License_1_0.txt
+            LICENSE_1_0.txt
         DESTINATION
             "${CMAKE_INSTALL_PREFIX}/licenses"
     )
