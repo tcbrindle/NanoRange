@@ -47,7 +47,17 @@ matrix:
     # Linux builds
     #
     # GCC 9
-    - env: COMPILER=g++-9 BUILD_SINGLE_HEADER=true
+    - language: python
+      python:
+        - "3.7"
+      dist: xenial
+      install:
+        - pip install conan-package-tools
+      env:
+        - COMPILER=g++-9 
+        - BUILD_SINGLE_HEADER=true
+        - CONAN_GCC_VERSIONS=9
+        - CONAN_DOCKER_IMAGE=conanio/gcc9
       addons:
         apt:
           packages:
@@ -157,10 +167,10 @@ install:
 before_script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir -p -v build
-  - cd build
-  - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=$COMPILER
 
 script:
+  - cd build
+  - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=$COMPILER
   - cmake --build . --target test_nanorange -- -j2
   - ctest -j2
 
@@ -183,8 +193,9 @@ after_success:
             # Suppress output to avoid leaking the token
             travis_retry git push origin master &>/dev/null
             popd
-          fi
-        fi
+        python .conan/build.py
+      fi
+    fi
 
 
 notifications:

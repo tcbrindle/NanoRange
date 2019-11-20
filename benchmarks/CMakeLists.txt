@@ -1,8 +1,4 @@
 
-if (NOT ${ENABLE_BENCHMARKS})
-    return()
-endif()
-
 find_package(benchmark REQUIRED)
 
 if (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Release")

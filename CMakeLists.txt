@@ -5,14 +5,22 @@ project(nanorange CXX)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
-enable_testing()
-
 option(ENABLE_BENCHMARKS "Build benchmarking support" Off)
+option(BUILD_TOOLS "Build tools" $ENV{BUILD_SINGLE_HEADER})
+option(USE_SINGLE_HEADER "Use single header" FALSE)
+option(DO_INSTALL "Install the library" FALSE)
 
 set(CMAKE_CXX_EXTENSIONS Off)
 
 add_library(nanorange INTERFACE)
-target_sources(nanorange INTERFACE
+if (USE_SINGLE_HEADER)
+    target_include_directories(nanorange
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/single_include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
+else ()
+    target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange.hpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/adjacent_find.hpp
@@ -179,15 +187,99 @@ target_sources(nanorange INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/type_traits.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/utility.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views.hpp
-)
-target_include_directories(nanorange INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_compile_features(nanorange INTERFACE cxx_std_17)
+    )
+    target_include_directories(nanorange INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+endif()
 
+target_compile_features(nanorange INTERFACE cxx_std_17)
 
 if (MSVC)
     target_compile_options(nanorange INTERFACE /permissive-)
 endif()
 
-add_subdirectory(benchmarks)
-add_subdirectory(test)
-add_subdirectory(tools)
+if (DO_INSTALL)
+    set(NANORANGE_CMAKE_CONFIG_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/nanorange")
+
+    include(CMakePackageConfigHelpers)
+    configure_package_config_file(
+        ${CMAKE_CURRENT_LIST_DIR}/cmake/nanorangeConfig.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/nanorangeConfig.cmake
+        INSTALL_DESTINATION
+            ${NANORANGE_CMAKE_CONFIG_DESTINATION}
+    )
+
+
+    # create and install an export set for nanorange target as nanorange::nanorange
+    install(
+        TARGETS
+            nanorange
+        EXPORT
+            nanorangeTargets
+        DESTINATION
+            ${CMAKE_INSTALL_LIBDIR}
+    )
+
+
+    install(
+        EXPORT
+            nanorangeTargets
+        NAMESPACE
+            nanorange::
+        DESTINATION
+            ${NANORANGE_CMAKE_CONFIG_DESTINATION}
+    )
+
+    # By default, FooConfigVersion is tied to architecture that it was
+    # generated on. Because nanorange is header-only, it is arch-independent
+    # and thus nanorangeConfigVersion should not be tied to the architecture
+    # it was generated on.
+    #
+    # CMake does not provide a direct customization point for this in
+    # `write_basic_package_version_file`, but it can be accomplished
+    # indirectly by temporarily redefining `CMAKE_SIZEOF_VOID_P` to an
+    # empty string. Note that just undefining the variable could be
+    # insufficient in cases where the variable was already in CMake cache
+    # set(NANORANGE_CMAKE_SIZEOF_VOID_P ${CMAKE_SIZEOF_VOID_P})
+    # set(CMAKE_SIZEOF_VOID_P "")
+    # write_basic_package_version_file(
+    #   "${CMAKE_CURRENT_BINARY_DIR}/nanorangeConfigVersion.cmake"
+    #   COMPATIBILITY
+    #     SameMajorVersion
+    # )
+    # set(CMAKE_SIZEOF_VOID_P ${NANORANGE_CMAKE_SIZEOF_VOID_P})
+
+    install(
+        DIRECTORY
+            "single_include/"
+        DESTINATION
+            "${CMAKE_INSTALL_INCLUDEDIR}"
+    )
+    
+    install(
+        FILES
+            "${CMAKE_CURRENT_BINARY_DIR}/nanorangeConfig.cmake"
+            # "${CMAKE_CURRENT_BINARY_DIR}/nanorangeConfigVersion.cmake"
+        DESTINATION
+            ${NANORANGE_CMAKE_CONFIG_DESTINATION}
+    )
+
+    install(
+        FILES
+            LICENSE_1_0.txt
+        DESTINATION
+            "${CMAKE_INSTALL_PREFIX}/licenses"
+    )
+endif()
+
+if (ENABLE_BENCHMARKS)
+    add_subdirectory(benchmarks)
+endif()
+
+include(CTest)
+if (BUILD_TESTING)
+    add_subdirectory(test)
+endif()
+
+if (BUILD_TOOLS)
+    add_subdirectory(tools)
+endif()
