@@ -34,6 +34,8 @@ although there doesn't seem to be [too much difference](https://github.com/tcbri
 at present. (In any case, the single-header version is similar to what you'll
 get when you `#include <algorithm>` in C++20).
 
+If you use [Conan](https://conan.io) you can find the latest testing package at [bintray](https://bintray.com/dvirtz/conan/nanorange%3Atcbrindle) or just use the nanorange/20191001 package in conan-center.
+
 Finally, if you use [vcpkg], you can install the latest version of NanoRange from
 master using
 
