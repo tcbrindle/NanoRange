@@ -15119,8 +15119,9 @@ public:
 
     constexpr sentinel_t<R> end() const { return ranges::end(*r_); }
 
-    constexpr auto empty() const
-        -> decltype(static_cast<bool>(ranges::empty(*r_)))
+    template <typename RR = R,
+              typename = decltype(ranges::empty(std::declval<RR&>()))>
+    constexpr bool empty() const
     {
         return ranges::empty(*r_);
     }
