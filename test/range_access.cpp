@@ -139,11 +139,15 @@ void test()
                                   const int*>);
 
     // Ill-formed: array rvalue
+    // MSVC bug handing rvalue-reference-to-array types
+    // https://developercommunity.visualstudio.com/content/problem/203305/rvalue-reference-to-array-can-bind-to-lvalue-refer.html
+#if !(defined(_MSC_VER) && _MSC_VER < 1923)
     static_assert(!CanBegin<int(&&)[2]>);
     static_assert(!CanBegin<const int(&&)[2]>);
 
     static_assert(!CanCBegin<int(&&)[2]>);
     static_assert(!CanCBegin<const int(&&)[2]>);
+#endif
 
     // Valid: only member begin
     static_assert(CanBegin<A&>);

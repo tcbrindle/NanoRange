@@ -15,6 +15,7 @@
 
 #include <array>
 #include <map>
+#include <string_view>
 #include <unordered_map>
 
 #include "../catch.hpp"
