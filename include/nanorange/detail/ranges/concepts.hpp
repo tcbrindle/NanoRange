@@ -59,9 +59,8 @@ template <typename CharT, typename Traits>
 inline constexpr bool
     enable_borrowed_range<std::basic_string_view<CharT, Traits>> = true;
 
-template <typename R>
-using iterator_t = std::enable_if_t<range<R>,
-    decltype(ranges::begin(std::declval<R&>()))>;
+template <typename T>
+using iterator_t = decltype(ranges::begin(std::declval<T&>()));
 
 template <typename R>
 using sentinel_t = std::enable_if_t<range<R>,
