@@ -41,7 +41,7 @@ public:
     template <typename Rng, typename F>
     constexpr std::enable_if_t<invocable<F&> &&
                                    output_range<Rng, invoke_result_t<F&>>,
-                               safe_iterator_t<Rng>>
+                               borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, F gen) const
     {
         return generate_fn::impl(nano::begin(rng), nano::end(rng), gen);

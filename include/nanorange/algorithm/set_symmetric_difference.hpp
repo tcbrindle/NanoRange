@@ -90,8 +90,8 @@ public:
         input_range<Rng2> &&
         weakly_incrementable<O> &&
         mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp, Proj1, Proj2>,
-        set_symmetric_difference_result<safe_iterator_t<Rng1>,
-                                        safe_iterator_t<Rng2>, O>>
+        set_symmetric_difference_result<borrowed_iterator_t<Rng1>,
+                                        borrowed_iterator_t<Rng2>, O>>
     operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {

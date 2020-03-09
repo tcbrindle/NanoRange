@@ -53,7 +53,7 @@ public:
         input_range<Rng> && weakly_incrementable<O> &&
             indirectly_copyable<iterator_t<Rng>, O> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        remove_copy_if_result<safe_iterator_t<Rng>, O>>
+        remove_copy_if_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, Pred pred, Proj proj = Proj{}) const
     {
         return remove_copy_if_fn::impl(nano::begin(rng), nano::end(rng),

@@ -44,7 +44,7 @@ public:
     template <typename Rng>
     std::enable_if_t<no_throw_input_range<Rng> &&
         destructible<iter_value_t<iterator_t<Rng>>>,
-        safe_iterator_t<Rng>>
+                     borrowed_iterator_t<Rng>>
     operator()(Rng&& rng) const noexcept
     {
         return destroy_fn::impl(nano::begin(rng), nano::end(rng));

@@ -52,7 +52,7 @@ public:
         forward_range<Rng> && permutable<iterator_t<Rng>> &&
             indirect_relation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T*>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
     {
         return remove_fn::impl(nano::begin(rng), nano::end(rng), value, proj);

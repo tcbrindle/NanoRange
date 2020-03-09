@@ -51,7 +51,8 @@ public:
 
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<random_access_range<Rng> &&
-                                   sortable<iterator_t<Rng>, Comp, Proj>, safe_iterator_t<Rng>>
+                                   sortable<iterator_t<Rng>, Comp, Proj>,
+                               borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, iterator_t<Rng> middle, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return partial_sort_fn::impl(nano::begin(rng), std::move(middle),

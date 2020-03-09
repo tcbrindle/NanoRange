@@ -44,7 +44,7 @@ public:
     constexpr std::enable_if_t<forward_range<Rng> &&
         weakly_incrementable<O> &&
                                    indirectly_copyable<iterator_t<Rng>, O>,
-        rotate_copy_result<safe_iterator_t<Rng>, O>>
+        rotate_copy_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, iterator_t<Rng> middle, O result) const
     {
         return rotate_copy_fn::impl(nano::begin(rng), std::move(middle),

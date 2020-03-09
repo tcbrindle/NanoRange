@@ -48,7 +48,7 @@ public:
     constexpr std::enable_if_t<
         input_range<Rng> && writable<iterator_t<Rng>, const T2&> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, const T2& new_value,
                Proj proj = Proj{}) const
     {

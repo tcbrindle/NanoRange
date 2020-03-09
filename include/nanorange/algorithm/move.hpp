@@ -61,7 +61,7 @@ public:
     template <typename Rng, typename O>
     constexpr std::enable_if_t<input_range<Rng> && weakly_incrementable<O> &&
                                    indirectly_movable<iterator_t<Rng>, O>,
-                               move_result<safe_iterator_t<Rng>, O>>
+                               move_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
         return move_fn::impl(nano::begin(rng), nano::end(rng),
@@ -116,7 +116,7 @@ public:
     constexpr std::enable_if_t<bidirectional_range<Rng> &&
                                    bidirectional_iterator<O> &&
                                    indirectly_movable<iterator_t<Rng>, O>,
-                               move_backward_result<safe_iterator_t<Rng>, O>>
+                               move_backward_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
         return move_backward_fn::impl(nano::begin(rng), nano::end(rng),

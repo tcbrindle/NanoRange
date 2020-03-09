@@ -8,6 +8,7 @@
 #define NANORANGE_DETAIL_RANGES_CONCEPTS_HPP_INCLUDED
 
 #include <nanorange/detail/ranges/begin_end.hpp>
+#include <nanorange/detail/ranges/borrowed_range.hpp>
 #include <nanorange/detail/ranges/primitives.hpp>
 
 #include <initializer_list>
@@ -18,6 +19,7 @@
 // to enforce standard-compliant mode
 #ifndef NANORANGE_NO_STD_FORWARD_DECLARATIONS
 NANO_BEGIN_NAMESPACE_STD
+template <typename, typename> class basic_string_view;
 template <typename, typename, typename> class set;
 template <typename, typename, typename> class multiset;
 template <typename, typename, typename, typename> class unordered_set;
@@ -25,6 +27,7 @@ template <typename, typename, typename, typename> class unordered_multiset;
 template <typename, typename> class match_results;
 NANO_END_NAMESPACE_STD
 #else
+#include <string_view>
 #include <regex>
 #include <set>
 #include <unordered_set>
@@ -34,39 +37,27 @@ NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
-struct range_impl_concept {
+struct range_concept {
     template <typename T>
-    auto requires_(T&& t) -> decltype(
-        ranges::begin(std::forward<T>(t)),
-        ranges::end(std::forward<T>(t))
+    auto requires_(T& t) -> decltype(
+        ranges::begin(t),
+        ranges::end(t)
     );
 };
 
-template <typename T>
-NANO_CONCEPT range_impl = detail::requires_<range_impl_concept, T>;
-
-struct range_concept {
-    template <typename>
-    static auto test(long) -> std::false_type;
-
-    template <typename T>
-    static auto test(int) -> std::enable_if_t<
-        range_impl<T&>,
-        std::true_type>;
-};
-
 }
 
 template <typename T>
-NANO_CONCEPT range = decltype(detail::range_concept::test<T>(0))::value;
-
-namespace detail {
+NANO_CONCEPT range = detail::requires_<detail::range_concept, T>;
 
 template <typename T>
-NANO_CONCEPT forwarding_range = range<T> && range_impl<T>;
+NANO_CONCEPT borrowed_range = range<T> &&
+    (std::is_lvalue_reference_v<T> || enable_borrowed_range<remove_cvref_t<T>>);
 
-}
-
+// Special-case std::string_view
+template <typename CharT, typename Traits>
+inline constexpr bool
+    enable_borrowed_range<std::basic_string_view<CharT, Traits>> = true;
 
 template <typename R>
 using iterator_t = std::enable_if_t<range<R>,
@@ -300,7 +291,7 @@ NANO_CONCEPT common_range =
 
 template <typename T>
 NANO_CONCEPT viewable_range =
-    range<T> && (detail::forwarding_range<T> || view<std::decay_t<T>>);
+    range<T> && (borrowed_range<T> || view<remove_cvref_t<T>>);
 
 
 // [range.dangling]
@@ -313,8 +304,8 @@ struct dangling {
 };
 
 template <typename R>
-using safe_iterator_t = detail::conditional_t<
-    detail::forwarding_range<R>, iterator_t<R>, dangling>;
+using borrowed_iterator_t = detail::conditional_t<
+    borrowed_range<R>, iterator_t<R>, dangling>;
 
 // Helper concepts
 

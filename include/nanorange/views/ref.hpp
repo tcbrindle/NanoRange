@@ -63,10 +63,6 @@ public:
     {
         return ranges::data(*r_);
     }
-
-    friend constexpr iterator_t<R> begin(ref_view r) { return r.begin(); }
-
-    friend constexpr sentinel_t<R> end(ref_view r) { return r.end(); }
 };
 
 template <typename R, std::enable_if_t<range<R> && std::is_object_v<R>, int> = 0>
@@ -75,6 +71,9 @@ ref_view(R&) -> ref_view<R>;
 } // namespace ref_view_
 
 using ref_view_::ref_view;
+
+template <typename R>
+inline constexpr bool enable_borrowed_range<ref_view<R>> = true;
 
 NANO_END_NAMESPACE
 

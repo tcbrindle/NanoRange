@@ -53,7 +53,7 @@ public:
         random_access_range<Rng> &&
             uniform_random_bit_generator<std::remove_reference_t<Gen>> &&
             convertible_to<invoke_result_t<Gen&>, iter_difference_t<iterator_t<Rng>>>,
-    safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Gen&& gen) const
     {
         return shuffle_fn::impl(nano::begin(rng), nano::end(rng),

@@ -57,7 +57,7 @@ public:
         input_range<Rng1> && forward_range<Rng2> &&
             indirect_relation<Pred, projected<iterator_t<Rng1>, Proj1>,
                              projected<iterator_t<Rng2>, Proj2>>,
-        safe_iterator_t<Rng1>>
+        borrowed_iterator_t<Rng1>>
     operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {

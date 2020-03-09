@@ -66,7 +66,7 @@ public:
     constexpr std::enable_if_t<
         input_range<Rng> &&
             indirect_unary_invocable<Fun, projected<iterator_t<Rng>, Proj>>,
-        for_each_result<safe_iterator_t<Rng>, Fun>>
+        for_each_result<borrowed_iterator_t<Rng>, Fun>>
     operator()(Rng&& rng, Fun fun, Proj proj = Proj{}) const
     {
         return for_each_fn::impl(nano::begin(rng), nano::end(rng),

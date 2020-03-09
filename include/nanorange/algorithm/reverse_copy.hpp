@@ -55,7 +55,7 @@ public:
     constexpr std::enable_if_t<bidirectional_range<Rng> &&
         weakly_incrementable<O> &&
                                    indirectly_copyable<iterator_t<Rng>, O>,
-        reverse_copy_result<safe_iterator_t<Rng>, O>>
+        reverse_copy_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
         return reverse_copy_fn::impl(nano::begin(rng), nano::end(rng),

@@ -43,7 +43,7 @@ public:
     template <typename Rng>
     std::enable_if_t<no_throw_forward_range<Rng> &&
         default_constructible<iter_value_t<iterator_t<Rng>>>,
-        safe_iterator_t<Rng>>
+                     borrowed_iterator_t<Rng>>
     operator()(Rng&& rng) const
     {
         return uninitialized_value_construct_fn::impl(

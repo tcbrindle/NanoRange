@@ -97,7 +97,7 @@ public:
     std::enable_if_t<
         forward_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     constexpr operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return partition_point_fn::impl(nano::begin(rng), nano::end(rng),

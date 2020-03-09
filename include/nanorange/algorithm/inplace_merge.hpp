@@ -199,7 +199,7 @@ public:
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     std::enable_if_t<bidirectional_range<Rng> &&
                          sortable<iterator_t<Rng>, Comp, Proj>,
-        safe_iterator_t<Rng>>
+                     borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, iterator_t<Rng> middle, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return inplace_merge_fn::impl(nano::begin(rng), std::move(middle),

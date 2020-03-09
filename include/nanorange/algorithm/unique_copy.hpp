@@ -78,7 +78,7 @@ public:
                 indirect_relation<Comp, projected<iterator_t<Rng>, Proj>> &&
                 indirectly_copyable<iterator_t<Rng>, O> &&
             decltype(constraint_helper<iterator_t<Rng>, O>(priority_tag<2>{}))::value,
-       unique_copy_result<safe_iterator_t<Rng>, O>>
+       unique_copy_result<borrowed_iterator_t<Rng>, O>>
     {
         return unique_copy_fn::impl(nano::begin(rng), nano::end(rng),
                                     std::move(result), comp, proj);

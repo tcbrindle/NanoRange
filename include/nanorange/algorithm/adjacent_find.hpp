@@ -58,7 +58,7 @@ public:
     constexpr std::enable_if_t<
         forward_range<Rng> &&
             indirect_relation<Pred, projected<iterator_t<Rng>, Proj>>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred = Pred{}, Proj proj = Proj{}) const
     {
         return adjacent_find_fn::impl(nano::begin(rng), nano::end(rng),

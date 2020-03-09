@@ -112,7 +112,7 @@ public:
         input_range<Rng> && weakly_incrementable<O> && copy_constructible<F> &&
             writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng>, Proj>>>,
-        unary_transform_result<safe_iterator_t<Rng>, O>>
+        unary_transform_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, F op, Proj proj = Proj{}) const
     {
         return transform_fn::unary_impl(nano::begin(rng), nano::end(rng),
@@ -146,7 +146,8 @@ public:
             writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng1>, Proj1>,
                                        projected<iterator_t<Rng2>, Proj2>>>,
-        binary_transform_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>, O>>
+        binary_transform_result<borrowed_iterator_t<Rng1>,
+                                borrowed_iterator_t<Rng2>, O>>
     operator()(Rng1&& rng1, Rng2&& rng2, O result, F op, Proj1 proj1 = Proj1{},
                Proj2 proj2 = Proj2{}) const
     {
@@ -184,7 +185,7 @@ public:
             writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng1>, Proj1>,
                                        projected<std::decay_t<I2>, Proj2>>>,
-        binary_transform_result<safe_iterator_t<Rng1>, std::decay_t<I2>, O>>
+        binary_transform_result<borrowed_iterator_t<Rng1>, std::decay_t<I2>, O>>
     operator()(Rng1&& rng1, I2&& first2, O result, F op, Proj1 proj1 = Proj1{},
                Proj2 proj2 = Proj2{}) const
     {

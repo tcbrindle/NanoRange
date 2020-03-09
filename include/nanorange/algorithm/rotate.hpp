@@ -153,7 +153,7 @@ public:
     template <typename Rng>
     constexpr std::enable_if_t<
         forward_range<Rng> && permutable<iterator_t<Rng>>,
-        safe_subrange_t<Rng>>
+                               borrowed_subrange_t<Rng>>
     operator()(Rng&& rng, iterator_t<Rng> middle) const
     {
         return rotate_fn::impl(nano::begin(rng), std::move(middle), nano::end(rng));

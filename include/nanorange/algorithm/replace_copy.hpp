@@ -60,7 +60,7 @@ public:
             indirectly_copyable<iterator_t<Rng>, O> &&
             indirect_relation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T1*>,
-        replace_copy_result<safe_iterator_t<Rng>, O>>
+        replace_copy_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, const T1& old_value, const T2& new_value,
                Proj proj = Proj{}) const
     {

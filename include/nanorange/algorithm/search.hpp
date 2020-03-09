@@ -68,7 +68,7 @@ public:
     constexpr std::enable_if_t<
         forward_range<Rng1> && forward_range<Rng2> &&
             indirectly_comparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred, Proj1, Proj2>,
-            safe_subrange_t<Rng1>>
+        borrowed_subrange_t<Rng1>>
     operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
