@@ -148,10 +148,10 @@ private:
     template <typename T, typename U = std::remove_reference_t<T>,
               std::enable_if_t<std::is_lvalue_reference_v<T>, int> = 0>
     static constexpr auto impl(T&& t)
-        noexcept(noexcept(ranges::begin(static_cast<const U&>(std::forward<T>(t)))))
-        -> decltype(ranges::begin(static_cast<const U&>(std::forward<T>(t))))
+        noexcept(noexcept(ranges::begin(static_cast<const U&>(t))))
+        -> decltype(ranges::begin(static_cast<const U&>(t)))
     {
-        return ranges::begin(static_cast<const U&>(std::forward<T>(t)));
+        return ranges::begin(static_cast<const U&>(t));
     }
 
     template <typename T,
@@ -188,10 +188,10 @@ private:
     template <typename T, typename U = std::remove_reference_t<T>,
               std::enable_if_t<std::is_lvalue_reference_v<T>, int> = 0>
     static constexpr auto impl(T&& t)
-        noexcept(noexcept(ranges::end(static_cast<const U&>(std::forward<T>(t)))))
-        -> decltype(ranges::end(static_cast<const U&>(std::forward<T>(t))))
+        noexcept(noexcept(ranges::end(static_cast<const U&>(t))))
+        -> decltype(ranges::end(static_cast<const U&>(t)))
     {
-        return ranges::end(static_cast<const U&>(std::forward<T>(t)));
+        return ranges::end(static_cast<const U&>(t));
     }
 
     template <typename T,
