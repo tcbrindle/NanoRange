@@ -2623,8 +2623,26 @@ NANO_END_NAMESPACE
 #endif
 
 
+// nanorange/detail/ranges/borrowed_range.hpp
+//
+// Copyright (c) 2020 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include <string_view>
+#ifndef NANORANGE_DETAIL_RANGES_BORROWED_RANGE_HPP_INCLUDED
+#define NANORANGE_DETAIL_RANGES_BORROWED_RANGE_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+template <typename>
+inline constexpr bool enable_borrowed_range = false;
+
+NANO_END_NAMESPACE
+
+#endif
+
 
 NANO_BEGIN_NAMESPACE
 
@@ -2634,39 +2652,35 @@ namespace detail {
 namespace begin_ {
 
 template <typename T>
-void begin(T&&) = delete;
+void begin(T&) = delete;
 
 template <typename T>
-void begin(std::initializer_list<T>&&) = delete;
+void begin(const T&) = delete;
 
 struct fn {
 private:
-    template <typename T, std::size_t N>
-    static constexpr void impl(T(&&)[N], priority_tag<2>) = delete;
+    template <typename T,
+              std::enable_if_t<
+                  !std::is_lvalue_reference_v<T> &&
+                  !enable_borrowed_range<std::remove_cv_t<T>>, int> = 0>
+    static constexpr void impl(T&&, priority_tag<3>) = delete;
 
-    template <typename T, std::size_t N>
-    static constexpr auto impl(T (&t)[N], priority_tag<2>) noexcept
-        -> decltype((t) + 0)
+    template <typename T,
+              std::enable_if_t<std::is_array_v<remove_cvref_t<T>>, int> = 0>
+    static constexpr auto impl(T&& t, priority_tag<2>) noexcept
+        -> decltype(t + 0)
     {
-        return (t) + 0;
-    }
-
-    // Specialisation for rvalue string_views in C++17, as we can't add
-    // functions to namespace std
-    template <typename C, typename T>
-    static constexpr auto
-    impl(std::basic_string_view<C, T> sv, priority_tag<2>) noexcept
-        -> decltype(sv.begin())
-    {
-        return sv.begin();
+        return t + 0;
     }
 
     template <typename T>
     static constexpr auto
-    impl(T& t, priority_tag<1>) noexcept(noexcept(decay_copy(t.begin())))
+    impl(T&& t, priority_tag<1>)
+        noexcept(noexcept(decay_copy(std::forward<T>(t).begin())))
         -> std::enable_if_t<
-            input_or_output_iterator<decltype(decay_copy(t.begin()))>,
-                            decltype(decay_copy(t.begin()))>
+            input_or_output_iterator<
+                decltype(decay_copy(std::forward<T>(t).begin()))>,
+                decltype(decay_copy(std::forward<T>(t).begin()))>
     {
         return decay_copy(t.begin());
     }
@@ -2683,10 +2697,10 @@ private:
 public:
     template <typename T>
     constexpr auto operator()(T&& t) const
-        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<2>{})))
-            -> decltype(fn::impl(std::forward<T>(t), priority_tag<2>{}))
+        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<3>{})))
+            -> decltype(fn::impl(std::forward<T>(t), priority_tag<3>{}))
     {
-        return fn::impl(std::forward<T>(t), priority_tag<2>{});
+        return fn::impl(std::forward<T>(t), priority_tag<3>{});
     }
 };
 
@@ -2699,39 +2713,37 @@ namespace detail {
 namespace end_ {
 
 template <typename T>
-void end(T&&) = delete;
+void end(T&) = delete;
 
 template <typename T>
-void end(std::initializer_list<T>&&) = delete;
+void end(const T&) = delete;
 
 struct fn {
 private:
-    template <typename T, std::size_t N>
-    static constexpr void impl(T(&&)[N], priority_tag<2>) = delete;
+    template <typename T,
+              std::enable_if_t<
+                  !std::is_lvalue_reference_v<T> &&
+                  !enable_borrowed_range<std::remove_cv_t<T>>, int> = 0>
+    static constexpr void impl(T&&, priority_tag<3>) = delete;
 
-    template <typename T, std::size_t N>
-    static constexpr auto impl(T (&t)[N], priority_tag<2>) noexcept
-        -> decltype(t + N)
+    template <typename T,
+              std::enable_if_t<std::is_array_v<remove_cvref_t<T>>, int> = 0>
+    static constexpr auto impl(T&& t, priority_tag<2>) noexcept
+        -> decltype(t + std::extent_v<remove_cvref_t<T>>)
     {
-        return t + N;
-    }
-
-    template <typename C, typename T>
-    static constexpr auto
-    impl(std::basic_string_view<C, T> sv, priority_tag<2>) noexcept
-        -> decltype(sv.end())
-    {
-        return sv.end();
+        return t + std::extent_v<remove_cvref_t<T>>;
     }
 
     template <typename T,
-              typename S = decltype(decay_copy(std::declval<T&>().end())),
-              typename I = decltype(ranges::begin(std::declval<T&>()))>
+              typename S = decltype(decay_copy(std::declval<T>().end())),
+              typename I = decltype(ranges::begin(std::declval<T>()))>
     static constexpr auto
-    impl(T& t, priority_tag<1>) noexcept(noexcept(decay_copy(t.end())))
-        -> std::enable_if_t<sentinel_for<S, I>, decltype(decay_copy(t.end()))>
+    impl(T&& t, priority_tag<1>)
+        noexcept(noexcept(decay_copy(std::forward<T>(t).end())))
+        -> std::enable_if_t<sentinel_for<S, I>,
+                            decltype(decay_copy(std::forward<T>(t).end()))>
     {
-        return decay_copy(t.end());
+        return decay_copy(std::forward<T>(t).end());
     }
 
     template <typename T,
@@ -2747,10 +2759,10 @@ private:
 public:
     template <typename T>
     constexpr auto operator()(T&& t) const
-        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<2>{})))
-            -> decltype(fn::impl(std::forward<T>(t), priority_tag<2>{}))
+        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<3>{})))
+            -> decltype(fn::impl(std::forward<T>(t), priority_tag<3>{}))
     {
-        return fn::impl(std::forward<T>(t), priority_tag<2>{});
+        return fn::impl(std::forward<T>(t), priority_tag<3>{});
     }
 };
 
@@ -2765,20 +2777,32 @@ namespace detail {
 namespace cbegin_ {
 
 struct fn {
-
-    template <typename T>
-    constexpr auto operator()(const T& t) const
-        noexcept(noexcept(ranges::begin(t))) -> decltype(ranges::begin(t))
+private:
+    template <typename T, typename U = std::remove_reference_t<T>,
+              std::enable_if_t<std::is_lvalue_reference_v<T>, int> = 0>
+    static constexpr auto impl(T&& t)
+        noexcept(noexcept(ranges::begin(static_cast<const U&>(t))))
+        -> decltype(ranges::begin(static_cast<const U&>(t)))
     {
-        return ranges::begin(t);
+        return ranges::begin(static_cast<const U&>(t));
     }
 
-    template <typename T>
-    constexpr auto operator()(const T&& t) const
-        noexcept(noexcept(ranges::begin(static_cast<const T&&>(t))))
-            -> decltype(ranges::begin(static_cast<const T&&>(t)))
+    template <typename T,
+              std::enable_if_t<!std::is_lvalue_reference_v<T>, int> = 0>
+    static constexpr auto impl(T&& t)
+        noexcept(noexcept(ranges::begin(static_cast<const T&&>(std::forward<T>(t)))))
+        -> decltype(ranges::begin(static_cast<const T&&>(std::forward<T>(t))))
     {
-        return ranges::begin(static_cast<const T&&>(t));
+        return ranges::begin(static_cast<const T&&>(std::forward<T>(t)));
+    }
+
+public:
+    template <typename T>
+    constexpr auto operator()(T&& t) const
+        noexcept(noexcept(fn::impl(std::forward<T>(t))))
+        -> decltype(fn::impl(std::forward<T>(t)))
+    {
+        return fn::impl(std::forward<T>(t));
     }
 };
 
@@ -2793,21 +2817,34 @@ namespace detail {
 namespace cend_ {
 
 struct fn {
-
-    template <typename T>
-    constexpr auto operator()(const T& t) const
-        noexcept(noexcept(ranges::end(t))) -> decltype(ranges::end(t))
+private:
+    template <typename T, typename U = std::remove_reference_t<T>,
+              std::enable_if_t<std::is_lvalue_reference_v<T>, int> = 0>
+    static constexpr auto impl(T&& t)
+        noexcept(noexcept(ranges::end(static_cast<const U&>(t))))
+        -> decltype(ranges::end(static_cast<const U&>(t)))
     {
-        return ranges::end(t);
+        return ranges::end(static_cast<const U&>(t));
     }
 
-    template <typename T>
-    constexpr auto operator()(const T&& t) const
-        noexcept(noexcept(ranges::end(static_cast<const T&&>(t))))
-            -> decltype(ranges::end(static_cast<const T&&>(t)))
+    template <typename T,
+              std::enable_if_t<!std::is_lvalue_reference_v<T>, int> = 0>
+    static constexpr auto impl(T&& t)
+        noexcept(noexcept(ranges::end(static_cast<const T&&>(std::forward<T>(t)))))
+        -> decltype(ranges::end(static_cast<const T&&>(std::forward<T>(t))))
     {
-        return ranges::end(static_cast<const T&&>(t));
+        return ranges::end(static_cast<const T&&>(std::forward<T>(t)));
     }
+
+public:
+    template <typename T>
+    constexpr auto operator()(T&& t) const
+        noexcept(noexcept(fn::impl(std::forward<T>(t))))
+        -> decltype(fn::impl(std::forward<T>(t)))
+    {
+        return fn::impl(std::forward<T>(t));
+    }
+
 };
 
 } // namespace cend_
@@ -2851,6 +2888,7 @@ NANO_END_NAMESPACE
 
 #ifndef NANORANGE_DETAIL_RANGES_CONCEPTS_HPP_INCLUDED
 #define NANORANGE_DETAIL_RANGES_CONCEPTS_HPP_INCLUDED
+
 
 
 // nanorange/detail/ranges/primitives.hpp
@@ -3056,6 +3094,7 @@ NANO_END_NAMESPACE
 // to enforce standard-compliant mode
 #ifndef NANORANGE_NO_STD_FORWARD_DECLARATIONS
 NANO_BEGIN_NAMESPACE_STD
+template <typename, typename> class basic_string_view;
 template <typename, typename, typename> class set;
 template <typename, typename, typename> class multiset;
 template <typename, typename, typename, typename> class unordered_set;
@@ -3063,6 +3102,7 @@ template <typename, typename, typename, typename> class unordered_multiset;
 template <typename, typename> class match_results;
 NANO_END_NAMESPACE_STD
 #else
+#include <string_view>
 #include <regex>
 #include <set>
 #include <unordered_set>
@@ -3072,43 +3112,30 @@ NANO_BEGIN_NAMESPACE
 
 namespace detail {
 
-struct range_impl_concept {
+struct range_concept {
     template <typename T>
-    auto requires_(T&& t) -> decltype(
-        ranges::begin(std::forward<T>(t)),
-        ranges::end(std::forward<T>(t))
+    auto requires_(T& t) -> decltype(
+        ranges::begin(t),
+        ranges::end(t)
     );
 };
 
-template <typename T>
-NANO_CONCEPT range_impl = detail::requires_<range_impl_concept, T>;
-
-struct range_concept {
-    template <typename>
-    static auto test(long) -> std::false_type;
-
-    template <typename T>
-    static auto test(int) -> std::enable_if_t<
-        range_impl<T&>,
-        std::true_type>;
-};
-
 }
 
 template <typename T>
-NANO_CONCEPT range = decltype(detail::range_concept::test<T>(0))::value;
-
-namespace detail {
+NANO_CONCEPT range = detail::requires_<detail::range_concept, T>;
 
 template <typename T>
-NANO_CONCEPT forwarding_range = range<T> && range_impl<T>;
+NANO_CONCEPT borrowed_range = range<T> &&
+    (std::is_lvalue_reference_v<T> || enable_borrowed_range<remove_cvref_t<T>>);
 
-}
+// Special-case std::string_view
+template <typename CharT, typename Traits>
+inline constexpr bool
+    enable_borrowed_range<std::basic_string_view<CharT, Traits>> = true;
 
-
-template <typename R>
-using iterator_t = std::enable_if_t<range<R>,
-    decltype(ranges::begin(std::declval<R&>()))>;
+template <typename T>
+using iterator_t = decltype(ranges::begin(std::declval<T&>()));
 
 template <typename R>
 using sentinel_t = std::enable_if_t<range<R>,
@@ -3338,7 +3365,7 @@ NANO_CONCEPT common_range =
 
 template <typename T>
 NANO_CONCEPT viewable_range =
-    range<T> && (detail::forwarding_range<T> || view<std::decay_t<T>>);
+    range<T> && (borrowed_range<T> || view<remove_cvref_t<T>>);
 
 
 // [range.dangling]
@@ -3351,8 +3378,8 @@ struct dangling {
 };
 
 template <typename R>
-using safe_iterator_t = detail::conditional_t<
-    detail::forwarding_range<R>, iterator_t<R>, dangling>;
+using borrowed_iterator_t = detail::conditional_t<
+    borrowed_range<R>, iterator_t<R>, dangling>;
 
 // Helper concepts
 
@@ -3897,24 +3924,30 @@ namespace detail {
 namespace rbegin_ {
 
 template <typename T>
-void rbegin(T&&) = delete;
+void rbegin(T&) = delete;
 
 template <typename T>
-void rbegin(std::initializer_list<T>) = delete;
+void rbegin(const T&) = delete;
 
 struct fn {
 private:
     template <typename T,
-              typename I = decltype(decay_copy(std::declval<T&>().rbegin()))>
+              std::enable_if_t<
+                  !std::is_lvalue_reference_v<T> &&
+                  !enable_borrowed_range<std::remove_cv_t<T>>, int> = 0>
+    static constexpr void impl(T&&, priority_tag<3>) = delete;
+
+    template <typename T,
+              typename I = decltype(decay_copy(std::declval<T>().rbegin()))>
     static constexpr auto
-    impl(T& t, priority_tag<2>) noexcept(noexcept(decay_copy(t.rbegin())))
+    impl(T&& t, priority_tag<2>) noexcept(noexcept(decay_copy(std::forward<T>(t).rbegin())))
         -> std::enable_if_t<input_or_output_iterator<I>, I>
     {
-        return t.rbegin();
+        return std::forward<T>(t).rbegin();
     }
 
     template <typename T,
-              typename I = decltype(decay_copy(rbegin(std::declval<T&&>())))>
+              typename I = decltype(decay_copy(rbegin(std::declval<T>())))>
     static constexpr auto impl(T&& t, priority_tag<1>) noexcept(
         noexcept(decay_copy(rbegin(std::forward<T>(t)))))
         -> std::enable_if_t<input_or_output_iterator<I>, I>
@@ -3923,8 +3956,8 @@ private:
     }
 
     template <typename T,
-              typename I = decltype(ranges::begin(std::declval<T&&>())),
-              typename S = decltype(ranges::end(std::declval<T&&>()))>
+              typename I = decltype(ranges::begin(std::declval<T>())),
+              typename S = decltype(ranges::end(std::declval<T>()))>
     static constexpr auto impl(T&& t, priority_tag<0>) noexcept(
         noexcept(ranges::make_reverse_iterator(ranges::end(std::forward<T>(t)))))
         -> std::enable_if_t<same_as<I, S> && bidirectional_iterator<I>,
@@ -3937,10 +3970,10 @@ private:
 public:
     template <typename T>
     constexpr auto operator()(T&& t) const
-        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<2>{})))
-            -> decltype(fn::impl(std::forward<T>(t), priority_tag<2>{}))
+        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<3>{})))
+            -> decltype(fn::impl(std::forward<T>(t), priority_tag<3>{}))
     {
-        return fn::impl(std::forward<T>(t), priority_tag<2>{});
+        return fn::impl(std::forward<T>(t), priority_tag<3>{});
     }
 };
 
@@ -3953,26 +3986,32 @@ namespace detail {
 namespace rend_ {
 
 template <typename T>
-void rend(T&&) = delete;
+void rend(T&) = delete;
 
 template <typename T>
-void rend(std::initializer_list<T>) = delete;
+void rend(const T&) = delete;
 
 struct fn {
 private:
     template <typename T,
-              typename I = decltype(ranges::begin(std::declval<T&>())),
-              typename S = decltype(decay_copy(std::declval<T&>().rend()))>
+              std::enable_if_t<
+                  !std::is_lvalue_reference_v<T> &&
+                  !enable_borrowed_range<std::remove_cv_t<T>>, int> = 0>
+    static constexpr void impl(T&&, priority_tag<3>) = delete;
+
+    template <typename T,
+              typename I = decltype(ranges::rbegin(std::declval<T>())),
+              typename S = decltype(decay_copy(std::declval<T>().rend()))>
     static constexpr auto
-    impl(T& t, priority_tag<2>) noexcept(noexcept(decay_copy(t.rend())))
+    impl(T&& t, priority_tag<2>) noexcept(noexcept(decay_copy(std::forward<T>(t).rend())))
         -> std::enable_if_t<sentinel_for<S, I>, S>
     {
-        return t.rend();
+        return std::forward<T>(t).rend();
     }
 
     template <typename T,
-              typename I = decltype(ranges::begin(std::declval<T&&>())),
-              typename S = decltype(decay_copy(rend(std::declval<T&&>())))>
+              typename I = decltype(ranges::rbegin(std::declval<T>())),
+              typename S = decltype(decay_copy(rend(std::declval<T>())))>
     static constexpr auto impl(T&& t, priority_tag<1>) noexcept(
         noexcept(decay_copy(rend(std::forward<T>(t)))))
         -> std::enable_if_t<sentinel_for<S, I>, S>
@@ -3981,8 +4020,8 @@ private:
     }
 
     template <typename T,
-              typename I = decltype(ranges::begin(std::declval<T&&>())),
-              typename S = decltype(ranges::end(std::declval<T&&>()))>
+              typename I = decltype(ranges::begin(std::declval<T>())),
+              typename S = decltype(ranges::end(std::declval<T>()))>
     static constexpr auto impl(T&& t, priority_tag<0>) noexcept(
         noexcept(ranges::make_reverse_iterator(ranges::begin(std::forward<T>(t)))))
         -> std::enable_if_t<same_as<I, S> && bidirectional_iterator<I>,
@@ -3995,10 +4034,10 @@ private:
 public:
     template <typename T>
     constexpr auto operator()(T&& t) const
-        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<2>{})))
-            -> decltype(fn::impl(std::forward<T>(t), priority_tag<2>{}))
+        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<3>{})))
+            -> decltype(fn::impl(std::forward<T>(t), priority_tag<3>{}))
     {
-        return fn::impl(std::forward<T>(t), priority_tag<2>{});
+        return fn::impl(std::forward<T>(t), priority_tag<3>{});
     }
 };
 
@@ -4011,19 +4050,32 @@ namespace detail {
 namespace crbegin_ {
 
 struct fn {
-    template <typename T>
-    constexpr auto operator()(const T& t) const
-        noexcept(noexcept(ranges::rbegin(t))) -> decltype(ranges::rbegin(t))
+private:
+    template <typename T, typename U = std::remove_reference_t<T>,
+              std::enable_if_t<std::is_lvalue_reference_v<T>, int> = 0>
+    static constexpr auto impl(T&& t)
+        noexcept(noexcept(ranges::rbegin(static_cast<const U&>(t))))
+        -> decltype(ranges::rbegin(static_cast<const U&>(t)))
     {
-        return ranges::rbegin(t);
+        return ranges::rbegin(static_cast<const U&>(t));
     }
 
-    template <typename T>
-    constexpr auto operator()(const T&& t) const
+    template <typename T,
+              std::enable_if_t<!std::is_lvalue_reference_v<T>, int> = 0>
+    static constexpr auto impl(T&& t)
         noexcept(noexcept(ranges::rbegin(static_cast<const T&&>(t))))
             -> decltype(ranges::rbegin(static_cast<const T&&>(t)))
     {
         return ranges::rbegin(static_cast<const T&&>(t));
+    }
+
+public:
+    template <typename T>
+    constexpr auto operator()(T&& t) const
+        noexcept(noexcept(fn::impl(std::forward<T>(t))))
+        -> decltype(fn::impl(std::forward<T>(t)))
+    {
+        return fn::impl(std::forward<T>(t));
     }
 };
 
@@ -4036,19 +4088,32 @@ namespace detail {
 namespace crend_ {
 
 struct fn {
-    template <typename T>
-    constexpr auto operator()(const T& t) const
-        noexcept(noexcept(ranges::rend(t))) -> decltype(ranges::rend(t))
+private:
+    template <typename T, typename U = std::remove_reference_t<T>,
+              std::enable_if_t<std::is_lvalue_reference_v<T>, int> = 0>
+    static constexpr auto impl(T&& t)
+        noexcept(noexcept(ranges::rend(static_cast<const U&>(t))))
+        -> decltype(ranges::rend(static_cast<const U&>(t)))
     {
-        return ranges::rend(t);
+        return ranges::rend(static_cast<const U&>(t));
     }
 
-    template <typename T>
-    constexpr auto operator()(const T&& t) const
+    template <typename T,
+              std::enable_if_t<!std::is_lvalue_reference_v<T>, int> = 0>
+    static constexpr auto impl(T&& t)
         noexcept(noexcept(ranges::rend(static_cast<const T&&>(t))))
             -> decltype(ranges::rend(static_cast<const T&&>(t)))
     {
         return ranges::rend(static_cast<const T&&>(t));
+    }
+
+public:
+    template <typename T>
+    constexpr auto operator()(T&& t) const
+        noexcept(noexcept(fn::impl(std::forward<T>(t))))
+        -> decltype(fn::impl(std::forward<T>(t)))
+    {
+        return fn::impl(std::forward<T>(t));
     }
 };
 
@@ -4131,7 +4196,7 @@ public:
     constexpr std::enable_if_t<
         forward_range<Rng> &&
             indirect_relation<Pred, projected<iterator_t<Rng>, Proj>>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred = Pred{}, Proj proj = Proj{}) const
     {
         return adjacent_find_fn::impl(nano::begin(rng), nano::end(rng),
@@ -4393,7 +4458,7 @@ public:
     std::enable_if_t<
         forward_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     constexpr operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return partition_point_fn::impl(nano::begin(rng), nano::end(rng),
@@ -4458,7 +4523,7 @@ public:
               typename Proj = identity>
     std::enable_if_t<forward_range<Rng> &&
                          indirect_strict_weak_order<Comp, const T*, projected<iterator_t<Rng>, Proj>>,
-        safe_iterator_t<Rng>>
+                     borrowed_iterator_t<Rng>>
     constexpr operator()(Rng&& rng, const T& value, Comp comp = Comp{},
                          Proj proj = Proj{}) const
     {
@@ -4610,7 +4675,7 @@ public:
     template <typename Rng, typename O>
     constexpr std::enable_if_t<input_range<Rng> && weakly_incrementable<O> &&
                                    indirectly_copyable<iterator_t<Rng>, O>,
-                               copy_result<safe_iterator_t<Rng>, O>>
+                               copy_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
         return copy_fn::impl(nano::begin(rng), nano::end(rng),
@@ -4689,7 +4754,7 @@ public:
     constexpr std::enable_if_t<
         input_range<Rng> && weakly_incrementable<O> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        copy_if_result<safe_iterator_t<Rng>, O>>
+        copy_if_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, Pred pred, Proj proj = Proj{}) const
     {
         return copy_if_fn::impl(nano::begin(rng), nano::end(rng),
@@ -4739,7 +4804,7 @@ public:
     constexpr std::enable_if_t<bidirectional_range<Rng> &&
                                    bidirectional_iterator<I> &&
                                    indirectly_copyable<iterator_t<Rng>, I>,
-                               copy_backward_result<safe_iterator_t<Rng>, I>>
+                               copy_backward_result<borrowed_iterator_t<Rng>, I>>
     operator()(Rng&& rng, I result) const
     {
         return copy_backward_fn::impl(nano::begin(rng), nano::end(rng),
@@ -5096,7 +5161,7 @@ public:
               typename Proj = identity>
     std::enable_if_t<forward_range<Rng> &&
                          indirect_strict_weak_order<Comp, const T*, projected<iterator_t<Rng>, Proj>>,
-    safe_iterator_t<Rng>>
+                     borrowed_iterator_t<Rng>>
     constexpr operator()(Rng&& rng, const T& value, Comp comp = Comp{},
                          Proj proj = Proj{}) const
     {
@@ -5547,6 +5612,24 @@ using subrange_::subrange;
 
 namespace detail {
 
+struct convertible_to_non_slicing_concept {
+    template <typename, typename>
+    static auto test(long) -> std::false_type;
+
+    template <typename From, typename To>
+    static auto test(int) -> std::enable_if_t<
+        convertible_to<From, To> &&
+        !(std::is_pointer_v<std::decay_t<From>> &&
+          std::is_pointer_v<std::decay_t<To>> &&
+          not_same_as<std::remove_pointer_t<std::decay_t<From>>,
+                      std::remove_pointer_t<std::decay_t<To>>>),
+        std::true_type>;
+};
+
+template <typename From, typename To>
+NANO_CONCEPT convertible_to_non_slicing =
+    decltype(convertible_to_non_slicing_concept::test<From, To>(0))::value;
+
 struct pair_like_concept {
     template <typename>
     static auto test(long) -> std::false_type;
@@ -5570,22 +5653,23 @@ template <typename T>
 NANO_CONCEPT pair_like = !std::is_reference_v<T> &&
     decltype(pair_like_concept::test<T>(0))::value;
 
-struct pair_like_convertible_to_concept {
-    template <typename T, typename U, typename V>
-    auto requires_(T&& t) -> decltype(
-        requires_expr<convertible_to<decltype(std::get<0>(std::forward<T>(t))), U>>{},
-        requires_expr<convertible_to<decltype(std::get<1>(std::forward<T>(t))), V>>{}
-    );
+struct pair_like_convertible_from_concept {
+    template <typename, typename, typename>
+    static auto test(long) -> std::false_type;
+
+    template <typename T, typename U, typename V,
+              std::enable_if_t<!range<T>, int> = 0,
+              std::enable_if_t<pair_like<T>, int> = 0,
+              std::enable_if_t<constructible_from<T, U, V>, int> = 0,
+              std::enable_if_t<convertible_to_non_slicing<U, std::tuple_element<0, T>>, int> = 0,
+              std::enable_if_t<convertible_to<V, std::tuple_element<1, T>>, int> = 0>
+    static auto test(int) -> std::true_type;
 };
 
 template <typename T, typename U, typename V>
-NANO_CONCEPT pair_like_convertible_to =
-    !range<T> && pair_like<std::remove_reference_t<T>> &&
-    detail::requires_<pair_like_convertible_to_concept, T, U, V>;
-
-template <typename T, typename U, typename V>
 NANO_CONCEPT pair_like_convertible_from =
-    !range<T> && pair_like<T> && constructible_from<T, U, V>;
+    decltype(pair_like_convertible_from_concept::test<T, U, V>(0))::value;
+
 
 struct iterator_sentinel_pair_concept {
     template <typename T>
@@ -5638,8 +5722,8 @@ template <typename R, typename I, typename S, subrange_kind K>
 auto subrange_range_constructor_constraint_helper_fn(long) -> std::false_type;
 
 template <typename R, typename I, typename S, subrange_kind K>
-auto subrange_range_constructor_constraint_helper_fn(int) -> std::enable_if_t<forwarding_range<R>&&
-                convertible_to<iterator_t<R>, I> &&
+auto subrange_range_constructor_constraint_helper_fn(int) -> std::enable_if_t<borrowed_range<R>&&
+                convertible_to_non_slicing<iterator_t<R>, I> &&
                 convertible_to<sentinel_t<R>, S>, std::true_type>;
 
 template <typename R, typename I, typename S, subrange_kind K>
@@ -5659,8 +5743,8 @@ namespace subrange_ {
 
 template <typename I, typename S, subrange_kind K>
 class subrange : public view_interface<subrange<I, S, K>> {
-    static_assert(input_or_output_iterator<I>, "");
-    static_assert(sentinel_for<S, I>, "");
+    static_assert(input_or_output_iterator<I>);
+    static_assert(sentinel_for<S, I>);
     static_assert(K == subrange_kind::sized || !sized_sentinel_for<S, I>, "");
 
 private:
@@ -5670,18 +5754,20 @@ private:
     detail::subrange_data<I, S, StoreSize> data_{};
 
 public:
-    using iterator = I;
-    using sentinel = S;
-
     subrange() = default;
 
-    template <bool SS = StoreSize, typename = std::enable_if_t<!SS>>
-    constexpr subrange(I i, S s)
+    template <typename II, bool SS = StoreSize,
+             typename = std::enable_if_t<
+                 detail::convertible_to_non_slicing<II, I> &&
+                 !SS>>
+    constexpr subrange(II i, S s)
             : data_{std::move(i), std::move(s)} {}
 
-    template <subrange_kind KK = K,
-              typename = std::enable_if_t<KK == subrange_kind::sized>>
-    constexpr subrange(I i, S s, iter_difference_t<I> n)
+    template <typename II, subrange_kind KK = K,
+              typename = std::enable_if_t<
+                  detail::convertible_to_non_slicing<II, I> &&
+                  KK == subrange_kind::sized>>
+    constexpr subrange(II i, S s, iter_difference_t<I> n)
             : data_{std::move(i), std::move(s), n} {}
 
     template <typename R, bool SS = StoreSize,
@@ -5701,29 +5787,13 @@ public:
             : subrange(ranges::begin(r), ranges::end(r)) {}
 
     template <typename R, subrange_kind KK = K, std::enable_if_t<
-            detail::forwarding_range<R>&&
-            convertible_to<iterator_t<R>, I>&&
-            convertible_to<sentinel_t<R>, S>&&
+            borrowed_range<R> &&
+            detail::convertible_to_non_slicing<iterator_t<R>, I> &&
+            convertible_to<sentinel_t<R>, S> &&
             KK == subrange_kind::sized, int> = 0>
     constexpr subrange(R&& r, iter_difference_t<I> n)
             : subrange(ranges::begin(r), ranges::end(r), n) {}
 
-    template <typename PairLike_, bool SS = StoreSize,
-            std::enable_if_t<detail::not_same_as<PairLike_, subrange>, int> = 0,
-            std::enable_if_t<
-                detail::pair_like_convertible_to<PairLike_, I, S> && !SS,
-                    int> = 0>
-    constexpr subrange(PairLike_&& r)
-            : subrange{std::get<0>(std::forward<PairLike_>(r)),
-                       std::get<1>(std::forward<PairLike_>(r))} {}
-
-    template <typename PairLike_, subrange_kind KK = K,
-            std::enable_if_t<detail::pair_like_convertible_to<PairLike_, I, S> &&
-                    KK == subrange_kind::sized,
-                    int> = 0>
-    constexpr subrange(PairLike_&& r, iter_difference_t<I> n)
-            : subrange{std::get<0>(std::forward<PairLike_>(r)),
-                       std::get<1>(std::forward<PairLike_>(r)), n} {}
 
     template <typename PairLike_,
             std::enable_if_t<detail::not_same_as<PairLike_, subrange>, int> = 0,
@@ -5779,24 +5849,11 @@ public:
         }
         return *this;
     }
-
-    // friend constexpr I begin(subrange&& r) { return r.begin(); }
-
-    // friend constexpr S end(subrange&& r) { return r.end(); }
 };
 
-template <typename I, typename S, subrange_kind K>
-constexpr I begin(subrange<I, S, K>&& r) { return r.begin(); }
-
-template <typename I, typename S, subrange_kind K>
-constexpr S end(subrange<I, S, K>&& r) { return r.end(); }
-
-#ifdef _MSC_VER
-// FIXME: Extra deduction guide because MSVC can't use the (constrained) implicit one
 template <typename I, typename S,
           std::enable_if_t<input_or_output_iterator<I> && sentinel_for<S, I>, int> = 0>
 subrange(I, S) -> subrange<I, S>;
-#endif
 
 template <typename I, typename S, std::enable_if_t<input_or_output_iterator<I> && sentinel_for<S, I>, int> = 0>
 subrange(I, S, iter_difference_t<I>) -> subrange<I, S, subrange_kind::sized>;
@@ -5808,16 +5865,19 @@ template <typename P, std::enable_if_t<detail::iterator_sentinel_pair<P>, int> =
 subrange(P, iter_difference_t<std::tuple_element_t<0, P>>) ->
     subrange<std::tuple_element_t<0, P>, std::tuple_element_t<1, P>, subrange_kind::sized>;
 
-template <typename R, std::enable_if_t<detail::forwarding_range<R>, int> = 0>
+template <typename R, std::enable_if_t<borrowed_range<R>, int> = 0>
 subrange(R&&) ->
     subrange<iterator_t<R>, sentinel_t<R>,
              detail::subrange_deduction_guide_helper<R>()>;
 
-template <typename R, std::enable_if_t<detail::forwarding_range<R>, int> = 0>
+template <typename R, std::enable_if_t<borrowed_range<R>, int> = 0>
 subrange(R&&, iter_difference_t<iterator_t<R>>) ->
     subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>;
 
 } // namespace subrange_
+
+template <typename I, typename S, subrange_kind K>
+inline constexpr bool enable_borrowed_range<subrange<I, S, K>> = true;
 
 template <std::size_t N, typename I, typename S, subrange_kind K,
           std::enable_if_t<(N < 2), int> = 0>
@@ -5831,9 +5891,8 @@ constexpr auto get(const subrange<I, S, K>& r)
 }
 
 template <typename R>
-using safe_subrange_t =
-    detail::conditional_t<detail::forwarding_range<R>,
-                       subrange<iterator_t<R>>, dangling>;
+using borrowed_subrange_t =
+    detail::conditional_t<borrowed_range<R>, subrange<iterator_t<R>>, dangling>;
 
 NANO_END_NAMESPACE
 
@@ -5895,7 +5954,7 @@ public:
               typename Proj = identity>
     std::enable_if_t<forward_range<Rng> &&
                          indirect_strict_weak_order<Comp, const T*, projected<iterator_t<Rng>, Proj>>,
-    safe_subrange_t<Rng>>
+                     borrowed_subrange_t<Rng>>
     constexpr operator()(Rng&& rng, const T& value, Comp comp = Comp{},
                          Proj proj = Proj{}) const
     {
@@ -5950,7 +6009,8 @@ public:
     }
 
     template <typename T, typename Rng>
-    constexpr std::enable_if_t<output_range<Rng, const T&>, safe_iterator_t<Rng>>
+    constexpr std::enable_if_t<output_range<Rng, const T&>,
+                               borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, const T& value) const
     {
         return fill_fn::impl(nano::begin(rng), nano::end(rng), value);
@@ -6049,7 +6109,7 @@ public:
     constexpr std::enable_if_t<
         input_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return find_if_fn::impl(nano::begin(rng), nano::end(rng), pred, proj);
@@ -6078,7 +6138,7 @@ struct find_fn {
         input_range<Rng> &&
             indirect_relation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T*>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
     {
         const auto pred = [&value] (const auto& t) { return t == value; };
@@ -6121,7 +6181,7 @@ public:
     constexpr std::enable_if_t<
         input_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         const auto find_if_pred = not_pred<Pred>{pred};
@@ -6218,7 +6278,7 @@ public:
     constexpr std::enable_if_t<
         forward_range<Rng1> && forward_range<Rng2> &&
             indirectly_comparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred, Proj1, Proj2>,
-            safe_subrange_t<Rng1>>
+        borrowed_subrange_t<Rng1>>
     operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
@@ -6293,7 +6353,7 @@ public:
     constexpr std::enable_if_t<
         forward_range<Rng1> && forward_range<Rng2> &&
             indirectly_comparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred, Proj1, Proj2>,
-            safe_subrange_t<Rng1>>
+        borrowed_subrange_t<Rng1>>
     operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
@@ -6371,7 +6431,7 @@ public:
         input_range<Rng1> && forward_range<Rng2> &&
             indirect_relation<Pred, projected<iterator_t<Rng1>, Proj1>,
                              projected<iterator_t<Rng2>, Proj2>>,
-        safe_iterator_t<Rng1>>
+        borrowed_iterator_t<Rng1>>
     operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
@@ -6456,7 +6516,7 @@ public:
     constexpr std::enable_if_t<
         input_range<Rng> &&
             indirect_unary_invocable<Fun, projected<iterator_t<Rng>, Proj>>,
-        for_each_result<safe_iterator_t<Rng>, Fun>>
+        for_each_result<borrowed_iterator_t<Rng>, Fun>>
     operator()(Rng&& rng, Fun fun, Proj proj = Proj{}) const
     {
         return for_each_fn::impl(nano::begin(rng), nano::end(rng),
@@ -6514,7 +6574,7 @@ public:
     template <typename Rng, typename F>
     constexpr std::enable_if_t<invocable<F&> &&
                                    output_range<Rng, invoke_result_t<F&>>,
-                               safe_iterator_t<Rng>>
+                               borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, F gen) const
     {
         return generate_fn::impl(nano::begin(rng), nano::end(rng), gen);
@@ -6808,7 +6868,7 @@ public:
         input_range<Rng> && weakly_incrementable<O> && copy_constructible<F> &&
             writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng>, Proj>>>,
-        unary_transform_result<safe_iterator_t<Rng>, O>>
+        unary_transform_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, F op, Proj proj = Proj{}) const
     {
         return transform_fn::unary_impl(nano::begin(rng), nano::end(rng),
@@ -6842,7 +6902,8 @@ public:
             writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng1>, Proj1>,
                                        projected<iterator_t<Rng2>, Proj2>>>,
-        binary_transform_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>, O>>
+        binary_transform_result<borrowed_iterator_t<Rng1>,
+                                borrowed_iterator_t<Rng2>, O>>
     operator()(Rng1&& rng1, Rng2&& rng2, O result, F op, Proj1 proj1 = Proj1{},
                Proj2 proj2 = Proj2{}) const
     {
@@ -6880,7 +6941,7 @@ public:
             writable<O,
                      indirect_result_t<F&, projected<iterator_t<Rng1>, Proj1>,
                                        projected<std::decay_t<I2>, Proj2>>>,
-        binary_transform_result<safe_iterator_t<Rng1>, std::decay_t<I2>, O>>
+        binary_transform_result<borrowed_iterator_t<Rng1>, std::decay_t<I2>, O>>
     operator()(Rng1&& rng1, I2&& first2, O result, F op, Proj1 proj1 = Proj1{},
                Proj2 proj2 = Proj2{}) const
     {
@@ -6973,7 +7034,7 @@ public:
         input_range<Rng1> && input_range<Rng2> &&
         weakly_incrementable<O> &&
             mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp, Proj1, Proj2>,
-        merge_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>, O>>
+        merge_result<borrowed_iterator_t<Rng1>, borrowed_iterator_t<Rng2>, O>>
     operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
@@ -7134,7 +7195,7 @@ public:
     template <typename Rng, typename O>
     constexpr std::enable_if_t<input_range<Rng> && weakly_incrementable<O> &&
                                    indirectly_movable<iterator_t<Rng>, O>,
-                               move_result<safe_iterator_t<Rng>, O>>
+                               move_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
         return move_fn::impl(nano::begin(rng), nano::end(rng),
@@ -7189,7 +7250,7 @@ public:
     constexpr std::enable_if_t<bidirectional_range<Rng> &&
                                    bidirectional_iterator<O> &&
                                    indirectly_movable<iterator_t<Rng>, O>,
-                               move_backward_result<safe_iterator_t<Rng>, O>>
+                               move_backward_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
         return move_backward_fn::impl(nano::begin(rng), nano::end(rng),
@@ -7324,7 +7385,7 @@ public:
                 !input_range<I2> &&
             indirect_relation<Pred, projected<iterator_t<Rng1>, Proj1>,
                              projected<std::decay_t<I2>, Proj2>>,
-        mismatch_result<safe_iterator_t<Rng1>, std::decay_t<I2>>>
+        mismatch_result<borrowed_iterator_t<Rng1>, std::decay_t<I2>>>
     operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
@@ -7357,7 +7418,7 @@ public:
         input_range<Rng1> && input_range<Rng2> &&
             indirect_relation<Pred, projected<iterator_t<Rng1>, Proj1>,
                              projected<iterator_t<Rng2>, Proj2>>,
-        mismatch_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>>>
+        mismatch_result<borrowed_iterator_t<Rng1>, borrowed_iterator_t<Rng2>>>
     operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
@@ -7434,7 +7495,8 @@ public:
     constexpr std::enable_if_t<
         forward_range<Rng1> && forward_range<Rng2> &&
             indirectly_swappable<iterator_t<Rng1>, iterator_t<Rng2>>,
-            swap_ranges_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>>>
+            swap_ranges_result<borrowed_iterator_t<Rng1>,
+                           borrowed_iterator_t<Rng2>>>
     operator()(Rng1&& rng1, Rng2&& rng2) const
     {
         return swap_ranges_fn::impl4(nano::begin(rng1), nano::end(rng1),
@@ -7446,7 +7508,7 @@ public:
     constexpr std::enable_if_t<
         forward_range<Rng1> && forward_iterator<I2> &&
             indirectly_swappable<iterator_t<Rng1>, I2>,
-            swap_ranges_result<safe_iterator_t<Rng1>, I2>>
+            swap_ranges_result<borrowed_iterator_t<Rng1>, I2>>
     operator()(Rng1&& rng1, I2 first2) const
     {
         return swap_ranges_fn::impl3(nano::begin(rng1), nano::end(rng1),
@@ -7656,7 +7718,7 @@ public:
     template <typename Rng>
     constexpr std::enable_if_t<
         forward_range<Rng> && permutable<iterator_t<Rng>>,
-        safe_subrange_t<Rng>>
+                               borrowed_subrange_t<Rng>>
     operator()(Rng&& rng, iterator_t<Rng> middle) const
     {
         return rotate_fn::impl(nano::begin(rng), std::move(middle), nano::end(rng));
@@ -8144,7 +8206,7 @@ public:
     template <typename Rng>
     std::enable_if_t<no_throw_input_range<Rng> &&
         destructible<iter_value_t<iterator_t<Rng>>>,
-        safe_iterator_t<Rng>>
+                     borrowed_iterator_t<Rng>>
     operator()(Rng&& rng) const noexcept
     {
         return destroy_fn::impl(nano::begin(rng), nano::end(rng));
@@ -8815,7 +8877,7 @@ public:
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     std::enable_if_t<bidirectional_range<Rng> &&
                          sortable<iterator_t<Rng>, Comp, Proj>,
-        safe_iterator_t<Rng>>
+                     borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, iterator_t<Rng> middle, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return inplace_merge_fn::impl(nano::begin(rng), std::move(middle),
@@ -8914,7 +8976,7 @@ public:
     constexpr std::enable_if_t<
         random_access_range<Rng> &&
         indirect_strict_weak_order<Comp, projected<iterator_t<Rng>, Proj>>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return is_heap_until_fn::impl(nano::begin(rng), nano::distance(rng),
@@ -9297,7 +9359,7 @@ public:
     constexpr std::enable_if_t<
         forward_range<Rng> &&
             indirect_strict_weak_order<Comp, projected<iterator_t<Rng>, Proj>>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return is_sorted_until_fn::impl(nano::begin(rng), nano::end(rng),
@@ -9614,7 +9676,7 @@ public:
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<random_access_range<Rng> &&
                                    sortable<iterator_t<Rng>, Comp>,
-                               safe_iterator_t<Rng>>
+                               borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return make_heap_fn::impl(nano::begin(rng), nano::distance(rng), comp,
@@ -9761,7 +9823,7 @@ public:
     constexpr std::enable_if_t<
         forward_range<Rng> &&
             indirect_strict_weak_order<Comp, projected<iterator_t<Rng>, Proj>>,
-    safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return max_element_fn::impl(nano::begin(rng), nano::end(rng),
@@ -9833,7 +9895,7 @@ public:
     constexpr std::enable_if_t<
         forward_range<Rng> &&
             indirect_strict_weak_order<Comp, projected<iterator_t<Rng>, Proj>>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return min_element_fn::impl(nano::begin(rng), nano::end(rng),
@@ -10097,7 +10159,7 @@ public:
     constexpr std::enable_if_t<
         forward_range<Rng> &&
             indirect_strict_weak_order<Comp, projected<iterator_t<Rng>, Proj>>,
-        minmax_result<safe_iterator_t<Rng>>>
+        minmax_result<borrowed_iterator_t<Rng>>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return minmax_element_fn::impl(nano::begin(rng), nano::end(rng),
@@ -10186,7 +10248,7 @@ public:
 
     template <typename Rng>
     constexpr std::enable_if_t<bidirectional_range<Rng>,
-        safe_iterator_t<Rng>>
+                               borrowed_iterator_t<Rng>>
     operator()(Rng&& rng) const
     {
         return reverse_fn::impl(nano::begin(rng), nano::end(rng));
@@ -10265,7 +10327,7 @@ public:
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         bidirectional_range<Rng> && sortable<iterator_t<Rng>, Comp, Proj>,
-        next_permutation_result<safe_iterator_t<Rng>>>
+        next_permutation_result<borrowed_iterator_t<Rng>>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return next_permutation_fn::impl(nano::begin(rng), nano::end(rng),
@@ -10597,7 +10659,7 @@ public:
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     std::enable_if_t<random_access_range<Rng> &&
                          sortable<iterator_t<Rng>, Comp, Proj>,
-    safe_iterator_t<Rng>>
+                     borrowed_iterator_t<Rng>>
     constexpr operator()(Rng&& rng, iterator_t<Rng> nth,
                          Comp comp = Comp{}, Proj proj = Proj{}) const
     {
@@ -10685,7 +10747,7 @@ public:
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<random_access_range<Rng> &&
                                    sortable<iterator_t<Rng>, Comp, Proj>,
-                               safe_iterator_t<Rng>>
+                               borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return pop_heap_fn::impl(nano::begin(rng), nano::distance(rng), comp,
@@ -10737,7 +10799,7 @@ public:
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<random_access_range<Rng> &&
                                    sortable<iterator_t<Rng>, Comp, Proj>,
-                               safe_iterator_t<Rng>>
+                               borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return sort_heap_fn::impl(nano::begin(rng), nano::distance(rng), comp,
@@ -10790,7 +10852,8 @@ public:
 
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<random_access_range<Rng> &&
-                                   sortable<iterator_t<Rng>, Comp, Proj>, safe_iterator_t<Rng>>
+                                   sortable<iterator_t<Rng>, Comp, Proj>,
+                               borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, iterator_t<Rng> middle, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return partial_sort_fn::impl(nano::begin(rng), std::move(middle),
@@ -10882,7 +10945,7 @@ public:
             indirectly_copyable<iterator_t<Rng1>, iterator_t<Rng2>> &&
             sortable<iterator_t<Rng2>, Comp, Proj2> &&
             indirect_strict_weak_order<Comp, projected<iterator_t<Rng1>, Proj1>, projected<iterator_t<Rng2>, Proj2>>,
-    safe_iterator_t<Rng2>>
+        borrowed_iterator_t<Rng2>>
     operator()(Rng1&& rng, Rng2&& result_rng, Comp comp = Comp{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
@@ -10954,7 +11017,7 @@ public:
     constexpr std::enable_if_t<
         forward_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return partition_fn::impl(nano::begin(rng), nano::end(rng),
@@ -11059,7 +11122,7 @@ public:
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>> &&
             indirectly_copyable<iterator_t<Rng>, O1> &&
             indirectly_copyable<iterator_t<Rng>, O2>,
-        partition_copy_result<safe_iterator_t<Rng>, O1, O2>>
+        partition_copy_result<borrowed_iterator_t<Rng>, O1, O2>>
     operator()(Rng&& rng, O1 out_true, O2 out_false, Pred pred,
             Proj proj = Proj{}) const
     {
@@ -11165,7 +11228,7 @@ public:
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<
         bidirectional_range<Rng> && sortable<iterator_t<Rng>, Comp, Proj>,
-        prev_permutation_result<safe_iterator_t<Rng>>>
+        prev_permutation_result<borrowed_iterator_t<Rng>>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return prev_permutation_fn::impl(nano::begin(rng), nano::end(rng),
@@ -11212,7 +11275,7 @@ struct push_heap_fn {
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<random_access_range<Rng> &&
                                    sortable<iterator_t<Rng>, Comp, Proj>,
-                               safe_iterator_t<Rng>>
+                               borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         const auto n = nano::distance(rng);
@@ -11283,7 +11346,7 @@ public:
         forward_range<Rng> && permutable<iterator_t<Rng>> &&
             indirect_relation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T*>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
     {
         return remove_fn::impl(nano::begin(rng), nano::end(rng), value, proj);
@@ -11355,7 +11418,7 @@ public:
             indirectly_copyable<iterator_t<Rng>, O> &&
             indirect_relation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T*>,
-        remove_copy_result<safe_iterator_t<Rng>, O>>
+        remove_copy_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, const T& value, Proj proj = Proj{}) const
     {
         return remove_copy_fn::impl(nano::begin(rng), nano::end(rng),
@@ -11426,7 +11489,7 @@ public:
         input_range<Rng> && weakly_incrementable<O> &&
             indirectly_copyable<iterator_t<Rng>, O> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        remove_copy_if_result<safe_iterator_t<Rng>, O>>
+        remove_copy_if_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, Pred pred, Proj proj = Proj{}) const
     {
         return remove_copy_if_fn::impl(nano::begin(rng), nano::end(rng),
@@ -11495,7 +11558,7 @@ public:
     constexpr std::enable_if_t<
         forward_range<Rng> && permutable<iterator_t<Rng>> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return remove_if_fn::impl(nano::begin(rng), nano::end(rng), pred, proj);
@@ -11560,7 +11623,7 @@ public:
         input_range<Rng> && writable<iterator_t<Rng>, const T2&> &&
             indirect_relation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T1*>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, const T1& old_value, const T2& new_value,
                Proj proj = Proj{}) const
     {
@@ -11639,7 +11702,7 @@ public:
             indirectly_copyable<iterator_t<Rng>, O> &&
             indirect_relation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T1*>,
-        replace_copy_result<safe_iterator_t<Rng>, O>>
+        replace_copy_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, const T1& old_value, const T2& new_value,
                Proj proj = Proj{}) const
     {
@@ -11717,7 +11780,7 @@ public:
         input_range<Rng> && output_iterator<O, const T&> &&
             indirectly_copyable<iterator_t<Rng>, O> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        replace_copy_if_result<safe_iterator_t<Rng>, O>>
+        replace_copy_if_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, Pred pred, const T& new_value,
                Proj proj = Proj{}) const
     {
@@ -11785,7 +11848,7 @@ public:
     constexpr std::enable_if_t<
         input_range<Rng> && writable<iterator_t<Rng>, const T2&> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, const T2& new_value,
                Proj proj = Proj{}) const
     {
@@ -11860,7 +11923,7 @@ public:
     constexpr std::enable_if_t<bidirectional_range<Rng> &&
         weakly_incrementable<O> &&
                                    indirectly_copyable<iterator_t<Rng>, O>,
-        reverse_copy_result<safe_iterator_t<Rng>, O>>
+        reverse_copy_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
         return reverse_copy_fn::impl(nano::begin(rng), nano::end(rng),
@@ -11923,7 +11986,7 @@ public:
     constexpr std::enable_if_t<forward_range<Rng> &&
         weakly_incrementable<O> &&
                                    indirectly_copyable<iterator_t<Rng>, O>,
-        rotate_copy_result<safe_iterator_t<Rng>, O>>
+        rotate_copy_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, iterator_t<Rng> middle, O result) const
     {
         return rotate_copy_fn::impl(nano::begin(rng), std::move(middle),
@@ -12018,7 +12081,7 @@ public:
     -> std::enable_if_t<
             forward_range<Rng> &&
                 indirectly_comparable<iterator_t<Rng>, const T*, Pred, Proj>,
-        safe_subrange_t<Rng>>
+            borrowed_subrange_t<Rng>>
     {
         return search_n_fn::impl(nano::begin(rng), nano::end(rng), count, value, pred,
                                  proj);
@@ -12121,7 +12184,7 @@ public:
         input_range<Rng2> &&
         weakly_incrementable<O> &&
         mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp, Proj1, Proj2>,
-        set_difference_result<safe_iterator_t<Rng1>, O>>
+        set_difference_result<borrowed_iterator_t<Rng1>, O>>
     operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
@@ -12315,8 +12378,8 @@ public:
         input_range<Rng2> &&
         weakly_incrementable<O> &&
         mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp, Proj1, Proj2>,
-        set_symmetric_difference_result<safe_iterator_t<Rng1>,
-                                        safe_iterator_t<Rng2>, O>>
+        set_symmetric_difference_result<borrowed_iterator_t<Rng1>,
+                                        borrowed_iterator_t<Rng2>, O>>
     operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
@@ -12431,7 +12494,8 @@ public:
         input_range<Rng2> &&
         weakly_incrementable<O> &&
         mergeable<iterator_t<Rng1>, iterator_t<Rng2>, O, Comp, Proj1, Proj2>,
-        set_union_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>, O>>
+        set_union_result<borrowed_iterator_t<Rng1>,
+                                                borrowed_iterator_t<Rng2>, O>>
     operator()(Rng1&& rng1, Rng2&& rng2, O result, Comp comp = Comp{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
@@ -12565,7 +12629,7 @@ public:
         random_access_range<Rng> &&
             uniform_random_bit_generator<std::remove_reference_t<Gen>> &&
             convertible_to<invoke_result_t<Gen&>, iter_difference_t<iterator_t<Rng>>>,
-    safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Gen&& gen) const
     {
         return shuffle_fn::impl(nano::begin(rng), nano::end(rng),
@@ -13269,7 +13333,7 @@ struct sort_fn {
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     constexpr std::enable_if_t<random_access_range<Rng> &&
                                    sortable<iterator_t<Rng>, Comp, Proj>,
-    safe_iterator_t<Rng>>
+                               borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         iterator_t<Rng> last_it = nano::next(nano::begin(rng), nano::end(rng));
@@ -13449,7 +13513,7 @@ public:
         bidirectional_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>> &&
             permutable<iterator_t<Rng>>,
-    safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return stable_partition_fn::impl(nano::begin(rng), nano::end(rng),
@@ -13637,7 +13701,7 @@ public:
     template <typename Rng, typename Comp = ranges::less, typename Proj = identity>
     std::enable_if_t<random_access_range<Rng> &&
                          sortable<iterator_t<Rng>, Comp, Proj>,
-    safe_iterator_t<Rng>>
+                     borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         auto first = nano::begin(rng);
@@ -13712,7 +13776,7 @@ public:
         forward_range<Rng> &&
             indirect_relation<R, projected<iterator_t<Rng>, Proj>> &&
             permutable<iterator_t<Rng>>,
-            safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, R comp = {}, Proj proj = Proj{}) const
     {
         return unique_fn::impl(nano::begin(rng), nano::end(rng),
@@ -13808,7 +13872,7 @@ public:
                 indirect_relation<Comp, projected<iterator_t<Rng>, Proj>> &&
                 indirectly_copyable<iterator_t<Rng>, O> &&
             decltype(constraint_helper<iterator_t<Rng>, O>(priority_tag<2>{}))::value,
-       unique_copy_result<safe_iterator_t<Rng>, O>>
+       unique_copy_result<borrowed_iterator_t<Rng>, O>>
     {
         return unique_copy_fn::impl(nano::begin(rng), nano::end(rng),
                                     std::move(result), comp, proj);
@@ -14457,7 +14521,8 @@ public:
     std::enable_if_t<
         input_range<IRng> && no_throw_forward_range<ORng> &&
         constructible_from<iter_value_t<iterator_t<ORng>>, iter_reference_t<iterator_t<IRng>>>,
-        uninitialized_copy_result<safe_iterator_t<IRng>, safe_iterator_t<ORng>>>
+        uninitialized_copy_result<borrowed_iterator_t<IRng>,
+                                               borrowed_iterator_t<ORng>>>
     operator()(IRng&& irng, ORng&& orng) const
     {
         return uninitialized_copy_fn::impl4(
@@ -14486,7 +14551,7 @@ public:
         input_range<IRng> && no_throw_forward_iterator<std::decay_t<O>> &&
         !no_throw_forward_range<O> &&
         constructible_from<iter_value_t<std::decay_t<O>>, iter_reference_t<iterator_t<IRng>>>,
-        uninitialized_copy_result<safe_iterator_t<IRng>, std::decay_t<O>>>
+        uninitialized_copy_result<borrowed_iterator_t<IRng>, std::decay_t<O>>>
     operator()(IRng&& irng, O&& ofirst) const
     {
         return uninitialized_copy_fn::impl3(
@@ -14587,7 +14652,7 @@ public:
     template <typename Rng>
     std::enable_if_t<no_throw_forward_range<Rng> &&
         default_constructible<iter_value_t<iterator_t<Rng>>>,
-        safe_iterator_t<Rng>>
+                     borrowed_iterator_t<Rng>>
     operator()(Rng&& rng) const
     {
         return uninitialized_default_construct_fn::impl(
@@ -14673,7 +14738,7 @@ public:
     std::enable_if_t<
         no_throw_forward_range<Rng> &&
         constructible_from<iter_value_t<iterator_t<Rng>>, const T&>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, const T& x) const
     {
         return uninitialized_fill_fn::impl(nano::begin(rng), nano::end(rng), x);
@@ -14784,7 +14849,8 @@ public:
     std::enable_if_t<
         input_range<IRng> && no_throw_forward_range<ORng> &&
         constructible_from<iter_value_t<iterator_t<ORng>>, iter_rvalue_reference_t<iterator_t<IRng>>>,
-        uninitialized_move_result<safe_iterator_t<IRng>, safe_iterator_t<ORng>>>
+        uninitialized_move_result<borrowed_iterator_t<IRng>,
+                                  borrowed_iterator_t<ORng>>>
     operator()(IRng&& irng, ORng&& orng) const
     {
         return uninitialized_move_fn::impl4(
@@ -14813,7 +14879,7 @@ public:
         input_range<IRng> && no_throw_forward_iterator<std::decay_t<O>> &&
         !no_throw_forward_range<O> &&
         constructible_from<iter_value_t<std::decay_t<O>>, iter_rvalue_reference_t<iterator_t<IRng>>>,
-        uninitialized_move_result<safe_iterator_t<IRng>, std::decay_t<O>>>
+        uninitialized_move_result<borrowed_iterator_t<IRng>, std::decay_t<O>>>
     operator()(IRng&& irng, O&& ofirst) const
     {
         return uninitialized_move_fn::impl3(
@@ -14914,7 +14980,7 @@ public:
     template <typename Rng>
     std::enable_if_t<no_throw_forward_range<Rng> &&
         default_constructible<iter_value_t<iterator_t<Rng>>>,
-        safe_iterator_t<Rng>>
+                     borrowed_iterator_t<Rng>>
     operator()(Rng&& rng) const
     {
         return uninitialized_value_construct_fn::impl(
@@ -15137,10 +15203,6 @@ public:
     {
         return ranges::data(*r_);
     }
-
-    friend constexpr iterator_t<R> begin(ref_view r) { return r.begin(); }
-
-    friend constexpr sentinel_t<R> end(ref_view r) { return r.end(); }
 };
 
 template <typename R, std::enable_if_t<range<R> && std::is_object_v<R>, int> = 0>
@@ -15149,6 +15211,9 @@ ref_view(R&) -> ref_view<R>;
 } // namespace ref_view_
 
 using ref_view_::ref_view;
+
+template <typename R>
+inline constexpr bool enable_borrowed_range<ref_view<R>> = true;
 
 NANO_END_NAMESPACE
 
@@ -16143,6 +16208,9 @@ public:
 
 using empty_view_::empty_view;
 
+template <typename T>
+inline constexpr bool enable_borrowed_range<empty_view<T>> = true;
+
 namespace views {
 
 template <typename T, typename = std::enable_if_t<std::is_object<T>::value>>
@@ -16796,6 +16864,9 @@ template <typename W, typename Bound, std::enable_if_t<
     !integral<W> || !integral<Bound> ||
         (signed_integral<W> == signed_integral<Bound>), int> = 0>
 iota_view(W, Bound) -> iota_view<W, Bound>;
+
+template <typename W, typename Bound>
+inline constexpr bool enable_borrowed_range<iota_view<W, Bound>> = true;
 
 namespace views {
 
