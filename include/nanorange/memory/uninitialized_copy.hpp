@@ -77,7 +77,8 @@ public:
     std::enable_if_t<
         input_range<IRng> && no_throw_forward_range<ORng> &&
         constructible_from<iter_value_t<iterator_t<ORng>>, iter_reference_t<iterator_t<IRng>>>,
-        uninitialized_copy_result<safe_iterator_t<IRng>, safe_iterator_t<ORng>>>
+        uninitialized_copy_result<borrowed_iterator_t<IRng>,
+                                               borrowed_iterator_t<ORng>>>
     operator()(IRng&& irng, ORng&& orng) const
     {
         return uninitialized_copy_fn::impl4(
@@ -106,7 +107,7 @@ public:
         input_range<IRng> && no_throw_forward_iterator<std::decay_t<O>> &&
         !no_throw_forward_range<O> &&
         constructible_from<iter_value_t<std::decay_t<O>>, iter_reference_t<iterator_t<IRng>>>,
-        uninitialized_copy_result<safe_iterator_t<IRng>, std::decay_t<O>>>
+        uninitialized_copy_result<borrowed_iterator_t<IRng>, std::decay_t<O>>>
     operator()(IRng&& irng, O&& ofirst) const
     {
         return uninitialized_copy_fn::impl3(

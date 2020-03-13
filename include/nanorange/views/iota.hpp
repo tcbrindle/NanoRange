@@ -351,6 +351,9 @@ template <typename W, typename Bound, std::enable_if_t<
         (signed_integral<W> == signed_integral<Bound>), int> = 0>
 iota_view(W, Bound) -> iota_view<W, Bound>;
 
+template <typename W, typename Bound>
+inline constexpr bool enable_borrowed_range<iota_view<W, Bound>> = true;
+
 namespace views {
 
 namespace detail {

@@ -48,7 +48,7 @@ public:
         input_range<Rng> && writable<iterator_t<Rng>, const T2&> &&
             indirect_relation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T1*>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, const T1& old_value, const T2& new_value,
                Proj proj = Proj{}) const
     {

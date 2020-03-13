@@ -76,7 +76,7 @@ public:
     -> std::enable_if_t<
             forward_range<Rng> &&
                 indirectly_comparable<iterator_t<Rng>, const T*, Pred, Proj>,
-        safe_subrange_t<Rng>>
+            borrowed_subrange_t<Rng>>
     {
         return search_n_fn::impl(nano::begin(rng), nano::end(rng), count, value, pred,
                                  proj);

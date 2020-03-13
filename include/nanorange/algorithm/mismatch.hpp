@@ -98,7 +98,7 @@ public:
                 !input_range<I2> &&
             indirect_relation<Pred, projected<iterator_t<Rng1>, Proj1>,
                              projected<std::decay_t<I2>, Proj2>>,
-        mismatch_result<safe_iterator_t<Rng1>, std::decay_t<I2>>>
+        mismatch_result<borrowed_iterator_t<Rng1>, std::decay_t<I2>>>
     operator()(Rng1&& rng1, I2&& first2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {
@@ -131,7 +131,7 @@ public:
         input_range<Rng1> && input_range<Rng2> &&
             indirect_relation<Pred, projected<iterator_t<Rng1>, Proj1>,
                              projected<iterator_t<Rng2>, Proj2>>,
-        mismatch_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>>>
+        mismatch_result<borrowed_iterator_t<Rng1>, borrowed_iterator_t<Rng2>>>
     operator()(Rng1&& rng1, Rng2&& rng2, Pred pred = Pred{},
                Proj1 proj1 = Proj1{}, Proj2 proj2 = Proj2{}) const
     {

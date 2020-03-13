@@ -67,7 +67,8 @@ public:
     constexpr std::enable_if_t<
         forward_range<Rng1> && forward_range<Rng2> &&
             indirectly_swappable<iterator_t<Rng1>, iterator_t<Rng2>>,
-            swap_ranges_result<safe_iterator_t<Rng1>, safe_iterator_t<Rng2>>>
+            swap_ranges_result<borrowed_iterator_t<Rng1>,
+                           borrowed_iterator_t<Rng2>>>
     operator()(Rng1&& rng1, Rng2&& rng2) const
     {
         return swap_ranges_fn::impl4(nano::begin(rng1), nano::end(rng1),
@@ -79,7 +80,7 @@ public:
     constexpr std::enable_if_t<
         forward_range<Rng1> && forward_iterator<I2> &&
             indirectly_swappable<iterator_t<Rng1>, I2>,
-            swap_ranges_result<safe_iterator_t<Rng1>, I2>>
+            swap_ranges_result<borrowed_iterator_t<Rng1>, I2>>
     operator()(Rng1&& rng1, I2 first2) const
     {
         return swap_ranges_fn::impl3(nano::begin(rng1), nano::end(rng1),

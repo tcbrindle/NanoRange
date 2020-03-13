@@ -16,24 +16,30 @@ namespace detail {
 namespace rbegin_ {
 
 template <typename T>
-void rbegin(T&&) = delete;
+void rbegin(T&) = delete;
 
 template <typename T>
-void rbegin(std::initializer_list<T>) = delete;
+void rbegin(const T&) = delete;
 
 struct fn {
 private:
     template <typename T,
-              typename I = decltype(decay_copy(std::declval<T&>().rbegin()))>
+              std::enable_if_t<
+                  !std::is_lvalue_reference_v<T> &&
+                  !enable_borrowed_range<std::remove_cv_t<T>>, int> = 0>
+    static constexpr void impl(T&&, priority_tag<3>) = delete;
+
+    template <typename T,
+              typename I = decltype(decay_copy(std::declval<T>().rbegin()))>
     static constexpr auto
-    impl(T& t, priority_tag<2>) noexcept(noexcept(decay_copy(t.rbegin())))
+    impl(T&& t, priority_tag<2>) noexcept(noexcept(decay_copy(std::forward<T>(t).rbegin())))
         -> std::enable_if_t<input_or_output_iterator<I>, I>
     {
-        return t.rbegin();
+        return std::forward<T>(t).rbegin();
     }
 
     template <typename T,
-              typename I = decltype(decay_copy(rbegin(std::declval<T&&>())))>
+              typename I = decltype(decay_copy(rbegin(std::declval<T>())))>
     static constexpr auto impl(T&& t, priority_tag<1>) noexcept(
         noexcept(decay_copy(rbegin(std::forward<T>(t)))))
         -> std::enable_if_t<input_or_output_iterator<I>, I>
@@ -42,8 +48,8 @@ private:
     }
 
     template <typename T,
-              typename I = decltype(ranges::begin(std::declval<T&&>())),
-              typename S = decltype(ranges::end(std::declval<T&&>()))>
+              typename I = decltype(ranges::begin(std::declval<T>())),
+              typename S = decltype(ranges::end(std::declval<T>()))>
     static constexpr auto impl(T&& t, priority_tag<0>) noexcept(
         noexcept(ranges::make_reverse_iterator(ranges::end(std::forward<T>(t)))))
         -> std::enable_if_t<same_as<I, S> && bidirectional_iterator<I>,
@@ -56,10 +62,10 @@ private:
 public:
     template <typename T>
     constexpr auto operator()(T&& t) const
-        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<2>{})))
-            -> decltype(fn::impl(std::forward<T>(t), priority_tag<2>{}))
+        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<3>{})))
+            -> decltype(fn::impl(std::forward<T>(t), priority_tag<3>{}))
     {
-        return fn::impl(std::forward<T>(t), priority_tag<2>{});
+        return fn::impl(std::forward<T>(t), priority_tag<3>{});
     }
 };
 
@@ -72,26 +78,32 @@ namespace detail {
 namespace rend_ {
 
 template <typename T>
-void rend(T&&) = delete;
+void rend(T&) = delete;
 
 template <typename T>
-void rend(std::initializer_list<T>) = delete;
+void rend(const T&) = delete;
 
 struct fn {
 private:
     template <typename T,
-              typename I = decltype(ranges::begin(std::declval<T&>())),
-              typename S = decltype(decay_copy(std::declval<T&>().rend()))>
+              std::enable_if_t<
+                  !std::is_lvalue_reference_v<T> &&
+                  !enable_borrowed_range<std::remove_cv_t<T>>, int> = 0>
+    static constexpr void impl(T&&, priority_tag<3>) = delete;
+
+    template <typename T,
+              typename I = decltype(ranges::rbegin(std::declval<T>())),
+              typename S = decltype(decay_copy(std::declval<T>().rend()))>
     static constexpr auto
-    impl(T& t, priority_tag<2>) noexcept(noexcept(decay_copy(t.rend())))
+    impl(T&& t, priority_tag<2>) noexcept(noexcept(decay_copy(std::forward<T>(t).rend())))
         -> std::enable_if_t<sentinel_for<S, I>, S>
     {
-        return t.rend();
+        return std::forward<T>(t).rend();
     }
 
     template <typename T,
-              typename I = decltype(ranges::begin(std::declval<T&&>())),
-              typename S = decltype(decay_copy(rend(std::declval<T&&>())))>
+              typename I = decltype(ranges::rbegin(std::declval<T>())),
+              typename S = decltype(decay_copy(rend(std::declval<T>())))>
     static constexpr auto impl(T&& t, priority_tag<1>) noexcept(
         noexcept(decay_copy(rend(std::forward<T>(t)))))
         -> std::enable_if_t<sentinel_for<S, I>, S>
@@ -100,8 +112,8 @@ private:
     }
 
     template <typename T,
-              typename I = decltype(ranges::begin(std::declval<T&&>())),
-              typename S = decltype(ranges::end(std::declval<T&&>()))>
+              typename I = decltype(ranges::begin(std::declval<T>())),
+              typename S = decltype(ranges::end(std::declval<T>()))>
     static constexpr auto impl(T&& t, priority_tag<0>) noexcept(
         noexcept(ranges::make_reverse_iterator(ranges::begin(std::forward<T>(t)))))
         -> std::enable_if_t<same_as<I, S> && bidirectional_iterator<I>,
@@ -114,10 +126,10 @@ private:
 public:
     template <typename T>
     constexpr auto operator()(T&& t) const
-        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<2>{})))
-            -> decltype(fn::impl(std::forward<T>(t), priority_tag<2>{}))
+        noexcept(noexcept(fn::impl(std::forward<T>(t), priority_tag<3>{})))
+            -> decltype(fn::impl(std::forward<T>(t), priority_tag<3>{}))
     {
-        return fn::impl(std::forward<T>(t), priority_tag<2>{});
+        return fn::impl(std::forward<T>(t), priority_tag<3>{});
     }
 };
 
@@ -130,19 +142,32 @@ namespace detail {
 namespace crbegin_ {
 
 struct fn {
-    template <typename T>
-    constexpr auto operator()(const T& t) const
-        noexcept(noexcept(ranges::rbegin(t))) -> decltype(ranges::rbegin(t))
+private:
+    template <typename T, typename U = std::remove_reference_t<T>,
+              std::enable_if_t<std::is_lvalue_reference_v<T>, int> = 0>
+    static constexpr auto impl(T&& t)
+        noexcept(noexcept(ranges::rbegin(static_cast<const U&>(t))))
+        -> decltype(ranges::rbegin(static_cast<const U&>(t)))
     {
-        return ranges::rbegin(t);
+        return ranges::rbegin(static_cast<const U&>(t));
     }
 
-    template <typename T>
-    constexpr auto operator()(const T&& t) const
+    template <typename T,
+              std::enable_if_t<!std::is_lvalue_reference_v<T>, int> = 0>
+    static constexpr auto impl(T&& t)
         noexcept(noexcept(ranges::rbegin(static_cast<const T&&>(t))))
             -> decltype(ranges::rbegin(static_cast<const T&&>(t)))
     {
         return ranges::rbegin(static_cast<const T&&>(t));
+    }
+
+public:
+    template <typename T>
+    constexpr auto operator()(T&& t) const
+        noexcept(noexcept(fn::impl(std::forward<T>(t))))
+        -> decltype(fn::impl(std::forward<T>(t)))
+    {
+        return fn::impl(std::forward<T>(t));
     }
 };
 
@@ -155,19 +180,32 @@ namespace detail {
 namespace crend_ {
 
 struct fn {
-    template <typename T>
-    constexpr auto operator()(const T& t) const
-        noexcept(noexcept(ranges::rend(t))) -> decltype(ranges::rend(t))
+private:
+    template <typename T, typename U = std::remove_reference_t<T>,
+              std::enable_if_t<std::is_lvalue_reference_v<T>, int> = 0>
+    static constexpr auto impl(T&& t)
+        noexcept(noexcept(ranges::rend(static_cast<const U&>(t))))
+        -> decltype(ranges::rend(static_cast<const U&>(t)))
     {
-        return ranges::rend(t);
+        return ranges::rend(static_cast<const U&>(t));
     }
 
-    template <typename T>
-    constexpr auto operator()(const T&& t) const
+    template <typename T,
+              std::enable_if_t<!std::is_lvalue_reference_v<T>, int> = 0>
+    static constexpr auto impl(T&& t)
         noexcept(noexcept(ranges::rend(static_cast<const T&&>(t))))
             -> decltype(ranges::rend(static_cast<const T&&>(t)))
     {
         return ranges::rend(static_cast<const T&&>(t));
+    }
+
+public:
+    template <typename T>
+    constexpr auto operator()(T&& t) const
+        noexcept(noexcept(fn::impl(std::forward<T>(t))))
+        -> decltype(fn::impl(std::forward<T>(t)))
+    {
+        return fn::impl(std::forward<T>(t));
     }
 };
 

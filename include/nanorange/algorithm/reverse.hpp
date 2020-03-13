@@ -47,7 +47,7 @@ public:
 
     template <typename Rng>
     constexpr std::enable_if_t<bidirectional_range<Rng>,
-        safe_iterator_t<Rng>>
+                               borrowed_iterator_t<Rng>>
     operator()(Rng&& rng) const
     {
         return reverse_fn::impl(nano::begin(rng), nano::end(rng));

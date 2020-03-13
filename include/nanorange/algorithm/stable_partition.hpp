@@ -160,7 +160,7 @@ public:
         bidirectional_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>> &&
             permutable<iterator_t<Rng>>,
-    safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return stable_partition_fn::impl(nano::begin(rng), nano::end(rng),

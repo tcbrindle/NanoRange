@@ -87,7 +87,7 @@ public:
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>> &&
             indirectly_copyable<iterator_t<Rng>, O1> &&
             indirectly_copyable<iterator_t<Rng>, O2>,
-        partition_copy_result<safe_iterator_t<Rng>, O1, O2>>
+        partition_copy_result<borrowed_iterator_t<Rng>, O1, O2>>
     operator()(Rng&& rng, O1 out_true, O2 out_false, Pred pred,
             Proj proj = Proj{}) const
     {

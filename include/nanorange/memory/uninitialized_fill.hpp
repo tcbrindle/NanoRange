@@ -47,7 +47,7 @@ public:
     std::enable_if_t<
         no_throw_forward_range<Rng> &&
         constructible_from<iter_value_t<iterator_t<Rng>>, const T&>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, const T& x) const
     {
         return uninitialized_fill_fn::impl(nano::begin(rng), nano::end(rng), x);

@@ -83,7 +83,7 @@ public:
     template <typename Rng, typename O>
     constexpr std::enable_if_t<input_range<Rng> && weakly_incrementable<O> &&
                                    indirectly_copyable<iterator_t<Rng>, O>,
-                               copy_result<safe_iterator_t<Rng>, O>>
+                               copy_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result) const
     {
         return copy_fn::impl(nano::begin(rng), nano::end(rng),
@@ -162,7 +162,7 @@ public:
     constexpr std::enable_if_t<
         input_range<Rng> && weakly_incrementable<O> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        copy_if_result<safe_iterator_t<Rng>, O>>
+        copy_if_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, Pred pred, Proj proj = Proj{}) const
     {
         return copy_if_fn::impl(nano::begin(rng), nano::end(rng),
@@ -212,7 +212,7 @@ public:
     constexpr std::enable_if_t<bidirectional_range<Rng> &&
                                    bidirectional_iterator<I> &&
                                    indirectly_copyable<iterator_t<Rng>, I>,
-                               copy_backward_result<safe_iterator_t<Rng>, I>>
+                               copy_backward_result<borrowed_iterator_t<Rng>, I>>
     operator()(Rng&& rng, I result) const
     {
         return copy_backward_fn::impl(nano::begin(rng), nano::end(rng),

@@ -35,8 +35,8 @@ namespace {
 
 	template <typename R, typename O>
 	constexpr
-	//tagged_pair<tag::in(safe_iterator_t<R>), tag::out(O)>
-	std::pair<safe_iterator_t<R>, O>
+	//tagged_pair<tag::in(borrowed_iterator_t<R>), tag::out(O)>
+	std::pair<borrowed_iterator_t<R>, O>
 	copy(R&& range, O out) {
 		return ::copy(std::begin(range), std::end(range), std::move(out));
 	}

@@ -36,7 +36,8 @@ public:
     }
 
     template <typename T, typename Rng>
-    constexpr std::enable_if_t<output_range<Rng, const T&>, safe_iterator_t<Rng>>
+    constexpr std::enable_if_t<output_range<Rng, const T&>,
+                               borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, const T& value) const
     {
         return fill_fn::impl(nano::begin(rng), nano::end(rng), value);

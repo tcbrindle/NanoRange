@@ -33,6 +33,9 @@ public:
 
 using empty_view_::empty_view;
 
+template <typename T>
+inline constexpr bool enable_borrowed_range<empty_view<T>> = true;
+
 namespace views {
 
 template <typename T, typename = std::enable_if_t<std::is_object<T>::value>>

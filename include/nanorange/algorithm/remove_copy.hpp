@@ -55,7 +55,7 @@ public:
             indirectly_copyable<iterator_t<Rng>, O> &&
             indirect_relation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T*>,
-        remove_copy_result<safe_iterator_t<Rng>, O>>
+        remove_copy_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, const T& value, Proj proj = Proj{}) const
     {
         return remove_copy_fn::impl(nano::begin(rng), nano::end(rng),

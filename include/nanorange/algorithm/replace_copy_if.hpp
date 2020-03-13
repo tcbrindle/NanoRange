@@ -58,7 +58,7 @@ public:
         input_range<Rng> && output_iterator<O, const T&> &&
             indirectly_copyable<iterator_t<Rng>, O> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        replace_copy_if_result<safe_iterator_t<Rng>, O>>
+        replace_copy_if_result<borrowed_iterator_t<Rng>, O>>
     operator()(Rng&& rng, O result, Pred pred, const T& new_value,
                Proj proj = Proj{}) const
     {

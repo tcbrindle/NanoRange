@@ -95,7 +95,7 @@ public:
     constexpr std::enable_if_t<
         forward_range<Rng> &&
             indirect_strict_weak_order<Comp, projected<iterator_t<Rng>, Proj>>,
-        minmax_result<safe_iterator_t<Rng>>>
+        minmax_result<borrowed_iterator_t<Rng>>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return minmax_element_fn::impl(nano::begin(rng), nano::end(rng),

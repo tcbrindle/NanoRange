@@ -47,7 +47,7 @@ public:
     constexpr std::enable_if_t<
         input_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return find_if_fn::impl(nano::begin(rng), nano::end(rng), pred, proj);
@@ -76,7 +76,7 @@ struct find_fn {
         input_range<Rng> &&
             indirect_relation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T*>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
     {
         const auto pred = [&value] (const auto& t) { return t == value; };
@@ -119,7 +119,7 @@ public:
     constexpr std::enable_if_t<
         input_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        safe_iterator_t<Rng>>
+        borrowed_iterator_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         const auto find_if_pred = not_pred<Pred>{pred};
