@@ -16,7 +16,7 @@
 language: cpp
 
 os: linux
-dist: trusty
+dist: xenial
 sudo: false
 
 # Do not build branches of the form "pr/*". By prefixing pull requests coming
@@ -54,7 +54,6 @@ matrix:
     - language: python
       python:
         - "3.7"
-      dist: xenial
       install:
         - pip install conan-package-tools
       env:
@@ -97,7 +96,7 @@ matrix:
             - libc++abi-9-dev
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-9
+            - llvm-toolchain-xenial-9
 
     # Clang 8
     - env: COMPILER=clang++-8
@@ -109,7 +108,7 @@ matrix:
             - libc++abi-8-dev
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-8
+            - llvm-toolchain-xenial-8
 
     # Clang 7
     - env: COMPILER=clang++-7
@@ -121,7 +120,7 @@ matrix:
             - libc++abi-7-dev
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-7
+            - llvm-toolchain-xenial-7
 
     # Clang 6
     - env: COMPILER=clang++-6.0
@@ -131,7 +130,7 @@ matrix:
             - clang-6.0
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-6.0
+            - llvm-toolchain-xenial-6.0
 
     # Clang 5
     - env: COMPILER=clang++-5.0
@@ -141,7 +140,7 @@ matrix:
             - clang-5.0
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-5.0
+            - llvm-toolchain-xenial-5.0
 
 install:
   - DEPS_DIR="${HOME}/deps"
@@ -161,6 +160,7 @@ install:
         elif [[ "${CXX}" == "clang++-6.0" ]]; then LLVM_VERSION="6.0.0";
         elif [[ "${CXX}" == "clang++-7" ]]; then LLVM_VERSION="7.0.0";
         elif [[ "${CXX}" == "clang++-8" ]]; then LLVM_VERSION="8.0.0";
+        elif [[ "${CXX}" == "clang++-9" ]]; then LLVM_VERSION="9.0.0";
         fi
         LLVM_URL="http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
         LIBCXX_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
