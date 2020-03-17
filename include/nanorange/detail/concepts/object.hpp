@@ -9,10 +9,27 @@
 
 #include <nanorange/detail/concepts/comparison.hpp>
 #include <nanorange/detail/concepts/core.hpp>
-#include <nanorange/detail/concepts/movable.hpp>
 #include <nanorange/detail/functional/invoke.hpp>
 
 NANO_BEGIN_NAMESPACE
+
+// [concept.movable]
+namespace detail {
+
+struct movable_concept {
+    template <typename T>
+    static auto test(long) -> std::false_type;
+
+    template <typename T>
+    static auto test(int) -> std::enable_if_t<
+        std::is_object_v<T> && move_constructible<T> &&
+        assignable_from<T&, T> && swappable<T>,
+        std::true_type>;
+};
+}
+
+template <typename T>
+NANO_CONCEPT movable = decltype(detail::movable_concept::test<T>(0))::value;
 
 // [concept.copyable]
 namespace detail {
@@ -23,8 +40,8 @@ struct copyable_concept {
 
     template <typename T>
     static auto test(int) -> std::enable_if_t<
-        copy_constructible<T> && movable<T> &&
-        assignable_from<T&, const T&>,
+        copy_constructible<T> && movable<T> && assignable_from<T&, T&> &&
+        assignable_from<T&, const T&> && assignable_from<T&, const T>,
         std::true_type>;
 
 };

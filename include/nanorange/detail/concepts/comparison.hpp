@@ -8,7 +8,6 @@
 #define NANORANGE_DETAIL_CONCEPTS_COMPARISON_HPP_INCLUDED
 
 #include <nanorange/detail/concepts/core.hpp>
-#include <nanorange/detail/concepts/movable.hpp>
 #include <nanorange/detail/concepts/swappable.hpp>
 
 NANO_BEGIN_NAMESPACE
