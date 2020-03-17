@@ -16,8 +16,7 @@
 language: cpp
 
 os: linux
-dist: trusty
-sudo: false
+dist: xenial
 
 # Do not build branches of the form "pr/*". By prefixing pull requests coming
 # from branches inside the repository with pr/, this avoids building both the
@@ -31,6 +30,10 @@ matrix:
     #
     # Mac OS builds
     #
+    - os: osx
+      osx_image: xcode11.3
+      env: COMPILER=clang++
+
     - os: osx
       osx_image: xcode11
       env: COMPILER=clang++
@@ -48,9 +51,7 @@ matrix:
     #
     # GCC 9
     - language: python
-      python:
-        - "3.7"
-      dist: xenial
+      python: "3.7"
       install:
         - pip install conan-package-tools
       env:
@@ -83,6 +84,19 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
 
+    # Clang 9
+    - env: COMPILER=clang++-9
+      addons:
+        apt:
+          packages:
+            - clang-9
+            - libc++-9-dev
+            - libc++abi-9-dev
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main'
+              key_url: https://apt.llvm.org/llvm-snapshot.gpg.key
+
     # Clang 8
     - env: COMPILER=clang++-8
       addons:
@@ -93,7 +107,7 @@ matrix:
             - libc++abi-8-dev
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-8
+            - llvm-toolchain-xenial-8
 
     # Clang 7
     - env: COMPILER=clang++-7
@@ -105,7 +119,7 @@ matrix:
             - libc++abi-7-dev
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-7
+            - llvm-toolchain-xenial-7
 
     # Clang 6
     - env: COMPILER=clang++-6.0
@@ -115,7 +129,7 @@ matrix:
             - clang-6.0
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-6.0
+            - llvm-toolchain-xenial-6.0
 
     # Clang 5
     - env: COMPILER=clang++-5.0
@@ -125,7 +139,7 @@ matrix:
             - clang-5.0
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-5.0
+            - llvm-toolchain-xenial-5.0
 
 install:
   - DEPS_DIR="${HOME}/deps"
@@ -145,6 +159,7 @@ install:
         elif [[ "${CXX}" == "clang++-6.0" ]]; then LLVM_VERSION="6.0.0";
         elif [[ "${CXX}" == "clang++-7" ]]; then LLVM_VERSION="7.0.0";
         elif [[ "${CXX}" == "clang++-8" ]]; then LLVM_VERSION="8.0.0";
+        elif [[ "${CXX}" == "clang++-9" ]]; then LLVM_VERSION="9.0.0";
         fi
         LLVM_URL="http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
         LIBCXX_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
