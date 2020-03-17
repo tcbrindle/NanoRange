@@ -36,7 +36,7 @@ NANO_CONCEPT copyable = decltype(detail::copyable_concept::test<T>(0))::value;
 
 // [concept.semiregular]
 template <typename T>
-NANO_CONCEPT semiregular = copyable<T> && default_constructible<T>;
+NANO_CONCEPT semiregular = copyable<T> && default_initializable<T>;
 
 // [concept.regular]
 template <typename T>

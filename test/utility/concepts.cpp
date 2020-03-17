@@ -146,14 +146,14 @@ struct XXX
 
 static_assert(ranges::constructible_from<XXX, int>, "");
 
-static_assert(ranges::default_constructible<int>, "");
-static_assert(ranges::default_constructible<int const>, "");
-static_assert(!ranges::default_constructible<int const &>, "");
-static_assert(!ranges::default_constructible<int ()>, "");
-static_assert(!ranges::default_constructible<int(&)()>, "");
-static_assert(!ranges::default_constructible<int[]>, "");
-static_assert(ranges::default_constructible<int[5]>, "");
-static_assert(!ranges::default_constructible<nondefaultconstructible>, "");
+static_assert(ranges::default_initializable<int>, "");
+static_assert(!ranges::default_initializable<int const>, "");
+static_assert(!ranges::default_initializable<int const &>, "");
+static_assert(!ranges::default_initializable<int ()>, "");
+static_assert(!ranges::default_initializable<int(&)()>, "");
+static_assert(!ranges::default_initializable<int[]>, "");
+static_assert(ranges::default_initializable<int[5]>, "");
+static_assert(!ranges::default_initializable<nondefaultconstructible>, "");
 
 static_assert(ranges::move_constructible<int>, "");
 static_assert(ranges::move_constructible<const int>, "");

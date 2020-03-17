@@ -27,14 +27,14 @@ private:
 
 public:
     template <typename U = T,
-              std::enable_if_t<default_constructible<U>, int> = 0>
+              std::enable_if_t<default_initializable<U>, int> = 0>
     constexpr semiregular_box()
         noexcept(std::is_nothrow_default_constructible_v<T>)
         : semiregular_box{std::in_place}
     {}
 
     template <typename U = T,
-              std::enable_if_t<!default_constructible<U>, int> = 0>
+              std::enable_if_t<!default_initializable<U>, int> = 0>
     constexpr semiregular_box() {}
 
     // All other constructors get forwarded to optional -- but don't hijack

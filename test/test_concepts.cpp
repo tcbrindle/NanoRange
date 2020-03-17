@@ -170,11 +170,13 @@ struct agg {
     int i; float f;
 };
 
-static_assert(!rng::default_constructible<void>, "");
-static_assert(rng::default_constructible<int>, "");
-static_assert(rng::default_constructible<agg>, "");
-static_assert(rng::default_constructible<std::string>, "");
-static_assert(!rng::default_constructible<from_int_only>, "");
+static_assert(!rng::default_initializable<void>, "");
+static_assert(rng::default_initializable<int>, "");
+static_assert(rng::default_initializable<agg>, "");
+static_assert(rng::default_initializable<std::string>, "");
+static_assert(!rng::default_initializable<from_int_only>, "");
+static_assert(!rng::default_initializable<const int>);
+static_assert(rng::default_initializable<int[2]>);
 
 // MoveConstructible tests
 struct no_copy_or_move {

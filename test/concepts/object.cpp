@@ -205,24 +205,25 @@ CONCEPT_ASSERT(models::constructible_from<const int&&, const int&&>);
 
 CONCEPT_ASSERT(models::constructible_from<XXX, int>);
 
-CONCEPT_ASSERT(models::default_constructible<int>);
-CONCEPT_ASSERT(models::default_constructible<int const>);
-CONCEPT_ASSERT(!models::default_constructible<int&>);
-CONCEPT_ASSERT(!models::default_constructible<int const&>);
-CONCEPT_ASSERT(!models::default_constructible<int()>);
-CONCEPT_ASSERT(!models::default_constructible<int (&)()>);
-CONCEPT_ASSERT(models::default_constructible<double>);
-CONCEPT_ASSERT(!models::default_constructible<void>);
-CONCEPT_ASSERT(!models::default_constructible<int[]>);
-CONCEPT_ASSERT(models::default_constructible<int[2]>);
-CONCEPT_ASSERT(!models::default_constructible<nondefaultconstructible>);
+CONCEPT_ASSERT(models::default_initializable<int>);
+CONCEPT_ASSERT(!models::default_initializable<int const>);
+CONCEPT_ASSERT(!models::default_initializable<int&>);
+CONCEPT_ASSERT(!models::default_initializable<int const&>);
+CONCEPT_ASSERT(!models::default_initializable<int()>);
+CONCEPT_ASSERT(!models::default_initializable<int (&)()>);
+CONCEPT_ASSERT(models::default_initializable<double>);
+CONCEPT_ASSERT(!models::default_initializable<void>);
+CONCEPT_ASSERT(!models::default_initializable<int[]>);
+CONCEPT_ASSERT(models::constructible_from<int[2]>);
+CONCEPT_ASSERT(models::default_initializable<int[2]>);
+CONCEPT_ASSERT(!models::default_initializable<nondefaultconstructible>);
 
 // It's hard to catch explicit default constructors, see
 // http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#1518.
-// CONCEPT_ASSERT(!models::default_constructible<explicit_default>);
-CONCEPT_ASSERT(models::default_constructible<explicit_move>);
-CONCEPT_ASSERT(models::default_constructible<explicit_copy>);
-CONCEPT_ASSERT(!models::default_constructible<deleted_default>);
+// CONCEPT_ASSERT(!models::default_initializable<explicit_default>);
+CONCEPT_ASSERT(models::default_initializable<explicit_move>);
+CONCEPT_ASSERT(models::default_initializable<explicit_copy>);
+CONCEPT_ASSERT(!models::default_initializable<deleted_default>);
 
 CONCEPT_ASSERT(!models::move_constructible<void>);
 CONCEPT_ASSERT(models::move_constructible<int>);
@@ -340,10 +341,10 @@ CONCEPT_ASSERT(!models::regular<explicit_move>);
 CONCEPT_ASSERT(!models::regular<explicit_copy>);
 
 CONCEPT_ASSERT(models::constructible_from<std::initializer_list<int>>);
-CONCEPT_ASSERT(models::default_constructible<std::initializer_list<int>>);
+CONCEPT_ASSERT(models::default_initializable<std::initializer_list<int>>);
 
 CONCEPT_ASSERT(models::constructible_from<int*>);
-CONCEPT_ASSERT(models::default_constructible<int*>);
+CONCEPT_ASSERT(models::default_initializable<int*>);
 
 // https://github.com/ericniebler/stl2/issues/301
 CONCEPT_ASSERT(!models::constructible_from<int&, long&>);
