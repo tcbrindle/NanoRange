@@ -63,13 +63,16 @@ NANO_CONCEPT regular = semiregular<T> && equality_comparable<T>;
 namespace detail {
 
 struct invocable_concept {
-    /*template <typename F, typename... Args>
-    auto requires_(F&& f, Args&&... args) -> decltype(
-        nano::invoke(std::forward<F>(f), std::forward<Args>(args)...)
-    );*/
-    // FIXME: Clang really doesn't like the above, work out why
+    // FIXME (Clang): https://bugs.llvm.org/show_bug.cgi?id=21446
+#if (defined(__clang_major__) && __clang_major__ < 7)
     template <typename F, typename... Args>
     auto requires_(F&& f, Args&&... args) -> invoke_result_t<F, Args...>;
+#else
+    template <typename F, typename... Args>
+    auto requires_(F&& f, Args&&... args) -> decltype(
+        nano::invoke(std::forward<F>(f), std::forward<Args>(args)...)
+    );
+#endif
 };
 
 } // namespace detail
@@ -91,7 +94,7 @@ struct predicate_concept {
     template <typename F, typename... Args>
     static auto test(int) -> std::enable_if_t<
         regular_invocable<F, Args...> &&
-                                boolean_testable<invoke_result_t<F, Args...>>,
+        boolean_testable<invoke_result_t<F, Args...>>,
         std::true_type>;
 
 };
@@ -106,6 +109,10 @@ template <typename R, typename T, typename U>
 NANO_CONCEPT relation =
     predicate<R, T, T> && predicate<R, U, U> &&
     predicate<R, T, U> && predicate<R, U, T>;
+
+// [concept.equiv]
+template <typename R, typename T, typename U>
+NANO_CONCEPT equivalence_relation = relation<R, T, U>;
 
 // [concept.strictweakorder]
 template <typename R, typename T, typename U>
