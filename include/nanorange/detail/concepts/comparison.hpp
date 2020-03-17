@@ -83,50 +83,45 @@ NANO_CONCEPT equality_comparable_with =
 // [concepts.totallyordered]
 namespace detail {
 
-struct totally_ordered_concept {
-    template <typename T>
-    auto requires_(const std::remove_reference_t<T>& a,
-                   const std::remove_reference_t<T>& b) -> decltype(
-        requires_expr<boolean_testable<decltype(a < b)>>{},
-        requires_expr<boolean_testable<decltype(a > b)>>{},
-        requires_expr<boolean_testable<decltype(a <= b)>>{},
-        requires_expr<boolean_testable<decltype(a >= b)>>{});
+struct partially_ordered_with_concept {
+    template <typename T, typename U>
+    auto requires_(const std::remove_reference_t<T>& t,
+                   const std::remove_reference_t<U>& u)
+    -> decltype(requires_expr<boolean_testable<decltype(t < u)>>{},
+        requires_expr<boolean_testable<decltype(t > u)>>{},
+        requires_expr<boolean_testable<decltype(t <= u)>>{},
+        requires_expr<boolean_testable<decltype(t >= u)>>{},
+        requires_expr<boolean_testable<decltype(u < t)>>{},
+        requires_expr<boolean_testable<decltype(u > t)>>{},
+        requires_expr<boolean_testable<decltype(u <= t)>>{},
+        requires_expr<boolean_testable<decltype(u >= t)>>{});
 };
 
-} // namespace detail
+template <typename T, typename U>
+NANO_CONCEPT partially_ordered_with =
+    detail::requires_<detail::partially_ordered_with_concept, T, U>;
+
+}
 
 template <typename T>
-NANO_CONCEPT totally_ordered = equality_comparable<T>&&
-    detail::requires_<detail::totally_ordered_concept, T>;
+NANO_CONCEPT totally_ordered =
+    equality_comparable<T> && detail::partially_ordered_with<T, T>;
 
 namespace detail {
 
 struct totally_ordered_with_concept {
-    template <typename T, typename U>
-    auto requires_(const std::remove_reference_t<T>& t,
-                   const std::remove_reference_t<U>& u) -> decltype(
-        requires_expr<boolean_testable<decltype(t <  u)>>{},
-        requires_expr<boolean_testable<decltype(t >  u)>>{},
-        requires_expr<boolean_testable<decltype(t <= u)>>{},
-        requires_expr<boolean_testable<decltype(t >= u)>>{},
-        requires_expr<boolean_testable<decltype(u <  t)>>{},
-        requires_expr<boolean_testable<decltype(u >  t)>>{},
-        requires_expr<boolean_testable<decltype(u <= t)>>{},
-        requires_expr<boolean_testable<decltype(u >= t)>>{}
-    );
-
     template <typename, typename>
     static auto test(long) -> std::false_type;
 
     template <typename T, typename U>
     static auto test(int) -> std::enable_if_t<
         totally_ordered<T> && totally_ordered<U> &&
+        equality_comparable_with<T, U> &&
         totally_ordered<
             common_reference_t<
                 const std::remove_reference_t<T>&,
                 const std::remove_reference_t<U>&>> &&
-        equality_comparable_with<T, U> &&
-        detail::requires_<totally_ordered_with_concept, T, U>,
+        partially_ordered_with<T, U>,
         std::true_type>;
 };
 
