@@ -208,15 +208,15 @@ struct explicitly_convertible_to_bool {
     explicit operator bool();
 };
 
-static_assert(!rng::boolean<void>, "");
-static_assert(rng::boolean<bool>, "");
-static_assert(rng::boolean<int>, "");
-static_assert(rng::boolean<std::true_type>, "");
-static_assert(rng::boolean<std::bitset<1>::reference>, "");
-static_assert(rng::boolean<std::vector<bool>::reference>, "");
-static_assert(!rng::boolean<int*>, "");
-static_assert(!rng::boolean<std::unique_ptr<int>>, "");
-static_assert(!rng::boolean<explicitly_convertible_to_bool>, "");
+static_assert(!rng::detail::boolean_testable<void>, "");
+static_assert(rng::detail::boolean_testable<bool>, "");
+static_assert(rng::detail::boolean_testable<int>, "");
+static_assert(rng::detail::boolean_testable<std::true_type>, "");
+static_assert(rng::detail::boolean_testable<std::bitset<1>::reference>, "");
+static_assert(rng::detail::boolean_testable<std::vector<bool>::reference>, "");
+static_assert(rng::detail::boolean_testable<int*>, "");
+static_assert(!rng::detail::boolean_testable<std::unique_ptr<int>>, "");
+static_assert(!rng::detail::boolean_testable<explicitly_convertible_to_bool>, "");
 
 // EqualityComparable tests
 static_assert(rng::equality_comparable<int>, "");

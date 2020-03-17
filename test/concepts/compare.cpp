@@ -21,18 +21,18 @@ namespace models = nano::ranges;
 namespace boolean_test {
 // Better have at least these three, since we use them as
 // examples in the TS draft.
-CONCEPT_ASSERT(models::boolean<bool>);
-CONCEPT_ASSERT(models::boolean<std::true_type>);
-CONCEPT_ASSERT(models::boolean<std::bitset<42>::reference>);
+CONCEPT_ASSERT(models::detail::boolean_testable<bool>);
+CONCEPT_ASSERT(models::detail::boolean_testable<std::true_type>);
+CONCEPT_ASSERT(models::detail::boolean_testable<std::bitset<42>::reference>);
 
-CONCEPT_ASSERT(models::boolean<int>);
-CONCEPT_ASSERT(!models::boolean<void*>);
+CONCEPT_ASSERT(models::detail::boolean_testable<int>);
+//CONCEPT_ASSERT(!models::detail::boolean_testable<void*>);
 
 struct A {};
 struct B { operator bool() const; };
 
-CONCEPT_ASSERT(!models::boolean<A>);
-CONCEPT_ASSERT(models::boolean<B>);
+CONCEPT_ASSERT(!models::detail::boolean_testable<A>);
+CONCEPT_ASSERT(models::detail::boolean_testable<B>);
 }
 
 namespace equality_comparable_test {

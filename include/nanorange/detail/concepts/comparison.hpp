@@ -13,35 +13,24 @@
 
 NANO_BEGIN_NAMESPACE
 
-// [concept.boolean]
+// [concept.boolean_testable]
 namespace detail {
 
-struct boolean_concept {
-    template <typename B>
-    auto requires_(const std::remove_reference_t<B>& b1,
-                   const std::remove_reference_t<B>& b2, const bool a)
-        -> decltype(
-            requires_expr<convertible_to<decltype(b1), bool>>{},
-            requires_expr<convertible_to<decltype(!b1), bool>>{},
-            requires_expr<same_as<decltype(b1 && b2), bool>>{},
-            requires_expr<same_as<decltype(b1 && a ), bool>>{},
-            requires_expr<same_as<decltype( a && b2), bool>>{},
-            requires_expr<same_as<decltype(b1 || b2), bool>>{},
-            requires_expr<same_as<decltype(b1 || a ), bool>>{},
-            requires_expr<same_as<decltype( a || b2), bool>>{},
-            requires_expr<convertible_to<decltype(b1 == b2), bool>>{},
-            requires_expr<convertible_to<decltype(b1 == a ), bool>>{},
-            requires_expr<convertible_to<decltype( a == b2), bool>>{},
-            requires_expr<convertible_to<decltype(b1 != b2), bool>>{},
-            requires_expr<convertible_to<decltype(b1 != a ), bool>>{},
-            requires_expr<convertible_to<decltype( a != b2), bool>>{});
+template <typename T>
+NANO_CONCEPT boolean_testable_impl = convertible_to<T, bool>;
+
+struct boolean_testable_concept {
+    template <typename T>
+    auto requires_(T&& t) ->
+        requires_expr<boolean_testable_impl<decltype(!std::forward<T>(t))>>;
 };
 
-} // namespace detail
+template <typename T>
+NANO_CONCEPT boolean_testable =
+    boolean_testable_impl<T> &&
+    detail::requires_<boolean_testable_concept, T>;
 
-template <typename B>
-NANO_CONCEPT boolean = movable<remove_cvref_t<B>> &&
-    detail::requires_<detail::boolean_concept, B>;
+} // namespace detail
 
 // [concept.equalitycomparable]
 namespace detail {
@@ -51,10 +40,10 @@ struct weakly_equality_comparable_with_concept {
     auto requires_(const std::remove_reference_t<T>& t,
                    const std::remove_reference_t<U>& u)
         -> decltype(
-            requires_expr<boolean<decltype(t == u)>>{},
-            requires_expr<boolean<decltype(t != u)>>{},
-            requires_expr<boolean<decltype(u == t)>>{},
-            requires_expr<boolean<decltype(u != t)>>{});
+            requires_expr<boolean_testable<decltype(t == u)>>{},
+            requires_expr<boolean_testable<decltype(t != u)>>{},
+            requires_expr<boolean_testable<decltype(u == t)>>{},
+            requires_expr<boolean_testable<decltype(u != t)>>{});
 };
 
 template <typename T, typename U>
@@ -98,10 +87,10 @@ struct totally_ordered_concept {
     template <typename T>
     auto requires_(const std::remove_reference_t<T>& a,
                    const std::remove_reference_t<T>& b) -> decltype(
-        requires_expr<boolean<decltype(a < b)>>{},
-        requires_expr<boolean<decltype(a > b)>>{},
-        requires_expr<boolean<decltype(a <= b)>>{},
-        requires_expr<boolean<decltype(a >= b)>>{});
+        requires_expr<boolean_testable<decltype(a < b)>>{},
+        requires_expr<boolean_testable<decltype(a > b)>>{},
+        requires_expr<boolean_testable<decltype(a <= b)>>{},
+        requires_expr<boolean_testable<decltype(a >= b)>>{});
 };
 
 } // namespace detail
@@ -116,14 +105,14 @@ struct totally_ordered_with_concept {
     template <typename T, typename U>
     auto requires_(const std::remove_reference_t<T>& t,
                    const std::remove_reference_t<U>& u) -> decltype(
-        requires_expr<boolean<decltype(t <  u)>>{},
-        requires_expr<boolean<decltype(t >  u)>>{},
-        requires_expr<boolean<decltype(t <= u)>>{},
-        requires_expr<boolean<decltype(t >= u)>>{},
-        requires_expr<boolean<decltype(u <  t)>>{},
-        requires_expr<boolean<decltype(u >  t)>>{},
-        requires_expr<boolean<decltype(u <= t)>>{},
-        requires_expr<boolean<decltype(u >= t)>>{}
+        requires_expr<boolean_testable<decltype(t <  u)>>{},
+        requires_expr<boolean_testable<decltype(t >  u)>>{},
+        requires_expr<boolean_testable<decltype(t <= u)>>{},
+        requires_expr<boolean_testable<decltype(t >= u)>>{},
+        requires_expr<boolean_testable<decltype(u <  t)>>{},
+        requires_expr<boolean_testable<decltype(u >  t)>>{},
+        requires_expr<boolean_testable<decltype(u <= t)>>{},
+        requires_expr<boolean_testable<decltype(u >= t)>>{}
     );
 
     template <typename, typename>

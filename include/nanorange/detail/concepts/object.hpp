@@ -74,7 +74,7 @@ struct predicate_concept {
     template <typename F, typename... Args>
     static auto test(int) -> std::enable_if_t<
         regular_invocable<F, Args...> &&
-        boolean<invoke_result_t<F, Args...>>,
+                                boolean_testable<invoke_result_t<F, Args...>>,
         std::true_type>;
 
 };
