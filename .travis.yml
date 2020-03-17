@@ -96,7 +96,8 @@ matrix:
             - libc++abi-9-dev
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-xenial-9
+            - sourceline: 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main'
+              key_url: https://apt.llvm.org/llvm-snapshot.gpg.key
 
     # Clang 8
     - env: COMPILER=clang++-8
