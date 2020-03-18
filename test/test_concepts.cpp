@@ -175,7 +175,13 @@ static_assert(rng::default_initializable<int>, "");
 static_assert(rng::default_initializable<agg>, "");
 static_assert(rng::default_initializable<std::string>, "");
 static_assert(!rng::default_initializable<from_int_only>, "");
+// FIXME (MSVC): MSVC incorrectly allows ::new const int;
+// We'll leave the inverse test here so we can notice when it gets changed
+#ifndef _MSC_VER
 static_assert(!rng::default_initializable<const int>);
+#else
+static_assert(rng::default_initializable<const int>);
+#endif
 static_assert(rng::default_initializable<int[2]>);
 
 // MoveConstructible tests

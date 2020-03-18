@@ -147,7 +147,10 @@ struct XXX
 static_assert(ranges::constructible_from<XXX, int>, "");
 
 static_assert(ranges::default_initializable<int>, "");
+// FIXME (MSVC)
+#ifndef _MSC_VER
 static_assert(!ranges::default_initializable<int const>, "");
+#endif
 static_assert(!ranges::default_initializable<int const &>, "");
 static_assert(!ranges::default_initializable<int ()>, "");
 static_assert(!ranges::default_initializable<int(&)()>, "");
