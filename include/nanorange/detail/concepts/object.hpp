@@ -64,7 +64,7 @@ namespace detail {
 
 struct invocable_concept {
     // FIXME (Clang): https://bugs.llvm.org/show_bug.cgi?id=21446
-#if (defined(__clang_major__) && __clang_major__ < 7)
+#if (defined(__clang_major__) && (defined(__apple_build_version__) ||__clang_major__ < 7))
     template <typename F, typename... Args>
     auto requires_(F&& f, Args&&... args) -> invoke_result_t<F, Args...>;
 #else
