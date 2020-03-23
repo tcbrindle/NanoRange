@@ -605,7 +605,8 @@ namespace detail {
 
 struct convertible_to_concept {
     template <typename From, typename To>
-    auto requires_(From (&f)()) -> decltype(static_cast<To>(f()));
+    auto requires_(std::add_rvalue_reference_t<From> (&f)())
+        -> decltype(static_cast<To>(f()));
 };
 
 } // namespace detail
@@ -681,6 +682,9 @@ NANO_CONCEPT signed_integral = integral<T> && std::is_signed_v<T>;
 template <typename T>
 NANO_CONCEPT unsigned_integral = integral<T> && !signed_integral<T>;
 
+template <typename T>
+NANO_CONCEPT floating_point = std::is_floating_point_v<T>;
+
 // [concept.assignable]
 
 namespace detail {
@@ -718,9 +722,29 @@ template <typename T, typename... Args>
 NANO_CONCEPT constructible_from =
     destructible<T> && std::is_constructible_v<T, Args...>;
 
-// [concept.defaultconstructible]
+// [concept.default.init]
+namespace detail {
+
+template <typename, typename = void>
+inline constexpr bool is_default_initializable = false;
+
+// Thanks to Damian Jarek on Slack for this formulation
 template <typename T>
-NANO_CONCEPT default_constructible = constructible_from<T>;
+inline constexpr bool
+is_default_initializable<T, std::void_t<decltype(::new T)>> = true;
+
+struct default_initializable_concept {
+    template <typename T, typename = decltype(T{})>
+    auto requires_() -> void;
+};
+
+}
+
+template <typename T>
+NANO_CONCEPT default_initializable =
+    constructible_from<T> &&
+    detail::requires_<detail::default_initializable_concept, T> &&
+    detail::is_default_initializable<T>;
 
 // [concept.moveconstructible]
 template <typename T>
@@ -752,16 +776,6 @@ NANO_CONCEPT copy_constructible =
 NANO_END_NAMESPACE
 
 #endif
-
-// nanorange/detail/concepts/movable.hpp
-//
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef NANORANGE_DETAIL_CONCEPTS_MOVABLE_HPP
-#define NANORANGE_DETAIL_CONCEPTS_MOVABLE_HPP
-
 
 // nanorange/detail/concepts/swappable.hpp
 //
@@ -903,66 +917,26 @@ NANO_END_NAMESPACE
 #endif
 
 
-// Movable is listed as an object concept, but is required for the definition
-// of Boolean, so we treat it specially
-
 NANO_BEGIN_NAMESPACE
 
-// [concept.movable]
+// [concept.boolean_testable]
 namespace detail {
-
-struct movable_concept {
-    template <typename T>
-    static auto test(long) -> std::false_type;
-
-    template <typename T>
-    static auto test(int) -> std::enable_if_t<
-        std::is_object_v<T> && move_constructible<T> &&
-        assignable_from<T&, T> && swappable<T>,
-        std::true_type>;
-};
-}
 
 template <typename T>
-NANO_CONCEPT movable = decltype(detail::movable_concept::test<T>(0))::value;
+NANO_CONCEPT boolean_testable_impl = convertible_to<T, bool>;
 
-NANO_END_NAMESPACE
-
-#endif
-
-
-
-NANO_BEGIN_NAMESPACE
-
-// [concept.boolean]
-namespace detail {
-
-struct boolean_concept {
-    template <typename B>
-    auto requires_(const std::remove_reference_t<B>& b1,
-                   const std::remove_reference_t<B>& b2, const bool a)
-        -> decltype(
-            requires_expr<convertible_to<decltype(b1), bool>>{},
-            requires_expr<convertible_to<decltype(!b1), bool>>{},
-            requires_expr<same_as<decltype(b1 && b2), bool>>{},
-            requires_expr<same_as<decltype(b1 && a ), bool>>{},
-            requires_expr<same_as<decltype( a && b2), bool>>{},
-            requires_expr<same_as<decltype(b1 || b2), bool>>{},
-            requires_expr<same_as<decltype(b1 || a ), bool>>{},
-            requires_expr<same_as<decltype( a || b2), bool>>{},
-            requires_expr<convertible_to<decltype(b1 == b2), bool>>{},
-            requires_expr<convertible_to<decltype(b1 == a ), bool>>{},
-            requires_expr<convertible_to<decltype( a == b2), bool>>{},
-            requires_expr<convertible_to<decltype(b1 != b2), bool>>{},
-            requires_expr<convertible_to<decltype(b1 != a ), bool>>{},
-            requires_expr<convertible_to<decltype( a != b2), bool>>{});
+struct boolean_testable_concept {
+    template <typename T>
+    auto requires_(T&& t) ->
+        requires_expr<boolean_testable_impl<decltype(!std::forward<T>(t))>>;
 };
 
-} // namespace detail
+template <typename T>
+NANO_CONCEPT boolean_testable =
+    boolean_testable_impl<T> &&
+    detail::requires_<boolean_testable_concept, T>;
 
-template <typename B>
-NANO_CONCEPT boolean = movable<remove_cvref_t<B>> &&
-    detail::requires_<detail::boolean_concept, B>;
+} // namespace detail
 
 // [concept.equalitycomparable]
 namespace detail {
@@ -972,10 +946,10 @@ struct weakly_equality_comparable_with_concept {
     auto requires_(const std::remove_reference_t<T>& t,
                    const std::remove_reference_t<U>& u)
         -> decltype(
-            requires_expr<boolean<decltype(t == u)>>{},
-            requires_expr<boolean<decltype(t != u)>>{},
-            requires_expr<boolean<decltype(u == t)>>{},
-            requires_expr<boolean<decltype(u != t)>>{});
+            requires_expr<boolean_testable<decltype(t == u)>>{},
+            requires_expr<boolean_testable<decltype(t != u)>>{},
+            requires_expr<boolean_testable<decltype(u == t)>>{},
+            requires_expr<boolean_testable<decltype(u != t)>>{});
 };
 
 template <typename T, typename U>
@@ -1015,50 +989,45 @@ NANO_CONCEPT equality_comparable_with =
 // [concepts.totallyordered]
 namespace detail {
 
-struct totally_ordered_concept {
-    template <typename T>
-    auto requires_(const std::remove_reference_t<T>& a,
-                   const std::remove_reference_t<T>& b) -> decltype(
-        requires_expr<boolean<decltype(a < b)>>{},
-        requires_expr<boolean<decltype(a > b)>>{},
-        requires_expr<boolean<decltype(a <= b)>>{},
-        requires_expr<boolean<decltype(a >= b)>>{});
+struct partially_ordered_with_concept {
+    template <typename T, typename U>
+    auto requires_(const std::remove_reference_t<T>& t,
+                   const std::remove_reference_t<U>& u)
+    -> decltype(requires_expr<boolean_testable<decltype(t < u)>>{},
+        requires_expr<boolean_testable<decltype(t > u)>>{},
+        requires_expr<boolean_testable<decltype(t <= u)>>{},
+        requires_expr<boolean_testable<decltype(t >= u)>>{},
+        requires_expr<boolean_testable<decltype(u < t)>>{},
+        requires_expr<boolean_testable<decltype(u > t)>>{},
+        requires_expr<boolean_testable<decltype(u <= t)>>{},
+        requires_expr<boolean_testable<decltype(u >= t)>>{});
 };
 
-} // namespace detail
+template <typename T, typename U>
+NANO_CONCEPT partially_ordered_with =
+    detail::requires_<detail::partially_ordered_with_concept, T, U>;
+
+}
 
 template <typename T>
-NANO_CONCEPT totally_ordered = equality_comparable<T>&&
-    detail::requires_<detail::totally_ordered_concept, T>;
+NANO_CONCEPT totally_ordered =
+    equality_comparable<T> && detail::partially_ordered_with<T, T>;
 
 namespace detail {
 
 struct totally_ordered_with_concept {
-    template <typename T, typename U>
-    auto requires_(const std::remove_reference_t<T>& t,
-                   const std::remove_reference_t<U>& u) -> decltype(
-        requires_expr<boolean<decltype(t <  u)>>{},
-        requires_expr<boolean<decltype(t >  u)>>{},
-        requires_expr<boolean<decltype(t <= u)>>{},
-        requires_expr<boolean<decltype(t >= u)>>{},
-        requires_expr<boolean<decltype(u <  t)>>{},
-        requires_expr<boolean<decltype(u >  t)>>{},
-        requires_expr<boolean<decltype(u <= t)>>{},
-        requires_expr<boolean<decltype(u >= t)>>{}
-    );
-
     template <typename, typename>
     static auto test(long) -> std::false_type;
 
     template <typename T, typename U>
     static auto test(int) -> std::enable_if_t<
         totally_ordered<T> && totally_ordered<U> &&
+        equality_comparable_with<T, U> &&
         totally_ordered<
             common_reference_t<
                 const std::remove_reference_t<T>&,
                 const std::remove_reference_t<U>&>> &&
-        equality_comparable_with<T, U> &&
-        detail::requires_<totally_ordered_with_concept, T, U>,
+        partially_ordered_with<T, U>,
         std::true_type>;
 };
 
@@ -1206,7 +1175,6 @@ NANO_END_NAMESPACE
 
 #ifndef NANORANGE_DETAIL_CONCEPTS_OBJECT_HPP_INCLUDED
 #define NANORANGE_DETAIL_CONCEPTS_OBJECT_HPP_INCLUDED
-
 
 
 
@@ -1372,6 +1340,24 @@ NANO_END_NAMESPACE
 
 NANO_BEGIN_NAMESPACE
 
+// [concept.movable]
+namespace detail {
+
+struct movable_concept {
+    template <typename T>
+    static auto test(long) -> std::false_type;
+
+    template <typename T>
+    static auto test(int) -> std::enable_if_t<
+        std::is_object_v<T> && move_constructible<T> &&
+        assignable_from<T&, T> && swappable<T>,
+        std::true_type>;
+};
+}
+
+template <typename T>
+NANO_CONCEPT movable = decltype(detail::movable_concept::test<T>(0))::value;
+
 // [concept.copyable]
 namespace detail {
 
@@ -1381,8 +1367,8 @@ struct copyable_concept {
 
     template <typename T>
     static auto test(int) -> std::enable_if_t<
-        copy_constructible<T> && movable<T> &&
-        assignable_from<T&, const T&>,
+        copy_constructible<T> && movable<T> && assignable_from<T&, T&> &&
+        assignable_from<T&, const T&> && assignable_from<T&, const T>,
         std::true_type>;
 
 };
@@ -1394,7 +1380,7 @@ NANO_CONCEPT copyable = decltype(detail::copyable_concept::test<T>(0))::value;
 
 // [concept.semiregular]
 template <typename T>
-NANO_CONCEPT semiregular = copyable<T> && default_constructible<T>;
+NANO_CONCEPT semiregular = copyable<T> && default_initializable<T>;
 
 // [concept.regular]
 template <typename T>
@@ -1404,13 +1390,16 @@ NANO_CONCEPT regular = semiregular<T> && equality_comparable<T>;
 namespace detail {
 
 struct invocable_concept {
-    /*template <typename F, typename... Args>
-    auto requires_(F&& f, Args&&... args) -> decltype(
-        nano::invoke(std::forward<F>(f), std::forward<Args>(args)...)
-    );*/
-    // FIXME: Clang really doesn't like the above, work out why
+    // FIXME (Clang): https://bugs.llvm.org/show_bug.cgi?id=21446
+#if (defined(__clang_major__) && (defined(__apple_build_version__) ||__clang_major__ < 7))
     template <typename F, typename... Args>
     auto requires_(F&& f, Args&&... args) -> invoke_result_t<F, Args...>;
+#else
+    template <typename F, typename... Args>
+    auto requires_(F&& f, Args&&... args) -> decltype(
+        nano::invoke(std::forward<F>(f), std::forward<Args>(args)...)
+    );
+#endif
 };
 
 } // namespace detail
@@ -1432,7 +1421,7 @@ struct predicate_concept {
     template <typename F, typename... Args>
     static auto test(int) -> std::enable_if_t<
         regular_invocable<F, Args...> &&
-        boolean<invoke_result_t<F, Args...>>,
+        boolean_testable<invoke_result_t<F, Args...>>,
         std::true_type>;
 
 };
@@ -1447,6 +1436,10 @@ template <typename R, typename T, typename U>
 NANO_CONCEPT relation =
     predicate<R, T, T> && predicate<R, U, U> &&
     predicate<R, T, U> && predicate<R, U, T>;
+
+// [concept.equiv]
+template <typename R, typename T, typename U>
+NANO_CONCEPT equivalence_relation = relation<R, T, U>;
 
 // [concept.strictweakorder]
 template <typename R, typename T, typename U>
@@ -1905,8 +1898,7 @@ struct weakly_incrementable_concept {
 } // namespace detail
 
 template <typename I>
-NANO_CONCEPT weakly_incrementable =
-    default_constructible<I> && movable<I> &&
+NANO_CONCEPT weakly_incrementable = default_initializable<I> && movable<I> &&
     detail::requires_<detail::weakly_incrementable_concept, I>;
 
 // [iterator.concept.incrementable]
@@ -14642,7 +14634,7 @@ private:
 public:
     template <typename I, typename S>
     std::enable_if_t<no_throw_forward_iterator<I> && no_throw_sentinel<S, I> &&
-        default_constructible<iter_value_t<I>>, I>
+                         default_initializable<iter_value_t<I>>, I>
     operator()(I first, S last) const
     {
         return uninitialized_default_construct_fn::impl(
@@ -14651,7 +14643,7 @@ public:
 
     template <typename Rng>
     std::enable_if_t<no_throw_forward_range<Rng> &&
-        default_constructible<iter_value_t<iterator_t<Rng>>>,
+                         default_initializable<iter_value_t<iterator_t<Rng>>>,
                      borrowed_iterator_t<Rng>>
     operator()(Rng&& rng) const
     {
@@ -14670,7 +14662,7 @@ namespace detail {
 struct uninitialized_default_construct_n_fn {
     template <typename I>
     std::enable_if_t<no_throw_forward_iterator<I> &&
-        default_constructible<iter_value_t<I>>, I>
+                         default_initializable<iter_value_t<I>>, I>
     operator()(I first, iter_difference_t<I> n) const
     {
         return nano::uninitialized_default_construct(
@@ -14970,7 +14962,7 @@ private:
 public:
     template <typename I, typename S>
     std::enable_if_t<no_throw_forward_iterator<I> && no_throw_sentinel<S, I> &&
-        default_constructible<iter_value_t<I>>, I>
+                         default_initializable<iter_value_t<I>>, I>
     operator()(I first, S last) const
     {
         return uninitialized_value_construct_fn::impl(
@@ -14979,7 +14971,7 @@ public:
 
     template <typename Rng>
     std::enable_if_t<no_throw_forward_range<Rng> &&
-        default_constructible<iter_value_t<iterator_t<Rng>>>,
+                         default_initializable<iter_value_t<iterator_t<Rng>>>,
                      borrowed_iterator_t<Rng>>
     operator()(Rng&& rng) const
     {
@@ -14998,7 +14990,7 @@ namespace detail {
 struct uninitialized_value_construct_n_fn {
     template <typename I>
     std::enable_if_t<no_throw_forward_iterator<I> &&
-        default_constructible<iter_value_t<I>>, I>
+                         default_initializable<iter_value_t<I>>, I>
     operator()(I first, iter_difference_t<I> n) const
     {
         return nano::uninitialized_value_construct(
@@ -15680,14 +15672,14 @@ private:
 
 public:
     template <typename U = T,
-              std::enable_if_t<default_constructible<U>, int> = 0>
+              std::enable_if_t<default_initializable<U>, int> = 0>
     constexpr semiregular_box()
         noexcept(std::is_nothrow_default_constructible_v<T>)
         : semiregular_box{std::in_place}
     {}
 
     template <typename U = T,
-              std::enable_if_t<!default_constructible<U>, int> = 0>
+              std::enable_if_t<!default_initializable<U>, int> = 0>
     constexpr semiregular_box() {}
 
     // All other constructors get forwarded to optional -- but don't hijack
@@ -16935,7 +16927,7 @@ template <typename Val, typename CharT, typename Traits = std::char_traits<CharT
 struct basic_istream_view : view_interface<basic_istream_view<Val, CharT, Traits>> {
 
     static_assert(movable<Val>);
-    static_assert(default_constructible<Val>);
+    static_assert(default_initializable<Val>);
     static_assert(detail::StreamExtractable<Val, CharT, Traits>);
 
     basic_istream_view() = default;
