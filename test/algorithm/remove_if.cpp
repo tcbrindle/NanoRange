@@ -171,7 +171,14 @@ TEST_CASE("alg.remove_if")
 		S ia[] = {S{0}, S{1}, S{2}, S{3}, S{4}, S{2}, S{3}, S{4}, S{2}};
 		constexpr unsigned sa = stl2::size(ia);
 		using namespace std::placeholders;
+        // FIXME (MSVC): The std::bind call started failing with VS 16.5, so we'll work around it
+        // The problem seems to occur in evaluating the default_initializable concept
+        // I'm not really sure what's going on, but as long as it's only with std::bind I don't care that much
+#if defined(_MSC_VER) && _MSC_VER >= 1925
+        S* r = stl2::remove_if(ia, [](int i) { return i == 2; }, &S::i);
+#else
 		S* r = stl2::remove_if(ia, std::bind(std::equal_to<int>(), _1, 2), &S::i);
+#endif
 		CHECK(r == ia + sa-3);
 		CHECK(ia[0].i == 0);
 		CHECK(ia[1].i == 1);
@@ -186,7 +193,12 @@ TEST_CASE("alg.remove_if")
 		S ia[] = {S{0}, S{1}, S{2}, S{3}, S{4}, S{2}, S{3}, S{4}, S{2}};
 		constexpr unsigned sa = stl2::size(ia);
 		using namespace std::placeholders;
+		// FIXME (MSVC): As above
+#if defined(_MSC_VER) && _MSC_VER >= 1925
+		auto r = stl2::remove_if(stl2::subrange(ia), [](int i){ return i == 2; }, &S::i);
+#else
 		auto r = stl2::remove_if(stl2::subrange(ia), std::bind(std::equal_to<int>(), _1, 2), &S::i);
+#endif
 		CHECK(r == ia + sa-3);
 		CHECK(ia[0].i == 0);
 		CHECK(ia[1].i == 1);
