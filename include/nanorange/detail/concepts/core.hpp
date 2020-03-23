@@ -44,7 +44,8 @@ namespace detail {
 
 struct convertible_to_concept {
     template <typename From, typename To>
-    auto requires_(From (&f)()) -> decltype(static_cast<To>(f()));
+    auto requires_(std::add_rvalue_reference_t<From> (&f)())
+        -> decltype(static_cast<To>(f()));
 };
 
 } // namespace detail
@@ -120,6 +121,9 @@ NANO_CONCEPT signed_integral = integral<T> && std::is_signed_v<T>;
 template <typename T>
 NANO_CONCEPT unsigned_integral = integral<T> && !signed_integral<T>;
 
+template <typename T>
+NANO_CONCEPT floating_point = std::is_floating_point_v<T>;
+
 // [concept.assignable]
 
 namespace detail {
@@ -157,9 +161,29 @@ template <typename T, typename... Args>
 NANO_CONCEPT constructible_from =
     destructible<T> && std::is_constructible_v<T, Args...>;
 
-// [concept.defaultconstructible]
+// [concept.default.init]
+namespace detail {
+
+template <typename, typename = void>
+inline constexpr bool is_default_initializable = false;
+
+// Thanks to Damian Jarek on Slack for this formulation
 template <typename T>
-NANO_CONCEPT default_constructible = constructible_from<T>;
+inline constexpr bool
+is_default_initializable<T, std::void_t<decltype(::new T)>> = true;
+
+struct default_initializable_concept {
+    template <typename T, typename = decltype(T{})>
+    auto requires_() -> void;
+};
+
+}
+
+template <typename T>
+NANO_CONCEPT default_initializable =
+    constructible_from<T> &&
+    detail::requires_<detail::default_initializable_concept, T> &&
+    detail::is_default_initializable<T>;
 
 // [concept.moveconstructible]
 template <typename T>

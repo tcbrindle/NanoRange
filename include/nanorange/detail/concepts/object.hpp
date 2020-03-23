@@ -9,10 +9,27 @@
 
 #include <nanorange/detail/concepts/comparison.hpp>
 #include <nanorange/detail/concepts/core.hpp>
-#include <nanorange/detail/concepts/movable.hpp>
 #include <nanorange/detail/functional/invoke.hpp>
 
 NANO_BEGIN_NAMESPACE
+
+// [concept.movable]
+namespace detail {
+
+struct movable_concept {
+    template <typename T>
+    static auto test(long) -> std::false_type;
+
+    template <typename T>
+    static auto test(int) -> std::enable_if_t<
+        std::is_object_v<T> && move_constructible<T> &&
+        assignable_from<T&, T> && swappable<T>,
+        std::true_type>;
+};
+}
+
+template <typename T>
+NANO_CONCEPT movable = decltype(detail::movable_concept::test<T>(0))::value;
 
 // [concept.copyable]
 namespace detail {
@@ -23,8 +40,8 @@ struct copyable_concept {
 
     template <typename T>
     static auto test(int) -> std::enable_if_t<
-        copy_constructible<T> && movable<T> &&
-        assignable_from<T&, const T&>,
+        copy_constructible<T> && movable<T> && assignable_from<T&, T&> &&
+        assignable_from<T&, const T&> && assignable_from<T&, const T>,
         std::true_type>;
 
 };
@@ -36,7 +53,7 @@ NANO_CONCEPT copyable = decltype(detail::copyable_concept::test<T>(0))::value;
 
 // [concept.semiregular]
 template <typename T>
-NANO_CONCEPT semiregular = copyable<T> && default_constructible<T>;
+NANO_CONCEPT semiregular = copyable<T> && default_initializable<T>;
 
 // [concept.regular]
 template <typename T>
@@ -46,13 +63,16 @@ NANO_CONCEPT regular = semiregular<T> && equality_comparable<T>;
 namespace detail {
 
 struct invocable_concept {
-    /*template <typename F, typename... Args>
-    auto requires_(F&& f, Args&&... args) -> decltype(
-        nano::invoke(std::forward<F>(f), std::forward<Args>(args)...)
-    );*/
-    // FIXME: Clang really doesn't like the above, work out why
+    // FIXME (Clang): https://bugs.llvm.org/show_bug.cgi?id=21446
+#if (defined(__clang_major__) && (defined(__apple_build_version__) ||__clang_major__ < 7))
     template <typename F, typename... Args>
     auto requires_(F&& f, Args&&... args) -> invoke_result_t<F, Args...>;
+#else
+    template <typename F, typename... Args>
+    auto requires_(F&& f, Args&&... args) -> decltype(
+        nano::invoke(std::forward<F>(f), std::forward<Args>(args)...)
+    );
+#endif
 };
 
 } // namespace detail
@@ -74,7 +94,7 @@ struct predicate_concept {
     template <typename F, typename... Args>
     static auto test(int) -> std::enable_if_t<
         regular_invocable<F, Args...> &&
-        boolean<invoke_result_t<F, Args...>>,
+        boolean_testable<invoke_result_t<F, Args...>>,
         std::true_type>;
 
 };
@@ -89,6 +109,10 @@ template <typename R, typename T, typename U>
 NANO_CONCEPT relation =
     predicate<R, T, T> && predicate<R, U, U> &&
     predicate<R, T, U> && predicate<R, U, T>;
+
+// [concept.equiv]
+template <typename R, typename T, typename U>
+NANO_CONCEPT equivalence_relation = relation<R, T, U>;
 
 // [concept.strictweakorder]
 template <typename R, typename T, typename U>

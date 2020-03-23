@@ -83,8 +83,7 @@ struct weakly_incrementable_concept {
 } // namespace detail
 
 template <typename I>
-NANO_CONCEPT weakly_incrementable =
-    default_constructible<I> && movable<I> &&
+NANO_CONCEPT weakly_incrementable = default_initializable<I> && movable<I> &&
     detail::requires_<detail::weakly_incrementable_concept, I>;
 
 // [iterator.concept.incrementable]

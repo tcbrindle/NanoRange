@@ -103,7 +103,6 @@ else ()
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/algorithm/pdqsort.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/comparison.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/core.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/movable.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/object.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/concepts/swappable.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/functional/comparisons.hpp
