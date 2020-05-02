@@ -11,7 +11,7 @@
 
 NANO_BEGIN_NAMESPACE
 
-// [range.primitives.size]
+// [range.prim.size]
 
 template <typename>
 inline constexpr bool disable_sized_range = false;
@@ -91,7 +91,7 @@ public:
 
 NANO_INLINE_VAR(detail::size_::fn, size)
 
-// [range.primitives.empty]
+// [range.prim.empty]
 
 namespace detail {
 namespace empty_ {
