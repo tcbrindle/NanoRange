@@ -54,6 +54,7 @@ void test_initializer_list()
         }
     }
     CHECK(ranges::size(il) == std::size_t{3});
+    CHECK(ranges::ssize(il) == std::ptrdiff_t{3});
     CHECK(ranges::data(il) == &*il.begin());
     CHECK(ranges::empty(il) == false);
 }
@@ -75,6 +76,7 @@ void test_array(std::index_sequence<Is...>)
         }
     }
     CHECK(ranges::size(a) == sizeof...(Is));
+    CHECK(ranges::ssize(a) == sizeof...(Is));
     CHECK(ranges::data(a) == a + 0);
     CHECK(ranges::empty(a) == false);
 }
@@ -327,6 +329,8 @@ TEST_CASE("range_access") {
 	using namespace ranges;
 
 	static constexpr X::array<int, 4> some_ints = {{0,1,2,3}};
+
+	static_assert(ranges::signed_integral<decltype(ranges::ssize(some_ints))>);
 
 	constexpr auto first = begin(some_ints);
 	constexpr auto last = end(some_ints);
