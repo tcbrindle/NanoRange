@@ -7,9 +7,11 @@
 #ifndef NANORANGE_DETAIL_RANGES_CONCEPTS_HPP_INCLUDED
 #define NANORANGE_DETAIL_RANGES_CONCEPTS_HPP_INCLUDED
 
+#include <nanorange/detail/ranges/basic_range_types.hpp>
 #include <nanorange/detail/ranges/begin_end.hpp>
 #include <nanorange/detail/ranges/borrowed_range.hpp>
 #include <nanorange/detail/ranges/primitives.hpp>
+#include <nanorange/detail/ranges/range_concept.hpp>
 
 #include <initializer_list>
 
@@ -35,21 +37,6 @@ NANO_END_NAMESPACE_STD
 
 NANO_BEGIN_NAMESPACE
 
-namespace detail {
-
-struct range_concept {
-    template <typename T>
-    auto requires_(T& t) -> decltype(
-        ranges::begin(t),
-        ranges::end(t)
-    );
-};
-
-}
-
-template <typename T>
-NANO_CONCEPT range = detail::requires_<detail::range_concept, T>;
-
 template <typename T>
 NANO_CONCEPT borrowed_range = range<T> &&
     (std::is_lvalue_reference_v<T> || enable_borrowed_range<remove_cvref_t<T>>);
@@ -58,29 +45,6 @@ NANO_CONCEPT borrowed_range = range<T> &&
 template <typename CharT, typename Traits>
 inline constexpr bool
     enable_borrowed_range<std::basic_string_view<CharT, Traits>> = true;
-
-template <typename T>
-using iterator_t = decltype(ranges::begin(std::declval<T&>()));
-
-template <typename R>
-using sentinel_t = std::enable_if_t<range<R>,
-    decltype(ranges::end(std::declval<R&>()))>;
-
-template <typename R>
-using range_difference_t = std::enable_if_t<range<R>,
-    iter_difference_t<iterator_t<R>>>;
-
-template <typename R>
-using range_value_t = std::enable_if_t<range<R>,
-    iter_value_t<iterator_t<R>>>;
-
-template <typename R>
-using range_reference_t = std::enable_if_t<range<R>,
-    iter_reference_t<iterator_t<R>>>;
-
-template <typename R>
-using range_rvalue_reference_t = std::enable_if_t<range<R>,
-    iter_rvalue_reference_t<iterator_t<R>>>;
 
 
 // [range.sized]
