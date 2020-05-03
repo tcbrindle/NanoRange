@@ -121,9 +121,11 @@ else ()
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/memory/concepts.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/memory/temporary_vector.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/access.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/basic_range_types.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/begin_end.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/concepts.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/primitives.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/ranges/range_concept.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/views/range_adaptors.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/views/semiregular_box.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/detail/common_reference.hpp

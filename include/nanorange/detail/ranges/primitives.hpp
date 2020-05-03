@@ -7,11 +7,12 @@
 #ifndef NANORANGE_DETAIL_RANGES_PRIMITIVES_HPP_INCLUDED
 #define NANORANGE_DETAIL_RANGES_PRIMITIVES_HPP_INCLUDED
 
+#include <nanorange/detail/ranges/basic_range_types.hpp>
 #include <nanorange/detail/ranges/begin_end.hpp>
 
 NANO_BEGIN_NAMESPACE
 
-// [range.primitives.size]
+// [range.prim.size]
 
 template <typename>
 inline constexpr bool disable_sized_range = false;
@@ -91,7 +92,43 @@ public:
 
 NANO_INLINE_VAR(detail::size_::fn, size)
 
-// [range.primitives.empty]
+// [range.prim.ssize]
+
+namespace detail {
+namespace ssize_ {
+
+struct fn {
+private:
+    template <typename T>
+    using ssize_return_t =
+        std::conditional_t<sizeof(range_difference_t<T>) <
+                               sizeof(std::ptrdiff_t),
+                           std::ptrdiff_t, range_difference_t<T>>;
+
+    template <typename T>
+    static constexpr auto
+    impl(T&& t) noexcept(noexcept(ranges::size(std::forward<T>(t))))
+        -> decltype(ranges::size(std::forward<T>(t)), ssize_return_t<T>())
+    {
+        return static_cast<ssize_return_t<T>>(ranges::size(std::forward<T>(t)));
+    }
+
+public:
+    template <typename T>
+    constexpr auto operator()(T&& t) const
+        noexcept(noexcept(fn::impl(std::forward<T>(t))))
+            -> decltype(fn::impl(std::forward<T>(t)))
+    {
+        return fn::impl(std::forward<T>(t));
+    }
+};
+
+} // namespace ssize_
+} // namespace detail
+
+NANO_INLINE_VAR(detail::ssize_::fn, ssize)
+
+// [range.prim.empty]
 
 namespace detail {
 namespace empty_ {
