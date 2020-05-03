@@ -2881,6 +2881,74 @@ NANO_END_NAMESPACE
 #ifndef NANORANGE_DETAIL_RANGES_CONCEPTS_HPP_INCLUDED
 #define NANORANGE_DETAIL_RANGES_CONCEPTS_HPP_INCLUDED
 
+// nanorange/detail/ranges/basic_range_types.hpp
+//
+// Copyright (c) 2020 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_DETAIL_RANGES_BASIC_RANGE_TYPES_HPP_INCLUDED
+#define NANORANGE_DETAIL_RANGES_BASIC_RANGE_TYPES_HPP_INCLUDED
+
+
+// nanorange/detail/ranges/range_concept.hpp
+//
+// Copyright (c) 2020 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_DETAIL_RANGES_RANGE_CONCEPT_HPP_INCLUDED
+#define NANORANGE_DETAIL_RANGES_RANGE_CONCEPT_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct range_concept {
+    template <typename T>
+    auto requires_(T& t) -> decltype(ranges::begin(t), ranges::end(t));
+};
+
+} // namespace detail
+
+template <typename T>
+NANO_CONCEPT range = detail::requires_<detail::range_concept, T>;
+
+NANO_END_NAMESPACE
+
+#endif
+
+
+NANO_BEGIN_NAMESPACE
+
+template <typename T>
+using iterator_t = decltype(ranges::begin(std::declval<T&>()));
+
+template <typename R>
+using sentinel_t =
+    std::enable_if_t<range<R>, decltype(ranges::end(std::declval<R&>()))>;
+
+template <typename R>
+using range_difference_t =
+    std::enable_if_t<range<R>, iter_difference_t<iterator_t<R>>>;
+
+template <typename R>
+using range_value_t = std::enable_if_t<range<R>, iter_value_t<iterator_t<R>>>;
+
+template <typename R>
+using range_reference_t =
+    std::enable_if_t<range<R>, iter_reference_t<iterator_t<R>>>;
+
+template <typename R>
+using range_rvalue_reference_t =
+    std::enable_if_t<range<R>, iter_rvalue_reference_t<iterator_t<R>>>;
+
+NANO_END_NAMESPACE
+
+#endif
+
 
 
 // nanorange/detail/ranges/primitives.hpp
@@ -2894,9 +2962,10 @@ NANO_END_NAMESPACE
 
 
 
+
 NANO_BEGIN_NAMESPACE
 
-// [range.primitives.size]
+// [range.prim.size]
 
 template <typename>
 inline constexpr bool disable_sized_range = false;
@@ -2976,7 +3045,43 @@ public:
 
 NANO_INLINE_VAR(detail::size_::fn, size)
 
-// [range.primitives.empty]
+// [range.prim.ssize]
+
+namespace detail {
+namespace ssize_ {
+
+struct fn {
+private:
+    template <typename T>
+    using ssize_return_t =
+        std::conditional_t<sizeof(range_difference_t<T>) <
+                               sizeof(std::ptrdiff_t),
+                           std::ptrdiff_t, range_difference_t<T>>;
+
+    template <typename T>
+    static constexpr auto
+    impl(T&& t) noexcept(noexcept(ranges::size(std::forward<T>(t))))
+        -> decltype(ranges::size(std::forward<T>(t)), ssize_return_t<T>())
+    {
+        return static_cast<ssize_return_t<T>>(ranges::size(std::forward<T>(t)));
+    }
+
+public:
+    template <typename T>
+    constexpr auto operator()(T&& t) const
+        noexcept(noexcept(fn::impl(std::forward<T>(t))))
+            -> decltype(fn::impl(std::forward<T>(t)))
+    {
+        return fn::impl(std::forward<T>(t));
+    }
+};
+
+} // namespace ssize_
+} // namespace detail
+
+NANO_INLINE_VAR(detail::ssize_::fn, ssize)
+
+// [range.prim.empty]
 
 namespace detail {
 namespace empty_ {
@@ -3078,6 +3183,7 @@ NANO_END_NAMESPACE
 
 #endif
 
+
 #include <initializer_list>
 
 // Avoid dragging in the large <set> and <unordered_set> headers
@@ -3102,21 +3208,6 @@ NANO_END_NAMESPACE_STD
 
 NANO_BEGIN_NAMESPACE
 
-namespace detail {
-
-struct range_concept {
-    template <typename T>
-    auto requires_(T& t) -> decltype(
-        ranges::begin(t),
-        ranges::end(t)
-    );
-};
-
-}
-
-template <typename T>
-NANO_CONCEPT range = detail::requires_<detail::range_concept, T>;
-
 template <typename T>
 NANO_CONCEPT borrowed_range = range<T> &&
     (std::is_lvalue_reference_v<T> || enable_borrowed_range<remove_cvref_t<T>>);
@@ -3125,29 +3216,6 @@ NANO_CONCEPT borrowed_range = range<T> &&
 template <typename CharT, typename Traits>
 inline constexpr bool
     enable_borrowed_range<std::basic_string_view<CharT, Traits>> = true;
-
-template <typename T>
-using iterator_t = decltype(ranges::begin(std::declval<T&>()));
-
-template <typename R>
-using sentinel_t = std::enable_if_t<range<R>,
-    decltype(ranges::end(std::declval<R&>()))>;
-
-template <typename R>
-using range_difference_t = std::enable_if_t<range<R>,
-    iter_difference_t<iterator_t<R>>>;
-
-template <typename R>
-using range_value_t = std::enable_if_t<range<R>,
-    iter_value_t<iterator_t<R>>>;
-
-template <typename R>
-using range_reference_t = std::enable_if_t<range<R>,
-    iter_reference_t<iterator_t<R>>>;
-
-template <typename R>
-using range_rvalue_reference_t = std::enable_if_t<range<R>,
-    iter_rvalue_reference_t<iterator_t<R>>>;
 
 
 // [range.sized]
