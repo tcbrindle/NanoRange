@@ -14,19 +14,15 @@ NANO_BEGIN_NAMESPACE
 namespace empty_view_ {
 
 template <typename T>
-class empty_view : view_interface<empty_view<T>> {
-    static_assert(std::is_object<T>::value, "");
+class empty_view : public view_interface<empty_view<T>> {
+    static_assert(std::is_object<T>::value);
 
 public:
     static constexpr T* begin() noexcept { return nullptr; }
     static constexpr T* end() noexcept { return nullptr; }
-    static constexpr std::ptrdiff_t size() noexcept { return 0; }
+    static constexpr std::size_t size() noexcept { return 0; }
     static constexpr T* data() noexcept { return nullptr; }
-
     static constexpr bool empty() noexcept { return true; }
-
-    friend constexpr T* begin(empty_view) noexcept { return nullptr; }
-    friend constexpr T* end(empty_view) noexcept { return nullptr; }
 };
 
 }
