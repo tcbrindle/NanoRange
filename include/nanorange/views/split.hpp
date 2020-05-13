@@ -116,7 +116,7 @@ private:
         using iterator_category = detail::conditional_t<
             forward_range<Base>, forward_iterator_tag, input_iterator_tag>;
 
-        struct value_type {
+        struct value_type : view_interface<value_type> {
         private:
             outer_iterator i_ = outer_iterator();
 
