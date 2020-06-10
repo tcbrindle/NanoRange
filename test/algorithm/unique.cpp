@@ -73,14 +73,14 @@ void test()
 	{
 		int a[] = {0};
 		const unsigned sa = sizeof(a) / sizeof(a[0]);
-		auto r = Fun{}(a, a + sa);
+		auto r = Fun{}(a, a + sa).begin();
 		CHECK(r == It(a + sa));
 		CHECK(a[0] == 0);
 	}
 	{
 		int a[] = {0, 1};
 		const unsigned sa = sizeof(a) / sizeof(a[0]);
-		auto r = Fun{}(a, a + sa);
+		auto r = Fun{}(a, a + sa).begin();
 		CHECK(r == It(a + sa));
 		CHECK(a[0] == 0);
 		CHECK(a[1] == 1);
@@ -88,14 +88,14 @@ void test()
 	{
 		int a[] = {0, 0};
 		const unsigned sa = sizeof(a) / sizeof(a[0]);
-		auto r = Fun{}(a, a + sa);
+		auto r = Fun{}(a, a + sa).begin();
 		CHECK(r == It(a + 1));
 		CHECK(a[0] == 0);
 	}
 	{
 		int a[] = {0, 0, 1};
 		const unsigned sa = sizeof(a) / sizeof(a[0]);
-		auto r = Fun{}(a, a + sa);
+		auto r = Fun{}(a, a + sa).begin();
 		CHECK(r == It(a + 2));
 		CHECK(a[0] == 0);
 		CHECK(a[1] == 1);
@@ -103,7 +103,7 @@ void test()
 	{
 		int a[] = {0, 0, 1, 0};
 		const unsigned sa = sizeof(a) / sizeof(a[0]);
-		auto r = Fun{}(a, a + sa);
+		auto r = Fun{}(a, a + sa).begin();
 		CHECK(r == It(a + 3));
 		CHECK(a[0] == 0);
 		CHECK(a[1] == 1);
@@ -112,7 +112,7 @@ void test()
 	{
 		int a[] = {0, 0, 1, 1};
 		const unsigned sa = sizeof(a) / sizeof(a[0]);
-		auto r = Fun{}(a, a + sa);
+		auto r = Fun{}(a, a + sa).begin();
 		CHECK(r == It(a + 2));
 		CHECK(a[0] == 0);
 		CHECK(a[1] == 1);
@@ -120,7 +120,7 @@ void test()
 	{
 		int a[] = {0, 1, 1};
 		const unsigned sa = sizeof(a) / sizeof(a[0]);
-		auto r = Fun{}(a, a + sa);
+		auto r = Fun{}(a, a + sa).begin();
 		CHECK(r == It(a + 2));
 		CHECK(a[0] == 0);
 		CHECK(a[1] == 1);
@@ -128,7 +128,7 @@ void test()
 	{
 		int a[] = {0, 1, 1, 1, 2, 2, 2};
 		const unsigned sa = sizeof(a) / sizeof(a[0]);
-		auto r = Fun{}(a, a + sa);
+		auto r = Fun{}(a, a + sa).begin();
 		CHECK(r == It(a + 3));
 		CHECK(a[0] == 0);
 		CHECK(a[1] == 1);

@@ -558,8 +558,9 @@ TEST_CASE("alg.basic.unique")
     std::vector<int> vec{1, 2, 2, 3, 3, 3, 4, 4};
 
     SECTION("with iterators") {
-        const auto it = rng::unique(vec.begin(), vec.end());
-        REQUIRE(it == vec.begin() + 4);
+        const auto sub = rng::unique(vec.begin(), vec.end());
+        REQUIRE(sub.end() == vec.end());
+        REQUIRE(sub.begin() == vec.begin() + 4);
         REQUIRE(vec[0] == 1);
         REQUIRE(vec[1] == 2);
         REQUIRE(vec[2] == 3);
@@ -567,8 +568,9 @@ TEST_CASE("alg.basic.unique")
     }
 
     SECTION("with range") {
-        const auto it = rng::unique(vec);
-        REQUIRE(it == vec.begin() + 4);
+        const auto sub = rng::unique(vec);
+        REQUIRE(sub.end() == vec.end());
+        REQUIRE(sub.begin() == vec.begin() + 4);
         REQUIRE(vec[0] == 1);
         REQUIRE(vec[1] == 2);
         REQUIRE(vec[2] == 3);
@@ -581,8 +583,9 @@ TEST_CASE("alg.basic.unique (with predicate)")
     std::vector<int> vec{1, 2, 2, 3, 3, 3, 4, 4};
 
     SECTION("with iterators") {
-        const auto it = rng::unique(vec.begin(), vec.end(), std::equal_to<>{});
-        REQUIRE(it == vec.begin() + 4);
+        const auto sub = rng::unique(vec.begin(), vec.end(), std::equal_to<>{});
+        REQUIRE(sub.end() == vec.end());
+        REQUIRE(sub.begin() == vec.begin() + 4);
         REQUIRE(vec[0] == 1);
         REQUIRE(vec[1] == 2);
         REQUIRE(vec[2] == 3);
@@ -590,8 +593,9 @@ TEST_CASE("alg.basic.unique (with predicate)")
     }
 
     SECTION("with range") {
-        const auto it = rng::unique(vec, std::equal_to<>{});
-        REQUIRE(it == vec.begin() + 4);
+        const auto sub = rng::unique(vec, std::equal_to<>{});
+        REQUIRE(sub.end() == vec.end());
+        REQUIRE(sub.begin() == vec.begin() + 4);
         REQUIRE(vec[0] == 1);
         REQUIRE(vec[1] == 2);
         REQUIRE(vec[2] == 3);

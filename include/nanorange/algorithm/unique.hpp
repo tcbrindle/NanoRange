@@ -10,6 +10,7 @@
 #include <nanorange/ranges.hpp>
 
 #include <nanorange/algorithm/adjacent_find.hpp>
+#include <nanorange/views/subrange.hpp>
 
 NANO_BEGIN_NAMESPACE
 
@@ -18,22 +19,23 @@ namespace detail {
 struct unique_fn {
 private:
     template <typename I, typename S, typename R, typename Proj>
-    static constexpr I impl(I first, S last, R& comp, Proj& proj)
+    static constexpr subrange<I> impl(I first, S last, R& comp, Proj& proj)
     {
-        first = adjacent_find_fn::impl(std::move(first), last, comp, proj);
+        I it = adjacent_find_fn::impl(first, last, comp, proj);
 
-        if (first == last) {
-            return first;
+        if (it == last) {
+            return {it, std::move(it)};
         }
 
-        for (I n = next(first, 2, last); n != last; ++n) {
-            if (!nano::invoke(comp, nano::invoke(proj, *first),
+        I n = nano::next(it, 2, last);
+        for (; n != last; ++n) {
+            if (!nano::invoke(comp, nano::invoke(proj, *it),
                               nano::invoke(proj, *n))) {
-                *++first = iter_move(n);
+                *++it = iter_move(n);
             }
         }
 
-        return ++first;
+        return {nano::next(it), std::move(n)};
     }
 
 public:
@@ -41,7 +43,7 @@ public:
               typename Proj = identity>
     constexpr std::enable_if_t<forward_iterator<I> && sentinel_for<S, I> &&
                                    indirect_relation<R, projected<I, Proj>> &&
-                                   permutable<I>, I>
+                                   permutable<I>, subrange<I>>
     operator()(I first, S last, R comp = {}, Proj proj = Proj{}) const
     {
         return unique_fn::impl(std::move(first), std::move(last),
@@ -53,7 +55,7 @@ public:
         forward_range<Rng> &&
             indirect_relation<R, projected<iterator_t<Rng>, Proj>> &&
             permutable<iterator_t<Rng>>,
-        borrowed_iterator_t<Rng>>
+        borrowed_subrange_t<Rng>>
     operator()(Rng&& rng, R comp = {}, Proj proj = Proj{}) const
     {
         return unique_fn::impl(nano::begin(rng), nano::end(rng),

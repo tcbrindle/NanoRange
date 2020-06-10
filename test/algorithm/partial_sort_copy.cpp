@@ -41,7 +41,7 @@ test_larger_sorts(int N, int M)
     auto partial_sort_copy = ::make_testable_2<true, false>(
             [](auto&& ... args) {
                 return stl2::partial_sort_copy(
-                        std::forward<decltype(args)>(args)...);
+                        std::forward<decltype(args)>(args)...).out;
             });
     int* input = new int[N];
     int* output = new int[M];
@@ -121,8 +121,9 @@ struct U {
 TEST_CASE("alg.partial_sort_copy")
 {
     int i = 0;
-    int * r = stl2::partial_sort_copy(&i, &i, &i, &i+5);
-    CHECK(r == &i);
+    auto r = stl2::partial_sort_copy(&i, &i, &i, &i+5);
+    CHECK(r.in == &i);
+    CHECK(r.out == &i);
     CHECK(i == 0);
     test<input_iterator<const int*> >();
     test<forward_iterator<const int*> >();
@@ -139,11 +140,13 @@ TEST_CASE("alg.partial_sort_copy")
         for (int i = 0; i < N; ++i)
             input[i].i = i;
         std::shuffle(input, input+N, gen);
-        U* r = stl2::partial_sort_copy(input, output, std::less<int>(), &S::i, &U::i);
-        U* e = output + std::min(N, M);
-        CHECK(r == e);
+        auto r = stl2::partial_sort_copy(input, output, std::less<int>(), &S::i, &U::i);
+        S* e_in = input + N;
+        U* e_out = output + std::min(N, M);
+        CHECK(r.in == e_in);
+        CHECK(r.out == e_out);
         int i = 0;
-        for (U* x = output; x < e; ++x, ++i)
+        for (U* x = output; x < e_out; ++x, ++i)
             CHECK(x->i == i);
     }
 
@@ -156,10 +159,9 @@ TEST_CASE("alg.partial_sort_copy")
         for (int i = 0; i < N; ++i)
             input[i].i = i;
         std::shuffle(input, input+N, gen);
-        auto r = stl2::partial_sort_copy(input, std::move(output), std::less<int>(), &S::i, &U::i);
+        auto r = stl2::partial_sort_copy(input, std::move(output), std::less<int>(), &S::i, &U::i).out;
         static_assert(stl2::same_as<decltype(r), stl2::dangling>);
         U* e = output.data() + std::min(N, M);
-        //CHECK(r.get_unsafe() == e);
         int i = 0;
         for (U* x = output.data(); x < e; ++x, ++i)
             CHECK(x->i == i);

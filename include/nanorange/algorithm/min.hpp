@@ -62,7 +62,7 @@ public:
     constexpr std::enable_if_t<
         input_range<Rng> && copyable<iter_value_t<iterator_t<Rng>>> &&
             indirect_strict_weak_order<Comp, projected<iterator_t<Rng>, Proj>>,
-        iter_value_t<iterator_t<Rng>>>
+        range_value_t<Rng>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return min_fn::impl(std::forward<Rng>(rng), comp, proj);
