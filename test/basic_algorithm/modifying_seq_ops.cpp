@@ -536,6 +536,26 @@ TEST_CASE("alg.basic.rotate_copy")
     }
 }
 
+TEST_CASE("alg.basic.sample")
+{
+    const std::vector<int> orig{1, 2, 3, 4, 5};
+    std::vector<int> vec(orig);
+    std::mt19937 rng{std::random_device{}()};
+    std::vector<int> out;
+
+    SECTION("with iterators") {
+	out.clear();
+        rng::sample(vec.begin(), vec.end(), nano::back_inserter(out), 2, rng);
+        REQUIRE(out.size() == 2);
+    }
+
+    SECTION("with range") {
+	out.clear();
+        rng::sample(vec, nano::back_inserter(out), 2, rng);
+        REQUIRE(out.size() == 2);
+    }
+}
+
 TEST_CASE("alg.basic.shuffle")
 {
     const std::vector<int> orig{1, 2, 3, 4, 5};

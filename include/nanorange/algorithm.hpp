@@ -12,6 +12,7 @@
 #include <nanorange/algorithm/all_of.hpp>
 #include <nanorange/algorithm/any_of.hpp>
 #include <nanorange/algorithm/binary_search.hpp>
+#include <nanorange/algorithm/clamp.hpp>
 #include <nanorange/algorithm/copy.hpp>
 #include <nanorange/algorithm/count.hpp>
 #include <nanorange/algorithm/equal.hpp>
@@ -73,6 +74,7 @@
 #include <nanorange/algorithm/set_intersection.hpp>
 #include <nanorange/algorithm/set_symmetric_difference.hpp>
 #include <nanorange/algorithm/set_union.hpp>
+#include <nanorange/algorithm/sample.hpp>
 #include <nanorange/algorithm/shuffle.hpp>
 #include <nanorange/algorithm/sort.hpp>
 #include <nanorange/algorithm/sort_heap.hpp>

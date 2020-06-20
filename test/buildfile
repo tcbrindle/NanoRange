@@ -4,7 +4,6 @@
 # Skip broken tests and things we haven't implemented yet
 exe{test-nanorange}: cxx{**\
     -test_type_traits           \
-    -algorithm/sample           \
     -iterator/incomplete        \
     -iterator/iterator          \
     -views/indirect_view         \

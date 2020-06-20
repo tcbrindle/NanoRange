@@ -27,6 +27,7 @@ else ()
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/all_of.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/any_of.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/binary_search.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/clamp.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/copy.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/count.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/equal.hpp
@@ -88,6 +89,7 @@ else ()
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/set_intersection.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/set_symmetric_difference.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/set_union.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/sample.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/shuffle.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/sort.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/algorithm/sort_heap.hpp

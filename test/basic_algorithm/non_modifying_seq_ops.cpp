@@ -68,6 +68,27 @@ TEST_CASE("alg.basic.for_each")
     REQUIRE(sum == 6);
 }
 
+TEST_CASE("alg.basic.for_each_n")
+{
+    struct functor {
+        int& sum;
+        int counter = 0;
+        void operator()(int i) /*not-const*/ {
+            sum += i;
+            ++counter;
+        }
+    };
+
+    constexpr std::array<int, 3> arr{{1, 2, 3}};
+    int sum = 0;
+    const auto func = functor{sum};
+
+    const auto func2 = rng::for_each_n(arr.begin(), 2, func);
+    REQUIRE(func2.in == arr.begin() + 2);
+    REQUIRE(func2.fun.counter == 2);
+    REQUIRE(sum == 3);
+}
+
 TEST_CASE("alg.basic.count")
 {
     constexpr std::array<int, 3> arr = {{2, 2, 2}};
