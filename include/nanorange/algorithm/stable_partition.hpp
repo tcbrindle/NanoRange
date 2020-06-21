@@ -23,6 +23,7 @@
 #include <nanorange/iterator/back_insert_iterator.hpp>
 #include <nanorange/iterator/move_iterator.hpp>
 #include <nanorange/iterator/reverse_iterator.hpp>
+#include <nanorange/views/subrange.hpp>
 
 #include <nanorange/detail/memory/temporary_vector.hpp>
 
@@ -33,7 +34,7 @@ namespace detail {
 struct stable_partition_fn {
 private:
     template <typename I, typename Buf, typename Pred, typename Proj>
-    static I impl_buffered(I first, I last, Buf& buf, Pred& pred, Proj& proj)
+    static subrange<I> impl_buffered(I first, I last, Buf& buf, Pred& pred, Proj& proj)
     {
         // first is known to be false, so pop it straight into the buffer
         buf.push_back(nano::iter_move(first));
@@ -51,12 +52,12 @@ private:
 
         // Now move all the other elements from the buffer back into the sequence
         nano::move(buf, first);
-        return first;
+        return {std::move(first), std::move(last)};
     }
 
     // Note to self: this is a closed range, last is NOT past-the-end!
     template <typename I, typename Pred, typename Proj>
-    static I impl_unbuffered(I first, I last, iter_difference_t<I> dist,
+    static subrange<I> impl_unbuffered(I first, I last, iter_difference_t<I> dist,
                              Pred& pred, Proj& proj)
     {
         using dist_t = iter_difference_t<I>;
@@ -64,7 +65,7 @@ private:
         if (dist == 2) {
             // We know first is false and last is true, so swap them
             nano::iter_swap(first, last);
-            return last;
+            return {nano::next(first), nano::next(last)};
         }
 
         if (dist == 3) {
@@ -74,13 +75,13 @@ private:
             if (nano::invoke(pred, nano::invoke(proj, *middle))) {
                 nano::iter_swap(first, middle);
                 nano::iter_swap(middle, last);
-                return last;
+                return {nano::next(first, 2), nano::next(last)};
             }
 
             // middle is false
             nano::iter_swap(middle, last);
             nano::iter_swap(first, middle);
-            return middle;
+            return {std::move(middle), std::next(last)};
         }
 
         const dist_t half = dist/2;
@@ -95,50 +96,52 @@ private:
         }
 
         const I first_false = (m1 == first) ? first :
-                impl_unbuffered(first, m1, len_half, pred, proj);
+                impl_unbuffered(first, m1, len_half, pred, proj).begin();
 
         m1 = middle;
         len_half = dist - half;
 
         while (nano::invoke(pred, nano::invoke(proj, *m1))) {
             if (++m1 == last) {
-                return nano::rotate(first_false, middle, ++last).begin();
+                auto rot = nano::rotate(first_false, middle, ++last);
+                return {std::move(rot.begin()), nano::next(last)};
             }
         }
 
-        const I last_false = impl_unbuffered(m1, last, len_half, pred, proj);
+        const I last_false = impl_unbuffered(m1, last, len_half, pred, proj).begin();
 
-        return nano::rotate(first_false, middle, last_false).begin();
+        auto rot = nano::rotate(first_false, middle, last_false);
+        return {rot.begin(), nano::next(last)};
     }
 
     template <typename I, typename Pred, typename Proj>
-    static I impl(I first, I last, Pred& pred, Proj& proj)
+    static subrange<I> impl(I first, I last, Pred& pred, Proj& proj)
     {
         // Find the first non-true value
         first = nano::find_if_not(std::move(first), last, std::ref(pred), std::ref(proj));
         if (first == last) {
-            return first;
+            return {std::move(first), std::move(last)};
         }
 
         // Find the last true value
-        last = nano::find_if(nano::make_reverse_iterator(last),
+        I it = nano::find_if(nano::make_reverse_iterator(last),
                              nano::make_reverse_iterator(first),
                              std::ref(pred), std::ref(proj)).base();
-        if (last == first) {
-            return first;
+        if (it == first) {
+            return {std::move(first), std::move(it)};
         }
 
-        const auto dist = nano::distance(first, last);
+        const auto dist = nano::distance(first, it);
 
         auto buf = detail::temporary_vector<iter_value_t<I>>(dist);
         if (buf.capacity() < static_cast<std::size_t>(dist)) {
-            return impl_unbuffered(first, --last, dist, pred, proj);
+            return {impl_unbuffered(first, --it, dist, pred, proj).begin(), last};
         }
-        return impl_buffered(first, last, buf, pred, proj);
+        return {impl_buffered(first, it, buf, pred, proj).begin(), last};
     }
 
     template <typename I, typename S, typename Pred, typename Proj>
-    static std::enable_if_t<!same_as<I, S>, I>
+    static std::enable_if_t<!same_as<I, S>, subrange<I>>
     impl(I first, S last, Pred& pred, Proj& proj)
     {
         return impl(first, nano::next(first, last), pred, proj);
@@ -148,7 +151,7 @@ public:
     template <typename I, typename S, typename Pred, typename Proj = identity>
     std::enable_if_t<bidirectional_iterator<I> && sentinel_for<S, I> &&
                          indirect_unary_predicate<Pred, projected<I, Proj>> &&
-                         permutable<I>, I>
+                         permutable<I>, subrange<I>>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
         return stable_partition_fn::impl(std::move(first), std::move(last),
@@ -160,7 +163,7 @@ public:
         bidirectional_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>> &&
             permutable<iterator_t<Rng>>,
-        borrowed_iterator_t<Rng>>
+        borrowed_subrange_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return stable_partition_fn::impl(nano::begin(rng), nano::end(rng),

@@ -14,14 +14,17 @@
 
 NANO_BEGIN_NAMESPACE
 
+template <typename T>
+using minmax_element_result = minmax_result<T>;
+
 namespace detail {
 
 struct minmax_element_fn {
 private:
     template <typename I, typename S, typename Comp, typename Proj>
-    static constexpr minmax_result<I> impl(I first, S last, Comp& comp, Proj& proj)
+    static constexpr minmax_element_result<I> impl(I first, S last, Comp& comp, Proj& proj)
     {
-        minmax_result<I> result{first, first};
+        minmax_element_result<I> result{first, first};
 
         if (first == last || ++first == last) {
             return result;
@@ -84,7 +87,7 @@ public:
     constexpr std::enable_if_t<
         forward_iterator<I> && sentinel_for<S, I> &&
             indirect_strict_weak_order<Comp, projected<I, Proj>>,
-        minmax_result<I>>
+        minmax_element_result<I>>
     operator()(I first, S last, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return minmax_element_fn::impl(std::move(first), std::move(last),
@@ -95,7 +98,7 @@ public:
     constexpr std::enable_if_t<
         forward_range<Rng> &&
             indirect_strict_weak_order<Comp, projected<iterator_t<Rng>, Proj>>,
-        minmax_result<borrowed_iterator_t<Rng>>>
+        minmax_element_result<borrowed_iterator_t<Rng>>>
     operator()(Rng&& rng, Comp comp = Comp{}, Proj proj = Proj{}) const
     {
         return minmax_element_fn::impl(nano::begin(rng), nano::end(rng),

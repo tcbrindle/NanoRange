@@ -51,7 +51,7 @@ public:
     constexpr std::enable_if_t<
         input_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
-        iter_difference_t<iterator_t<Rng>>>
+        range_difference_t<Rng>>
     operator()(Rng&& rng, Pred pred, Proj proj = Proj{}) const
     {
         return count_if_fn::impl(nano::begin(rng), nano::end(rng),
@@ -82,7 +82,7 @@ struct count_fn {
         input_range<Rng> &&
             indirect_relation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T*>,
-        iter_difference_t<iterator_t<Rng>>>
+        range_difference_t<Rng>>
     operator()(Rng&& rng, const T& value, Proj proj = Proj{}) const
     {
         const auto pred = [&value] (const auto& t) { return t == value; };
