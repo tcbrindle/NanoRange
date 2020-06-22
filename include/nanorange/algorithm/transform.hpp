@@ -7,38 +7,16 @@
 #ifndef NANORANGE_ALGORITHM_TRANSFORM_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_TRANSFORM_HPP_INCLUDED
 
-#include <nanorange/algorithm/copy.hpp>
+#include <nanorange/detail/algorithm/result_types.hpp>
+#include <nanorange/ranges.hpp>
 
 NANO_BEGIN_NAMESPACE
 
 template <typename I, typename O>
-using unary_transform_result = copy_result<I, O>;
+using unary_transform_result = in_out_result<I, O>;
 
 template <typename I1, typename I2, typename O>
-struct binary_transform_result {
-    NANO_NO_UNIQUE_ADDRESS I1 in1;
-    NANO_NO_UNIQUE_ADDRESS I2 in2;
-    NANO_NO_UNIQUE_ADDRESS O out;
-
-    template <typename II1, typename II2, typename O2,
-              std::enable_if_t<convertible_to<const I1&, II1> &&
-                               convertible_to<const I2&, II2> &&
-                               convertible_to<const O&, O2>, int> = 0>
-    constexpr operator binary_transform_result<II1, II2, O2>() const &
-    {
-        return {in1, in2, out};
-    }
-
-    template <typename II1, typename II2, typename O2,
-              std::enable_if_t<convertible_to<I1, II1> &&
-                               convertible_to<I2, II2> &&
-                               convertible_to<O, O2>, int> = 0>
-    constexpr operator binary_transform_result<II1, II2, O2>() &&
-    {
-        return {std::move(in1), std::move(in2), std::move(out)};
-    }
-};
-
+using binary_transform_result  = in_in_out_result<I1, I2, O>;
 
 namespace detail {
 

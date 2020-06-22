@@ -10,11 +10,12 @@
 #include <nanorange/ranges.hpp>
 
 #include <nanorange/algorithm/copy.hpp>
+#include <nanorange/detail/algorithm/result_types.hpp>
 
 NANO_BEGIN_NAMESPACE
 
 template <typename I, typename O>
-using set_difference_result = copy_result<I, O>;
+using set_difference_result = in_out_result<I, O>;
 
 namespace detail {
 

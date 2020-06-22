@@ -7,12 +7,13 @@
 #ifndef NANORANGE_ALGORITHM_REPLACE_COPY_IF_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_REPLACE_COPY_IF_HPP_INCLUDED
 
-#include <nanorange/algorithm/copy.hpp>
+#include <nanorange/detail/algorithm/result_types.hpp>
+#include <nanorange/ranges.hpp>
 
 NANO_BEGIN_NAMESPACE
 
 template <typename I, typename O>
-using replace_copy_if_result = copy_result<I, O>;
+using replace_copy_if_result = in_out_result<I, O>;
 
 namespace detail {
 

@@ -7,12 +7,13 @@
 #ifndef NANORANGE_ALGORITHM_SWAP_RANGES_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_SWAP_RANGES_HPP_INCLUDED
 
-#include <nanorange/algorithm/mismatch.hpp>
+#include <nanorange/detail/algorithm/result_types.hpp>
+#include <nanorange/ranges.hpp>
 
 NANO_BEGIN_NAMESPACE
 
 template <typename I1, typename I2>
-using swap_ranges_result = mismatch_result<I1, I2>;
+using swap_ranges_result = in_in_result<I1, I2>;
 
 namespace detail {
 

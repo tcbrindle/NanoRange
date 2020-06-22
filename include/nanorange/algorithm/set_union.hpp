@@ -8,12 +8,12 @@
 #define NANORANGE_ALGORITHM_SET_UNION_HPP_INCLUDED
 
 #include <nanorange/algorithm/copy.hpp>
-#include <nanorange/algorithm/transform.hpp>
+#include <nanorange/detail/algorithm/result_types.hpp>
 
 NANO_BEGIN_NAMESPACE
 
 template <typename I1, typename I2, typename O>
-using set_union_result = binary_transform_result<I1, I2, O>;
+using set_union_result = in_in_out_result<I1, I2, O>;
 
 namespace detail {
 

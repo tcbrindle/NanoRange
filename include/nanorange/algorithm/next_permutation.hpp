@@ -21,14 +21,12 @@
 #define NANORANGE_ALGORITHM_NEXT_PERMUTATION_HPP_INCLUDED
 
 #include <nanorange/algorithm/reverse.hpp>
+#include <nanorange/detail/algorithm/result_types.hpp>
 
 NANO_BEGIN_NAMESPACE
 
 template <typename I>
-struct next_permutation_result {
-    bool found;
-    I in;
-};
+using next_permutation_result = in_found_result<I>;
 
 namespace detail {
 
@@ -39,14 +37,14 @@ private:
     impl(I first, S last, Comp& comp, Proj& proj)
     {
         if (first == last) {
-            return {false, std::move(first)};
+            return {std::move(first), false};
         }
 
         I last_it = nano::next(first, last);
         I i = last_it;
 
         if (first == --i) {
-            return {false, std::move(last_it)};
+            return {std::move(last_it), false};
         }
 
         while (true) {
@@ -60,12 +58,12 @@ private:
 
                 nano::iter_swap(i, j);
                 nano::reverse(ip1, last_it);
-                return {true, std::move(last_it)};
+                return {std::move(last_it), true};
             }
 
             if (i == first) {
                 nano::reverse(first, last_it);
-                return {false, std::move(last_it)};
+                return {std::move(last_it), false};
             }
         }
     }

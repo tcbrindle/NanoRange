@@ -7,12 +7,13 @@
 #ifndef NANORANGE_MEMORY_UNINITIALIZED_MOVE_HPP_INCLUDED
 #define NANORANGE_MEMORY_UNINITIALIZED_MOVE_HPP_INCLUDED
 
-#include <nanorange/memory/uninitialized_copy.hpp>
+#include <nanorange/detail/algorithm/result_types.hpp>
+#include <nanorange/memory/destroy.hpp>
 
 NANO_BEGIN_NAMESPACE
 
 template <typename I, typename O>
-using uninitialized_move_result = uninitialized_copy_result<I, O>;
+using uninitialized_move_result = in_out_result<I, O>;
 
 namespace detail {
 
@@ -118,7 +119,7 @@ public:
 NANO_INLINE_VAR(detail::uninitialized_move_fn, uninitialized_move)
 
 template <typename I, typename O>
-using uninitialized_move_n_result = uninitialized_copy_result<I, O>;
+using uninitialized_move_n_result = in_out_result<I, O>;
 
 namespace detail {
 

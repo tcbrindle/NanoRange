@@ -7,6 +7,7 @@
 #ifndef NANORANGE_ALGORITHM_FOR_EACH_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_FOR_EACH_HPP_INCLUDED
 
+#include <nanorange/detail/algorithm/result_types.hpp>
 #include <nanorange/ranges.hpp>
 
 NANO_BEGIN_NAMESPACE
@@ -14,26 +15,7 @@ NANO_BEGIN_NAMESPACE
 // [range.alg.foreach]
 
 template <typename I, typename F>
-struct for_each_result {
-    NANO_NO_UNIQUE_ADDRESS I in;
-    NANO_NO_UNIQUE_ADDRESS F fun;
-
-    template <typename I2, typename F2,
-              std::enable_if_t<convertible_to<const I&, I2> &&
-                               convertible_to<const F&, F2>, int> = 0>
-    constexpr operator for_each_result<I2, F2>() const &
-    {
-        return {in, fun};
-    }
-
-    template <typename I2, typename F2,
-        std::enable_if_t<convertible_to<I, I2> &&
-                         convertible_to<F, F2>, int> = 0>
-    constexpr operator for_each_result<I2, F2>() &&
-    {
-        return {std::move(in), std::move(fun)};
-    }
-};
+using for_each_result = in_fun_result<I, F>;
 
 namespace detail {
 
@@ -78,7 +60,7 @@ public:
 NANO_INLINE_VAR(detail::for_each_fn, for_each)
 
 template <typename I, typename F>
-using for_each_n_result = for_each_result<I, F>;
+using for_each_n_result = in_fun_result<I, F>;
 
 namespace detail {
 

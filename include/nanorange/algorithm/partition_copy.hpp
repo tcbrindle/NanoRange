@@ -7,34 +7,13 @@
 #ifndef NANORANGE_ALGORITHM_PARTITION_COPY_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_PARTITION_COPY_HPP_INCLUDED
 
+#include <nanorange/detail/algorithm/result_types.hpp>
 #include <nanorange/ranges.hpp>
 
 NANO_BEGIN_NAMESPACE
 
 template <typename I, typename O1, typename O2>
-struct partition_copy_result {
-    NANO_NO_UNIQUE_ADDRESS I in;
-    NANO_NO_UNIQUE_ADDRESS O1 out1;
-    NANO_NO_UNIQUE_ADDRESS O2 out2;
-
-    template <typename II, typename OO1, typename OO2,
-              std::enable_if_t<convertible_to<const I&, II> &&
-                               convertible_to<const O1&, OO1> &&
-                               convertible_to<const O2&, OO2>, int> = 0>
-    constexpr operator partition_copy_result<II, OO1, OO2>() const &
-    {
-        return {in, out1, out2};
-    }
-
-    template <typename II, typename OO1, typename OO2,
-        std::enable_if_t<convertible_to<I, II> &&
-                         convertible_to<O1, OO1> &&
-                         convertible_to<O2, OO2>, int> = 0>
-    constexpr operator partition_copy_result<II, OO1, OO2>() &&
-    {
-        return {std::move(in), std::move(out1), std::move(out2)};
-    }
-};
+using partition_copy_result = in_out_out_result<I, O1, O2>;
 
 namespace detail {
 

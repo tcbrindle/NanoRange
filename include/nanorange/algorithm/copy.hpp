@@ -7,32 +7,13 @@
 #ifndef NANORANGE_ALGORITHM_COPY_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_COPY_HPP_INCLUDED
 
-#include <nanorange/iterator/operations.hpp>
+#include <nanorange/detail/algorithm/result_types.hpp>
 #include <nanorange/ranges.hpp>
 
 NANO_BEGIN_NAMESPACE
 
 template <typename I, typename O>
-struct copy_result {
-    NANO_NO_UNIQUE_ADDRESS I in;
-    NANO_NO_UNIQUE_ADDRESS O out;
-
-    template <typename I2, typename O2,
-              std::enable_if_t<convertible_to<const I&, I2> &&
-                               convertible_to<const O&, O2>, int> = 0>
-    constexpr operator copy_result<I2, O2>() const &
-    {
-        return {in, out};
-    }
-
-    template <typename I2, typename O2,
-              std::enable_if_t<convertible_to<I, I2> &&
-                               convertible_to<O, O2>, int> = 0>
-    constexpr operator copy_result<I2, O2>() &&
-    {
-        return {std::move(in), std::move(out)};
-    }
-};
+using copy_result = in_out_result<I, O>;
 
 namespace detail {
 
@@ -96,7 +77,7 @@ public:
 NANO_INLINE_VAR(detail::copy_fn, copy)
 
 template <typename I, typename O>
-using copy_n_result = copy_result<I, O>;
+using copy_n_result = in_out_result<I, O>;
 
 namespace detail {
 
@@ -122,7 +103,7 @@ struct copy_n_fn {
 NANO_INLINE_VAR(detail::copy_n_fn, copy_n)
 
 template <typename I, typename O>
-using copy_if_result = copy_result<I, O>;
+using copy_if_result = in_out_result<I, O>;
 
 namespace detail {
 
@@ -176,7 +157,7 @@ public:
 NANO_INLINE_VAR(detail::copy_if_fn, copy_if)
 
 template <typename I, typename O>
-using copy_backward_result = copy_result<I, O>;
+using copy_backward_result = in_out_result<I, O>;
 
 namespace detail {
 

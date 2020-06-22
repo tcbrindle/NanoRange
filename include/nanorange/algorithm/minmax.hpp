@@ -10,29 +10,13 @@
 #ifndef NANORANGE_ALGORITHM_MINMAX_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_MINMAX_HPP_INCLUDED
 
+#include <nanorange/detail/algorithm/result_types.hpp>
 #include <nanorange/ranges.hpp>
 
 NANO_BEGIN_NAMESPACE
 
 template <typename T>
-struct minmax_result {
-    NANO_NO_UNIQUE_ADDRESS T min;
-    NANO_NO_UNIQUE_ADDRESS T max;
-
-    template <typename T2,
-              std::enable_if_t<convertible_to<const T&, T2>, int> = 0>
-    constexpr operator minmax_result<T2>() const &
-    {
-        return {min, max};
-    }
-
-    template <typename T2,
-              std::enable_if_t<convertible_to<T, T2>, int> = 0>
-    constexpr operator minmax_result<T2>() &&
-    {
-        return {std::move(min), std::move(max)};
-    }
-};
+using minmax_result = min_max_result<T>;
 
 namespace detail {
 
