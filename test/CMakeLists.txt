@@ -15,6 +15,7 @@ add_executable(test_nanorange
     basic_algorithm/sorting_ops.cpp
 
     # Constexpr tests for algorithms
+    constexpr_algorithm/non_modifying_seq_ops.cpp
     constexpr_algorithm/modifying_seq_ops.cpp
     constexpr_algorithm/permutation_ops.cpp
     constexpr_algorithm/sorting_ops.cpp
@@ -24,6 +25,7 @@ add_executable(test_nanorange
     algorithm/all_of.cpp
     algorithm/any_of.cpp
     algorithm/binary_search.cpp
+    algorithm/clamp.cpp
     algorithm/copy.cpp
     algorithm/copy_backward.cpp
     algorithm/copy_if.cpp
@@ -40,6 +42,7 @@ add_executable(test_nanorange
     algorithm/find_if.cpp
     algorithm/find_if_not.cpp
     algorithm/for_each.cpp
+    algorithm/for_each_n.cpp
     algorithm/generate.cpp
     algorithm/generate_n.cpp
     algorithm/includes.cpp
@@ -92,7 +95,7 @@ add_executable(test_nanorange
     algorithm/reverse_copy.cpp
     algorithm/rotate.cpp
     algorithm/rotate_copy.cpp
-    #algorithm/sample.cpp
+    algorithm/sample.cpp
     algorithm/search.cpp
     algorithm/search_n.cpp
     algorithm/set_difference1.cpp

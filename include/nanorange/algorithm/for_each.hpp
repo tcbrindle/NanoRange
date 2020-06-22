@@ -77,6 +77,30 @@ public:
 
 NANO_INLINE_VAR(detail::for_each_fn, for_each)
 
+template <typename I, typename F>
+using for_each_n_result = for_each_result<I, F>;
+
+namespace detail {
+
+struct for_each_n_fn {
+    template <typename I, typename Proj = identity, typename Fun>
+    constexpr std::enable_if_t<
+        input_iterator<I> &&
+            indirect_unary_invocable<Fun, projected<I, Proj>>,
+        for_each_n_result<I, Fun>>
+    operator()(I first, iter_difference_t<I> n, Fun fun, Proj proj = Proj{}) const
+    {
+        while (n-- > 0) {
+            nano::invoke(fun, nano::invoke(proj, *first));
+            ++first;
+        }
+        return {std::move(first), std::move(fun)};
+    }
+};
+} // namespace detail
+
+NANO_INLINE_VAR(detail::for_each_n_fn, for_each_n)
+
 NANO_END_NAMESPACE
 
 #endif
