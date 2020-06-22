@@ -4650,6 +4650,44 @@ NANO_END_NAMESPACE
 
 #endif
 
+// nanorange/algorithm/clamp.hpp
+//
+// Copyright (c) 2020 Boris Staletic (boris dot staletic at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_CLAMP_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_CLAMP_HPP_INCLUDED
+
+
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct clamp_fn {
+    template <typename T, typename Proj = identity, typename Comp = nano::less>
+    constexpr std::enable_if_t<indirect_strict_weak_order<Comp, projected<const T*, Proj>>, const T&>
+    operator()(const T& value, const T& low, const T& high, Comp comp = {}, Proj proj = Proj{}) const
+    {
+        auto&& projected_value = nano::invoke(proj, value);
+        if (nano::invoke(comp, projected_value, nano::invoke(proj, low))) {
+            return low;
+        } else if (nano::invoke(comp, nano::invoke(proj, high), projected_value)) {
+            return high;
+        } else {
+            return value;
+        }
+    }
+};
+} // namespace detail
+
+NANO_INLINE_VAR(detail::clamp_fn, clamp)
+
+NANO_END_NAMESPACE
+
+#endif
+
 // nanorange/algorithm/copy.hpp
 //
 // Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
@@ -6586,6 +6624,30 @@ public:
 } // namespace detail
 
 NANO_INLINE_VAR(detail::for_each_fn, for_each)
+
+template <typename I, typename F>
+using for_each_n_result = for_each_result<I, F>;
+
+namespace detail {
+
+struct for_each_n_fn {
+    template <typename I, typename Proj = identity, typename Fun>
+    constexpr std::enable_if_t<
+        input_iterator<I> &&
+            indirect_unary_invocable<Fun, projected<I, Proj>>,
+        for_each_n_result<I, Fun>>
+    operator()(I first, iter_difference_t<I> n, Fun fun, Proj proj = Proj{}) const
+    {
+        while (n-- > 0) {
+            nano::invoke(fun, nano::invoke(proj, *first));
+            ++first;
+        }
+        return {std::move(first), std::move(fun)};
+    }
+};
+} // namespace detail
+
+NANO_INLINE_VAR(detail::for_each_n_fn, for_each_n)
 
 NANO_END_NAMESPACE
 
@@ -12583,14 +12645,18 @@ NANO_END_NAMESPACE
 
 #endif
 
-// nanorange/algorithm/shuffle.hpp
+// nanorange/algorithm/sample.hpp
 //
-// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
 
-#ifndef NANORANGE_ALGORITHM_SHUFFLE_HPP_INCLUDED
-#define NANORANGE_ALGORITHM_SHUFFLE_HPP_INCLUDED
+#ifndef NANORANGE_ALGORITHM_SAMPLE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_SAMPLE_HPP_INCLUDED
 
 
 // nanorange/random.hpp
@@ -12653,6 +12719,121 @@ NANO_CONCEPT uniform_random_bit_generator =
 NANO_END_NAMESPACE
 
 #endif
+
+
+
+#include <random>
+
+NANO_BEGIN_NAMESPACE
+
+namespace detail {
+
+struct sample_fn {
+private:
+    template <typename I, typename S, typename O, typename Gen>
+    static O impl_fwd(I first, S last, O out, iter_difference_t<I> n, Gen& g)
+    {
+        using diff_t = iter_difference_t<I>;
+        using distr_t = std::uniform_int_distribution<diff_t>;
+        using param_t = typename distr_t::param_type;
+
+        distr_t D;
+
+        auto unsampled_size = nano::distance(first, last);
+
+        for (n = nano::min(n, unsampled_size); n != 0; ++first) {
+            if (D(g, param_t(0, --unsampled_size)) < n) {
+                *out++ = *first;
+                --n;
+            }
+        }
+
+        return out;
+    }
+    template <typename I, typename S, typename O, typename Gen>
+    static O impl_ra(I first, S last, O out, iter_difference_t<I> n, Gen& g) {
+        using diff_t = iter_difference_t<I>;
+        using distr_t = std::uniform_int_distribution<diff_t>;
+        using param_t = typename distr_t::param_type;
+
+        distr_t D;
+        diff_t k = 0;
+
+        for(; first != last && k < n; ++first, (void) ++k) {
+            out[k] = *first;
+        }
+
+        diff_t size = k;
+        for (; first != last; ++first, (void) ++k) {
+            diff_t r = distr_t(0, k)(g);
+            if (D(g, param_t(0, k)) < size) {
+                out[r] = *first;
+            }
+        }
+
+        return out + nano::min(n, k);
+    }
+
+    template <typename I, typename S, typename O, typename Gen>
+    static O impl(I first, S last, O out, iter_difference_t<I> n, Gen& g)
+    {
+        if constexpr (nano::forward_iterator<I>) {
+            return impl_fwd(std::move(first), std::move(last), std::move(out), n, g);
+	} else {
+            return impl_ra(std::move(first), std::move(last), std::move(out), n, g);
+	}
+    }
+
+public:
+    template <typename I, typename S, typename O, typename Gen>
+    std::enable_if_t<
+        input_iterator<I> &&
+        sentinel_for<S, I> &&
+        weakly_incrementable<O> &&
+        (forward_iterator<I> || random_access_iterator<O>) &&
+        indirectly_copyable<I, O> &&
+        uniform_random_bit_generator<std::remove_reference_t<Gen>>,
+        O>
+    operator()(I first, S last, O out, iter_difference_t<I> n, Gen&& gen) const
+    {
+        return sample_fn::impl(std::move(first), std::move(last),
+                               std::move(out), std::move(n),
+                               std::forward<Gen>(gen));
+    }
+
+    template <typename Rng, typename O, typename Gen>
+    std::enable_if_t<
+        input_range<Rng> &&
+        weakly_incrementable<O> &&
+        (forward_range<Rng> || random_access_iterator<O> ) &&
+        indirectly_copyable<iterator_t<Rng>, O> &&
+        uniform_random_bit_generator<std::remove_reference_t<Gen>>,
+        O>
+    operator()(Rng&& rng, O out, range_difference_t<Rng> n, Gen&& gen) const
+    {
+        return sample_fn::impl(nano::begin(rng), nano::end(rng),
+                               std::move(out), std::move(n), std::forward<Gen>(gen));
+    }
+};
+
+}
+
+NANO_INLINE_VAR(detail::sample_fn, sample)
+
+NANO_END_NAMESPACE
+
+#endif
+
+// nanorange/algorithm/shuffle.hpp
+//
+// Copyright (c) 2018 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef NANORANGE_ALGORITHM_SHUFFLE_HPP_INCLUDED
+#define NANORANGE_ALGORITHM_SHUFFLE_HPP_INCLUDED
+
+
 
 
 #include <random>
