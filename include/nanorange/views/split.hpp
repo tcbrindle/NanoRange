@@ -364,14 +364,6 @@ public:
         : data_{std::move(base), std::move(pattern)}
     {}
 
-    template <typename R, typename P,
-              std::enable_if_t<constructible_from<V, all_view<R>>, int> = 0,
-              std::enable_if_t<constructible_from<Pattern, all_view<P>>, int> = 0,
-              std::enable_if_t<input_range<R> && forward_range<P>, int> = 0>
-    constexpr split_view(R&& r, P&& p)
-        : data_{views::all(std::forward<R>(r)) , views::all(std::forward<P>(p))}
-    {}
-
     template <typename R,
               std::enable_if_t<constructible_from<V, all_view<R>>, int> = 0,
               std::enable_if_t<

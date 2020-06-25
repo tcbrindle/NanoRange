@@ -80,13 +80,6 @@ public:
           count_(count)
     {}
 
-    template <typename R, std::enable_if_t<
-        viewable_range<R> && constructible_from<V, all_view<R>>, int> = 0>
-    constexpr take_view(R&& r, range_difference_t<V> count)
-        : base_(views::all(std::forward<R>(r))),
-          count_(count)
-    {}
-
     constexpr V base() const { return base_; }
 
     template <typename VV = V, std::enable_if_t<!detail::simple_view<VV>, int> = 0>

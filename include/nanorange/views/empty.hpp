@@ -24,9 +24,6 @@ public:
     static constexpr T* data() noexcept { return nullptr; }
 
     static constexpr bool empty() noexcept { return true; }
-
-    friend constexpr T* begin(empty_view) noexcept { return nullptr; }
-    friend constexpr T* end(empty_view) noexcept { return nullptr; }
 };
 
 }

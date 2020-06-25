@@ -40,19 +40,6 @@ struct reverse_view
         : base_(std::move(r))
     {}
 
-    template <typename R,
-              /* FIXME: This is not to spec, but we get in horrible recursive trouble if it's omitted */
-              std::enable_if_t<detail::not_same_as<R, reverse_view>, int> = 0,
-              std::enable_if_t<viewable_range<R> && bidirectional_range<R> &&
-                  constructible_from<V, all_view<R>>, int> = 0>
-    constexpr explicit reverse_view(R&& r)
-        : base_(views::all(std::forward<R>(r)))
-    {}
-
-    constexpr reverse_view(const reverse_view& other)
-        : base_(other.base_)
-    {}
-
     constexpr V base() const { return base_; }
 
     constexpr reverse_iterator<iterator_t<V>> begin()

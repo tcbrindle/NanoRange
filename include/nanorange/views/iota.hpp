@@ -303,6 +303,9 @@ public:
           bound_(bound)
     {}
 
+    constexpr iota_view(iterator first, sentinel last)
+        : iota_view(*first, last.bound_) {}
+
     constexpr iterator begin() const
     {
         return iterator{value_};
