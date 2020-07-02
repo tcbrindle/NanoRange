@@ -1,6 +1,8 @@
 
+add_library(catch_main catch_main.cpp)
+target_compile_features(catch_main PUBLIC cxx_std_17)
+
 add_executable(test_nanorange
-    catch_main.cpp
     test_concepts.cpp
     #test_type_traits.cpp
 
@@ -194,7 +196,12 @@ add_executable(test_nanorange
     views/transform_view.cpp
 )
 target_compile_definitions(test_nanorange PRIVATE "-DNANORANGE_NO_DEPRECATION_WARNINGS")
-target_link_libraries(test_nanorange PRIVATE nanorange)
+target_link_libraries(test_nanorange PRIVATE nanorange catch_main)
+
+# Precompile catch.hpp if we have a new enough CMake
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.16.0")
+    target_precompile_headers(test_nanorange PRIVATE "catch.hpp")
+endif()
 
 if (CMAKE_COMPILER_IS_GNUCXX)
     target_compile_options(test_nanorange PRIVATE -Wall -Wextra -pedantic
