@@ -301,15 +301,6 @@ public:
           fun_(std::move(fun))
     {}
 
-    template <typename R, std::enable_if_t<
-        input_range<R> &&
-        viewable_range<R> &&
-        constructible_from<V, all_view<R>>, int> = 0>
-    constexpr transform_view(R&& r, F fun)
-        : base_(views::all(std::forward<R>(r))),
-          fun_(std::move(fun))
-    {}
-
     constexpr V base() const { return base_; }
 
     constexpr iterator<false> begin()

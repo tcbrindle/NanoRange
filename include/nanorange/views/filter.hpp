@@ -213,13 +213,6 @@ public:
         : base_(std::move(base)), pred_(std::move(pred))
     {}
 
-    template <typename R,
-              std::enable_if_t<input_range<R> && constructible_from<V, all_view<R>>,
-                               int> = 0>
-    constexpr filter_view(R&& r, Pred pred)
-        : base_(views::all(std::forward<R>(r))), pred_(std::move(pred))
-    {}
-
     constexpr V base() const { return base_; }
 
     constexpr iterator begin()

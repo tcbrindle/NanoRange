@@ -300,15 +300,6 @@ public:
         : data_{std::move(base)}
     {}
 
-    template <typename R,
-              std::enable_if_t<detail::not_same_as<R, join_view>, int> = 0,
-              std::enable_if_t<input_range<R>, int> = 0,
-              std::enable_if_t<viewable_range<R>, int> = 0,
-              std::enable_if_t<constructible_from<V, all_view<R>>, int> = 0>
-    constexpr join_view(R&& r)
-        : data_{views::all(std::forward<R>(r))}
-    {}
-
     constexpr auto begin()
     {
         return iterator<detail::simple_view<V>>{*this, ranges::begin(data_.base_)};
