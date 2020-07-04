@@ -10,12 +10,13 @@
 #ifndef NANORANGE_ALGORITHM_MINMAX_ELEMENT_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_MINMAX_ELEMENT_HPP_INCLUDED
 
-#include <nanorange/algorithm/minmax.hpp>
+#include <nanorange/detail/algorithm/result_types.hpp>
+#include <nanorange/ranges.hpp>
 
 NANO_BEGIN_NAMESPACE
 
 template <typename T>
-using minmax_element_result = minmax_result<T>;
+using minmax_element_result = min_max_result<T>;
 
 namespace detail {
 

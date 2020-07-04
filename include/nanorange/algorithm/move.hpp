@@ -7,12 +7,13 @@
 #ifndef NANORANGE_ALGORITHM_MOVE_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_MOVE_HPP_INCLUDED
 
-#include <nanorange/algorithm/copy.hpp>
+#include <nanorange/detail/algorithm/result_types.hpp>
+#include <nanorange/ranges.hpp>
 
 NANO_BEGIN_NAMESPACE
 
 template <typename I, typename O>
-using move_result = copy_result<I, O>;
+using move_result = in_out_result<I, O>;
 
 namespace detail {
 
@@ -73,8 +74,8 @@ public:
 
 NANO_INLINE_VAR(detail::move_fn, move)
 
-template <typename I1, typename I2>
-using move_backward_result = copy_result<I1, I2>;
+template <typename I, typename O>
+using move_backward_result = in_out_result<I, O>;
 
 namespace detail {
 

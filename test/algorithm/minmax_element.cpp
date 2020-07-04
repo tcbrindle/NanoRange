@@ -37,7 +37,7 @@ template <class Iter, class Sent = Iter>
 void
 test_iter(Iter first, Sent last)
 {
-	stl2::minmax_result<Iter> p = stl2::minmax_element(first, last);
+	stl2::minmax_element_result<Iter> p = stl2::minmax_element(first, last);
 	if (first != last) {
 		for (Iter j = first; j != last; ++j) {
 			CHECK(!(*j < *p.min));
@@ -100,7 +100,7 @@ test_iter()
 		std::unique_ptr<int[]> a{new int[N]};
 		std::fill_n(a.get(), N, 5);
 		std::shuffle(a.get(), a.get() + N, gen);
-		stl2::minmax_result<Iter> p = stl2::minmax_element(Iter(a.get()),
+		stl2::minmax_element_result<Iter> p = stl2::minmax_element(Iter(a.get()),
 													   Sent(a.get() + N));
 		CHECK(base(p.min) == a.get());
 		CHECK(base(p.max) == a.get() + N - 1);
@@ -113,7 +113,7 @@ test_iter_comp(Iter first, Sent last)
 {
 	typedef std::greater<int> Compare;
 	Compare comp;
-	stl2::minmax_result<Iter> p = stl2::minmax_element(first, last, comp);
+	stl2::minmax_element_result<Iter> p = stl2::minmax_element(first, last, comp);
 	if (first != last) {
 		for (Iter j = first; j != last; ++j) {
 			CHECK(!comp(*j, *p.min));
@@ -178,7 +178,7 @@ test_iter_comp()
 		std::shuffle(a.get(), a.get() + N, gen);
 		typedef std::greater<int> Compare;
 		Compare comp;
-		stl2::minmax_result<Iter> p = stl2::minmax_element(Iter(a.get()),
+		stl2::minmax_element_result<Iter> p = stl2::minmax_element(Iter(a.get()),
 													   Sent(a.get() + N), comp);
 		CHECK(base(p.min) == a.get());
 		CHECK(base(p.max) == a.get() + N - 1);
@@ -211,7 +211,7 @@ TEST_CASE("alg.minmax_element")
 
 	// Works with projections?
 	S const s[] = {S{1},S{2},S{3},S{4},S{-4},S{5},S{6},S{40},S{7},S{8},S{9}};
-	stl2::minmax_result<S const *> ps = stl2::minmax_element(s, std::less<int>{}, &S::i);
+	stl2::minmax_element_result<S const *> ps = stl2::minmax_element(s, std::less<int>{}, &S::i);
 	CHECK(ps.min->i == -4);
 	CHECK(ps.max->i == 40);
 }

@@ -7,13 +7,13 @@
 #ifndef NANORANGE_ALGORITHM_REMOVE_COPY_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_REMOVE_COPY_HPP_INCLUDED
 
-#include <nanorange/algorithm/copy.hpp>
 #include <nanorange/algorithm/find.hpp>
+#include <nanorange/detail/algorithm/result_types.hpp>
 
 NANO_BEGIN_NAMESPACE
 
 template <typename I, typename O>
-using remove_copy_result = copy_result<I, O>;
+using remove_copy_result = in_out_result<I, O>;
 
 namespace detail {
 

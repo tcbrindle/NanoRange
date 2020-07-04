@@ -7,6 +7,7 @@
 #ifndef NANORANGE_ALGORITHM_MISMATCH_HPP_INCLUDED
 #define NANORANGE_ALGORITHM_MISMATCH_HPP_INCLUDED
 
+#include <nanorange/detail/algorithm/result_types.hpp>
 #include <nanorange/ranges.hpp>
 
 NANO_BEGIN_NAMESPACE
@@ -14,26 +15,7 @@ NANO_BEGIN_NAMESPACE
 // [range.mismatch]
 
 template <typename I1, typename I2>
-struct mismatch_result {
-    NANO_NO_UNIQUE_ADDRESS I1 in1;
-    NANO_NO_UNIQUE_ADDRESS I2 in2;
-
-    template <typename II1, typename II2,
-        std::enable_if_t<convertible_to<const I1&, II1> &&
-                         convertible_to<const I2&, II2>, int> = 0>
-    constexpr operator mismatch_result<II1, II2>() const &
-    {
-        return {in1, in2};
-    }
-
-    template <typename II1, typename II2,
-        std::enable_if_t<convertible_to<I1, II1> &&
-                         convertible_to<I2, II2>, int> = 0>
-    constexpr operator mismatch_result<II1, II2>() &&
-    {
-        return {std::move(in1), std::move(in2)};
-    }
-};
+using mismatch_result = in_in_result<I1, I2>;
 
 namespace detail {
 
