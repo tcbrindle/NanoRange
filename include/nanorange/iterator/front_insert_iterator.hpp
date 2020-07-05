@@ -30,7 +30,7 @@ struct front_insert_iterator {
 
     front_insert_iterator& operator=(iter_value_t<Container>&& value)
     {
-        cont_->front_back(std::move(value));
+        cont_->push_front(std::move(value));
         return *this;
     }
 
