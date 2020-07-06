@@ -226,6 +226,44 @@ public:
 
 NANO_INLINE_VAR(detail::data_::fn, data)
 
+namespace detail {
+namespace cdata_ {
+
+struct fn {
+private:
+    template <typename T, typename U = std::remove_reference_t<T>,
+	      std::enable_if_t<std::is_lvalue_reference_v<T>, int> = 0>
+    static constexpr auto impl(T&& t)
+        noexcept(noexcept(ranges::data(static_cast<const U&>(t))))
+	-> decltype(ranges::data(static_cast<const U&>(t)))
+    {
+	return ranges::data(static_cast<const U&>(t));
+    }
+
+    template <typename T,
+	      std::enable_if_t<!std::is_lvalue_reference_v<T>, int> = 0>
+    static constexpr auto impl(T&& t)
+        noexcept(noexcept(ranges::data(static_cast<const T&&>(t))))
+	-> decltype(ranges::data(static_cast<const T&&>(t)))
+    {
+	return ranges::data(static_cast<const T&&>(t));
+    }
+
+public:
+    template <typename T>
+    constexpr auto operator()(T&& t) const
+        noexcept(noexcept(fn::impl(std::forward<T>(t))))
+	-> decltype(fn::impl(std::forward<T>(t)))
+    {
+	return fn::impl(std::forward<T>(t));
+    }
+};
+
+} // namespace cdata_
+} // namespace detail
+
+NANO_INLINE_VAR(detail::cdata_::fn, cdata)
+
 NANO_END_NAMESPACE
 
 #endif

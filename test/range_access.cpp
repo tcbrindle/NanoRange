@@ -56,6 +56,7 @@ void test_initializer_list()
     CHECK(ranges::size(il) == std::size_t{3});
     CHECK(ranges::ssize(il) == std::ptrdiff_t{3});
     CHECK(ranges::data(il) == &*il.begin());
+    CHECK(ranges::cdata(il) == &*il.begin());
     CHECK(ranges::empty(il) == false);
 }
 
@@ -78,6 +79,7 @@ void test_array(std::index_sequence<Is...>)
     CHECK(ranges::size(a) == sizeof...(Is));
     CHECK(ranges::ssize(a) == sizeof...(Is));
     CHECK(ranges::data(a) == a + 0);
+    CHECK(ranges::cdata(a) == a + 0);
     CHECK(ranges::empty(a) == false);
 }
 
@@ -347,6 +349,7 @@ TEST_CASE("range_access") {
 		static_assert(noexcept(cend(not_a_constant_expression)));
 		static_assert(noexcept(empty(not_a_constant_expression)));
 		static_assert(noexcept(data(not_a_constant_expression)));
+		static_assert(noexcept(cdata(not_a_constant_expression)));
 	}
 
 	constexpr bool output = false;
