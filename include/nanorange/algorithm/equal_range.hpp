@@ -28,7 +28,7 @@ private:
 public:
     template <typename I, typename S, typename T, typename Comp = ranges::less,
               typename Proj = identity>
-    std::enable_if_t<
+    [[nodiscard]] std::enable_if_t<
         forward_iterator<I> && sentinel_for<S, I> &&
             indirect_strict_weak_order<Comp, const T*, projected<I, Proj>>,
     subrange<I>>
@@ -41,7 +41,7 @@ public:
 
     template <typename Rng, typename T, typename Comp = ranges::less,
               typename Proj = identity>
-    std::enable_if_t<forward_range<Rng> &&
+    [[nodiscard]] std::enable_if_t<forward_range<Rng> &&
                          indirect_strict_weak_order<Comp, const T*, projected<iterator_t<Rng>, Proj>>,
                      borrowed_subrange_t<Rng>>
     constexpr operator()(Rng&& rng, const T& value, Comp comp = Comp{},

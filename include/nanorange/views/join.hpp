@@ -353,7 +353,7 @@ namespace detail {
 struct join_view_fn {
 
     template <typename E>
-    constexpr auto operator()(E&& e) const
+    [[nodiscard]] constexpr auto operator()(E&& e) const
         -> decltype(join_view{std::forward<E>(e)})
     {
         return join_view{std::forward<E>(e)};

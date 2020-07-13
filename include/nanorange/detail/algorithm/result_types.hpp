@@ -132,7 +132,7 @@ struct in_out_out_result {
 };
 
 template <typename T>
-struct min_max_result {
+struct [[nodiscard]] min_max_result {
     NANO_NO_UNIQUE_ADDRESS T min;
     NANO_NO_UNIQUE_ADDRESS T max;
 

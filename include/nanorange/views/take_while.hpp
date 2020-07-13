@@ -128,14 +128,14 @@ namespace detail {
 struct take_while_view_fn {
 
     template <typename E, typename F>
-    constexpr auto operator()(E&& e, F&& f) const
+    [[nodiscard]] constexpr auto operator()(E&& e, F&& f) const
     -> decltype(take_while_view{std::forward<E>(e), std::forward<F>(f)})
     {
         return take_while_view{std::forward<E>(e), std::forward<F>(f)};
     }
 
     template <typename Pred>
-    constexpr auto operator()(Pred&& pred) const
+    [[nodiscard]] constexpr auto operator()(Pred&& pred) const
     {
         return detail::rao_proxy{[p = std::forward<Pred>(pred)](auto&& r) mutable
 #ifndef NANO_MSVC_LAMBDA_PIPE_WORKAROUND

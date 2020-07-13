@@ -124,7 +124,7 @@ private:
 
 public:
     template <typename R>
-    constexpr auto operator()(R&& r) const
+    [[nodiscard]] constexpr auto operator()(R&& r) const
         -> decltype(impl(std::forward<R>(r), priority_tag<1>{}))
     {
         return impl(std::forward<R>(r), priority_tag<1>{});

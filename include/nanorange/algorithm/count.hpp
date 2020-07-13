@@ -37,7 +37,7 @@ private:
 
 public:
     template <typename I, typename S, typename Proj = identity, typename Pred>
-    constexpr std::enable_if_t<
+    [[nodiscard]] constexpr std::enable_if_t<
         input_iterator<I> && sentinel_for<S, I> &&
             indirect_unary_predicate<Pred, projected<I, Proj>>,
         iter_difference_t<I>>
@@ -48,7 +48,7 @@ public:
     }
 
     template <typename Rng, typename Proj = identity, typename Pred>
-    constexpr std::enable_if_t<
+    [[nodiscard]] constexpr std::enable_if_t<
         input_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
         range_difference_t<Rng>>
@@ -66,7 +66,7 @@ namespace detail {
 
 struct count_fn {
     template <typename I, typename S, typename T, typename Proj = identity>
-    constexpr std::enable_if_t<
+    [[nodiscard]] constexpr std::enable_if_t<
         input_iterator<I> && sentinel_for<S, I> &&
             indirect_relation<ranges::equal_to, projected<I, Proj>, const T*>,
         iter_difference_t<I>>
@@ -78,7 +78,7 @@ struct count_fn {
     }
 
     template <typename Rng, typename T, typename Proj = identity>
-    constexpr std::enable_if_t<
+    [[nodiscard]] constexpr std::enable_if_t<
         input_range<Rng> &&
             indirect_relation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T*>,

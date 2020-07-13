@@ -38,7 +38,7 @@ private:
 
 public:
     template <typename I, typename S, typename Pred, typename Proj = identity>
-    constexpr std::enable_if_t<
+    [[nodiscard]] constexpr std::enable_if_t<
         forward_iterator<I> && sentinel_for<S, I> && permutable<I> &&
             indirect_unary_predicate<Pred, projected<I, Proj>>,
         I>
@@ -48,7 +48,7 @@ public:
     }
 
     template <typename Rng, typename Pred, typename Proj = identity>
-    constexpr std::enable_if_t<
+    [[nodiscard]] constexpr std::enable_if_t<
         forward_range<Rng> && permutable<iterator_t<Rng>> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
         borrowed_iterator_t<Rng>>

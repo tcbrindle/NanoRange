@@ -363,7 +363,7 @@ namespace detail {
 
 struct iota_view_fn {
     template <typename W>
-    constexpr auto operator()(W&& value) const
+    [[nodiscard]] constexpr auto operator()(W&& value) const
         noexcept(noexcept(iota_view{std::forward<W>(value)}))
         -> decltype(iota_view(std::forward<W>(value)))
     {
@@ -371,7 +371,7 @@ struct iota_view_fn {
     }
 
     template <typename W, typename Bound>
-    constexpr auto operator()(W&& value, Bound&& bound) const
+    [[nodiscard]] constexpr auto operator()(W&& value, Bound&& bound) const
         noexcept(noexcept(iota_view{std::forward<W>(value), std::forward<Bound>(bound)}))
         -> decltype(iota_view(std::forward<W>(value), std::forward<Bound>(bound)))
     {

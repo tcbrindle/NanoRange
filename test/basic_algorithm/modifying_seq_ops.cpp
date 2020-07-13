@@ -508,13 +508,13 @@ TEST_CASE("alg.basic.rotate")
 
     SECTION("with iterators") {
         const std::vector<int> result{2, 3, 4, 5, 1};
-        rng::rotate(vec.begin(), vec.begin() + 1, vec.end());
+        (void)rng::rotate(vec.begin(), vec.begin() + 1, vec.end());
         REQUIRE(vec == result);
     }
 
     SECTION("with range") {
         const std::vector<int> result{2, 3, 4, 5, 1};
-        rng::rotate(vec, vec.begin() + 1);
+        (void)rng::rotate(vec, vec.begin() + 1);
         REQUIRE(vec == result);
     }
 }

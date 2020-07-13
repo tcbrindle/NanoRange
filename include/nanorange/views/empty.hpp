@@ -14,7 +14,7 @@ NANO_BEGIN_NAMESPACE
 namespace empty_view_ {
 
 template <typename T>
-class empty_view : view_interface<empty_view<T>> {
+class [[nodiscard]] empty_view : view_interface<empty_view<T>> {
     static_assert(std::is_object<T>::value, "");
 
 public:

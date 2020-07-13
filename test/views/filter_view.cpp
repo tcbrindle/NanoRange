@@ -140,7 +140,7 @@ TEST_CASE("views.filter")
     {
         auto yes = [](int) { return true; };
         auto const rng = views::iota(0) | views::filter(yes);
-        views::all(rng);
+        (void)views::all(rng);
     }
 
     {

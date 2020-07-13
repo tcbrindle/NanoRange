@@ -15,7 +15,7 @@ namespace detail {
 
 struct clamp_fn {
     template <typename T, typename Proj = identity, typename Comp = nano::less>
-    constexpr std::enable_if_t<indirect_strict_weak_order<Comp, projected<const T*, Proj>>, const T&>
+    [[nodiscard]] constexpr std::enable_if_t<indirect_strict_weak_order<Comp, projected<const T*, Proj>>, const T&>
     operator()(const T& value, const T& low, const T& high, Comp comp = {}, Proj proj = Proj{}) const
     {
         auto&& projected_value = nano::invoke(proj, value);

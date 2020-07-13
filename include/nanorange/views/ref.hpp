@@ -14,7 +14,7 @@ NANO_BEGIN_NAMESPACE
 namespace ref_view_ {
 
 template <typename R>
-class ref_view : public view_interface<ref_view<R>> {
+class [[nodiscard]] ref_view : public view_interface<ref_view<R>> {
 
     static_assert(range<R> && std::is_object<R>::value, "");
 

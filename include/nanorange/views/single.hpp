@@ -54,7 +54,7 @@ namespace detail {
 
 struct single_view_fn {
     template <typename T>
-    constexpr auto operator()(T&& t) const
+    [[nodiscard]] constexpr auto operator()(T&& t) const
         noexcept(noexcept(single_view{std::forward<T>(t)}))
         -> decltype(single_view{std::forward<T>(t)})
     {

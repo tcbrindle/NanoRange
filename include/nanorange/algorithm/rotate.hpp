@@ -53,14 +53,14 @@ private:
         while (i != j) {
             if (i > j) {
                 if (is_tma && j == 1) {
-                    do_rotate_one_right(middle - i, middle);
+                    (void)do_rotate_one_right(middle - i, middle);
                     return {std::move(out), nano::next(first, last)};
                 }
                 nano::swap_ranges(middle - i, unreachable_sentinel, middle, middle + j);
                 i -= j;
             } else {
                 if (is_tma && i == 1) {
-                    do_rotate_one_left(middle - i, middle + j);
+                    (void)do_rotate_one_left(middle - i, middle + j);
                     return {std::move(out), nano::next(first, last)};
                 }
                 nano::swap_ranges(middle - i, middle, middle + j - i, unreachable_sentinel);

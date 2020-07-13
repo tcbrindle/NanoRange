@@ -42,7 +42,7 @@ void not_totally_ordered()
 {
 	// This better compile!
 	std::vector<my_int> vec;
-	ranges::equal_range(vec, my_int{10}, compare);
+	(void)ranges::equal_range(vec, my_int{10}, compare);
 }
 
 template <class Iter, class Sent, class T, class Proj = ranges::identity>

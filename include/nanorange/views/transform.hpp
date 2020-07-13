@@ -360,14 +360,14 @@ namespace detail {
 
 struct transform_view_fn {
     template <typename E, typename F>
-    constexpr auto operator()(E&& e, F&& f) const
+    [[nodiscard]] constexpr auto operator()(E&& e, F&& f) const
         -> decltype(transform_view{std::forward<E>(e), std::forward<F>(f)})
     {
         return transform_view{std::forward<E>(e), std::forward<F>(f)};
     }
 
     template <typename F>
-    constexpr auto operator()(F f) const
+    [[nodiscard]] constexpr auto operator()(F f) const
     {
         return detail::rao_proxy{[f = std::move(f)](auto&& r) mutable
 #ifndef NANO_MSVC_LAMBDA_PIPE_WORKAROUND

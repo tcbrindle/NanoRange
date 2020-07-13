@@ -43,7 +43,7 @@ private:
 
 public:
     template <typename T>
-    constexpr auto operator()(T&& t) const
+    [[nodiscard]] constexpr auto operator()(T&& t) const
         noexcept(noexcept(all_view_fn::impl(std::forward<T>(t), priority_tag<2>{})))
         -> decltype(all_view_fn::impl(std::forward<T>(t), priority_tag<2>{}))
     {

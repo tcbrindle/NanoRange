@@ -57,7 +57,7 @@ private:
 public:
     template <typename I, typename S, typename T, typename Pred = ranges::equal_to,
         typename Proj = identity>
-    constexpr auto operator()(I first, S last, iter_difference_t<I> count,
+    [[nodiscard]] constexpr auto operator()(I first, S last, iter_difference_t<I> count,
                               const T& value, Pred pred = Pred{},
                               Proj proj = Proj{}) const
     -> std::enable_if_t<forward_iterator<I> && sentinel_for<S, I> &&
@@ -70,7 +70,7 @@ public:
 
     template <typename Rng, typename T, typename Pred = ranges::equal_to,
         typename Proj = identity>
-    constexpr auto
+    [[nodiscard]] constexpr auto
     operator()(Rng&& rng, iter_difference_t<iterator_t<Rng>> count,
                const T& value, Pred pred = Pred{}, Proj proj = Proj{}) const
     -> std::enable_if_t<

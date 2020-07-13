@@ -105,14 +105,14 @@ namespace detail {
 struct drop_view_fn {
 
     template <typename E, typename F>
-    constexpr auto operator()(E&& e, F&& f) const
+    [[nodiscard]] constexpr auto operator()(E&& e, F&& f) const
         -> decltype(drop_view{std::forward<E>(e), std::forward<F>(f)})
     {
         return drop_view{std::forward<E>(e), std::forward<F>(f)};
     }
 
     template <typename C>
-    constexpr auto operator()(C c) const
+    [[nodiscard]] constexpr auto operator()(C c) const
     {
         return detail::rao_proxy{[c = std::move(c)](auto&& r) mutable
 #ifndef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
