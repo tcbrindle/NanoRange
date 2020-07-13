@@ -124,7 +124,7 @@ struct subrange_data {
         : begin_(std::move(begin)), end_(std::move(end))
     {}
 
-    constexpr subrange_data(I&& begin, S&& end, iter_difference_t<I> /*unused*/)
+    constexpr subrange_data(I&& begin, S&& end, std::make_unsigned_t<iter_difference_t<I>> /*unused*/)
         : begin_(std::move(begin)), end_(std::move(end))
     {}
 
@@ -136,13 +136,13 @@ template <typename I, typename S>
 struct subrange_data<I, S, true> {
     constexpr subrange_data() = default;
 
-    constexpr subrange_data(I&& begin, S&& end, iter_difference_t<I> size)
+    constexpr subrange_data(I&& begin, S&& end, std::make_unsigned_t<iter_difference_t<I>> size)
         : begin_(std::move(begin)), end_(std::move(end)), size_(size)
     {}
 
     I begin_{};
     S end_{};
-    iter_difference_t<I> size_ = 0;
+    std::make_unsigned_t<iter_difference_t<I>> size_ = 0;
 };
 
 // MSVC gets confused if enable_if conditions in template param lists are too
@@ -197,7 +197,7 @@ public:
               typename = std::enable_if_t<
                   detail::convertible_to_non_slicing<II, I> &&
                   KK == subrange_kind::sized>>
-    constexpr subrange(II i, S s, iter_difference_t<I> n)
+    constexpr subrange(II i, S s, std::make_unsigned_t<iter_difference_t<I>> n)
             : data_{std::move(i), std::move(s), n} {}
 
     template <typename R, bool SS = StoreSize,
@@ -221,7 +221,7 @@ public:
             detail::convertible_to_non_slicing<iterator_t<R>, I> &&
             convertible_to<sentinel_t<R>, S> &&
             KK == subrange_kind::sized, int> = 0>
-    constexpr subrange(R&& r, iter_difference_t<I> n)
+    constexpr subrange(R&& r, std::make_unsigned_t<iter_difference_t<I>> n)
             : subrange(ranges::begin(r), ranges::end(r), n) {}
 
 
@@ -245,12 +245,15 @@ public:
 
     template <subrange_kind KK = K>
     constexpr auto size() const
-        -> std::enable_if_t<KK == subrange_kind::sized, iter_difference_t<I>>
+        -> std::enable_if_t<KK == subrange_kind::sized, std::make_unsigned_t<iter_difference_t<I>>>
     {
         if constexpr (StoreSize) {
             return data_.size_;
         } else {
-            return data_.end_ - data_.begin_;
+            constexpr auto make_unsigned_like = [](auto i) {
+                return std::make_unsigned_t<decltype(i)>(i);
+            };
+            return make_unsigned_like(data_.end_ - data_.begin_);
         }
     }
 
@@ -286,13 +289,13 @@ template <typename I, typename S,
 subrange(I, S) -> subrange<I, S>;
 
 template <typename I, typename S, std::enable_if_t<input_or_output_iterator<I> && sentinel_for<S, I>, int> = 0>
-subrange(I, S, iter_difference_t<I>) -> subrange<I, S, subrange_kind::sized>;
+subrange(I, S, std::make_unsigned_t<iter_difference_t<I>>) -> subrange<I, S, subrange_kind::sized>;
 
 template <typename P, std::enable_if_t<detail::iterator_sentinel_pair<P>, int> = 0>
 subrange(P) -> subrange<std::tuple_element_t<0, P>, std::tuple_element_t<1, P>>;
 
 template <typename P, std::enable_if_t<detail::iterator_sentinel_pair<P>, int> = 0>
-subrange(P, iter_difference_t<std::tuple_element_t<0, P>>) ->
+subrange(P, std::make_unsigned_t<iter_difference_t<std::tuple_element_t<0, P>>>) ->
     subrange<std::tuple_element_t<0, P>, std::tuple_element_t<1, P>, subrange_kind::sized>;
 
 template <typename R, std::enable_if_t<borrowed_range<R>, int> = 0>
@@ -301,7 +304,7 @@ subrange(R&&) ->
              detail::subrange_deduction_guide_helper<R>()>;
 
 template <typename R, std::enable_if_t<borrowed_range<R>, int> = 0>
-subrange(R&&, iter_difference_t<iterator_t<R>>) ->
+subrange(R&&, std::make_unsigned_t<iter_difference_t<iterator_t<R>>>) ->
     subrange<iterator_t<R>, sentinel_t<R>, subrange_kind::sized>;
 
 } // namespace subrange_
