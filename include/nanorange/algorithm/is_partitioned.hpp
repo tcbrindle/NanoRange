@@ -24,7 +24,7 @@ private:
 
 public:
     template <typename I, typename S, typename Pred, typename Proj = identity>
-    constexpr std::enable_if_t<
+    [[nodiscard]] constexpr std::enable_if_t<
         input_iterator<I> && sentinel_for<S, I> &&
             indirect_unary_predicate<Pred, projected<I, Proj>>, bool>
     operator()(I first, S last, Pred pred = Pred{}, Proj proj = Proj{}) const
@@ -34,7 +34,7 @@ public:
     }
 
     template <typename Rng, typename Pred, typename Proj = identity>
-    constexpr std::enable_if_t<
+    [[nodiscard]] constexpr std::enable_if_t<
         input_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>, bool>
     operator()(Rng&& rng, Pred pred = Pred{}, Proj proj = Proj{}) const

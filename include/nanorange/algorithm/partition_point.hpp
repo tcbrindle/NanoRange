@@ -85,7 +85,7 @@ private:
 
 public:
     template <typename I, typename S, typename Pred, typename Proj = identity>
-    std::enable_if_t<forward_iterator<I> && sentinel_for<S, I> &&
+    [[nodiscard]] std::enable_if_t<forward_iterator<I> && sentinel_for<S, I> &&
                          indirect_unary_predicate<Pred, projected<I, Proj>>, I>
     constexpr operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
     {
@@ -94,7 +94,7 @@ public:
     }
 
     template <typename Rng, typename Pred, typename Proj = identity>
-    std::enable_if_t<
+    [[nodiscard]] std::enable_if_t<
         forward_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>>,
         borrowed_iterator_t<Rng>>

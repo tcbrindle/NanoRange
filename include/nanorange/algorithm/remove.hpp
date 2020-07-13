@@ -38,7 +38,7 @@ private:
 
 public:
     template <typename I, typename S, typename T, typename Proj = identity>
-    constexpr std::enable_if_t<
+    [[nodiscard]] constexpr std::enable_if_t<
         forward_iterator<I> && sentinel_for<S, I> && permutable<I> &&
             indirect_relation<ranges::equal_to, projected<I, Proj>, const T*>,
         I>
@@ -48,7 +48,7 @@ public:
     }
 
     template <typename Rng, typename T, typename Proj = identity>
-    constexpr std::enable_if_t<
+    [[nodiscard]] constexpr std::enable_if_t<
         forward_range<Rng> && permutable<iterator_t<Rng>> &&
             indirect_relation<ranges::equal_to, projected<iterator_t<Rng>, Proj>,
                              const T*>,

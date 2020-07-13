@@ -248,7 +248,7 @@ namespace detail {
 
 struct filter_view_fn {
     template <typename Pred>
-    constexpr auto operator()(Pred pred) const
+    [[nodiscard]] constexpr auto operator()(Pred pred) const
     {
         return detail::rao_proxy{[p = std::move(pred)] (auto&& r) mutable
 #ifndef NANO_MSVC_LAMBDA_PIPE_WORKAROUND
@@ -260,7 +260,7 @@ struct filter_view_fn {
     }
 
     template <typename R, typename Pred>
-    constexpr auto operator()(R&& r, Pred pred) const
+    [[nodiscard]] constexpr auto operator()(R&& r, Pred pred) const
         noexcept(noexcept(filter_view{std::forward<R>(r), std::move(pred)}))
         -> decltype(filter_view{std::forward<R>(r), std::move(pred)})
     {

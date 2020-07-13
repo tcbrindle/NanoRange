@@ -30,7 +30,7 @@ NANO_CONCEPT StreamExtractable =
 } // namespace detail
 
 template <typename Val, typename CharT, typename Traits = std::char_traits<CharT>>
-struct basic_istream_view : view_interface<basic_istream_view<Val, CharT, Traits>> {
+struct [[nodiscard]] basic_istream_view : view_interface<basic_istream_view<Val, CharT, Traits>> {
 
     static_assert(movable<Val>);
     static_assert(default_initializable<Val>);

@@ -172,7 +172,7 @@ constexpr subrange_kind subrange_deduction_guide_helper()
 namespace subrange_ {
 
 template <typename I, typename S, subrange_kind K>
-class subrange : public view_interface<subrange<I, S, K>> {
+class [[nodiscard]] subrange : public view_interface<subrange<I, S, K>> {
     static_assert(input_or_output_iterator<I>);
     static_assert(sentinel_for<S, I>);
     static_assert(K == subrange_kind::sized || !sized_sentinel_for<S, I>, "");

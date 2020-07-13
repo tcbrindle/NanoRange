@@ -125,7 +125,7 @@ private:
 
 public:
     template <typename T>
-    constexpr auto operator()(T&& t) const
+    [[nodiscard]] constexpr auto operator()(T&& t) const
         -> std::enable_if_t<
         viewable_range<T>,
         decltype(common_view_fn::impl(std::forward<T>(t),

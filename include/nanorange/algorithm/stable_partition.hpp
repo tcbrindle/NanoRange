@@ -149,7 +149,7 @@ private:
 
 public:
     template <typename I, typename S, typename Pred, typename Proj = identity>
-    std::enable_if_t<bidirectional_iterator<I> && sentinel_for<S, I> &&
+    [[nodiscard]] std::enable_if_t<bidirectional_iterator<I> && sentinel_for<S, I> &&
                          indirect_unary_predicate<Pred, projected<I, Proj>> &&
                          permutable<I>, subrange<I>>
     operator()(I first, S last, Pred pred, Proj proj = Proj{}) const
@@ -159,7 +159,7 @@ public:
     }
 
     template <typename Rng, typename Pred, typename Proj = identity>
-    std::enable_if_t<
+    [[nodiscard]] std::enable_if_t<
         bidirectional_range<Rng> &&
             indirect_unary_predicate<Pred, projected<iterator_t<Rng>, Proj>> &&
             permutable<iterator_t<Rng>>,

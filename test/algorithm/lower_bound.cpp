@@ -37,7 +37,7 @@ void not_totally_ordered()
 {
 	// This better compile!
 	std::vector<my_int> vec;
-	stl2::lower_bound(vec, my_int{10}, compare);
+	(void)stl2::lower_bound(vec, my_int{10}, compare);
 }
 
 }

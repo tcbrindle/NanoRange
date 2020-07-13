@@ -41,7 +41,7 @@ private:
 public:
     template <typename I, typename S, typename R = ranges::equal_to,
               typename Proj = identity>
-    constexpr std::enable_if_t<forward_iterator<I> && sentinel_for<S, I> &&
+    [[nodiscard]] constexpr std::enable_if_t<forward_iterator<I> && sentinel_for<S, I> &&
                                    indirect_relation<R, projected<I, Proj>> &&
                                    permutable<I>, subrange<I>>
     operator()(I first, S last, R comp = {}, Proj proj = Proj{}) const
@@ -51,7 +51,7 @@ public:
     }
 
     template <typename Rng, typename R = ranges::equal_to, typename Proj = identity>
-    constexpr std::enable_if_t<
+    [[nodiscard]] constexpr std::enable_if_t<
         forward_range<Rng> &&
             indirect_relation<R, projected<iterator_t<Rng>, Proj>> &&
             permutable<iterator_t<Rng>>,

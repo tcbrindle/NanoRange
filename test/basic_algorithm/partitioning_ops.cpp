@@ -32,11 +32,11 @@ TEST_CASE("alg.basic.partition")
     const auto is_even = [](int i) { return i % 2 == 0; };
 
     SECTION("with iterators") {
-        rng::partition(vec.begin(), vec.end(), is_even);
+        (void)rng::partition(vec.begin(), vec.end(), is_even);
     }
 
     SECTION("witn range") {
-        rng::partition(vec, is_even);
+        (void)rng::partition(vec, is_even);
     }
 
     REQUIRE(std::is_partitioned(vec.begin(), vec.end(), is_even));
@@ -77,11 +77,11 @@ TEST_CASE("alg.basic.stable_partition")
     }();
 
     SECTION("with iterators") {
-        rng::stable_partition(src.begin(), src.end(), is_even);
+        (void)rng::stable_partition(src.begin(), src.end(), is_even);
     }
 
     SECTION("with range") {
-        rng::stable_partition(src, is_even);
+        (void)rng::stable_partition(src, is_even);
     }
 
     REQUIRE(src == test);

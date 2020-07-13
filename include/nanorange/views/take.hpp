@@ -172,7 +172,7 @@ using take_view_helper_t = take_view<all_view<R>>;
 struct take_view_fn {
 
     template <typename C>
-    constexpr auto operator()(C c) const
+    [[nodiscard]] constexpr auto operator()(C c) const
     {
 
         return detail::rao_proxy{[c = std::move(c)](auto&& r) mutable
@@ -187,7 +187,7 @@ struct take_view_fn {
     }
 
     template <typename E, typename F>
-    constexpr auto operator()(E&& e, F&& f) const
+    [[nodiscard]] constexpr auto operator()(E&& e, F&& f) const
         -> decltype(take_view{std::forward<E>(e), std::forward<F>(f)})
     {
         return take_view{std::forward<E>(e), std::forward<F>(f)};

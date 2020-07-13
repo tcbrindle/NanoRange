@@ -425,14 +425,14 @@ namespace detail {
 struct split_view_fn {
 
     template <typename E, typename F>
-    constexpr auto operator()(E&& e, F&& f) const
+    [[nodiscard]] constexpr auto operator()(E&& e, F&& f) const
         -> decltype(split_view{std::forward<E>(e), std::forward<F>(f)})
     {
         return split_view{std::forward<E>(e), std::forward<F>(f)};
     }
 
     template <typename P>
-    constexpr auto operator()(P&& p) const
+    [[nodiscard]] constexpr auto operator()(P&& p) const
     {
         return detail::rao_proxy{
             [p = std::forward<P>(p)](auto&& r) mutable

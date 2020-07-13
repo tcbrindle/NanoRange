@@ -55,7 +55,7 @@ public:
     template <typename I1, typename S1, typename I2, typename S2,
               typename Pred = ranges::equal_to, typename Proj1 = identity,
               typename Proj2 = identity>
-    constexpr std::enable_if_t<
+    [[nodiscard]] constexpr std::enable_if_t<
         input_iterator<I1> && sentinel_for<S1, I1> && input_iterator<I2> &&
             sentinel_for<S2, I2> &&
             indirectly_comparable<I1, I2, Pred, Proj1, Proj2> &&
@@ -79,7 +79,7 @@ public:
     template <typename I1, typename S1, typename I2, typename S2,
               typename Pred = ranges::equal_to, typename Proj1 = identity,
               typename Proj2 = identity>
-    constexpr std::enable_if_t<
+    [[nodiscard]] constexpr std::enable_if_t<
         input_iterator<I1> && sentinel_for<S1, I1> && input_iterator<I2> &&
             sentinel_for<S2, I2> &&
             indirectly_comparable<I1, I2, Pred, Proj1, Proj2> &&
@@ -112,7 +112,7 @@ public:
     // Two ranges, both sized
     template <typename Rng1, typename Rng2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
-    constexpr std::enable_if_t<
+    [[nodiscard]] constexpr std::enable_if_t<
         input_range<Rng1> && input_range<Rng2> &&
             indirectly_comparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred,
                                  Proj1, Proj2> &&
@@ -132,7 +132,7 @@ public:
     // Two ranges, not both sized
     template <typename Rng1, typename Rng2, typename Pred = ranges::equal_to,
               typename Proj1 = identity, typename Proj2 = identity>
-    constexpr std::enable_if_t<
+    [[nodiscard]] constexpr std::enable_if_t<
         input_range<Rng1> && input_range<Rng2> &&
             indirectly_comparable<iterator_t<Rng1>, iterator_t<Rng2>, Pred,
                                  Proj1, Proj2> &&

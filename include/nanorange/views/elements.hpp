@@ -311,7 +311,7 @@ namespace detail {
 template <std::size_t N>
 struct elements_view_fn {
     template <typename E>
-    constexpr auto operator()(E&& e) const
+    [[nodiscard]] constexpr auto operator()(E&& e) const
         -> decltype(elements_view<all_view<decltype(std::forward<E>(e))>, N>{std::forward<E>(e)})
     {
         return elements_view<all_view<decltype(std::forward<E>(e))>, N>{std::forward<E>(e)};

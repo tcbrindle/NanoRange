@@ -51,7 +51,7 @@ private:
 public:
     template <typename I1, typename S1, typename I2, typename S2,
               typename Comp = ranges::less, typename Proj1 = identity, typename Proj2 = identity>
-    constexpr std::enable_if_t<
+    [[nodiscard]] constexpr std::enable_if_t<
         input_iterator<I1> && sentinel_for<S1, I1> && input_iterator<I2> &&
             sentinel_for<S2, I2> &&
             indirect_strict_weak_order<Comp, projected<I1, Proj1>, projected<I2, Proj2>>,
@@ -66,7 +66,7 @@ public:
 
     template <typename Rng1, typename Rng2, typename Comp = ranges::less,
               typename Proj1 = identity, typename Proj2 = identity>
-    constexpr std::enable_if_t<
+    [[nodiscard]] constexpr std::enable_if_t<
         input_range<Rng1> && input_range<Rng2> &&
             indirect_strict_weak_order<Comp,
                                 projected<iterator_t<Rng1>, Proj1>,

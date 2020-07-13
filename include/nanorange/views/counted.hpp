@@ -40,7 +40,7 @@ private:
 
 public:
     template <typename E, typename F, typename T = std::decay_t<E>>
-    constexpr auto operator()(E&& e, F&& f) const
+    [[nodiscard]] constexpr auto operator()(E&& e, F&& f) const
         noexcept(noexcept(impl(std::forward<E>(e),
                                static_cast<iter_difference_t<T>>(std::forward<F>(f)),
                                nano::detail::priority_tag<1>{})))
