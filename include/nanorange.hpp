@@ -14,6 +14,7 @@
 #include <nanorange/memory.hpp>
 #include <nanorange/random.hpp>
 #include <nanorange/ranges.hpp>
+#include <nanorange/span.hpp>
 #include <nanorange/type_traits.hpp>
 #include <nanorange/utility.hpp>
 #include <nanorange/views.hpp>

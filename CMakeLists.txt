@@ -160,6 +160,8 @@ else ()
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/memory/uninitialized_move.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/memory/uninitialized_value_construct.hpp
 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/span.hpp
+
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/all.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/common.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/nanorange/views/counted.hpp
