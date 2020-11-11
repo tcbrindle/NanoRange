@@ -267,7 +267,7 @@ static_assert(
         ranges::concepts::View
     >::value, "");*/
 
-struct myview {
+struct myview : ranges::view_base {
     const char *begin();
     const char *end();
 };

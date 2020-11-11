@@ -170,7 +170,7 @@ void ridiculously_exhaustive_range_property_test() {
 	// FIXME: This no longer asserts with P0970. Is that intentional?
 //	CONCEPT_ASSERT(!models::SizedRange<mutable_only_unsized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<mutable_only_unsized_range>);
-	CONCEPT_ASSERT(models::view<mutable_only_unsized_range>);
+	//CONCEPT_ASSERT(models::view<mutable_only_unsized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<mutable_only_unsized_range&>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<mutable_only_unsized_range&>, I>);
@@ -196,7 +196,7 @@ void ridiculously_exhaustive_range_property_test() {
 	CONCEPT_ASSERT(models::range<immutable_unsized_range>);
 	CONCEPT_ASSERT(models::sized_range<immutable_unsized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<immutable_unsized_range>);
-	CONCEPT_ASSERT(models::view<immutable_unsized_range>);
+	//CONCEPT_ASSERT(models::view<immutable_unsized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<immutable_unsized_range&>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<immutable_unsized_range&>, CI>);
@@ -254,7 +254,7 @@ void ridiculously_exhaustive_range_property_test() {
 	CONCEPT_ASSERT(models::range<mutable_only_sized_range>);
 	CONCEPT_ASSERT(models::sized_range<mutable_only_sized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<mutable_only_sized_range>);
-	CONCEPT_ASSERT(models::view<mutable_only_sized_range>);
+	//CONCEPT_ASSERT(models::view<mutable_only_sized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<mutable_only_sized_range&>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<mutable_only_sized_range&>, I>);
@@ -279,7 +279,7 @@ void ridiculously_exhaustive_range_property_test() {
 	CONCEPT_ASSERT(models::range<immutable_sized_range>);
 	CONCEPT_ASSERT(models::sized_range<immutable_sized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<immutable_sized_range>);
-	CONCEPT_ASSERT(models::view<immutable_sized_range>);
+	//CONCEPT_ASSERT(models::view<immutable_sized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<immutable_sized_range&>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<immutable_sized_range&>, CI>);
@@ -337,7 +337,7 @@ void ridiculously_exhaustive_range_property_test() {
 	CONCEPT_ASSERT(models::range<mutable_only_badsized_range>);
 	CONCEPT_ASSERT(!models::sized_range<mutable_only_badsized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<mutable_only_badsized_range>);
-	CONCEPT_ASSERT(models::view<mutable_only_badsized_range>);
+	//CONCEPT_ASSERT(models::view<mutable_only_badsized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<mutable_only_badsized_range&>, I>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<mutable_only_badsized_range&>, I>);
@@ -362,7 +362,7 @@ void ridiculously_exhaustive_range_property_test() {
 	CONCEPT_ASSERT(models::range<immutable_badsized_range>);
 	CONCEPT_ASSERT(!models::sized_range<immutable_badsized_range>);
 	//CONCEPT_ASSERT(!models::_ContainerLike<immutable_badsized_range>);
-	CONCEPT_ASSERT(models::view<immutable_badsized_range>);
+	//CONCEPT_ASSERT(models::view<immutable_badsized_range>);
 
 	CONCEPT_ASSERT(models::same_as<ns::iterator_t<immutable_badsized_range&>, CI>);
 	CONCEPT_ASSERT(models::same_as<ns::sentinel_t<immutable_badsized_range&>, CI>);
@@ -414,7 +414,7 @@ void ridiculously_exhaustive_range_property_test() {
 
 	CONCEPT_ASSERT(models::range<mutable_only_unsized_range&>);
 	CONCEPT_ASSERT(models::range<mutable_only_unsized_range>);
-	CONCEPT_ASSERT(models::view<mutable_only_unsized_range>);
+	//CONCEPT_ASSERT(models::view<mutable_only_unsized_range>);
 	CONCEPT_ASSERT(!models::view<mutable_only_unsized_range&>);
 	CONCEPT_ASSERT(!models::view<mutable_only_unsized_range&&>);
 	CONCEPT_ASSERT(!models::range<const mutable_only_unsized_range&>);
@@ -442,7 +442,7 @@ ns::iterator_t<R> complicated_algorithm(R&& r) {
 }
 
 template <class T>
-struct array_view {
+struct array_view : nano::view_base {
 	T* first_;
 	std::size_t n_;
 

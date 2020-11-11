@@ -14,26 +14,7 @@
 #include <nanorange/detail/ranges/range_concept.hpp>
 
 #include <initializer_list>
-
-// Avoid dragging in the large <set> and <unordered_set> headers
-// This is technically undefined behaviour: define the symbol
-// NANORANGE_NO_STD_FORWARD_DECLARATIONS
-// to enforce standard-compliant mode
-#ifndef NANORANGE_NO_STD_FORWARD_DECLARATIONS
-NANO_BEGIN_NAMESPACE_STD
-template <typename, typename> class basic_string_view;
-template <typename, typename, typename> class set;
-template <typename, typename, typename> class multiset;
-template <typename, typename, typename, typename> class unordered_set;
-template <typename, typename, typename, typename> class unordered_multiset;
-template <typename, typename> class match_results;
-NANO_END_NAMESPACE_STD
-#else
 #include <string_view>
-#include <regex>
-#include <set>
-#include <unordered_set>
-#endif
 
 NANO_BEGIN_NAMESPACE
 
@@ -67,47 +48,12 @@ NANO_CONCEPT sized_range =
 // [range.views]
 struct view_base { };
 
-namespace detail {
-
-template <typename>
-inline constexpr bool is_std_non_view = false;
-
 template <typename T>
-inline constexpr bool is_std_non_view<std::initializer_list<T>> = true;
+inline constexpr bool enable_view = derived_from<T, view_base>;
 
-template <typename K, typename C, typename A>
-inline constexpr bool is_std_non_view<std::set<K, C, A>> = true;
-
-template <typename K, typename C, typename A>
-inline constexpr bool is_std_non_view<std::multiset<K, C, A>> = true;
-
-template <typename K, typename H, typename E, typename A>
-inline constexpr bool is_std_non_view<std::unordered_set<K, H, E, A>> = true;
-
-template <typename K, typename H, typename E, typename A>
-inline constexpr bool is_std_non_view<std::unordered_multiset<K, H, E, A>> = true;
-
-template <typename B, typename A>
-inline constexpr bool is_std_non_view<std::match_results<B, A>> = true;
-
-template <typename T>
-constexpr bool enable_view_helper()
-{
-    if constexpr (derived_from<T, view_base>) {
-        return true;
-    } else if constexpr (is_std_non_view<T>) {
-        return false;
-    } else if constexpr (range<T> && range<const T>) {
-        return same_as<range_reference_t<T>, range_reference_t<const T>>;
-    } else {
-        return true;
-    }
-}
-
-}
-
-template <typename T>
-inline constexpr bool enable_view = detail::enable_view_helper<T>();
+// Special-case std::string_view
+template <typename CharT, typename Traits>
+inline constexpr bool enable_view<std::basic_string_view<CharT, Traits>> = true;
 
 template <typename T>
 NANO_CONCEPT view = range<T> && semiregular<T> && enable_view<T>;
