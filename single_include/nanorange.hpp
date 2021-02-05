@@ -12630,8 +12630,8 @@ struct uniform_random_bit_generator_concept {
 
     template <typename G>
     auto requires_() -> decltype(
-        requires_expr<same_as<decltype(G::min()), invoke_result_t<G&>>>{},
-        requires_expr<same_as<decltype(G::max()), invoke_result_t<G&>>>{}
+        requires_expr<same_as<decltype((G::min)()), invoke_result_t<G&>>>{},
+        requires_expr<same_as<decltype((G::max)()), invoke_result_t<G&>>>{}
     );
 };
 
