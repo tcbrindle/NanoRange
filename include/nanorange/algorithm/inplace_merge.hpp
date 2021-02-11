@@ -172,7 +172,7 @@ private:
             ++dist2;
         }
 
-        const auto sz = nano::min(dist1, dist2);
+        const auto sz = (nano::min)(dist1, dist2);
         auto buf = detail::temporary_vector<iter_value_t<I>>(sz);
 
         if (buf.capacity() >= static_cast<std::size_t>(sz)) {

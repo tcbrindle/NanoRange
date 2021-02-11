@@ -34,7 +34,7 @@ private:
 
         auto unsampled_size = nano::distance(first, last);
 
-        for (n = nano::min(n, unsampled_size); n != 0; ++first) {
+        for (n = (nano::min)(n, unsampled_size); n != 0; ++first) {
             if (D(g, param_t(0, --unsampled_size)) < n) {
                 *out++ = *first;
                 --n;
@@ -64,7 +64,7 @@ private:
             }
         }
 
-        return out + nano::min(n, k);
+        return out + (nano::min)(n, k);
     }
 
     template <typename I, typename S, typename O, typename Gen>
