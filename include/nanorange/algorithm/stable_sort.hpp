@@ -130,7 +130,7 @@ private:
                          result, std::ref(comp), std::ref(proj), std::ref(proj)).out;
             first += two_step;
         }
-        step_size = nano::min(iter_difference_t<I>(last - first), step_size);
+        step_size = (nano::min)(iter_difference_t<I>(last - first), step_size);
         nano::merge(
                 nano::make_move_iterator(first),
                 nano::make_move_iterator(first + step_size),

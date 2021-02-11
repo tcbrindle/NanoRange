@@ -148,14 +148,14 @@ public:
     constexpr auto size()
     {
         auto n = ranges::size(base_);
-        return ranges::min(n, static_cast<decltype(n)>(count_));
+        return (ranges::min)(n, static_cast<decltype(n)>(count_));
     }
 
     template <typename VV = V, std::enable_if_t<sized_range<const VV>, int> = 0>
     constexpr auto size() const
     {
         auto n = ranges::size(base_);
-        return ranges::min(n, static_cast<decltype(n)>(count_));
+        return (ranges::min)(n, static_cast<decltype(n)>(count_));
     }
 };
 
